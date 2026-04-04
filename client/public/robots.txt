@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Block dashboard and API routes
+Disallow: /dashboard
+Disallow: /api
+Disallow: /auth
+Disallow: /senders
+Disallow: /campaigns
+Disallow: /emails
+Disallow: /attachments
+Disallow: /templates
+Disallow: /track
+
+# Sitemap
+Sitemap: https://sharaspot.com/sitemap.xml
