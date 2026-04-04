@@ -1,0 +1,51 @@
+module.exports = {
+  apps: [
+    {
+      name: "sharaspot-api",
+      cwd: "./server",
+      script: "dist/index.js",
+      instances: 1,
+      autorestart: true,
+      max_memory_restart: "500M",
+      env: {
+        NODE_ENV: "production",
+      },
+      env_file: "./server/.env",
+      error_file: "/var/log/sharaspot/api-error.log",
+      out_file: "/var/log/sharaspot/api-out.log",
+      merge_logs: true,
+    },
+    {
+      name: "sharaspot-worker",
+      cwd: "./server",
+      script: "dist/worker/index.js",
+      instances: 1,
+      autorestart: true,
+      max_memory_restart: "500M",
+      env: {
+        NODE_ENV: "production",
+      },
+      env_file: "./server/.env",
+      error_file: "/var/log/sharaspot/worker-error.log",
+      out_file: "/var/log/sharaspot/worker-out.log",
+      merge_logs: true,
+    },
+    {
+      name: "sharaspot-frontend",
+      cwd: "./client",
+      script: "npm",
+      args: "start",
+      instances: 1,
+      autorestart: true,
+      max_memory_restart: "1G",
+      env: {
+        NODE_ENV: "production",
+        PORT: "3000",
+      },
+      env_file: "./client/.env",
+      error_file: "/var/log/sharaspot/frontend-error.log",
+      out_file: "/var/log/sharaspot/frontend-out.log",
+      merge_logs: true,
+    },
+  ],
+};

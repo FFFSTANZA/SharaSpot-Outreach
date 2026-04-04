@@ -1,0 +1,30 @@
+[Unit]
+Description=SharaSpot Next.js Frontend
+After=network.target sharaspot-api.service
+Wants=sharaspot-api.service
+
+[Service]
+Type=simple
+User=sharaspot
+Group=sharaspot
+WorkingDirectory=/home/sharaspot/SharaSpot/client
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+RestartSec=10
+Environment=NODE_ENV=production
+EnvironmentFile=/home/sharaspot/SharaSpot/client/.env
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/sharaspot/SharaSpot/client
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sharaspot-frontend
+
+[Install]
+WantedBy=multi-user.target
