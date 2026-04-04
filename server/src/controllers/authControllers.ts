@@ -42,13 +42,12 @@ export const googleLogin = async (
     }
 
     const user = await prisma.user.upsert({
-      where: { googleId },
+      where: { email },
       update: {
         name,
         avatarUrl: picture,
       },
       create: {
-        googleId,
         email,
         name,
         avatarUrl: picture,
