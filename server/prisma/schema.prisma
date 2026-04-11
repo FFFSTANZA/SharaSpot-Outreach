@@ -127,6 +127,9 @@ model EmailCampaign {
   businessStartHour Int?   // 0-23, e.g. 9 for 9 AM
   businessEndHour   Int?   // 0-23, e.g. 17 for 5 PM
 
+  // Priority Mail — premium feature for real-time delivery optimization
+  isPriority     Boolean @default(false)
+
   createdAt DateTime @default(now())
 
   user                    User                     @relation(fields: [userId], references: [id])
@@ -394,4 +397,77 @@ enum TrackingEventType {
   OPEN
   CLICK
   REPLY
+}
+
+// ─── Priority Mail Models ────────────────────────────────────────────────────────────────
+
+// Extended email status for Priority Mail feature
+enum PriorityStatus {
+  PRIORITY_PENDING
+  PRIORITY_SENDING
+  SENT
+  FAILED
+}
+
+// Tracks priority email jobs with delivery optimization
+model PriorityQueueJob {
+  id                String        @id @default(cuid())
+  emailJobId         String        @unique
+  userId             String
+  status             PriorityStatus @default(PRIORITY_PENDING)
+  priorityScore      Int           @default(500) // 0-1000, higher = more urgent
+  congestionScore    Int           @default(0)    // 0-1000, higher = more congested
+  scheduledAt       DateTime      @default(now())
+  retryCount         Int          @default(0)
+  statusMessage      String?       // e.g., "Optimizing delivery...", "Low congestion detected"
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+// Records SMTP timing metrics for congestion analysis
+model SmtpSignalLog {
+  id               String   @id @default(cuid())
+  senderId         String
+  recipientDomain  String
+  tcpConnectMs     Int      @default(0)   // TCP connect time in ms
+  greetingDelayMs Int      @default(0)   // Time to 220 greeting
+  tlsHandshakeMs   Int      @default(0)   // TLS handshake time
+  mailFromMs       Int      @default(0)   // MAIL FROM response time
+  rcptToMs        Int      @default(0)   // RCPT TO response time
+  dataMs          Int      @default(0)   // DATA command response time
+  congestionScore Int      @default(0)   // Computed 0-1000 score
+  recordedAt      DateTime @default(now())
+
+  @@index([senderId])
+  @@index([recipientDomain])
+  @@index([recordedAt])
+}
+
+// Tracks priority quota usage per user
+model PriorityUserQuota {
+  userId        String   @id
+  dailyCount     Int      @default(0)
+  dailyLimit    Int      @default(50)  // Default 50 emails/day for priority
+  dailyResetAt  DateTime @default(now())
+  isEnabled     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Tracks per-domain rate limits to prevent bulk email blocking
+model DomainRateLimit {
+  domain        String   @id
+  hourlyCount   Int      @default(0)
+  windowStart  DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([domain])
+  @@index([windowStart])
 }
