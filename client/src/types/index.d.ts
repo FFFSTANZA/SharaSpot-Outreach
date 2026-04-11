@@ -51,6 +51,7 @@ export interface CreateCampaignPayload {
   timezone?: string;
   businessStartHour?: number | null;
   businessEndHour?: number | null;
+  isPriority?: boolean;
 }
 
 // POST /attachments/upload response item — metadata for an uploaded file
@@ -292,6 +293,48 @@ export interface SequenceStepInput {
   subject: string;
   body: string;
   waitDays: number;
+}
+
+
+// ─── Priority Mail Types ─────────────────────────────────────────────────────
+
+export interface PriorityStatus {
+  congestionScore: number;
+  estimatedSendTime: string | null;
+  statusMessage: string;
+}
+
+export interface PriorityQuota {
+  used: number;
+  limit: number;
+  remaining: number;
+  resetTime: string;
+}
+
+export interface PriorityCampaignStatus {
+  campaignId: string;
+  isPriority: boolean;
+  priorityJobs: {
+    id: string;
+    emailJobId: string;
+    status: string;
+    statusMessage: string | null;
+    scheduledAt: string;
+    sentAt: string | null;
+    emailJob: {
+      id: string;
+      toEmail: string;
+      status: string;
+      scheduledAt: string;
+      sentAt: string | null;
+    };
+  }[];
+  statusCounts: {
+    pending: number;
+    sending: number;
+    sent: number;
+    failed: number;
+  };
 }
 
 

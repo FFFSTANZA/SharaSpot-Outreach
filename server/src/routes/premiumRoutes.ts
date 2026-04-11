@@ -1,6 +1,10 @@
 import { Router, Request, Response } from "express";
 import { analyzeSpamScore } from "../utils/spamDetector";
 import { generateCalendlyUrl, verifyCalendlyLink } from "../utils/calendlyIntegration";
+import { prisma } from "../config/prisma";
+import { requirePremium } from "../utils/premiumCheck";
+import { getPriorityQuotaStatus } from "../utils/prioritySafetyLimits";
+import { extractDomain } from "../utils/emailThreading";
 
 const router = Router();
 
@@ -168,6 +172,113 @@ router.post(
     } catch (error) {
       console.error("[CALENDLY WEBHOOK ERROR]", error);
       res.status(500).json({ error: "Webhook processing failed" });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// PRIORITY MAIL - GET QUOTA
+// ---------------------------------------------------------------------------
+// GET /api/premium/priority/quota
+// Returns: { used, limit, remaining, resetTime }
+router.get(
+  "/priority/quota",
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      
+      // Check premium
+      const premiumCheck = await requirePremium(userId, "Priority Mail");
+      if (!premiumCheck.allowed) {
+        return res.status(403).json({ error: premiumCheck.message });
+      }
+      
+      const quota = await getPriorityQuotaStatus(userId);
+      
+      res.json(quota);
+    } catch (error) {
+      console.error("[PRIORITY QUOTA ERROR]", error);
+      res.status(500).json({ error: "Failed to get priority quota" });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// PRIORITY MAIL - GET CAMPAIGN STATUS
+// ---------------------------------------------------------------------------
+// GET /api/premium/priority/status/:campaignId
+// Returns: { campaignId, priorityJobs: [], statusCounts: {} }
+router.get(
+  "/priority/status/:campaignId",
+  async (req: Request, res: Response) => {
+    try {
+      const { campaignId } = req.params;
+      const userId = req.user!.id;
+      
+      // Check premium
+      const premiumCheck = await requirePremium(userId, "Priority Mail");
+      if (!premiumCheck.allowed) {
+        return res.status(403).json({ error: premiumCheck.message });
+      }
+      
+      // Get campaign (ensure it's a string)
+      const campaignIdStr = String(campaignId);
+      
+      const campaign = await prisma.emailCampaign.findUnique({
+        where: { id: campaignIdStr },
+      });
+      
+      if (!campaign || campaign.userId !== userId) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+      
+      // Get email job IDs for this campaign first
+      const emailJobs = await prisma.emailJob.findMany({
+        where: { campaignId: campaignIdStr },
+        select: { id: true },
+      });
+      
+      const emailJobIds = emailJobs.map(j => j.id);
+      
+      // Get priority jobs for these email jobs
+      const priorityJobs = await prisma.priorityQueueJob.findMany({
+        where: {
+          emailJobId: { in: emailJobIds },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      
+      // Fetch email job details separately
+      const emailJobMap = new Map(emailJobs.map(j => [j.id, j]));
+      const emailJobDetails = await prisma.emailJob.findMany({
+        where: { id: { in: emailJobIds } },
+        select: { id: true, toEmail: true, status: true, scheduledAt: true, sentAt: true },
+      });
+      
+      const emailJobDetailMap = new Map(emailJobDetails.map(j => [j.id, j]));
+      
+      // Combine priority jobs with email job details
+      const priorityJobsWithEmail = priorityJobs.map(pj => ({
+        ...pj,
+        emailJob: emailJobDetailMap.get(pj.emailJobId),
+      }));
+      
+      const statusCounts = {
+        pending: priorityJobs.filter(j => j.status === "PRIORITY_PENDING").length,
+        sending: priorityJobs.filter(j => j.status === "PRIORITY_SENDING").length,
+        sent: priorityJobs.filter(j => j.status === "SENT").length,
+        failed: priorityJobs.filter(j => j.status === "FAILED").length,
+      };
+      
+      res.json({
+        campaignId: campaignIdStr,
+        isPriority: campaign.isPriority,
+        priorityJobs: priorityJobsWithEmail,
+        statusCounts,
+      });
+    } catch (error) {
+      console.error("[PRIORITY STATUS ERROR]", error);
+      res.status(500).json({ error: "Failed to get priority status" });
     }
   }
 );

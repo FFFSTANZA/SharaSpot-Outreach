@@ -215,7 +215,7 @@ export const toggleReplied = async (emailId: string): Promise<EmailJob> => {
 
 // ─── Tracking ───
 
-import type { TrackingMetrics, TrackingEmailDetail, TrackingLinkDetail, LinkAnalyticsDetail, ReplyMetrics, RepliedEmailDetail, UnrepliedEmailDetail, AnalyticsOverview, AnalyticsLinksResponse } from "@/types";
+import type { TrackingMetrics, TrackingEmailDetail, TrackingLinkDetail, LinkAnalyticsDetail, ReplyMetrics, RepliedEmailDetail, UnrepliedEmailDetail, AnalyticsOverview, AnalyticsLinksResponse, PriorityQuota, PriorityCampaignStatus } from "@/types";
 
 export const getTrackingMetrics = async (campaignId: string): Promise<TrackingMetrics> => {
   const res = await api.get(`/api/tracking/campaigns/${campaignId}`);
@@ -431,5 +431,17 @@ export const verifyCalendlyLink = async (
   apiToken?: string
 ): Promise<{ valid: boolean; username?: string; eventType?: string }> => {
   const res = await api.post("/api/premium/calendly/verify", { calendlyUrl, apiToken });
+  return res.data;
+};
+
+// ─── Priority Mail ───
+
+export const getPriorityQuota = async (): Promise<PriorityQuota> => {
+  const res = await api.get("/api/premium/priority/quota");
+  return res.data;
+};
+
+export const getPriorityStatus = async (campaignId: string): Promise<PriorityCampaignStatus> => {
+  const res = await api.get(`/api/premium/priority/status/${campaignId}`);
   return res.data;
 };

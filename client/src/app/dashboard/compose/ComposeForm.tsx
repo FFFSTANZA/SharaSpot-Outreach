@@ -15,10 +15,13 @@ import SequenceBuilder from "./SequenceBuilder";
 import { EmailValidator } from "./EmailValidator";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
+import { getSubscription } from "@/lib/apis";
 
 export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, submitTrigger }: ComposeFormProps) {
   const { addToast } = useToast();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
+  const [isPremium, setIsPremium] = useState(false);
+  const [priorityEnabled, setPriorityEnabled] = useState(false);
   const [isSenderLoading, setIsSenderLoading] = useState(true);
   const [isSenderModalOpen, setIsSenderModalOpen] = useState(false);
   const [isSenderDropdownOpen, setIsSenderDropdownOpen] = useState(false);
@@ -69,6 +72,11 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
         } else if (list.length > 0) {
           setData(prev => ({ ...prev, from: list[0].email, selectedSenderIds: [list[0].id] }));
         }
+        // Check premium status
+        try {
+          const sub = await getSubscription();
+          setIsPremium(sub.isPremium);
+        } catch {}
       } catch {} finally { setIsSenderLoading(false); }
     })();
   }, []);
@@ -121,6 +129,7 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
         steps: sequenceSteps.length > 0 ? sequenceSteps : undefined,
         trackOpens,
         trackClicks,
+        isPriority: priorityEnabled,
       });
     } catch (err: any) {
       setSubmitError(err?.response?.data?.message || "Failed to create campaign.");
@@ -498,6 +507,42 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                         <div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${trackClicks ? "translate-x-3.5" : "translate-x-0.5"}`} />
                       </div>
                     </button>
+
+                    {/* Priority Mail Toggle */}
+                    {isPremium ? (
+                      <button
+                        type="button"
+                        onClick={() => setPriorityEnabled(!priorityEnabled)}
+                        className={cn(
+                          "flex items-center gap-3 w-full p-2.5 rounded-xl transition-all border text-left group",
+                          priorityEnabled ? "bg-violet-50 border-violet-100" : "bg-gray-50 border-gray-100"
+                        )}
+                      >
+                        <div className={cn(
+                          "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                          priorityEnabled ? "bg-violet-500 text-white" : "bg-gray-200 text-gray-400"
+                        )}>
+                          <Gauge className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn("text-xs font-bold leading-none mb-1", priorityEnabled ? "text-violet-700" : "text-gray-500")}>Priority Mail</p>
+                          <p className="text-[10px] text-gray-400 leading-tight">Optimized delivery timing</p>
+                        </div>
+                        <div className={`relative h-4 w-7 rounded-full transition-colors shrink-0 ${priorityEnabled ? "bg-violet-500" : "bg-gray-300"}`}>
+                          <div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${priorityEnabled ? "translate-x-3.5" : "translate-x-0.5"}`} />
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-3 w-full p-2.5 rounded-xl border border-gray-100 bg-gray-50/50 text-left opacity-60">
+                        <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 bg-gray-200 text-gray-400">
+                          <Gauge className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold leading-none mb-1 text-gray-500">Priority Mail</p>
+                          <p className="text-[10px] text-gray-400 leading-tight">Premium feature</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

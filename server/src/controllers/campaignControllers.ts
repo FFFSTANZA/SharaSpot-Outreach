@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import crypto from "crypto";
 import { prisma } from "../config/prisma";
 import { emailQueue } from "../queues/emailQueue";
+import { priorityQueue } from "../queues/priorityQueue";
 import { resolveForRecipient } from "../utils/variableResolver";
 import { parseVariables } from "../utils/templateParser";
 import { isValidTransition } from "../utils/campaignStateMachine";
@@ -40,6 +41,7 @@ export const createCampaign = async (
       timezone,
       businessStartHour,
       businessEndHour,
+      isPriority,
     } = req.body;
 
     const trackOpens = rawTrackOpens !== false; // default true
@@ -181,6 +183,18 @@ export const createCampaign = async (
       }
     }
 
+    // --- Step 4c: Premium check for Priority Mail ---
+    if (isPriority === true) {
+      const premiumCheck = await requirePremium(req.user!.id, "Priority Mail");
+      if (!premiumCheck.allowed) {
+        res.status(403).json({
+          message: premiumCheck.message,
+          upgradeRequired: true,
+        });
+        return;
+      }
+    }
+
     // --- Step 4c: Free tier limits ---
     const { isPremium } = await import("../utils/premiumCheck").then(m => m.checkPremiumStatus(req.user!.id));
     if (!isPremium) {
@@ -252,7 +266,7 @@ export const createCampaign = async (
     });
     const senderAssignments = assignSendersRoundRobin(poolSenders, recipients.length);
 
-    const { campaign, emailJobs, campaignSenders } = await prisma.$transaction(async (tx) => {
+    const { campaign, emailJobs, campaignSenders, priorityJobs } = await prisma.$transaction(async (tx) => {
       const campaign = await tx.emailCampaign.create({
         data: {
           userId: req.user!.id,
@@ -268,6 +282,7 @@ export const createCampaign = async (
           timezone: tz,
           businessStartHour: bStart,
           businessEndHour: bEnd,
+          isPriority: isPriority === true,
         },
       });
 
@@ -423,7 +438,25 @@ export const createCampaign = async (
         }
       }
 
-      return { campaign, emailJobs, campaignSenders };
+      // Create PriorityQueueJob records after email jobs are created (if priority campaign)
+      const priorityJobs = [];
+      if (isPriority === true) {
+        for (const job of emailJobs) {
+          const priorityJob = await tx.priorityQueueJob.create({
+            data: {
+              emailJobId: job.id,
+              userId: req.user!.id,
+              status: "PRIORITY_PENDING",
+              priorityScore: 500,
+              congestionScore: 0,
+              scheduledAt: job.scheduledAt,
+            },
+          });
+          priorityJobs.push(priorityJob);
+        }
+      }
+
+      return { campaign, emailJobs, campaignSenders, priorityJobs };
     });
 
     // --- Step 6: BullMQ enqueue AFTER transaction commits ---
@@ -431,20 +464,41 @@ export const createCampaign = async (
     // non-existent DB records if the transaction were to roll back.
     // WHY unique job IDs with UUID suffix: Prevents BullMQ jobId collision
     // when the same EmailJob is re-enqueued after rate limit rescheduling.
-    for (const emailJob of emailJobs) {
-      const delay = Math.max(
-        0,
-        new Date(emailJob.scheduledAt).getTime() - Date.now(),
-      );
+    
+    // Route to priority queue for Priority Mail campaigns
+    if (isPriority === true) {
+      for (const emailJob of emailJobs) {
+        const delay = Math.max(
+          0,
+          new Date(emailJob.scheduledAt).getTime() - Date.now(),
+        );
 
-      await emailQueue.add(
-        "send-email",
-        { emailJobId: emailJob.id },
-        {
-          jobId: `${emailJob.id}-${crypto.randomUUID()}`,
-          delay,
-        },
-      );
+        await priorityQueue.add(
+          "send-priority-email",
+          { emailJobId: emailJob.id, userId: req.user!.id },
+          {
+            jobId: `priority-${emailJob.id}-${crypto.randomUUID()}`,
+            delay,
+            priority: 3, // NORMAL priority
+          },
+        );
+      }
+    } else {
+      for (const emailJob of emailJobs) {
+        const delay = Math.max(
+          0,
+          new Date(emailJob.scheduledAt).getTime() - Date.now(),
+        );
+
+        await emailQueue.add(
+          "send-email",
+          { emailJobId: emailJob.id },
+          {
+            jobId: `${emailJob.id}-${crypto.randomUUID()}`,
+            delay,
+          },
+        );
+      }
     }
 
     // Build senderPool for the response

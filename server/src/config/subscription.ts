@@ -9,6 +9,7 @@ export const PREMIUM_FEATURES = {
   advancedAnalytics: true,
   customTemplates: true,
   apiAccess: true,
+  priorityMail: true,
 } as const;
 
 export const FREE_TIER_LIMITS = {
