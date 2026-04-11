@@ -221,45 +221,59 @@ router.get(
         return res.status(403).json({ error: premiumCheck.message });
       }
       
-      // Get campaign
+      // Get campaign (ensure it's a string)
+      const campaignIdStr = String(campaignId);
+      
       const campaign = await prisma.emailCampaign.findUnique({
-        where: { id: campaignId },
+        where: { id: campaignIdStr },
       });
       
       if (!campaign || campaign.userId !== userId) {
         return res.status(404).json({ error: "Campaign not found" });
       }
       
-      // Get priority jobs for this campaign
+      // Get email job IDs for this campaign first
+      const emailJobs = await prisma.emailJob.findMany({
+        where: { campaignId: campaignIdStr },
+        select: { id: true },
+      });
+      
+      const emailJobIds = emailJobs.map(j => j.id);
+      
+      // Get priority jobs for these email jobs
       const priorityJobs = await prisma.priorityQueueJob.findMany({
         where: {
-          emailJob: { campaignId },
-        },
-        include: {
-          emailJob: {
-            select: {
-              id: true,
-              toEmail: true,
-              status: true,
-              scheduledAt: true,
-              sentAt: true,
-            },
-          },
+          emailJobId: { in: emailJobIds },
         },
         orderBy: { createdAt: "desc" },
       });
       
+      // Fetch email job details separately
+      const emailJobMap = new Map(emailJobs.map(j => [j.id, j]));
+      const emailJobDetails = await prisma.emailJob.findMany({
+        where: { id: { in: emailJobIds } },
+        select: { id: true, toEmail: true, status: true, scheduledAt: true, sentAt: true },
+      });
+      
+      const emailJobDetailMap = new Map(emailJobDetails.map(j => [j.id, j]));
+      
+      // Combine priority jobs with email job details
+      const priorityJobsWithEmail = priorityJobs.map(pj => ({
+        ...pj,
+        emailJob: emailJobDetailMap.get(pj.emailJobId),
+      }));
+      
       const statusCounts = {
         pending: priorityJobs.filter(j => j.status === "PRIORITY_PENDING").length,
         sending: priorityJobs.filter(j => j.status === "PRIORITY_SENDING").length,
-        sent: priorityJobs.filter(j => j.status === "SENT" || j.status === "PRIORITY_PENDING").length,
+        sent: priorityJobs.filter(j => j.status === "SENT").length,
         failed: priorityJobs.filter(j => j.status === "FAILED").length,
       };
       
       res.json({
-        campaignId,
+        campaignId: campaignIdStr,
         isPriority: campaign.isPriority,
-        priorityJobs,
+        priorityJobs: priorityJobsWithEmail,
         statusCounts,
       });
     } catch (error) {

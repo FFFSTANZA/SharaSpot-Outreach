@@ -93,6 +93,26 @@ export type SenderCooldown = $Result.DefaultSelection<Prisma.$SenderCooldownPayl
  * 
  */
 export type TrackingEvent = $Result.DefaultSelection<Prisma.$TrackingEventPayload>
+/**
+ * Model PriorityQueueJob
+ * 
+ */
+export type PriorityQueueJob = $Result.DefaultSelection<Prisma.$PriorityQueueJobPayload>
+/**
+ * Model SmtpSignalLog
+ * 
+ */
+export type SmtpSignalLog = $Result.DefaultSelection<Prisma.$SmtpSignalLogPayload>
+/**
+ * Model PriorityUserQuota
+ * 
+ */
+export type PriorityUserQuota = $Result.DefaultSelection<Prisma.$PriorityUserQuotaPayload>
+/**
+ * Model DomainRateLimit
+ * 
+ */
+export type DomainRateLimit = $Result.DefaultSelection<Prisma.$DomainRateLimitPayload>
 
 /**
  * Enums
@@ -139,6 +159,16 @@ export const TrackingEventType: {
 
 export type TrackingEventType = (typeof TrackingEventType)[keyof typeof TrackingEventType]
 
+
+export const PriorityStatus: {
+  PRIORITY_PENDING: 'PRIORITY_PENDING',
+  PRIORITY_SENDING: 'PRIORITY_SENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED'
+};
+
+export type PriorityStatus = (typeof PriorityStatus)[keyof typeof PriorityStatus]
+
 }
 
 export type SubscriptionStatus = $Enums.SubscriptionStatus
@@ -156,6 +186,10 @@ export const EmailStatus: typeof $Enums.EmailStatus
 export type TrackingEventType = $Enums.TrackingEventType
 
 export const TrackingEventType: typeof $Enums.TrackingEventType
+
+export type PriorityStatus = $Enums.PriorityStatus
+
+export const PriorityStatus: typeof $Enums.PriorityStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -434,6 +468,46 @@ export class PrismaClient<
     * ```
     */
   get trackingEvent(): Prisma.TrackingEventDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.priorityQueueJob`: Exposes CRUD operations for the **PriorityQueueJob** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PriorityQueueJobs
+    * const priorityQueueJobs = await prisma.priorityQueueJob.findMany()
+    * ```
+    */
+  get priorityQueueJob(): Prisma.PriorityQueueJobDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.smtpSignalLog`: Exposes CRUD operations for the **SmtpSignalLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SmtpSignalLogs
+    * const smtpSignalLogs = await prisma.smtpSignalLog.findMany()
+    * ```
+    */
+  get smtpSignalLog(): Prisma.SmtpSignalLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.priorityUserQuota`: Exposes CRUD operations for the **PriorityUserQuota** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PriorityUserQuotas
+    * const priorityUserQuotas = await prisma.priorityUserQuota.findMany()
+    * ```
+    */
+  get priorityUserQuota(): Prisma.PriorityUserQuotaDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.domainRateLimit`: Exposes CRUD operations for the **DomainRateLimit** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DomainRateLimits
+    * const domainRateLimits = await prisma.domainRateLimit.findMany()
+    * ```
+    */
+  get domainRateLimit(): Prisma.DomainRateLimitDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -890,7 +964,11 @@ export namespace Prisma {
     ProviderProfile: 'ProviderProfile',
     WarmupSchedule: 'WarmupSchedule',
     SenderCooldown: 'SenderCooldown',
-    TrackingEvent: 'TrackingEvent'
+    TrackingEvent: 'TrackingEvent',
+    PriorityQueueJob: 'PriorityQueueJob',
+    SmtpSignalLog: 'SmtpSignalLog',
+    PriorityUserQuota: 'PriorityUserQuota',
+    DomainRateLimit: 'DomainRateLimit'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -909,7 +987,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "subscription" | "sender" | "emailCampaign" | "emailJob" | "campaignSender" | "rateLimitCounter" | "refreshToken" | "attachment" | "emailTemplate" | "sequenceStep" | "recipientSequenceState" | "providerProfile" | "warmupSchedule" | "senderCooldown" | "trackingEvent"
+      modelProps: "user" | "subscription" | "sender" | "emailCampaign" | "emailJob" | "campaignSender" | "rateLimitCounter" | "refreshToken" | "attachment" | "emailTemplate" | "sequenceStep" | "recipientSequenceState" | "providerProfile" | "warmupSchedule" | "senderCooldown" | "trackingEvent" | "priorityQueueJob" | "smtpSignalLog" | "priorityUserQuota" | "domainRateLimit"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2097,6 +2175,302 @@ export namespace Prisma {
           }
         }
       }
+      PriorityQueueJob: {
+        payload: Prisma.$PriorityQueueJobPayload<ExtArgs>
+        fields: Prisma.PriorityQueueJobFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PriorityQueueJobFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PriorityQueueJobFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>
+          }
+          findFirst: {
+            args: Prisma.PriorityQueueJobFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PriorityQueueJobFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>
+          }
+          findMany: {
+            args: Prisma.PriorityQueueJobFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>[]
+          }
+          create: {
+            args: Prisma.PriorityQueueJobCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>
+          }
+          createMany: {
+            args: Prisma.PriorityQueueJobCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PriorityQueueJobCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>[]
+          }
+          delete: {
+            args: Prisma.PriorityQueueJobDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>
+          }
+          update: {
+            args: Prisma.PriorityQueueJobUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>
+          }
+          deleteMany: {
+            args: Prisma.PriorityQueueJobDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PriorityQueueJobUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PriorityQueueJobUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>[]
+          }
+          upsert: {
+            args: Prisma.PriorityQueueJobUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityQueueJobPayload>
+          }
+          aggregate: {
+            args: Prisma.PriorityQueueJobAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePriorityQueueJob>
+          }
+          groupBy: {
+            args: Prisma.PriorityQueueJobGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PriorityQueueJobGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PriorityQueueJobCountArgs<ExtArgs>
+            result: $Utils.Optional<PriorityQueueJobCountAggregateOutputType> | number
+          }
+        }
+      }
+      SmtpSignalLog: {
+        payload: Prisma.$SmtpSignalLogPayload<ExtArgs>
+        fields: Prisma.SmtpSignalLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SmtpSignalLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SmtpSignalLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>
+          }
+          findFirst: {
+            args: Prisma.SmtpSignalLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SmtpSignalLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>
+          }
+          findMany: {
+            args: Prisma.SmtpSignalLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>[]
+          }
+          create: {
+            args: Prisma.SmtpSignalLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>
+          }
+          createMany: {
+            args: Prisma.SmtpSignalLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SmtpSignalLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>[]
+          }
+          delete: {
+            args: Prisma.SmtpSignalLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>
+          }
+          update: {
+            args: Prisma.SmtpSignalLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.SmtpSignalLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SmtpSignalLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.SmtpSignalLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.SmtpSignalLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SmtpSignalLogPayload>
+          }
+          aggregate: {
+            args: Prisma.SmtpSignalLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSmtpSignalLog>
+          }
+          groupBy: {
+            args: Prisma.SmtpSignalLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SmtpSignalLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SmtpSignalLogCountArgs<ExtArgs>
+            result: $Utils.Optional<SmtpSignalLogCountAggregateOutputType> | number
+          }
+        }
+      }
+      PriorityUserQuota: {
+        payload: Prisma.$PriorityUserQuotaPayload<ExtArgs>
+        fields: Prisma.PriorityUserQuotaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PriorityUserQuotaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PriorityUserQuotaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>
+          }
+          findFirst: {
+            args: Prisma.PriorityUserQuotaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PriorityUserQuotaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>
+          }
+          findMany: {
+            args: Prisma.PriorityUserQuotaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>[]
+          }
+          create: {
+            args: Prisma.PriorityUserQuotaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>
+          }
+          createMany: {
+            args: Prisma.PriorityUserQuotaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PriorityUserQuotaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>[]
+          }
+          delete: {
+            args: Prisma.PriorityUserQuotaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>
+          }
+          update: {
+            args: Prisma.PriorityUserQuotaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>
+          }
+          deleteMany: {
+            args: Prisma.PriorityUserQuotaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PriorityUserQuotaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PriorityUserQuotaUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>[]
+          }
+          upsert: {
+            args: Prisma.PriorityUserQuotaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PriorityUserQuotaPayload>
+          }
+          aggregate: {
+            args: Prisma.PriorityUserQuotaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePriorityUserQuota>
+          }
+          groupBy: {
+            args: Prisma.PriorityUserQuotaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PriorityUserQuotaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PriorityUserQuotaCountArgs<ExtArgs>
+            result: $Utils.Optional<PriorityUserQuotaCountAggregateOutputType> | number
+          }
+        }
+      }
+      DomainRateLimit: {
+        payload: Prisma.$DomainRateLimitPayload<ExtArgs>
+        fields: Prisma.DomainRateLimitFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DomainRateLimitFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DomainRateLimitFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>
+          }
+          findFirst: {
+            args: Prisma.DomainRateLimitFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DomainRateLimitFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>
+          }
+          findMany: {
+            args: Prisma.DomainRateLimitFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>[]
+          }
+          create: {
+            args: Prisma.DomainRateLimitCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>
+          }
+          createMany: {
+            args: Prisma.DomainRateLimitCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DomainRateLimitCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>[]
+          }
+          delete: {
+            args: Prisma.DomainRateLimitDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>
+          }
+          update: {
+            args: Prisma.DomainRateLimitUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>
+          }
+          deleteMany: {
+            args: Prisma.DomainRateLimitDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DomainRateLimitUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DomainRateLimitUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>[]
+          }
+          upsert: {
+            args: Prisma.DomainRateLimitUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DomainRateLimitPayload>
+          }
+          aggregate: {
+            args: Prisma.DomainRateLimitAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDomainRateLimit>
+          }
+          groupBy: {
+            args: Prisma.DomainRateLimitGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DomainRateLimitGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DomainRateLimitCountArgs<ExtArgs>
+            result: $Utils.Optional<DomainRateLimitCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2209,6 +2583,10 @@ export namespace Prisma {
     warmupSchedule?: WarmupScheduleOmit
     senderCooldown?: SenderCooldownOmit
     trackingEvent?: TrackingEventOmit
+    priorityQueueJob?: PriorityQueueJobOmit
+    smtpSignalLog?: SmtpSignalLogOmit
+    priorityUserQuota?: PriorityUserQuotaOmit
+    domainRateLimit?: DomainRateLimitOmit
   }
 
   /* Types for Logging */
@@ -6289,6 +6667,7 @@ export namespace Prisma {
     timezone: string | null
     businessStartHour: number | null
     businessEndHour: number | null
+    isPriority: boolean | null
     createdAt: Date | null
   }
 
@@ -6309,6 +6688,7 @@ export namespace Prisma {
     timezone: string | null
     businessStartHour: number | null
     businessEndHour: number | null
+    isPriority: boolean | null
     createdAt: Date | null
   }
 
@@ -6329,6 +6709,7 @@ export namespace Prisma {
     timezone: number
     businessStartHour: number
     businessEndHour: number
+    isPriority: number
     createdAt: number
     _all: number
   }
@@ -6367,6 +6748,7 @@ export namespace Prisma {
     timezone?: true
     businessStartHour?: true
     businessEndHour?: true
+    isPriority?: true
     createdAt?: true
   }
 
@@ -6387,6 +6769,7 @@ export namespace Prisma {
     timezone?: true
     businessStartHour?: true
     businessEndHour?: true
+    isPriority?: true
     createdAt?: true
   }
 
@@ -6407,6 +6790,7 @@ export namespace Prisma {
     timezone?: true
     businessStartHour?: true
     businessEndHour?: true
+    isPriority?: true
     createdAt?: true
     _all?: true
   }
@@ -6514,6 +6898,7 @@ export namespace Prisma {
     timezone: string
     businessStartHour: number | null
     businessEndHour: number | null
+    isPriority: boolean
     createdAt: Date
     _count: EmailCampaignCountAggregateOutputType | null
     _avg: EmailCampaignAvgAggregateOutputType | null
@@ -6553,6 +6938,7 @@ export namespace Prisma {
     timezone?: boolean
     businessStartHour?: boolean
     businessEndHour?: boolean
+    isPriority?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     sender?: boolean | EmailCampaign$senderArgs<ExtArgs>
@@ -6581,6 +6967,7 @@ export namespace Prisma {
     timezone?: boolean
     businessStartHour?: boolean
     businessEndHour?: boolean
+    isPriority?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     sender?: boolean | EmailCampaign$senderArgs<ExtArgs>
@@ -6603,6 +6990,7 @@ export namespace Prisma {
     timezone?: boolean
     businessStartHour?: boolean
     businessEndHour?: boolean
+    isPriority?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     sender?: boolean | EmailCampaign$senderArgs<ExtArgs>
@@ -6625,10 +7013,11 @@ export namespace Prisma {
     timezone?: boolean
     businessStartHour?: boolean
     businessEndHour?: boolean
+    isPriority?: boolean
     createdAt?: boolean
   }
 
-  export type EmailCampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "senderId" | "subject" | "body" | "startTime" | "delaySeconds" | "hourlyLimit" | "totalRecipients" | "status" | "pauseReason" | "trackOpens" | "trackClicks" | "timezone" | "businessStartHour" | "businessEndHour" | "createdAt", ExtArgs["result"]["emailCampaign"]>
+  export type EmailCampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "senderId" | "subject" | "body" | "startTime" | "delaySeconds" | "hourlyLimit" | "totalRecipients" | "status" | "pauseReason" | "trackOpens" | "trackClicks" | "timezone" | "businessStartHour" | "businessEndHour" | "isPriority" | "createdAt", ExtArgs["result"]["emailCampaign"]>
   export type EmailCampaignInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     sender?: boolean | EmailCampaign$senderArgs<ExtArgs>
@@ -6676,6 +7065,7 @@ export namespace Prisma {
       timezone: string
       businessStartHour: number | null
       businessEndHour: number | null
+      isPriority: boolean
       createdAt: Date
     }, ExtArgs["result"]["emailCampaign"]>
     composites: {}
@@ -7123,6 +7513,7 @@ export namespace Prisma {
     readonly timezone: FieldRef<"EmailCampaign", 'String'>
     readonly businessStartHour: FieldRef<"EmailCampaign", 'Int'>
     readonly businessEndHour: FieldRef<"EmailCampaign", 'Int'>
+    readonly isPriority: FieldRef<"EmailCampaign", 'Boolean'>
     readonly createdAt: FieldRef<"EmailCampaign", 'DateTime'>
   }
     
@@ -21100,6 +21491,4340 @@ export namespace Prisma {
 
 
   /**
+   * Model PriorityQueueJob
+   */
+
+  export type AggregatePriorityQueueJob = {
+    _count: PriorityQueueJobCountAggregateOutputType | null
+    _avg: PriorityQueueJobAvgAggregateOutputType | null
+    _sum: PriorityQueueJobSumAggregateOutputType | null
+    _min: PriorityQueueJobMinAggregateOutputType | null
+    _max: PriorityQueueJobMaxAggregateOutputType | null
+  }
+
+  export type PriorityQueueJobAvgAggregateOutputType = {
+    priorityScore: number | null
+    congestionScore: number | null
+    retryCount: number | null
+  }
+
+  export type PriorityQueueJobSumAggregateOutputType = {
+    priorityScore: number | null
+    congestionScore: number | null
+    retryCount: number | null
+  }
+
+  export type PriorityQueueJobMinAggregateOutputType = {
+    id: string | null
+    emailJobId: string | null
+    userId: string | null
+    status: $Enums.PriorityStatus | null
+    priorityScore: number | null
+    congestionScore: number | null
+    scheduledAt: Date | null
+    retryCount: number | null
+    statusMessage: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PriorityQueueJobMaxAggregateOutputType = {
+    id: string | null
+    emailJobId: string | null
+    userId: string | null
+    status: $Enums.PriorityStatus | null
+    priorityScore: number | null
+    congestionScore: number | null
+    scheduledAt: Date | null
+    retryCount: number | null
+    statusMessage: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PriorityQueueJobCountAggregateOutputType = {
+    id: number
+    emailJobId: number
+    userId: number
+    status: number
+    priorityScore: number
+    congestionScore: number
+    scheduledAt: number
+    retryCount: number
+    statusMessage: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PriorityQueueJobAvgAggregateInputType = {
+    priorityScore?: true
+    congestionScore?: true
+    retryCount?: true
+  }
+
+  export type PriorityQueueJobSumAggregateInputType = {
+    priorityScore?: true
+    congestionScore?: true
+    retryCount?: true
+  }
+
+  export type PriorityQueueJobMinAggregateInputType = {
+    id?: true
+    emailJobId?: true
+    userId?: true
+    status?: true
+    priorityScore?: true
+    congestionScore?: true
+    scheduledAt?: true
+    retryCount?: true
+    statusMessage?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PriorityQueueJobMaxAggregateInputType = {
+    id?: true
+    emailJobId?: true
+    userId?: true
+    status?: true
+    priorityScore?: true
+    congestionScore?: true
+    scheduledAt?: true
+    retryCount?: true
+    statusMessage?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PriorityQueueJobCountAggregateInputType = {
+    id?: true
+    emailJobId?: true
+    userId?: true
+    status?: true
+    priorityScore?: true
+    congestionScore?: true
+    scheduledAt?: true
+    retryCount?: true
+    statusMessage?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PriorityQueueJobAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PriorityQueueJob to aggregate.
+     */
+    where?: PriorityQueueJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PriorityQueueJobs to fetch.
+     */
+    orderBy?: PriorityQueueJobOrderByWithRelationInput | PriorityQueueJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PriorityQueueJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PriorityQueueJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PriorityQueueJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PriorityQueueJobs
+    **/
+    _count?: true | PriorityQueueJobCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PriorityQueueJobAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PriorityQueueJobSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PriorityQueueJobMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PriorityQueueJobMaxAggregateInputType
+  }
+
+  export type GetPriorityQueueJobAggregateType<T extends PriorityQueueJobAggregateArgs> = {
+        [P in keyof T & keyof AggregatePriorityQueueJob]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePriorityQueueJob[P]>
+      : GetScalarType<T[P], AggregatePriorityQueueJob[P]>
+  }
+
+
+
+
+  export type PriorityQueueJobGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PriorityQueueJobWhereInput
+    orderBy?: PriorityQueueJobOrderByWithAggregationInput | PriorityQueueJobOrderByWithAggregationInput[]
+    by: PriorityQueueJobScalarFieldEnum[] | PriorityQueueJobScalarFieldEnum
+    having?: PriorityQueueJobScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PriorityQueueJobCountAggregateInputType | true
+    _avg?: PriorityQueueJobAvgAggregateInputType
+    _sum?: PriorityQueueJobSumAggregateInputType
+    _min?: PriorityQueueJobMinAggregateInputType
+    _max?: PriorityQueueJobMaxAggregateInputType
+  }
+
+  export type PriorityQueueJobGroupByOutputType = {
+    id: string
+    emailJobId: string
+    userId: string
+    status: $Enums.PriorityStatus
+    priorityScore: number
+    congestionScore: number
+    scheduledAt: Date
+    retryCount: number
+    statusMessage: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PriorityQueueJobCountAggregateOutputType | null
+    _avg: PriorityQueueJobAvgAggregateOutputType | null
+    _sum: PriorityQueueJobSumAggregateOutputType | null
+    _min: PriorityQueueJobMinAggregateOutputType | null
+    _max: PriorityQueueJobMaxAggregateOutputType | null
+  }
+
+  type GetPriorityQueueJobGroupByPayload<T extends PriorityQueueJobGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PriorityQueueJobGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PriorityQueueJobGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PriorityQueueJobGroupByOutputType[P]>
+            : GetScalarType<T[P], PriorityQueueJobGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PriorityQueueJobSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    emailJobId?: boolean
+    userId?: boolean
+    status?: boolean
+    priorityScore?: boolean
+    congestionScore?: boolean
+    scheduledAt?: boolean
+    retryCount?: boolean
+    statusMessage?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["priorityQueueJob"]>
+
+  export type PriorityQueueJobSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    emailJobId?: boolean
+    userId?: boolean
+    status?: boolean
+    priorityScore?: boolean
+    congestionScore?: boolean
+    scheduledAt?: boolean
+    retryCount?: boolean
+    statusMessage?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["priorityQueueJob"]>
+
+  export type PriorityQueueJobSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    emailJobId?: boolean
+    userId?: boolean
+    status?: boolean
+    priorityScore?: boolean
+    congestionScore?: boolean
+    scheduledAt?: boolean
+    retryCount?: boolean
+    statusMessage?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["priorityQueueJob"]>
+
+  export type PriorityQueueJobSelectScalar = {
+    id?: boolean
+    emailJobId?: boolean
+    userId?: boolean
+    status?: boolean
+    priorityScore?: boolean
+    congestionScore?: boolean
+    scheduledAt?: boolean
+    retryCount?: boolean
+    statusMessage?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PriorityQueueJobOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "emailJobId" | "userId" | "status" | "priorityScore" | "congestionScore" | "scheduledAt" | "retryCount" | "statusMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["priorityQueueJob"]>
+
+  export type $PriorityQueueJobPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PriorityQueueJob"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      emailJobId: string
+      userId: string
+      status: $Enums.PriorityStatus
+      priorityScore: number
+      congestionScore: number
+      scheduledAt: Date
+      retryCount: number
+      statusMessage: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["priorityQueueJob"]>
+    composites: {}
+  }
+
+  type PriorityQueueJobGetPayload<S extends boolean | null | undefined | PriorityQueueJobDefaultArgs> = $Result.GetResult<Prisma.$PriorityQueueJobPayload, S>
+
+  type PriorityQueueJobCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PriorityQueueJobFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PriorityQueueJobCountAggregateInputType | true
+    }
+
+  export interface PriorityQueueJobDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PriorityQueueJob'], meta: { name: 'PriorityQueueJob' } }
+    /**
+     * Find zero or one PriorityQueueJob that matches the filter.
+     * @param {PriorityQueueJobFindUniqueArgs} args - Arguments to find a PriorityQueueJob
+     * @example
+     * // Get one PriorityQueueJob
+     * const priorityQueueJob = await prisma.priorityQueueJob.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PriorityQueueJobFindUniqueArgs>(args: SelectSubset<T, PriorityQueueJobFindUniqueArgs<ExtArgs>>): Prisma__PriorityQueueJobClient<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PriorityQueueJob that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PriorityQueueJobFindUniqueOrThrowArgs} args - Arguments to find a PriorityQueueJob
+     * @example
+     * // Get one PriorityQueueJob
+     * const priorityQueueJob = await prisma.priorityQueueJob.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PriorityQueueJobFindUniqueOrThrowArgs>(args: SelectSubset<T, PriorityQueueJobFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PriorityQueueJobClient<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PriorityQueueJob that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityQueueJobFindFirstArgs} args - Arguments to find a PriorityQueueJob
+     * @example
+     * // Get one PriorityQueueJob
+     * const priorityQueueJob = await prisma.priorityQueueJob.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PriorityQueueJobFindFirstArgs>(args?: SelectSubset<T, PriorityQueueJobFindFirstArgs<ExtArgs>>): Prisma__PriorityQueueJobClient<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PriorityQueueJob that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityQueueJobFindFirstOrThrowArgs} args - Arguments to find a PriorityQueueJob
+     * @example
+     * // Get one PriorityQueueJob
+     * const priorityQueueJob = await prisma.priorityQueueJob.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PriorityQueueJobFindFirstOrThrowArgs>(args?: SelectSubset<T, PriorityQueueJobFindFirstOrThrowArgs<ExtArgs>>): Prisma__PriorityQueueJobClient<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PriorityQueueJobs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityQueueJobFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PriorityQueueJobs
+     * const priorityQueueJobs = await prisma.priorityQueueJob.findMany()
+     * 
+     * // Get first 10 PriorityQueueJobs
+     * const priorityQueueJobs = await prisma.priorityQueueJob.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const priorityQueueJobWithIdOnly = await prisma.priorityQueueJob.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PriorityQueueJobFindManyArgs>(args?: SelectSubset<T, PriorityQueueJobFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PriorityQueueJob.
+     * @param {PriorityQueueJobCreateArgs} args - Arguments to create a PriorityQueueJob.
+     * @example
+     * // Create one PriorityQueueJob
+     * const PriorityQueueJob = await prisma.priorityQueueJob.create({
+     *   data: {
+     *     // ... data to create a PriorityQueueJob
+     *   }
+     * })
+     * 
+     */
+    create<T extends PriorityQueueJobCreateArgs>(args: SelectSubset<T, PriorityQueueJobCreateArgs<ExtArgs>>): Prisma__PriorityQueueJobClient<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PriorityQueueJobs.
+     * @param {PriorityQueueJobCreateManyArgs} args - Arguments to create many PriorityQueueJobs.
+     * @example
+     * // Create many PriorityQueueJobs
+     * const priorityQueueJob = await prisma.priorityQueueJob.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PriorityQueueJobCreateManyArgs>(args?: SelectSubset<T, PriorityQueueJobCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PriorityQueueJobs and returns the data saved in the database.
+     * @param {PriorityQueueJobCreateManyAndReturnArgs} args - Arguments to create many PriorityQueueJobs.
+     * @example
+     * // Create many PriorityQueueJobs
+     * const priorityQueueJob = await prisma.priorityQueueJob.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PriorityQueueJobs and only return the `id`
+     * const priorityQueueJobWithIdOnly = await prisma.priorityQueueJob.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PriorityQueueJobCreateManyAndReturnArgs>(args?: SelectSubset<T, PriorityQueueJobCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PriorityQueueJob.
+     * @param {PriorityQueueJobDeleteArgs} args - Arguments to delete one PriorityQueueJob.
+     * @example
+     * // Delete one PriorityQueueJob
+     * const PriorityQueueJob = await prisma.priorityQueueJob.delete({
+     *   where: {
+     *     // ... filter to delete one PriorityQueueJob
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PriorityQueueJobDeleteArgs>(args: SelectSubset<T, PriorityQueueJobDeleteArgs<ExtArgs>>): Prisma__PriorityQueueJobClient<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PriorityQueueJob.
+     * @param {PriorityQueueJobUpdateArgs} args - Arguments to update one PriorityQueueJob.
+     * @example
+     * // Update one PriorityQueueJob
+     * const priorityQueueJob = await prisma.priorityQueueJob.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PriorityQueueJobUpdateArgs>(args: SelectSubset<T, PriorityQueueJobUpdateArgs<ExtArgs>>): Prisma__PriorityQueueJobClient<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PriorityQueueJobs.
+     * @param {PriorityQueueJobDeleteManyArgs} args - Arguments to filter PriorityQueueJobs to delete.
+     * @example
+     * // Delete a few PriorityQueueJobs
+     * const { count } = await prisma.priorityQueueJob.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PriorityQueueJobDeleteManyArgs>(args?: SelectSubset<T, PriorityQueueJobDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PriorityQueueJobs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityQueueJobUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PriorityQueueJobs
+     * const priorityQueueJob = await prisma.priorityQueueJob.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PriorityQueueJobUpdateManyArgs>(args: SelectSubset<T, PriorityQueueJobUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PriorityQueueJobs and returns the data updated in the database.
+     * @param {PriorityQueueJobUpdateManyAndReturnArgs} args - Arguments to update many PriorityQueueJobs.
+     * @example
+     * // Update many PriorityQueueJobs
+     * const priorityQueueJob = await prisma.priorityQueueJob.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PriorityQueueJobs and only return the `id`
+     * const priorityQueueJobWithIdOnly = await prisma.priorityQueueJob.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PriorityQueueJobUpdateManyAndReturnArgs>(args: SelectSubset<T, PriorityQueueJobUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PriorityQueueJob.
+     * @param {PriorityQueueJobUpsertArgs} args - Arguments to update or create a PriorityQueueJob.
+     * @example
+     * // Update or create a PriorityQueueJob
+     * const priorityQueueJob = await prisma.priorityQueueJob.upsert({
+     *   create: {
+     *     // ... data to create a PriorityQueueJob
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PriorityQueueJob we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PriorityQueueJobUpsertArgs>(args: SelectSubset<T, PriorityQueueJobUpsertArgs<ExtArgs>>): Prisma__PriorityQueueJobClient<$Result.GetResult<Prisma.$PriorityQueueJobPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PriorityQueueJobs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityQueueJobCountArgs} args - Arguments to filter PriorityQueueJobs to count.
+     * @example
+     * // Count the number of PriorityQueueJobs
+     * const count = await prisma.priorityQueueJob.count({
+     *   where: {
+     *     // ... the filter for the PriorityQueueJobs we want to count
+     *   }
+     * })
+    **/
+    count<T extends PriorityQueueJobCountArgs>(
+      args?: Subset<T, PriorityQueueJobCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PriorityQueueJobCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PriorityQueueJob.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityQueueJobAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PriorityQueueJobAggregateArgs>(args: Subset<T, PriorityQueueJobAggregateArgs>): Prisma.PrismaPromise<GetPriorityQueueJobAggregateType<T>>
+
+    /**
+     * Group by PriorityQueueJob.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityQueueJobGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PriorityQueueJobGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PriorityQueueJobGroupByArgs['orderBy'] }
+        : { orderBy?: PriorityQueueJobGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PriorityQueueJobGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPriorityQueueJobGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PriorityQueueJob model
+   */
+  readonly fields: PriorityQueueJobFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PriorityQueueJob.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PriorityQueueJobClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PriorityQueueJob model
+   */
+  interface PriorityQueueJobFieldRefs {
+    readonly id: FieldRef<"PriorityQueueJob", 'String'>
+    readonly emailJobId: FieldRef<"PriorityQueueJob", 'String'>
+    readonly userId: FieldRef<"PriorityQueueJob", 'String'>
+    readonly status: FieldRef<"PriorityQueueJob", 'PriorityStatus'>
+    readonly priorityScore: FieldRef<"PriorityQueueJob", 'Int'>
+    readonly congestionScore: FieldRef<"PriorityQueueJob", 'Int'>
+    readonly scheduledAt: FieldRef<"PriorityQueueJob", 'DateTime'>
+    readonly retryCount: FieldRef<"PriorityQueueJob", 'Int'>
+    readonly statusMessage: FieldRef<"PriorityQueueJob", 'String'>
+    readonly createdAt: FieldRef<"PriorityQueueJob", 'DateTime'>
+    readonly updatedAt: FieldRef<"PriorityQueueJob", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PriorityQueueJob findUnique
+   */
+  export type PriorityQueueJobFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityQueueJob to fetch.
+     */
+    where: PriorityQueueJobWhereUniqueInput
+  }
+
+  /**
+   * PriorityQueueJob findUniqueOrThrow
+   */
+  export type PriorityQueueJobFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityQueueJob to fetch.
+     */
+    where: PriorityQueueJobWhereUniqueInput
+  }
+
+  /**
+   * PriorityQueueJob findFirst
+   */
+  export type PriorityQueueJobFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityQueueJob to fetch.
+     */
+    where?: PriorityQueueJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PriorityQueueJobs to fetch.
+     */
+    orderBy?: PriorityQueueJobOrderByWithRelationInput | PriorityQueueJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PriorityQueueJobs.
+     */
+    cursor?: PriorityQueueJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PriorityQueueJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PriorityQueueJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PriorityQueueJobs.
+     */
+    distinct?: PriorityQueueJobScalarFieldEnum | PriorityQueueJobScalarFieldEnum[]
+  }
+
+  /**
+   * PriorityQueueJob findFirstOrThrow
+   */
+  export type PriorityQueueJobFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityQueueJob to fetch.
+     */
+    where?: PriorityQueueJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PriorityQueueJobs to fetch.
+     */
+    orderBy?: PriorityQueueJobOrderByWithRelationInput | PriorityQueueJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PriorityQueueJobs.
+     */
+    cursor?: PriorityQueueJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PriorityQueueJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PriorityQueueJobs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PriorityQueueJobs.
+     */
+    distinct?: PriorityQueueJobScalarFieldEnum | PriorityQueueJobScalarFieldEnum[]
+  }
+
+  /**
+   * PriorityQueueJob findMany
+   */
+  export type PriorityQueueJobFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityQueueJobs to fetch.
+     */
+    where?: PriorityQueueJobWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PriorityQueueJobs to fetch.
+     */
+    orderBy?: PriorityQueueJobOrderByWithRelationInput | PriorityQueueJobOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PriorityQueueJobs.
+     */
+    cursor?: PriorityQueueJobWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PriorityQueueJobs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PriorityQueueJobs.
+     */
+    skip?: number
+    distinct?: PriorityQueueJobScalarFieldEnum | PriorityQueueJobScalarFieldEnum[]
+  }
+
+  /**
+   * PriorityQueueJob create
+   */
+  export type PriorityQueueJobCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PriorityQueueJob.
+     */
+    data: XOR<PriorityQueueJobCreateInput, PriorityQueueJobUncheckedCreateInput>
+  }
+
+  /**
+   * PriorityQueueJob createMany
+   */
+  export type PriorityQueueJobCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PriorityQueueJobs.
+     */
+    data: PriorityQueueJobCreateManyInput | PriorityQueueJobCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PriorityQueueJob createManyAndReturn
+   */
+  export type PriorityQueueJobCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * The data used to create many PriorityQueueJobs.
+     */
+    data: PriorityQueueJobCreateManyInput | PriorityQueueJobCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PriorityQueueJob update
+   */
+  export type PriorityQueueJobUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PriorityQueueJob.
+     */
+    data: XOR<PriorityQueueJobUpdateInput, PriorityQueueJobUncheckedUpdateInput>
+    /**
+     * Choose, which PriorityQueueJob to update.
+     */
+    where: PriorityQueueJobWhereUniqueInput
+  }
+
+  /**
+   * PriorityQueueJob updateMany
+   */
+  export type PriorityQueueJobUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PriorityQueueJobs.
+     */
+    data: XOR<PriorityQueueJobUpdateManyMutationInput, PriorityQueueJobUncheckedUpdateManyInput>
+    /**
+     * Filter which PriorityQueueJobs to update
+     */
+    where?: PriorityQueueJobWhereInput
+    /**
+     * Limit how many PriorityQueueJobs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PriorityQueueJob updateManyAndReturn
+   */
+  export type PriorityQueueJobUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * The data used to update PriorityQueueJobs.
+     */
+    data: XOR<PriorityQueueJobUpdateManyMutationInput, PriorityQueueJobUncheckedUpdateManyInput>
+    /**
+     * Filter which PriorityQueueJobs to update
+     */
+    where?: PriorityQueueJobWhereInput
+    /**
+     * Limit how many PriorityQueueJobs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PriorityQueueJob upsert
+   */
+  export type PriorityQueueJobUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PriorityQueueJob to update in case it exists.
+     */
+    where: PriorityQueueJobWhereUniqueInput
+    /**
+     * In case the PriorityQueueJob found by the `where` argument doesn't exist, create a new PriorityQueueJob with this data.
+     */
+    create: XOR<PriorityQueueJobCreateInput, PriorityQueueJobUncheckedCreateInput>
+    /**
+     * In case the PriorityQueueJob was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PriorityQueueJobUpdateInput, PriorityQueueJobUncheckedUpdateInput>
+  }
+
+  /**
+   * PriorityQueueJob delete
+   */
+  export type PriorityQueueJobDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+    /**
+     * Filter which PriorityQueueJob to delete.
+     */
+    where: PriorityQueueJobWhereUniqueInput
+  }
+
+  /**
+   * PriorityQueueJob deleteMany
+   */
+  export type PriorityQueueJobDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PriorityQueueJobs to delete
+     */
+    where?: PriorityQueueJobWhereInput
+    /**
+     * Limit how many PriorityQueueJobs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PriorityQueueJob without action
+   */
+  export type PriorityQueueJobDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityQueueJob
+     */
+    select?: PriorityQueueJobSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityQueueJob
+     */
+    omit?: PriorityQueueJobOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model SmtpSignalLog
+   */
+
+  export type AggregateSmtpSignalLog = {
+    _count: SmtpSignalLogCountAggregateOutputType | null
+    _avg: SmtpSignalLogAvgAggregateOutputType | null
+    _sum: SmtpSignalLogSumAggregateOutputType | null
+    _min: SmtpSignalLogMinAggregateOutputType | null
+    _max: SmtpSignalLogMaxAggregateOutputType | null
+  }
+
+  export type SmtpSignalLogAvgAggregateOutputType = {
+    tcpConnectMs: number | null
+    greetingDelayMs: number | null
+    tlsHandshakeMs: number | null
+    mailFromMs: number | null
+    rcptToMs: number | null
+    dataMs: number | null
+    congestionScore: number | null
+  }
+
+  export type SmtpSignalLogSumAggregateOutputType = {
+    tcpConnectMs: number | null
+    greetingDelayMs: number | null
+    tlsHandshakeMs: number | null
+    mailFromMs: number | null
+    rcptToMs: number | null
+    dataMs: number | null
+    congestionScore: number | null
+  }
+
+  export type SmtpSignalLogMinAggregateOutputType = {
+    id: string | null
+    senderId: string | null
+    recipientDomain: string | null
+    tcpConnectMs: number | null
+    greetingDelayMs: number | null
+    tlsHandshakeMs: number | null
+    mailFromMs: number | null
+    rcptToMs: number | null
+    dataMs: number | null
+    congestionScore: number | null
+    recordedAt: Date | null
+  }
+
+  export type SmtpSignalLogMaxAggregateOutputType = {
+    id: string | null
+    senderId: string | null
+    recipientDomain: string | null
+    tcpConnectMs: number | null
+    greetingDelayMs: number | null
+    tlsHandshakeMs: number | null
+    mailFromMs: number | null
+    rcptToMs: number | null
+    dataMs: number | null
+    congestionScore: number | null
+    recordedAt: Date | null
+  }
+
+  export type SmtpSignalLogCountAggregateOutputType = {
+    id: number
+    senderId: number
+    recipientDomain: number
+    tcpConnectMs: number
+    greetingDelayMs: number
+    tlsHandshakeMs: number
+    mailFromMs: number
+    rcptToMs: number
+    dataMs: number
+    congestionScore: number
+    recordedAt: number
+    _all: number
+  }
+
+
+  export type SmtpSignalLogAvgAggregateInputType = {
+    tcpConnectMs?: true
+    greetingDelayMs?: true
+    tlsHandshakeMs?: true
+    mailFromMs?: true
+    rcptToMs?: true
+    dataMs?: true
+    congestionScore?: true
+  }
+
+  export type SmtpSignalLogSumAggregateInputType = {
+    tcpConnectMs?: true
+    greetingDelayMs?: true
+    tlsHandshakeMs?: true
+    mailFromMs?: true
+    rcptToMs?: true
+    dataMs?: true
+    congestionScore?: true
+  }
+
+  export type SmtpSignalLogMinAggregateInputType = {
+    id?: true
+    senderId?: true
+    recipientDomain?: true
+    tcpConnectMs?: true
+    greetingDelayMs?: true
+    tlsHandshakeMs?: true
+    mailFromMs?: true
+    rcptToMs?: true
+    dataMs?: true
+    congestionScore?: true
+    recordedAt?: true
+  }
+
+  export type SmtpSignalLogMaxAggregateInputType = {
+    id?: true
+    senderId?: true
+    recipientDomain?: true
+    tcpConnectMs?: true
+    greetingDelayMs?: true
+    tlsHandshakeMs?: true
+    mailFromMs?: true
+    rcptToMs?: true
+    dataMs?: true
+    congestionScore?: true
+    recordedAt?: true
+  }
+
+  export type SmtpSignalLogCountAggregateInputType = {
+    id?: true
+    senderId?: true
+    recipientDomain?: true
+    tcpConnectMs?: true
+    greetingDelayMs?: true
+    tlsHandshakeMs?: true
+    mailFromMs?: true
+    rcptToMs?: true
+    dataMs?: true
+    congestionScore?: true
+    recordedAt?: true
+    _all?: true
+  }
+
+  export type SmtpSignalLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SmtpSignalLog to aggregate.
+     */
+    where?: SmtpSignalLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SmtpSignalLogs to fetch.
+     */
+    orderBy?: SmtpSignalLogOrderByWithRelationInput | SmtpSignalLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SmtpSignalLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SmtpSignalLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SmtpSignalLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SmtpSignalLogs
+    **/
+    _count?: true | SmtpSignalLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SmtpSignalLogAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SmtpSignalLogSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SmtpSignalLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SmtpSignalLogMaxAggregateInputType
+  }
+
+  export type GetSmtpSignalLogAggregateType<T extends SmtpSignalLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateSmtpSignalLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSmtpSignalLog[P]>
+      : GetScalarType<T[P], AggregateSmtpSignalLog[P]>
+  }
+
+
+
+
+  export type SmtpSignalLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SmtpSignalLogWhereInput
+    orderBy?: SmtpSignalLogOrderByWithAggregationInput | SmtpSignalLogOrderByWithAggregationInput[]
+    by: SmtpSignalLogScalarFieldEnum[] | SmtpSignalLogScalarFieldEnum
+    having?: SmtpSignalLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SmtpSignalLogCountAggregateInputType | true
+    _avg?: SmtpSignalLogAvgAggregateInputType
+    _sum?: SmtpSignalLogSumAggregateInputType
+    _min?: SmtpSignalLogMinAggregateInputType
+    _max?: SmtpSignalLogMaxAggregateInputType
+  }
+
+  export type SmtpSignalLogGroupByOutputType = {
+    id: string
+    senderId: string
+    recipientDomain: string
+    tcpConnectMs: number
+    greetingDelayMs: number
+    tlsHandshakeMs: number
+    mailFromMs: number
+    rcptToMs: number
+    dataMs: number
+    congestionScore: number
+    recordedAt: Date
+    _count: SmtpSignalLogCountAggregateOutputType | null
+    _avg: SmtpSignalLogAvgAggregateOutputType | null
+    _sum: SmtpSignalLogSumAggregateOutputType | null
+    _min: SmtpSignalLogMinAggregateOutputType | null
+    _max: SmtpSignalLogMaxAggregateOutputType | null
+  }
+
+  type GetSmtpSignalLogGroupByPayload<T extends SmtpSignalLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SmtpSignalLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SmtpSignalLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SmtpSignalLogGroupByOutputType[P]>
+            : GetScalarType<T[P], SmtpSignalLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SmtpSignalLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    senderId?: boolean
+    recipientDomain?: boolean
+    tcpConnectMs?: boolean
+    greetingDelayMs?: boolean
+    tlsHandshakeMs?: boolean
+    mailFromMs?: boolean
+    rcptToMs?: boolean
+    dataMs?: boolean
+    congestionScore?: boolean
+    recordedAt?: boolean
+  }, ExtArgs["result"]["smtpSignalLog"]>
+
+  export type SmtpSignalLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    senderId?: boolean
+    recipientDomain?: boolean
+    tcpConnectMs?: boolean
+    greetingDelayMs?: boolean
+    tlsHandshakeMs?: boolean
+    mailFromMs?: boolean
+    rcptToMs?: boolean
+    dataMs?: boolean
+    congestionScore?: boolean
+    recordedAt?: boolean
+  }, ExtArgs["result"]["smtpSignalLog"]>
+
+  export type SmtpSignalLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    senderId?: boolean
+    recipientDomain?: boolean
+    tcpConnectMs?: boolean
+    greetingDelayMs?: boolean
+    tlsHandshakeMs?: boolean
+    mailFromMs?: boolean
+    rcptToMs?: boolean
+    dataMs?: boolean
+    congestionScore?: boolean
+    recordedAt?: boolean
+  }, ExtArgs["result"]["smtpSignalLog"]>
+
+  export type SmtpSignalLogSelectScalar = {
+    id?: boolean
+    senderId?: boolean
+    recipientDomain?: boolean
+    tcpConnectMs?: boolean
+    greetingDelayMs?: boolean
+    tlsHandshakeMs?: boolean
+    mailFromMs?: boolean
+    rcptToMs?: boolean
+    dataMs?: boolean
+    congestionScore?: boolean
+    recordedAt?: boolean
+  }
+
+  export type SmtpSignalLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "senderId" | "recipientDomain" | "tcpConnectMs" | "greetingDelayMs" | "tlsHandshakeMs" | "mailFromMs" | "rcptToMs" | "dataMs" | "congestionScore" | "recordedAt", ExtArgs["result"]["smtpSignalLog"]>
+
+  export type $SmtpSignalLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SmtpSignalLog"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      senderId: string
+      recipientDomain: string
+      tcpConnectMs: number
+      greetingDelayMs: number
+      tlsHandshakeMs: number
+      mailFromMs: number
+      rcptToMs: number
+      dataMs: number
+      congestionScore: number
+      recordedAt: Date
+    }, ExtArgs["result"]["smtpSignalLog"]>
+    composites: {}
+  }
+
+  type SmtpSignalLogGetPayload<S extends boolean | null | undefined | SmtpSignalLogDefaultArgs> = $Result.GetResult<Prisma.$SmtpSignalLogPayload, S>
+
+  type SmtpSignalLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SmtpSignalLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SmtpSignalLogCountAggregateInputType | true
+    }
+
+  export interface SmtpSignalLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SmtpSignalLog'], meta: { name: 'SmtpSignalLog' } }
+    /**
+     * Find zero or one SmtpSignalLog that matches the filter.
+     * @param {SmtpSignalLogFindUniqueArgs} args - Arguments to find a SmtpSignalLog
+     * @example
+     * // Get one SmtpSignalLog
+     * const smtpSignalLog = await prisma.smtpSignalLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SmtpSignalLogFindUniqueArgs>(args: SelectSubset<T, SmtpSignalLogFindUniqueArgs<ExtArgs>>): Prisma__SmtpSignalLogClient<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SmtpSignalLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SmtpSignalLogFindUniqueOrThrowArgs} args - Arguments to find a SmtpSignalLog
+     * @example
+     * // Get one SmtpSignalLog
+     * const smtpSignalLog = await prisma.smtpSignalLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SmtpSignalLogFindUniqueOrThrowArgs>(args: SelectSubset<T, SmtpSignalLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SmtpSignalLogClient<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SmtpSignalLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SmtpSignalLogFindFirstArgs} args - Arguments to find a SmtpSignalLog
+     * @example
+     * // Get one SmtpSignalLog
+     * const smtpSignalLog = await prisma.smtpSignalLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SmtpSignalLogFindFirstArgs>(args?: SelectSubset<T, SmtpSignalLogFindFirstArgs<ExtArgs>>): Prisma__SmtpSignalLogClient<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SmtpSignalLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SmtpSignalLogFindFirstOrThrowArgs} args - Arguments to find a SmtpSignalLog
+     * @example
+     * // Get one SmtpSignalLog
+     * const smtpSignalLog = await prisma.smtpSignalLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SmtpSignalLogFindFirstOrThrowArgs>(args?: SelectSubset<T, SmtpSignalLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__SmtpSignalLogClient<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SmtpSignalLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SmtpSignalLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SmtpSignalLogs
+     * const smtpSignalLogs = await prisma.smtpSignalLog.findMany()
+     * 
+     * // Get first 10 SmtpSignalLogs
+     * const smtpSignalLogs = await prisma.smtpSignalLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const smtpSignalLogWithIdOnly = await prisma.smtpSignalLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SmtpSignalLogFindManyArgs>(args?: SelectSubset<T, SmtpSignalLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SmtpSignalLog.
+     * @param {SmtpSignalLogCreateArgs} args - Arguments to create a SmtpSignalLog.
+     * @example
+     * // Create one SmtpSignalLog
+     * const SmtpSignalLog = await prisma.smtpSignalLog.create({
+     *   data: {
+     *     // ... data to create a SmtpSignalLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends SmtpSignalLogCreateArgs>(args: SelectSubset<T, SmtpSignalLogCreateArgs<ExtArgs>>): Prisma__SmtpSignalLogClient<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SmtpSignalLogs.
+     * @param {SmtpSignalLogCreateManyArgs} args - Arguments to create many SmtpSignalLogs.
+     * @example
+     * // Create many SmtpSignalLogs
+     * const smtpSignalLog = await prisma.smtpSignalLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SmtpSignalLogCreateManyArgs>(args?: SelectSubset<T, SmtpSignalLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SmtpSignalLogs and returns the data saved in the database.
+     * @param {SmtpSignalLogCreateManyAndReturnArgs} args - Arguments to create many SmtpSignalLogs.
+     * @example
+     * // Create many SmtpSignalLogs
+     * const smtpSignalLog = await prisma.smtpSignalLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SmtpSignalLogs and only return the `id`
+     * const smtpSignalLogWithIdOnly = await prisma.smtpSignalLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SmtpSignalLogCreateManyAndReturnArgs>(args?: SelectSubset<T, SmtpSignalLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a SmtpSignalLog.
+     * @param {SmtpSignalLogDeleteArgs} args - Arguments to delete one SmtpSignalLog.
+     * @example
+     * // Delete one SmtpSignalLog
+     * const SmtpSignalLog = await prisma.smtpSignalLog.delete({
+     *   where: {
+     *     // ... filter to delete one SmtpSignalLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SmtpSignalLogDeleteArgs>(args: SelectSubset<T, SmtpSignalLogDeleteArgs<ExtArgs>>): Prisma__SmtpSignalLogClient<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SmtpSignalLog.
+     * @param {SmtpSignalLogUpdateArgs} args - Arguments to update one SmtpSignalLog.
+     * @example
+     * // Update one SmtpSignalLog
+     * const smtpSignalLog = await prisma.smtpSignalLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SmtpSignalLogUpdateArgs>(args: SelectSubset<T, SmtpSignalLogUpdateArgs<ExtArgs>>): Prisma__SmtpSignalLogClient<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SmtpSignalLogs.
+     * @param {SmtpSignalLogDeleteManyArgs} args - Arguments to filter SmtpSignalLogs to delete.
+     * @example
+     * // Delete a few SmtpSignalLogs
+     * const { count } = await prisma.smtpSignalLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SmtpSignalLogDeleteManyArgs>(args?: SelectSubset<T, SmtpSignalLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SmtpSignalLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SmtpSignalLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SmtpSignalLogs
+     * const smtpSignalLog = await prisma.smtpSignalLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SmtpSignalLogUpdateManyArgs>(args: SelectSubset<T, SmtpSignalLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SmtpSignalLogs and returns the data updated in the database.
+     * @param {SmtpSignalLogUpdateManyAndReturnArgs} args - Arguments to update many SmtpSignalLogs.
+     * @example
+     * // Update many SmtpSignalLogs
+     * const smtpSignalLog = await prisma.smtpSignalLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more SmtpSignalLogs and only return the `id`
+     * const smtpSignalLogWithIdOnly = await prisma.smtpSignalLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends SmtpSignalLogUpdateManyAndReturnArgs>(args: SelectSubset<T, SmtpSignalLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one SmtpSignalLog.
+     * @param {SmtpSignalLogUpsertArgs} args - Arguments to update or create a SmtpSignalLog.
+     * @example
+     * // Update or create a SmtpSignalLog
+     * const smtpSignalLog = await prisma.smtpSignalLog.upsert({
+     *   create: {
+     *     // ... data to create a SmtpSignalLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SmtpSignalLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SmtpSignalLogUpsertArgs>(args: SelectSubset<T, SmtpSignalLogUpsertArgs<ExtArgs>>): Prisma__SmtpSignalLogClient<$Result.GetResult<Prisma.$SmtpSignalLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of SmtpSignalLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SmtpSignalLogCountArgs} args - Arguments to filter SmtpSignalLogs to count.
+     * @example
+     * // Count the number of SmtpSignalLogs
+     * const count = await prisma.smtpSignalLog.count({
+     *   where: {
+     *     // ... the filter for the SmtpSignalLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends SmtpSignalLogCountArgs>(
+      args?: Subset<T, SmtpSignalLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SmtpSignalLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SmtpSignalLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SmtpSignalLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SmtpSignalLogAggregateArgs>(args: Subset<T, SmtpSignalLogAggregateArgs>): Prisma.PrismaPromise<GetSmtpSignalLogAggregateType<T>>
+
+    /**
+     * Group by SmtpSignalLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SmtpSignalLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SmtpSignalLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SmtpSignalLogGroupByArgs['orderBy'] }
+        : { orderBy?: SmtpSignalLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SmtpSignalLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSmtpSignalLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SmtpSignalLog model
+   */
+  readonly fields: SmtpSignalLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SmtpSignalLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SmtpSignalLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SmtpSignalLog model
+   */
+  interface SmtpSignalLogFieldRefs {
+    readonly id: FieldRef<"SmtpSignalLog", 'String'>
+    readonly senderId: FieldRef<"SmtpSignalLog", 'String'>
+    readonly recipientDomain: FieldRef<"SmtpSignalLog", 'String'>
+    readonly tcpConnectMs: FieldRef<"SmtpSignalLog", 'Int'>
+    readonly greetingDelayMs: FieldRef<"SmtpSignalLog", 'Int'>
+    readonly tlsHandshakeMs: FieldRef<"SmtpSignalLog", 'Int'>
+    readonly mailFromMs: FieldRef<"SmtpSignalLog", 'Int'>
+    readonly rcptToMs: FieldRef<"SmtpSignalLog", 'Int'>
+    readonly dataMs: FieldRef<"SmtpSignalLog", 'Int'>
+    readonly congestionScore: FieldRef<"SmtpSignalLog", 'Int'>
+    readonly recordedAt: FieldRef<"SmtpSignalLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SmtpSignalLog findUnique
+   */
+  export type SmtpSignalLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * Filter, which SmtpSignalLog to fetch.
+     */
+    where: SmtpSignalLogWhereUniqueInput
+  }
+
+  /**
+   * SmtpSignalLog findUniqueOrThrow
+   */
+  export type SmtpSignalLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * Filter, which SmtpSignalLog to fetch.
+     */
+    where: SmtpSignalLogWhereUniqueInput
+  }
+
+  /**
+   * SmtpSignalLog findFirst
+   */
+  export type SmtpSignalLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * Filter, which SmtpSignalLog to fetch.
+     */
+    where?: SmtpSignalLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SmtpSignalLogs to fetch.
+     */
+    orderBy?: SmtpSignalLogOrderByWithRelationInput | SmtpSignalLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SmtpSignalLogs.
+     */
+    cursor?: SmtpSignalLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SmtpSignalLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SmtpSignalLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SmtpSignalLogs.
+     */
+    distinct?: SmtpSignalLogScalarFieldEnum | SmtpSignalLogScalarFieldEnum[]
+  }
+
+  /**
+   * SmtpSignalLog findFirstOrThrow
+   */
+  export type SmtpSignalLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * Filter, which SmtpSignalLog to fetch.
+     */
+    where?: SmtpSignalLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SmtpSignalLogs to fetch.
+     */
+    orderBy?: SmtpSignalLogOrderByWithRelationInput | SmtpSignalLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SmtpSignalLogs.
+     */
+    cursor?: SmtpSignalLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SmtpSignalLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SmtpSignalLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SmtpSignalLogs.
+     */
+    distinct?: SmtpSignalLogScalarFieldEnum | SmtpSignalLogScalarFieldEnum[]
+  }
+
+  /**
+   * SmtpSignalLog findMany
+   */
+  export type SmtpSignalLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * Filter, which SmtpSignalLogs to fetch.
+     */
+    where?: SmtpSignalLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SmtpSignalLogs to fetch.
+     */
+    orderBy?: SmtpSignalLogOrderByWithRelationInput | SmtpSignalLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SmtpSignalLogs.
+     */
+    cursor?: SmtpSignalLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SmtpSignalLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SmtpSignalLogs.
+     */
+    skip?: number
+    distinct?: SmtpSignalLogScalarFieldEnum | SmtpSignalLogScalarFieldEnum[]
+  }
+
+  /**
+   * SmtpSignalLog create
+   */
+  export type SmtpSignalLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * The data needed to create a SmtpSignalLog.
+     */
+    data: XOR<SmtpSignalLogCreateInput, SmtpSignalLogUncheckedCreateInput>
+  }
+
+  /**
+   * SmtpSignalLog createMany
+   */
+  export type SmtpSignalLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SmtpSignalLogs.
+     */
+    data: SmtpSignalLogCreateManyInput | SmtpSignalLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SmtpSignalLog createManyAndReturn
+   */
+  export type SmtpSignalLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many SmtpSignalLogs.
+     */
+    data: SmtpSignalLogCreateManyInput | SmtpSignalLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SmtpSignalLog update
+   */
+  export type SmtpSignalLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * The data needed to update a SmtpSignalLog.
+     */
+    data: XOR<SmtpSignalLogUpdateInput, SmtpSignalLogUncheckedUpdateInput>
+    /**
+     * Choose, which SmtpSignalLog to update.
+     */
+    where: SmtpSignalLogWhereUniqueInput
+  }
+
+  /**
+   * SmtpSignalLog updateMany
+   */
+  export type SmtpSignalLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SmtpSignalLogs.
+     */
+    data: XOR<SmtpSignalLogUpdateManyMutationInput, SmtpSignalLogUncheckedUpdateManyInput>
+    /**
+     * Filter which SmtpSignalLogs to update
+     */
+    where?: SmtpSignalLogWhereInput
+    /**
+     * Limit how many SmtpSignalLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SmtpSignalLog updateManyAndReturn
+   */
+  export type SmtpSignalLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * The data used to update SmtpSignalLogs.
+     */
+    data: XOR<SmtpSignalLogUpdateManyMutationInput, SmtpSignalLogUncheckedUpdateManyInput>
+    /**
+     * Filter which SmtpSignalLogs to update
+     */
+    where?: SmtpSignalLogWhereInput
+    /**
+     * Limit how many SmtpSignalLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SmtpSignalLog upsert
+   */
+  export type SmtpSignalLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * The filter to search for the SmtpSignalLog to update in case it exists.
+     */
+    where: SmtpSignalLogWhereUniqueInput
+    /**
+     * In case the SmtpSignalLog found by the `where` argument doesn't exist, create a new SmtpSignalLog with this data.
+     */
+    create: XOR<SmtpSignalLogCreateInput, SmtpSignalLogUncheckedCreateInput>
+    /**
+     * In case the SmtpSignalLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SmtpSignalLogUpdateInput, SmtpSignalLogUncheckedUpdateInput>
+  }
+
+  /**
+   * SmtpSignalLog delete
+   */
+  export type SmtpSignalLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+    /**
+     * Filter which SmtpSignalLog to delete.
+     */
+    where: SmtpSignalLogWhereUniqueInput
+  }
+
+  /**
+   * SmtpSignalLog deleteMany
+   */
+  export type SmtpSignalLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SmtpSignalLogs to delete
+     */
+    where?: SmtpSignalLogWhereInput
+    /**
+     * Limit how many SmtpSignalLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SmtpSignalLog without action
+   */
+  export type SmtpSignalLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SmtpSignalLog
+     */
+    select?: SmtpSignalLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SmtpSignalLog
+     */
+    omit?: SmtpSignalLogOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PriorityUserQuota
+   */
+
+  export type AggregatePriorityUserQuota = {
+    _count: PriorityUserQuotaCountAggregateOutputType | null
+    _avg: PriorityUserQuotaAvgAggregateOutputType | null
+    _sum: PriorityUserQuotaSumAggregateOutputType | null
+    _min: PriorityUserQuotaMinAggregateOutputType | null
+    _max: PriorityUserQuotaMaxAggregateOutputType | null
+  }
+
+  export type PriorityUserQuotaAvgAggregateOutputType = {
+    dailyCount: number | null
+    dailyLimit: number | null
+  }
+
+  export type PriorityUserQuotaSumAggregateOutputType = {
+    dailyCount: number | null
+    dailyLimit: number | null
+  }
+
+  export type PriorityUserQuotaMinAggregateOutputType = {
+    userId: string | null
+    dailyCount: number | null
+    dailyLimit: number | null
+    dailyResetAt: Date | null
+    isEnabled: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PriorityUserQuotaMaxAggregateOutputType = {
+    userId: string | null
+    dailyCount: number | null
+    dailyLimit: number | null
+    dailyResetAt: Date | null
+    isEnabled: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PriorityUserQuotaCountAggregateOutputType = {
+    userId: number
+    dailyCount: number
+    dailyLimit: number
+    dailyResetAt: number
+    isEnabled: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PriorityUserQuotaAvgAggregateInputType = {
+    dailyCount?: true
+    dailyLimit?: true
+  }
+
+  export type PriorityUserQuotaSumAggregateInputType = {
+    dailyCount?: true
+    dailyLimit?: true
+  }
+
+  export type PriorityUserQuotaMinAggregateInputType = {
+    userId?: true
+    dailyCount?: true
+    dailyLimit?: true
+    dailyResetAt?: true
+    isEnabled?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PriorityUserQuotaMaxAggregateInputType = {
+    userId?: true
+    dailyCount?: true
+    dailyLimit?: true
+    dailyResetAt?: true
+    isEnabled?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PriorityUserQuotaCountAggregateInputType = {
+    userId?: true
+    dailyCount?: true
+    dailyLimit?: true
+    dailyResetAt?: true
+    isEnabled?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PriorityUserQuotaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PriorityUserQuota to aggregate.
+     */
+    where?: PriorityUserQuotaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PriorityUserQuotas to fetch.
+     */
+    orderBy?: PriorityUserQuotaOrderByWithRelationInput | PriorityUserQuotaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PriorityUserQuotaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PriorityUserQuotas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PriorityUserQuotas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PriorityUserQuotas
+    **/
+    _count?: true | PriorityUserQuotaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PriorityUserQuotaAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PriorityUserQuotaSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PriorityUserQuotaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PriorityUserQuotaMaxAggregateInputType
+  }
+
+  export type GetPriorityUserQuotaAggregateType<T extends PriorityUserQuotaAggregateArgs> = {
+        [P in keyof T & keyof AggregatePriorityUserQuota]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePriorityUserQuota[P]>
+      : GetScalarType<T[P], AggregatePriorityUserQuota[P]>
+  }
+
+
+
+
+  export type PriorityUserQuotaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PriorityUserQuotaWhereInput
+    orderBy?: PriorityUserQuotaOrderByWithAggregationInput | PriorityUserQuotaOrderByWithAggregationInput[]
+    by: PriorityUserQuotaScalarFieldEnum[] | PriorityUserQuotaScalarFieldEnum
+    having?: PriorityUserQuotaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PriorityUserQuotaCountAggregateInputType | true
+    _avg?: PriorityUserQuotaAvgAggregateInputType
+    _sum?: PriorityUserQuotaSumAggregateInputType
+    _min?: PriorityUserQuotaMinAggregateInputType
+    _max?: PriorityUserQuotaMaxAggregateInputType
+  }
+
+  export type PriorityUserQuotaGroupByOutputType = {
+    userId: string
+    dailyCount: number
+    dailyLimit: number
+    dailyResetAt: Date
+    isEnabled: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: PriorityUserQuotaCountAggregateOutputType | null
+    _avg: PriorityUserQuotaAvgAggregateOutputType | null
+    _sum: PriorityUserQuotaSumAggregateOutputType | null
+    _min: PriorityUserQuotaMinAggregateOutputType | null
+    _max: PriorityUserQuotaMaxAggregateOutputType | null
+  }
+
+  type GetPriorityUserQuotaGroupByPayload<T extends PriorityUserQuotaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PriorityUserQuotaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PriorityUserQuotaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PriorityUserQuotaGroupByOutputType[P]>
+            : GetScalarType<T[P], PriorityUserQuotaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PriorityUserQuotaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    userId?: boolean
+    dailyCount?: boolean
+    dailyLimit?: boolean
+    dailyResetAt?: boolean
+    isEnabled?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["priorityUserQuota"]>
+
+  export type PriorityUserQuotaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    userId?: boolean
+    dailyCount?: boolean
+    dailyLimit?: boolean
+    dailyResetAt?: boolean
+    isEnabled?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["priorityUserQuota"]>
+
+  export type PriorityUserQuotaSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    userId?: boolean
+    dailyCount?: boolean
+    dailyLimit?: boolean
+    dailyResetAt?: boolean
+    isEnabled?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["priorityUserQuota"]>
+
+  export type PriorityUserQuotaSelectScalar = {
+    userId?: boolean
+    dailyCount?: boolean
+    dailyLimit?: boolean
+    dailyResetAt?: boolean
+    isEnabled?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PriorityUserQuotaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"userId" | "dailyCount" | "dailyLimit" | "dailyResetAt" | "isEnabled" | "createdAt" | "updatedAt", ExtArgs["result"]["priorityUserQuota"]>
+
+  export type $PriorityUserQuotaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PriorityUserQuota"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      userId: string
+      dailyCount: number
+      dailyLimit: number
+      dailyResetAt: Date
+      isEnabled: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["priorityUserQuota"]>
+    composites: {}
+  }
+
+  type PriorityUserQuotaGetPayload<S extends boolean | null | undefined | PriorityUserQuotaDefaultArgs> = $Result.GetResult<Prisma.$PriorityUserQuotaPayload, S>
+
+  type PriorityUserQuotaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PriorityUserQuotaFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PriorityUserQuotaCountAggregateInputType | true
+    }
+
+  export interface PriorityUserQuotaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PriorityUserQuota'], meta: { name: 'PriorityUserQuota' } }
+    /**
+     * Find zero or one PriorityUserQuota that matches the filter.
+     * @param {PriorityUserQuotaFindUniqueArgs} args - Arguments to find a PriorityUserQuota
+     * @example
+     * // Get one PriorityUserQuota
+     * const priorityUserQuota = await prisma.priorityUserQuota.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PriorityUserQuotaFindUniqueArgs>(args: SelectSubset<T, PriorityUserQuotaFindUniqueArgs<ExtArgs>>): Prisma__PriorityUserQuotaClient<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PriorityUserQuota that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PriorityUserQuotaFindUniqueOrThrowArgs} args - Arguments to find a PriorityUserQuota
+     * @example
+     * // Get one PriorityUserQuota
+     * const priorityUserQuota = await prisma.priorityUserQuota.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PriorityUserQuotaFindUniqueOrThrowArgs>(args: SelectSubset<T, PriorityUserQuotaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PriorityUserQuotaClient<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PriorityUserQuota that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityUserQuotaFindFirstArgs} args - Arguments to find a PriorityUserQuota
+     * @example
+     * // Get one PriorityUserQuota
+     * const priorityUserQuota = await prisma.priorityUserQuota.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PriorityUserQuotaFindFirstArgs>(args?: SelectSubset<T, PriorityUserQuotaFindFirstArgs<ExtArgs>>): Prisma__PriorityUserQuotaClient<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PriorityUserQuota that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityUserQuotaFindFirstOrThrowArgs} args - Arguments to find a PriorityUserQuota
+     * @example
+     * // Get one PriorityUserQuota
+     * const priorityUserQuota = await prisma.priorityUserQuota.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PriorityUserQuotaFindFirstOrThrowArgs>(args?: SelectSubset<T, PriorityUserQuotaFindFirstOrThrowArgs<ExtArgs>>): Prisma__PriorityUserQuotaClient<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PriorityUserQuotas that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityUserQuotaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PriorityUserQuotas
+     * const priorityUserQuotas = await prisma.priorityUserQuota.findMany()
+     * 
+     * // Get first 10 PriorityUserQuotas
+     * const priorityUserQuotas = await prisma.priorityUserQuota.findMany({ take: 10 })
+     * 
+     * // Only select the `userId`
+     * const priorityUserQuotaWithUserIdOnly = await prisma.priorityUserQuota.findMany({ select: { userId: true } })
+     * 
+     */
+    findMany<T extends PriorityUserQuotaFindManyArgs>(args?: SelectSubset<T, PriorityUserQuotaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PriorityUserQuota.
+     * @param {PriorityUserQuotaCreateArgs} args - Arguments to create a PriorityUserQuota.
+     * @example
+     * // Create one PriorityUserQuota
+     * const PriorityUserQuota = await prisma.priorityUserQuota.create({
+     *   data: {
+     *     // ... data to create a PriorityUserQuota
+     *   }
+     * })
+     * 
+     */
+    create<T extends PriorityUserQuotaCreateArgs>(args: SelectSubset<T, PriorityUserQuotaCreateArgs<ExtArgs>>): Prisma__PriorityUserQuotaClient<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PriorityUserQuotas.
+     * @param {PriorityUserQuotaCreateManyArgs} args - Arguments to create many PriorityUserQuotas.
+     * @example
+     * // Create many PriorityUserQuotas
+     * const priorityUserQuota = await prisma.priorityUserQuota.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PriorityUserQuotaCreateManyArgs>(args?: SelectSubset<T, PriorityUserQuotaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PriorityUserQuotas and returns the data saved in the database.
+     * @param {PriorityUserQuotaCreateManyAndReturnArgs} args - Arguments to create many PriorityUserQuotas.
+     * @example
+     * // Create many PriorityUserQuotas
+     * const priorityUserQuota = await prisma.priorityUserQuota.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PriorityUserQuotas and only return the `userId`
+     * const priorityUserQuotaWithUserIdOnly = await prisma.priorityUserQuota.createManyAndReturn({
+     *   select: { userId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PriorityUserQuotaCreateManyAndReturnArgs>(args?: SelectSubset<T, PriorityUserQuotaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PriorityUserQuota.
+     * @param {PriorityUserQuotaDeleteArgs} args - Arguments to delete one PriorityUserQuota.
+     * @example
+     * // Delete one PriorityUserQuota
+     * const PriorityUserQuota = await prisma.priorityUserQuota.delete({
+     *   where: {
+     *     // ... filter to delete one PriorityUserQuota
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PriorityUserQuotaDeleteArgs>(args: SelectSubset<T, PriorityUserQuotaDeleteArgs<ExtArgs>>): Prisma__PriorityUserQuotaClient<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PriorityUserQuota.
+     * @param {PriorityUserQuotaUpdateArgs} args - Arguments to update one PriorityUserQuota.
+     * @example
+     * // Update one PriorityUserQuota
+     * const priorityUserQuota = await prisma.priorityUserQuota.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PriorityUserQuotaUpdateArgs>(args: SelectSubset<T, PriorityUserQuotaUpdateArgs<ExtArgs>>): Prisma__PriorityUserQuotaClient<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PriorityUserQuotas.
+     * @param {PriorityUserQuotaDeleteManyArgs} args - Arguments to filter PriorityUserQuotas to delete.
+     * @example
+     * // Delete a few PriorityUserQuotas
+     * const { count } = await prisma.priorityUserQuota.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PriorityUserQuotaDeleteManyArgs>(args?: SelectSubset<T, PriorityUserQuotaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PriorityUserQuotas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityUserQuotaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PriorityUserQuotas
+     * const priorityUserQuota = await prisma.priorityUserQuota.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PriorityUserQuotaUpdateManyArgs>(args: SelectSubset<T, PriorityUserQuotaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PriorityUserQuotas and returns the data updated in the database.
+     * @param {PriorityUserQuotaUpdateManyAndReturnArgs} args - Arguments to update many PriorityUserQuotas.
+     * @example
+     * // Update many PriorityUserQuotas
+     * const priorityUserQuota = await prisma.priorityUserQuota.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PriorityUserQuotas and only return the `userId`
+     * const priorityUserQuotaWithUserIdOnly = await prisma.priorityUserQuota.updateManyAndReturn({
+     *   select: { userId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PriorityUserQuotaUpdateManyAndReturnArgs>(args: SelectSubset<T, PriorityUserQuotaUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PriorityUserQuota.
+     * @param {PriorityUserQuotaUpsertArgs} args - Arguments to update or create a PriorityUserQuota.
+     * @example
+     * // Update or create a PriorityUserQuota
+     * const priorityUserQuota = await prisma.priorityUserQuota.upsert({
+     *   create: {
+     *     // ... data to create a PriorityUserQuota
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PriorityUserQuota we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PriorityUserQuotaUpsertArgs>(args: SelectSubset<T, PriorityUserQuotaUpsertArgs<ExtArgs>>): Prisma__PriorityUserQuotaClient<$Result.GetResult<Prisma.$PriorityUserQuotaPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PriorityUserQuotas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityUserQuotaCountArgs} args - Arguments to filter PriorityUserQuotas to count.
+     * @example
+     * // Count the number of PriorityUserQuotas
+     * const count = await prisma.priorityUserQuota.count({
+     *   where: {
+     *     // ... the filter for the PriorityUserQuotas we want to count
+     *   }
+     * })
+    **/
+    count<T extends PriorityUserQuotaCountArgs>(
+      args?: Subset<T, PriorityUserQuotaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PriorityUserQuotaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PriorityUserQuota.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityUserQuotaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PriorityUserQuotaAggregateArgs>(args: Subset<T, PriorityUserQuotaAggregateArgs>): Prisma.PrismaPromise<GetPriorityUserQuotaAggregateType<T>>
+
+    /**
+     * Group by PriorityUserQuota.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PriorityUserQuotaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PriorityUserQuotaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PriorityUserQuotaGroupByArgs['orderBy'] }
+        : { orderBy?: PriorityUserQuotaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PriorityUserQuotaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPriorityUserQuotaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PriorityUserQuota model
+   */
+  readonly fields: PriorityUserQuotaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PriorityUserQuota.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PriorityUserQuotaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PriorityUserQuota model
+   */
+  interface PriorityUserQuotaFieldRefs {
+    readonly userId: FieldRef<"PriorityUserQuota", 'String'>
+    readonly dailyCount: FieldRef<"PriorityUserQuota", 'Int'>
+    readonly dailyLimit: FieldRef<"PriorityUserQuota", 'Int'>
+    readonly dailyResetAt: FieldRef<"PriorityUserQuota", 'DateTime'>
+    readonly isEnabled: FieldRef<"PriorityUserQuota", 'Boolean'>
+    readonly createdAt: FieldRef<"PriorityUserQuota", 'DateTime'>
+    readonly updatedAt: FieldRef<"PriorityUserQuota", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PriorityUserQuota findUnique
+   */
+  export type PriorityUserQuotaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityUserQuota to fetch.
+     */
+    where: PriorityUserQuotaWhereUniqueInput
+  }
+
+  /**
+   * PriorityUserQuota findUniqueOrThrow
+   */
+  export type PriorityUserQuotaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityUserQuota to fetch.
+     */
+    where: PriorityUserQuotaWhereUniqueInput
+  }
+
+  /**
+   * PriorityUserQuota findFirst
+   */
+  export type PriorityUserQuotaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityUserQuota to fetch.
+     */
+    where?: PriorityUserQuotaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PriorityUserQuotas to fetch.
+     */
+    orderBy?: PriorityUserQuotaOrderByWithRelationInput | PriorityUserQuotaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PriorityUserQuotas.
+     */
+    cursor?: PriorityUserQuotaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PriorityUserQuotas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PriorityUserQuotas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PriorityUserQuotas.
+     */
+    distinct?: PriorityUserQuotaScalarFieldEnum | PriorityUserQuotaScalarFieldEnum[]
+  }
+
+  /**
+   * PriorityUserQuota findFirstOrThrow
+   */
+  export type PriorityUserQuotaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityUserQuota to fetch.
+     */
+    where?: PriorityUserQuotaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PriorityUserQuotas to fetch.
+     */
+    orderBy?: PriorityUserQuotaOrderByWithRelationInput | PriorityUserQuotaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PriorityUserQuotas.
+     */
+    cursor?: PriorityUserQuotaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PriorityUserQuotas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PriorityUserQuotas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PriorityUserQuotas.
+     */
+    distinct?: PriorityUserQuotaScalarFieldEnum | PriorityUserQuotaScalarFieldEnum[]
+  }
+
+  /**
+   * PriorityUserQuota findMany
+   */
+  export type PriorityUserQuotaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * Filter, which PriorityUserQuotas to fetch.
+     */
+    where?: PriorityUserQuotaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PriorityUserQuotas to fetch.
+     */
+    orderBy?: PriorityUserQuotaOrderByWithRelationInput | PriorityUserQuotaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PriorityUserQuotas.
+     */
+    cursor?: PriorityUserQuotaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PriorityUserQuotas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PriorityUserQuotas.
+     */
+    skip?: number
+    distinct?: PriorityUserQuotaScalarFieldEnum | PriorityUserQuotaScalarFieldEnum[]
+  }
+
+  /**
+   * PriorityUserQuota create
+   */
+  export type PriorityUserQuotaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PriorityUserQuota.
+     */
+    data: XOR<PriorityUserQuotaCreateInput, PriorityUserQuotaUncheckedCreateInput>
+  }
+
+  /**
+   * PriorityUserQuota createMany
+   */
+  export type PriorityUserQuotaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PriorityUserQuotas.
+     */
+    data: PriorityUserQuotaCreateManyInput | PriorityUserQuotaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PriorityUserQuota createManyAndReturn
+   */
+  export type PriorityUserQuotaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * The data used to create many PriorityUserQuotas.
+     */
+    data: PriorityUserQuotaCreateManyInput | PriorityUserQuotaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PriorityUserQuota update
+   */
+  export type PriorityUserQuotaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PriorityUserQuota.
+     */
+    data: XOR<PriorityUserQuotaUpdateInput, PriorityUserQuotaUncheckedUpdateInput>
+    /**
+     * Choose, which PriorityUserQuota to update.
+     */
+    where: PriorityUserQuotaWhereUniqueInput
+  }
+
+  /**
+   * PriorityUserQuota updateMany
+   */
+  export type PriorityUserQuotaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PriorityUserQuotas.
+     */
+    data: XOR<PriorityUserQuotaUpdateManyMutationInput, PriorityUserQuotaUncheckedUpdateManyInput>
+    /**
+     * Filter which PriorityUserQuotas to update
+     */
+    where?: PriorityUserQuotaWhereInput
+    /**
+     * Limit how many PriorityUserQuotas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PriorityUserQuota updateManyAndReturn
+   */
+  export type PriorityUserQuotaUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * The data used to update PriorityUserQuotas.
+     */
+    data: XOR<PriorityUserQuotaUpdateManyMutationInput, PriorityUserQuotaUncheckedUpdateManyInput>
+    /**
+     * Filter which PriorityUserQuotas to update
+     */
+    where?: PriorityUserQuotaWhereInput
+    /**
+     * Limit how many PriorityUserQuotas to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PriorityUserQuota upsert
+   */
+  export type PriorityUserQuotaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PriorityUserQuota to update in case it exists.
+     */
+    where: PriorityUserQuotaWhereUniqueInput
+    /**
+     * In case the PriorityUserQuota found by the `where` argument doesn't exist, create a new PriorityUserQuota with this data.
+     */
+    create: XOR<PriorityUserQuotaCreateInput, PriorityUserQuotaUncheckedCreateInput>
+    /**
+     * In case the PriorityUserQuota was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PriorityUserQuotaUpdateInput, PriorityUserQuotaUncheckedUpdateInput>
+  }
+
+  /**
+   * PriorityUserQuota delete
+   */
+  export type PriorityUserQuotaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+    /**
+     * Filter which PriorityUserQuota to delete.
+     */
+    where: PriorityUserQuotaWhereUniqueInput
+  }
+
+  /**
+   * PriorityUserQuota deleteMany
+   */
+  export type PriorityUserQuotaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PriorityUserQuotas to delete
+     */
+    where?: PriorityUserQuotaWhereInput
+    /**
+     * Limit how many PriorityUserQuotas to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PriorityUserQuota without action
+   */
+  export type PriorityUserQuotaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PriorityUserQuota
+     */
+    select?: PriorityUserQuotaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PriorityUserQuota
+     */
+    omit?: PriorityUserQuotaOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DomainRateLimit
+   */
+
+  export type AggregateDomainRateLimit = {
+    _count: DomainRateLimitCountAggregateOutputType | null
+    _avg: DomainRateLimitAvgAggregateOutputType | null
+    _sum: DomainRateLimitSumAggregateOutputType | null
+    _min: DomainRateLimitMinAggregateOutputType | null
+    _max: DomainRateLimitMaxAggregateOutputType | null
+  }
+
+  export type DomainRateLimitAvgAggregateOutputType = {
+    hourlyCount: number | null
+  }
+
+  export type DomainRateLimitSumAggregateOutputType = {
+    hourlyCount: number | null
+  }
+
+  export type DomainRateLimitMinAggregateOutputType = {
+    domain: string | null
+    hourlyCount: number | null
+    windowStart: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DomainRateLimitMaxAggregateOutputType = {
+    domain: string | null
+    hourlyCount: number | null
+    windowStart: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DomainRateLimitCountAggregateOutputType = {
+    domain: number
+    hourlyCount: number
+    windowStart: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type DomainRateLimitAvgAggregateInputType = {
+    hourlyCount?: true
+  }
+
+  export type DomainRateLimitSumAggregateInputType = {
+    hourlyCount?: true
+  }
+
+  export type DomainRateLimitMinAggregateInputType = {
+    domain?: true
+    hourlyCount?: true
+    windowStart?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DomainRateLimitMaxAggregateInputType = {
+    domain?: true
+    hourlyCount?: true
+    windowStart?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DomainRateLimitCountAggregateInputType = {
+    domain?: true
+    hourlyCount?: true
+    windowStart?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type DomainRateLimitAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DomainRateLimit to aggregate.
+     */
+    where?: DomainRateLimitWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DomainRateLimits to fetch.
+     */
+    orderBy?: DomainRateLimitOrderByWithRelationInput | DomainRateLimitOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DomainRateLimitWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DomainRateLimits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DomainRateLimits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DomainRateLimits
+    **/
+    _count?: true | DomainRateLimitCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: DomainRateLimitAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DomainRateLimitSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DomainRateLimitMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DomainRateLimitMaxAggregateInputType
+  }
+
+  export type GetDomainRateLimitAggregateType<T extends DomainRateLimitAggregateArgs> = {
+        [P in keyof T & keyof AggregateDomainRateLimit]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDomainRateLimit[P]>
+      : GetScalarType<T[P], AggregateDomainRateLimit[P]>
+  }
+
+
+
+
+  export type DomainRateLimitGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DomainRateLimitWhereInput
+    orderBy?: DomainRateLimitOrderByWithAggregationInput | DomainRateLimitOrderByWithAggregationInput[]
+    by: DomainRateLimitScalarFieldEnum[] | DomainRateLimitScalarFieldEnum
+    having?: DomainRateLimitScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DomainRateLimitCountAggregateInputType | true
+    _avg?: DomainRateLimitAvgAggregateInputType
+    _sum?: DomainRateLimitSumAggregateInputType
+    _min?: DomainRateLimitMinAggregateInputType
+    _max?: DomainRateLimitMaxAggregateInputType
+  }
+
+  export type DomainRateLimitGroupByOutputType = {
+    domain: string
+    hourlyCount: number
+    windowStart: Date
+    createdAt: Date
+    updatedAt: Date
+    _count: DomainRateLimitCountAggregateOutputType | null
+    _avg: DomainRateLimitAvgAggregateOutputType | null
+    _sum: DomainRateLimitSumAggregateOutputType | null
+    _min: DomainRateLimitMinAggregateOutputType | null
+    _max: DomainRateLimitMaxAggregateOutputType | null
+  }
+
+  type GetDomainRateLimitGroupByPayload<T extends DomainRateLimitGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DomainRateLimitGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DomainRateLimitGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DomainRateLimitGroupByOutputType[P]>
+            : GetScalarType<T[P], DomainRateLimitGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DomainRateLimitSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    domain?: boolean
+    hourlyCount?: boolean
+    windowStart?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["domainRateLimit"]>
+
+  export type DomainRateLimitSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    domain?: boolean
+    hourlyCount?: boolean
+    windowStart?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["domainRateLimit"]>
+
+  export type DomainRateLimitSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    domain?: boolean
+    hourlyCount?: boolean
+    windowStart?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["domainRateLimit"]>
+
+  export type DomainRateLimitSelectScalar = {
+    domain?: boolean
+    hourlyCount?: boolean
+    windowStart?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type DomainRateLimitOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"domain" | "hourlyCount" | "windowStart" | "createdAt" | "updatedAt", ExtArgs["result"]["domainRateLimit"]>
+
+  export type $DomainRateLimitPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DomainRateLimit"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      domain: string
+      hourlyCount: number
+      windowStart: Date
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["domainRateLimit"]>
+    composites: {}
+  }
+
+  type DomainRateLimitGetPayload<S extends boolean | null | undefined | DomainRateLimitDefaultArgs> = $Result.GetResult<Prisma.$DomainRateLimitPayload, S>
+
+  type DomainRateLimitCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DomainRateLimitFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DomainRateLimitCountAggregateInputType | true
+    }
+
+  export interface DomainRateLimitDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DomainRateLimit'], meta: { name: 'DomainRateLimit' } }
+    /**
+     * Find zero or one DomainRateLimit that matches the filter.
+     * @param {DomainRateLimitFindUniqueArgs} args - Arguments to find a DomainRateLimit
+     * @example
+     * // Get one DomainRateLimit
+     * const domainRateLimit = await prisma.domainRateLimit.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DomainRateLimitFindUniqueArgs>(args: SelectSubset<T, DomainRateLimitFindUniqueArgs<ExtArgs>>): Prisma__DomainRateLimitClient<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DomainRateLimit that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DomainRateLimitFindUniqueOrThrowArgs} args - Arguments to find a DomainRateLimit
+     * @example
+     * // Get one DomainRateLimit
+     * const domainRateLimit = await prisma.domainRateLimit.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DomainRateLimitFindUniqueOrThrowArgs>(args: SelectSubset<T, DomainRateLimitFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DomainRateLimitClient<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DomainRateLimit that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DomainRateLimitFindFirstArgs} args - Arguments to find a DomainRateLimit
+     * @example
+     * // Get one DomainRateLimit
+     * const domainRateLimit = await prisma.domainRateLimit.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DomainRateLimitFindFirstArgs>(args?: SelectSubset<T, DomainRateLimitFindFirstArgs<ExtArgs>>): Prisma__DomainRateLimitClient<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DomainRateLimit that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DomainRateLimitFindFirstOrThrowArgs} args - Arguments to find a DomainRateLimit
+     * @example
+     * // Get one DomainRateLimit
+     * const domainRateLimit = await prisma.domainRateLimit.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DomainRateLimitFindFirstOrThrowArgs>(args?: SelectSubset<T, DomainRateLimitFindFirstOrThrowArgs<ExtArgs>>): Prisma__DomainRateLimitClient<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DomainRateLimits that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DomainRateLimitFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DomainRateLimits
+     * const domainRateLimits = await prisma.domainRateLimit.findMany()
+     * 
+     * // Get first 10 DomainRateLimits
+     * const domainRateLimits = await prisma.domainRateLimit.findMany({ take: 10 })
+     * 
+     * // Only select the `domain`
+     * const domainRateLimitWithDomainOnly = await prisma.domainRateLimit.findMany({ select: { domain: true } })
+     * 
+     */
+    findMany<T extends DomainRateLimitFindManyArgs>(args?: SelectSubset<T, DomainRateLimitFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DomainRateLimit.
+     * @param {DomainRateLimitCreateArgs} args - Arguments to create a DomainRateLimit.
+     * @example
+     * // Create one DomainRateLimit
+     * const DomainRateLimit = await prisma.domainRateLimit.create({
+     *   data: {
+     *     // ... data to create a DomainRateLimit
+     *   }
+     * })
+     * 
+     */
+    create<T extends DomainRateLimitCreateArgs>(args: SelectSubset<T, DomainRateLimitCreateArgs<ExtArgs>>): Prisma__DomainRateLimitClient<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DomainRateLimits.
+     * @param {DomainRateLimitCreateManyArgs} args - Arguments to create many DomainRateLimits.
+     * @example
+     * // Create many DomainRateLimits
+     * const domainRateLimit = await prisma.domainRateLimit.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DomainRateLimitCreateManyArgs>(args?: SelectSubset<T, DomainRateLimitCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DomainRateLimits and returns the data saved in the database.
+     * @param {DomainRateLimitCreateManyAndReturnArgs} args - Arguments to create many DomainRateLimits.
+     * @example
+     * // Create many DomainRateLimits
+     * const domainRateLimit = await prisma.domainRateLimit.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DomainRateLimits and only return the `domain`
+     * const domainRateLimitWithDomainOnly = await prisma.domainRateLimit.createManyAndReturn({
+     *   select: { domain: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DomainRateLimitCreateManyAndReturnArgs>(args?: SelectSubset<T, DomainRateLimitCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DomainRateLimit.
+     * @param {DomainRateLimitDeleteArgs} args - Arguments to delete one DomainRateLimit.
+     * @example
+     * // Delete one DomainRateLimit
+     * const DomainRateLimit = await prisma.domainRateLimit.delete({
+     *   where: {
+     *     // ... filter to delete one DomainRateLimit
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DomainRateLimitDeleteArgs>(args: SelectSubset<T, DomainRateLimitDeleteArgs<ExtArgs>>): Prisma__DomainRateLimitClient<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DomainRateLimit.
+     * @param {DomainRateLimitUpdateArgs} args - Arguments to update one DomainRateLimit.
+     * @example
+     * // Update one DomainRateLimit
+     * const domainRateLimit = await prisma.domainRateLimit.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DomainRateLimitUpdateArgs>(args: SelectSubset<T, DomainRateLimitUpdateArgs<ExtArgs>>): Prisma__DomainRateLimitClient<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DomainRateLimits.
+     * @param {DomainRateLimitDeleteManyArgs} args - Arguments to filter DomainRateLimits to delete.
+     * @example
+     * // Delete a few DomainRateLimits
+     * const { count } = await prisma.domainRateLimit.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DomainRateLimitDeleteManyArgs>(args?: SelectSubset<T, DomainRateLimitDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DomainRateLimits.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DomainRateLimitUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DomainRateLimits
+     * const domainRateLimit = await prisma.domainRateLimit.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DomainRateLimitUpdateManyArgs>(args: SelectSubset<T, DomainRateLimitUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DomainRateLimits and returns the data updated in the database.
+     * @param {DomainRateLimitUpdateManyAndReturnArgs} args - Arguments to update many DomainRateLimits.
+     * @example
+     * // Update many DomainRateLimits
+     * const domainRateLimit = await prisma.domainRateLimit.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DomainRateLimits and only return the `domain`
+     * const domainRateLimitWithDomainOnly = await prisma.domainRateLimit.updateManyAndReturn({
+     *   select: { domain: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DomainRateLimitUpdateManyAndReturnArgs>(args: SelectSubset<T, DomainRateLimitUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DomainRateLimit.
+     * @param {DomainRateLimitUpsertArgs} args - Arguments to update or create a DomainRateLimit.
+     * @example
+     * // Update or create a DomainRateLimit
+     * const domainRateLimit = await prisma.domainRateLimit.upsert({
+     *   create: {
+     *     // ... data to create a DomainRateLimit
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DomainRateLimit we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DomainRateLimitUpsertArgs>(args: SelectSubset<T, DomainRateLimitUpsertArgs<ExtArgs>>): Prisma__DomainRateLimitClient<$Result.GetResult<Prisma.$DomainRateLimitPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DomainRateLimits.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DomainRateLimitCountArgs} args - Arguments to filter DomainRateLimits to count.
+     * @example
+     * // Count the number of DomainRateLimits
+     * const count = await prisma.domainRateLimit.count({
+     *   where: {
+     *     // ... the filter for the DomainRateLimits we want to count
+     *   }
+     * })
+    **/
+    count<T extends DomainRateLimitCountArgs>(
+      args?: Subset<T, DomainRateLimitCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DomainRateLimitCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DomainRateLimit.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DomainRateLimitAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DomainRateLimitAggregateArgs>(args: Subset<T, DomainRateLimitAggregateArgs>): Prisma.PrismaPromise<GetDomainRateLimitAggregateType<T>>
+
+    /**
+     * Group by DomainRateLimit.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DomainRateLimitGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DomainRateLimitGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DomainRateLimitGroupByArgs['orderBy'] }
+        : { orderBy?: DomainRateLimitGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DomainRateLimitGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDomainRateLimitGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DomainRateLimit model
+   */
+  readonly fields: DomainRateLimitFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DomainRateLimit.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DomainRateLimitClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DomainRateLimit model
+   */
+  interface DomainRateLimitFieldRefs {
+    readonly domain: FieldRef<"DomainRateLimit", 'String'>
+    readonly hourlyCount: FieldRef<"DomainRateLimit", 'Int'>
+    readonly windowStart: FieldRef<"DomainRateLimit", 'DateTime'>
+    readonly createdAt: FieldRef<"DomainRateLimit", 'DateTime'>
+    readonly updatedAt: FieldRef<"DomainRateLimit", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DomainRateLimit findUnique
+   */
+  export type DomainRateLimitFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which DomainRateLimit to fetch.
+     */
+    where: DomainRateLimitWhereUniqueInput
+  }
+
+  /**
+   * DomainRateLimit findUniqueOrThrow
+   */
+  export type DomainRateLimitFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which DomainRateLimit to fetch.
+     */
+    where: DomainRateLimitWhereUniqueInput
+  }
+
+  /**
+   * DomainRateLimit findFirst
+   */
+  export type DomainRateLimitFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which DomainRateLimit to fetch.
+     */
+    where?: DomainRateLimitWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DomainRateLimits to fetch.
+     */
+    orderBy?: DomainRateLimitOrderByWithRelationInput | DomainRateLimitOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DomainRateLimits.
+     */
+    cursor?: DomainRateLimitWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DomainRateLimits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DomainRateLimits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DomainRateLimits.
+     */
+    distinct?: DomainRateLimitScalarFieldEnum | DomainRateLimitScalarFieldEnum[]
+  }
+
+  /**
+   * DomainRateLimit findFirstOrThrow
+   */
+  export type DomainRateLimitFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which DomainRateLimit to fetch.
+     */
+    where?: DomainRateLimitWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DomainRateLimits to fetch.
+     */
+    orderBy?: DomainRateLimitOrderByWithRelationInput | DomainRateLimitOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DomainRateLimits.
+     */
+    cursor?: DomainRateLimitWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DomainRateLimits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DomainRateLimits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DomainRateLimits.
+     */
+    distinct?: DomainRateLimitScalarFieldEnum | DomainRateLimitScalarFieldEnum[]
+  }
+
+  /**
+   * DomainRateLimit findMany
+   */
+  export type DomainRateLimitFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which DomainRateLimits to fetch.
+     */
+    where?: DomainRateLimitWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DomainRateLimits to fetch.
+     */
+    orderBy?: DomainRateLimitOrderByWithRelationInput | DomainRateLimitOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DomainRateLimits.
+     */
+    cursor?: DomainRateLimitWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DomainRateLimits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DomainRateLimits.
+     */
+    skip?: number
+    distinct?: DomainRateLimitScalarFieldEnum | DomainRateLimitScalarFieldEnum[]
+  }
+
+  /**
+   * DomainRateLimit create
+   */
+  export type DomainRateLimitCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * The data needed to create a DomainRateLimit.
+     */
+    data: XOR<DomainRateLimitCreateInput, DomainRateLimitUncheckedCreateInput>
+  }
+
+  /**
+   * DomainRateLimit createMany
+   */
+  export type DomainRateLimitCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DomainRateLimits.
+     */
+    data: DomainRateLimitCreateManyInput | DomainRateLimitCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DomainRateLimit createManyAndReturn
+   */
+  export type DomainRateLimitCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * The data used to create many DomainRateLimits.
+     */
+    data: DomainRateLimitCreateManyInput | DomainRateLimitCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DomainRateLimit update
+   */
+  export type DomainRateLimitUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * The data needed to update a DomainRateLimit.
+     */
+    data: XOR<DomainRateLimitUpdateInput, DomainRateLimitUncheckedUpdateInput>
+    /**
+     * Choose, which DomainRateLimit to update.
+     */
+    where: DomainRateLimitWhereUniqueInput
+  }
+
+  /**
+   * DomainRateLimit updateMany
+   */
+  export type DomainRateLimitUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DomainRateLimits.
+     */
+    data: XOR<DomainRateLimitUpdateManyMutationInput, DomainRateLimitUncheckedUpdateManyInput>
+    /**
+     * Filter which DomainRateLimits to update
+     */
+    where?: DomainRateLimitWhereInput
+    /**
+     * Limit how many DomainRateLimits to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DomainRateLimit updateManyAndReturn
+   */
+  export type DomainRateLimitUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * The data used to update DomainRateLimits.
+     */
+    data: XOR<DomainRateLimitUpdateManyMutationInput, DomainRateLimitUncheckedUpdateManyInput>
+    /**
+     * Filter which DomainRateLimits to update
+     */
+    where?: DomainRateLimitWhereInput
+    /**
+     * Limit how many DomainRateLimits to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DomainRateLimit upsert
+   */
+  export type DomainRateLimitUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * The filter to search for the DomainRateLimit to update in case it exists.
+     */
+    where: DomainRateLimitWhereUniqueInput
+    /**
+     * In case the DomainRateLimit found by the `where` argument doesn't exist, create a new DomainRateLimit with this data.
+     */
+    create: XOR<DomainRateLimitCreateInput, DomainRateLimitUncheckedCreateInput>
+    /**
+     * In case the DomainRateLimit was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DomainRateLimitUpdateInput, DomainRateLimitUncheckedUpdateInput>
+  }
+
+  /**
+   * DomainRateLimit delete
+   */
+  export type DomainRateLimitDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+    /**
+     * Filter which DomainRateLimit to delete.
+     */
+    where: DomainRateLimitWhereUniqueInput
+  }
+
+  /**
+   * DomainRateLimit deleteMany
+   */
+  export type DomainRateLimitDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DomainRateLimits to delete
+     */
+    where?: DomainRateLimitWhereInput
+    /**
+     * Limit how many DomainRateLimits to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DomainRateLimit without action
+   */
+  export type DomainRateLimitDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DomainRateLimit
+     */
+    select?: DomainRateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DomainRateLimit
+     */
+    omit?: DomainRateLimitOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -21178,6 +25903,7 @@ export namespace Prisma {
     timezone: 'timezone',
     businessStartHour: 'businessStartHour',
     businessEndHour: 'businessEndHour',
+    isPriority: 'isPriority',
     createdAt: 'createdAt'
   };
 
@@ -21342,6 +26068,64 @@ export namespace Prisma {
   };
 
   export type TrackingEventScalarFieldEnum = (typeof TrackingEventScalarFieldEnum)[keyof typeof TrackingEventScalarFieldEnum]
+
+
+  export const PriorityQueueJobScalarFieldEnum: {
+    id: 'id',
+    emailJobId: 'emailJobId',
+    userId: 'userId',
+    status: 'status',
+    priorityScore: 'priorityScore',
+    congestionScore: 'congestionScore',
+    scheduledAt: 'scheduledAt',
+    retryCount: 'retryCount',
+    statusMessage: 'statusMessage',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PriorityQueueJobScalarFieldEnum = (typeof PriorityQueueJobScalarFieldEnum)[keyof typeof PriorityQueueJobScalarFieldEnum]
+
+
+  export const SmtpSignalLogScalarFieldEnum: {
+    id: 'id',
+    senderId: 'senderId',
+    recipientDomain: 'recipientDomain',
+    tcpConnectMs: 'tcpConnectMs',
+    greetingDelayMs: 'greetingDelayMs',
+    tlsHandshakeMs: 'tlsHandshakeMs',
+    mailFromMs: 'mailFromMs',
+    rcptToMs: 'rcptToMs',
+    dataMs: 'dataMs',
+    congestionScore: 'congestionScore',
+    recordedAt: 'recordedAt'
+  };
+
+  export type SmtpSignalLogScalarFieldEnum = (typeof SmtpSignalLogScalarFieldEnum)[keyof typeof SmtpSignalLogScalarFieldEnum]
+
+
+  export const PriorityUserQuotaScalarFieldEnum: {
+    userId: 'userId',
+    dailyCount: 'dailyCount',
+    dailyLimit: 'dailyLimit',
+    dailyResetAt: 'dailyResetAt',
+    isEnabled: 'isEnabled',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PriorityUserQuotaScalarFieldEnum = (typeof PriorityUserQuotaScalarFieldEnum)[keyof typeof PriorityUserQuotaScalarFieldEnum]
+
+
+  export const DomainRateLimitScalarFieldEnum: {
+    domain: 'domain',
+    hourlyCount: 'hourlyCount',
+    windowStart: 'windowStart',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type DomainRateLimitScalarFieldEnum = (typeof DomainRateLimitScalarFieldEnum)[keyof typeof DomainRateLimitScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -21513,6 +26297,20 @@ export namespace Prisma {
    * Reference to a field of type 'TrackingEventType[]'
    */
   export type ListEnumTrackingEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TrackingEventType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'PriorityStatus'
+   */
+  export type EnumPriorityStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PriorityStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'PriorityStatus[]'
+   */
+  export type ListEnumPriorityStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PriorityStatus[]'>
     
 
 
@@ -21826,6 +26624,7 @@ export namespace Prisma {
     timezone?: StringFilter<"EmailCampaign"> | string
     businessStartHour?: IntNullableFilter<"EmailCampaign"> | number | null
     businessEndHour?: IntNullableFilter<"EmailCampaign"> | number | null
+    isPriority?: BoolFilter<"EmailCampaign"> | boolean
     createdAt?: DateTimeFilter<"EmailCampaign"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     sender?: XOR<SenderNullableScalarRelationFilter, SenderWhereInput> | null
@@ -21853,6 +26652,7 @@ export namespace Prisma {
     timezone?: SortOrder
     businessStartHour?: SortOrderInput | SortOrder
     businessEndHour?: SortOrderInput | SortOrder
+    isPriority?: SortOrder
     createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
     sender?: SenderOrderByWithRelationInput
@@ -21883,6 +26683,7 @@ export namespace Prisma {
     timezone?: StringFilter<"EmailCampaign"> | string
     businessStartHour?: IntNullableFilter<"EmailCampaign"> | number | null
     businessEndHour?: IntNullableFilter<"EmailCampaign"> | number | null
+    isPriority?: BoolFilter<"EmailCampaign"> | boolean
     createdAt?: DateTimeFilter<"EmailCampaign"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     sender?: XOR<SenderNullableScalarRelationFilter, SenderWhereInput> | null
@@ -21910,6 +26711,7 @@ export namespace Prisma {
     timezone?: SortOrder
     businessStartHour?: SortOrderInput | SortOrder
     businessEndHour?: SortOrderInput | SortOrder
+    isPriority?: SortOrder
     createdAt?: SortOrder
     _count?: EmailCampaignCountOrderByAggregateInput
     _avg?: EmailCampaignAvgOrderByAggregateInput
@@ -21938,6 +26740,7 @@ export namespace Prisma {
     timezone?: StringWithAggregatesFilter<"EmailCampaign"> | string
     businessStartHour?: IntNullableWithAggregatesFilter<"EmailCampaign"> | number | null
     businessEndHour?: IntNullableWithAggregatesFilter<"EmailCampaign"> | number | null
+    isPriority?: BoolWithAggregatesFilter<"EmailCampaign"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"EmailCampaign"> | Date | string
   }
 
@@ -22775,6 +27578,292 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"TrackingEvent"> | Date | string
   }
 
+  export type PriorityQueueJobWhereInput = {
+    AND?: PriorityQueueJobWhereInput | PriorityQueueJobWhereInput[]
+    OR?: PriorityQueueJobWhereInput[]
+    NOT?: PriorityQueueJobWhereInput | PriorityQueueJobWhereInput[]
+    id?: StringFilter<"PriorityQueueJob"> | string
+    emailJobId?: StringFilter<"PriorityQueueJob"> | string
+    userId?: StringFilter<"PriorityQueueJob"> | string
+    status?: EnumPriorityStatusFilter<"PriorityQueueJob"> | $Enums.PriorityStatus
+    priorityScore?: IntFilter<"PriorityQueueJob"> | number
+    congestionScore?: IntFilter<"PriorityQueueJob"> | number
+    scheduledAt?: DateTimeFilter<"PriorityQueueJob"> | Date | string
+    retryCount?: IntFilter<"PriorityQueueJob"> | number
+    statusMessage?: StringNullableFilter<"PriorityQueueJob"> | string | null
+    createdAt?: DateTimeFilter<"PriorityQueueJob"> | Date | string
+    updatedAt?: DateTimeFilter<"PriorityQueueJob"> | Date | string
+  }
+
+  export type PriorityQueueJobOrderByWithRelationInput = {
+    id?: SortOrder
+    emailJobId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priorityScore?: SortOrder
+    congestionScore?: SortOrder
+    scheduledAt?: SortOrder
+    retryCount?: SortOrder
+    statusMessage?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PriorityQueueJobWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    emailJobId?: string
+    AND?: PriorityQueueJobWhereInput | PriorityQueueJobWhereInput[]
+    OR?: PriorityQueueJobWhereInput[]
+    NOT?: PriorityQueueJobWhereInput | PriorityQueueJobWhereInput[]
+    userId?: StringFilter<"PriorityQueueJob"> | string
+    status?: EnumPriorityStatusFilter<"PriorityQueueJob"> | $Enums.PriorityStatus
+    priorityScore?: IntFilter<"PriorityQueueJob"> | number
+    congestionScore?: IntFilter<"PriorityQueueJob"> | number
+    scheduledAt?: DateTimeFilter<"PriorityQueueJob"> | Date | string
+    retryCount?: IntFilter<"PriorityQueueJob"> | number
+    statusMessage?: StringNullableFilter<"PriorityQueueJob"> | string | null
+    createdAt?: DateTimeFilter<"PriorityQueueJob"> | Date | string
+    updatedAt?: DateTimeFilter<"PriorityQueueJob"> | Date | string
+  }, "id" | "emailJobId">
+
+  export type PriorityQueueJobOrderByWithAggregationInput = {
+    id?: SortOrder
+    emailJobId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priorityScore?: SortOrder
+    congestionScore?: SortOrder
+    scheduledAt?: SortOrder
+    retryCount?: SortOrder
+    statusMessage?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PriorityQueueJobCountOrderByAggregateInput
+    _avg?: PriorityQueueJobAvgOrderByAggregateInput
+    _max?: PriorityQueueJobMaxOrderByAggregateInput
+    _min?: PriorityQueueJobMinOrderByAggregateInput
+    _sum?: PriorityQueueJobSumOrderByAggregateInput
+  }
+
+  export type PriorityQueueJobScalarWhereWithAggregatesInput = {
+    AND?: PriorityQueueJobScalarWhereWithAggregatesInput | PriorityQueueJobScalarWhereWithAggregatesInput[]
+    OR?: PriorityQueueJobScalarWhereWithAggregatesInput[]
+    NOT?: PriorityQueueJobScalarWhereWithAggregatesInput | PriorityQueueJobScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PriorityQueueJob"> | string
+    emailJobId?: StringWithAggregatesFilter<"PriorityQueueJob"> | string
+    userId?: StringWithAggregatesFilter<"PriorityQueueJob"> | string
+    status?: EnumPriorityStatusWithAggregatesFilter<"PriorityQueueJob"> | $Enums.PriorityStatus
+    priorityScore?: IntWithAggregatesFilter<"PriorityQueueJob"> | number
+    congestionScore?: IntWithAggregatesFilter<"PriorityQueueJob"> | number
+    scheduledAt?: DateTimeWithAggregatesFilter<"PriorityQueueJob"> | Date | string
+    retryCount?: IntWithAggregatesFilter<"PriorityQueueJob"> | number
+    statusMessage?: StringNullableWithAggregatesFilter<"PriorityQueueJob"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PriorityQueueJob"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PriorityQueueJob"> | Date | string
+  }
+
+  export type SmtpSignalLogWhereInput = {
+    AND?: SmtpSignalLogWhereInput | SmtpSignalLogWhereInput[]
+    OR?: SmtpSignalLogWhereInput[]
+    NOT?: SmtpSignalLogWhereInput | SmtpSignalLogWhereInput[]
+    id?: StringFilter<"SmtpSignalLog"> | string
+    senderId?: StringFilter<"SmtpSignalLog"> | string
+    recipientDomain?: StringFilter<"SmtpSignalLog"> | string
+    tcpConnectMs?: IntFilter<"SmtpSignalLog"> | number
+    greetingDelayMs?: IntFilter<"SmtpSignalLog"> | number
+    tlsHandshakeMs?: IntFilter<"SmtpSignalLog"> | number
+    mailFromMs?: IntFilter<"SmtpSignalLog"> | number
+    rcptToMs?: IntFilter<"SmtpSignalLog"> | number
+    dataMs?: IntFilter<"SmtpSignalLog"> | number
+    congestionScore?: IntFilter<"SmtpSignalLog"> | number
+    recordedAt?: DateTimeFilter<"SmtpSignalLog"> | Date | string
+  }
+
+  export type SmtpSignalLogOrderByWithRelationInput = {
+    id?: SortOrder
+    senderId?: SortOrder
+    recipientDomain?: SortOrder
+    tcpConnectMs?: SortOrder
+    greetingDelayMs?: SortOrder
+    tlsHandshakeMs?: SortOrder
+    mailFromMs?: SortOrder
+    rcptToMs?: SortOrder
+    dataMs?: SortOrder
+    congestionScore?: SortOrder
+    recordedAt?: SortOrder
+  }
+
+  export type SmtpSignalLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SmtpSignalLogWhereInput | SmtpSignalLogWhereInput[]
+    OR?: SmtpSignalLogWhereInput[]
+    NOT?: SmtpSignalLogWhereInput | SmtpSignalLogWhereInput[]
+    senderId?: StringFilter<"SmtpSignalLog"> | string
+    recipientDomain?: StringFilter<"SmtpSignalLog"> | string
+    tcpConnectMs?: IntFilter<"SmtpSignalLog"> | number
+    greetingDelayMs?: IntFilter<"SmtpSignalLog"> | number
+    tlsHandshakeMs?: IntFilter<"SmtpSignalLog"> | number
+    mailFromMs?: IntFilter<"SmtpSignalLog"> | number
+    rcptToMs?: IntFilter<"SmtpSignalLog"> | number
+    dataMs?: IntFilter<"SmtpSignalLog"> | number
+    congestionScore?: IntFilter<"SmtpSignalLog"> | number
+    recordedAt?: DateTimeFilter<"SmtpSignalLog"> | Date | string
+  }, "id">
+
+  export type SmtpSignalLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    senderId?: SortOrder
+    recipientDomain?: SortOrder
+    tcpConnectMs?: SortOrder
+    greetingDelayMs?: SortOrder
+    tlsHandshakeMs?: SortOrder
+    mailFromMs?: SortOrder
+    rcptToMs?: SortOrder
+    dataMs?: SortOrder
+    congestionScore?: SortOrder
+    recordedAt?: SortOrder
+    _count?: SmtpSignalLogCountOrderByAggregateInput
+    _avg?: SmtpSignalLogAvgOrderByAggregateInput
+    _max?: SmtpSignalLogMaxOrderByAggregateInput
+    _min?: SmtpSignalLogMinOrderByAggregateInput
+    _sum?: SmtpSignalLogSumOrderByAggregateInput
+  }
+
+  export type SmtpSignalLogScalarWhereWithAggregatesInput = {
+    AND?: SmtpSignalLogScalarWhereWithAggregatesInput | SmtpSignalLogScalarWhereWithAggregatesInput[]
+    OR?: SmtpSignalLogScalarWhereWithAggregatesInput[]
+    NOT?: SmtpSignalLogScalarWhereWithAggregatesInput | SmtpSignalLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SmtpSignalLog"> | string
+    senderId?: StringWithAggregatesFilter<"SmtpSignalLog"> | string
+    recipientDomain?: StringWithAggregatesFilter<"SmtpSignalLog"> | string
+    tcpConnectMs?: IntWithAggregatesFilter<"SmtpSignalLog"> | number
+    greetingDelayMs?: IntWithAggregatesFilter<"SmtpSignalLog"> | number
+    tlsHandshakeMs?: IntWithAggregatesFilter<"SmtpSignalLog"> | number
+    mailFromMs?: IntWithAggregatesFilter<"SmtpSignalLog"> | number
+    rcptToMs?: IntWithAggregatesFilter<"SmtpSignalLog"> | number
+    dataMs?: IntWithAggregatesFilter<"SmtpSignalLog"> | number
+    congestionScore?: IntWithAggregatesFilter<"SmtpSignalLog"> | number
+    recordedAt?: DateTimeWithAggregatesFilter<"SmtpSignalLog"> | Date | string
+  }
+
+  export type PriorityUserQuotaWhereInput = {
+    AND?: PriorityUserQuotaWhereInput | PriorityUserQuotaWhereInput[]
+    OR?: PriorityUserQuotaWhereInput[]
+    NOT?: PriorityUserQuotaWhereInput | PriorityUserQuotaWhereInput[]
+    userId?: StringFilter<"PriorityUserQuota"> | string
+    dailyCount?: IntFilter<"PriorityUserQuota"> | number
+    dailyLimit?: IntFilter<"PriorityUserQuota"> | number
+    dailyResetAt?: DateTimeFilter<"PriorityUserQuota"> | Date | string
+    isEnabled?: BoolFilter<"PriorityUserQuota"> | boolean
+    createdAt?: DateTimeFilter<"PriorityUserQuota"> | Date | string
+    updatedAt?: DateTimeFilter<"PriorityUserQuota"> | Date | string
+  }
+
+  export type PriorityUserQuotaOrderByWithRelationInput = {
+    userId?: SortOrder
+    dailyCount?: SortOrder
+    dailyLimit?: SortOrder
+    dailyResetAt?: SortOrder
+    isEnabled?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PriorityUserQuotaWhereUniqueInput = Prisma.AtLeast<{
+    userId?: string
+    AND?: PriorityUserQuotaWhereInput | PriorityUserQuotaWhereInput[]
+    OR?: PriorityUserQuotaWhereInput[]
+    NOT?: PriorityUserQuotaWhereInput | PriorityUserQuotaWhereInput[]
+    dailyCount?: IntFilter<"PriorityUserQuota"> | number
+    dailyLimit?: IntFilter<"PriorityUserQuota"> | number
+    dailyResetAt?: DateTimeFilter<"PriorityUserQuota"> | Date | string
+    isEnabled?: BoolFilter<"PriorityUserQuota"> | boolean
+    createdAt?: DateTimeFilter<"PriorityUserQuota"> | Date | string
+    updatedAt?: DateTimeFilter<"PriorityUserQuota"> | Date | string
+  }, "userId">
+
+  export type PriorityUserQuotaOrderByWithAggregationInput = {
+    userId?: SortOrder
+    dailyCount?: SortOrder
+    dailyLimit?: SortOrder
+    dailyResetAt?: SortOrder
+    isEnabled?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PriorityUserQuotaCountOrderByAggregateInput
+    _avg?: PriorityUserQuotaAvgOrderByAggregateInput
+    _max?: PriorityUserQuotaMaxOrderByAggregateInput
+    _min?: PriorityUserQuotaMinOrderByAggregateInput
+    _sum?: PriorityUserQuotaSumOrderByAggregateInput
+  }
+
+  export type PriorityUserQuotaScalarWhereWithAggregatesInput = {
+    AND?: PriorityUserQuotaScalarWhereWithAggregatesInput | PriorityUserQuotaScalarWhereWithAggregatesInput[]
+    OR?: PriorityUserQuotaScalarWhereWithAggregatesInput[]
+    NOT?: PriorityUserQuotaScalarWhereWithAggregatesInput | PriorityUserQuotaScalarWhereWithAggregatesInput[]
+    userId?: StringWithAggregatesFilter<"PriorityUserQuota"> | string
+    dailyCount?: IntWithAggregatesFilter<"PriorityUserQuota"> | number
+    dailyLimit?: IntWithAggregatesFilter<"PriorityUserQuota"> | number
+    dailyResetAt?: DateTimeWithAggregatesFilter<"PriorityUserQuota"> | Date | string
+    isEnabled?: BoolWithAggregatesFilter<"PriorityUserQuota"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"PriorityUserQuota"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PriorityUserQuota"> | Date | string
+  }
+
+  export type DomainRateLimitWhereInput = {
+    AND?: DomainRateLimitWhereInput | DomainRateLimitWhereInput[]
+    OR?: DomainRateLimitWhereInput[]
+    NOT?: DomainRateLimitWhereInput | DomainRateLimitWhereInput[]
+    domain?: StringFilter<"DomainRateLimit"> | string
+    hourlyCount?: IntFilter<"DomainRateLimit"> | number
+    windowStart?: DateTimeFilter<"DomainRateLimit"> | Date | string
+    createdAt?: DateTimeFilter<"DomainRateLimit"> | Date | string
+    updatedAt?: DateTimeFilter<"DomainRateLimit"> | Date | string
+  }
+
+  export type DomainRateLimitOrderByWithRelationInput = {
+    domain?: SortOrder
+    hourlyCount?: SortOrder
+    windowStart?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DomainRateLimitWhereUniqueInput = Prisma.AtLeast<{
+    domain?: string
+    AND?: DomainRateLimitWhereInput | DomainRateLimitWhereInput[]
+    OR?: DomainRateLimitWhereInput[]
+    NOT?: DomainRateLimitWhereInput | DomainRateLimitWhereInput[]
+    hourlyCount?: IntFilter<"DomainRateLimit"> | number
+    windowStart?: DateTimeFilter<"DomainRateLimit"> | Date | string
+    createdAt?: DateTimeFilter<"DomainRateLimit"> | Date | string
+    updatedAt?: DateTimeFilter<"DomainRateLimit"> | Date | string
+  }, "domain">
+
+  export type DomainRateLimitOrderByWithAggregationInput = {
+    domain?: SortOrder
+    hourlyCount?: SortOrder
+    windowStart?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: DomainRateLimitCountOrderByAggregateInput
+    _avg?: DomainRateLimitAvgOrderByAggregateInput
+    _max?: DomainRateLimitMaxOrderByAggregateInput
+    _min?: DomainRateLimitMinOrderByAggregateInput
+    _sum?: DomainRateLimitSumOrderByAggregateInput
+  }
+
+  export type DomainRateLimitScalarWhereWithAggregatesInput = {
+    AND?: DomainRateLimitScalarWhereWithAggregatesInput | DomainRateLimitScalarWhereWithAggregatesInput[]
+    OR?: DomainRateLimitScalarWhereWithAggregatesInput[]
+    NOT?: DomainRateLimitScalarWhereWithAggregatesInput | DomainRateLimitScalarWhereWithAggregatesInput[]
+    domain?: StringWithAggregatesFilter<"DomainRateLimit"> | string
+    hourlyCount?: IntWithAggregatesFilter<"DomainRateLimit"> | number
+    windowStart?: DateTimeWithAggregatesFilter<"DomainRateLimit"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"DomainRateLimit"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"DomainRateLimit"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -23100,6 +28189,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCampaignsInput
     sender?: SenderCreateNestedOneWithoutCampaignsInput
@@ -23127,6 +28217,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
@@ -23150,6 +28241,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCampaignsNestedInput
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
@@ -23177,6 +28269,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
@@ -23202,6 +28295,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
   }
 
@@ -23220,6 +28314,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23240,6 +28335,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -24110,6 +29206,328 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PriorityQueueJobCreateInput = {
+    id?: string
+    emailJobId: string
+    userId: string
+    status?: $Enums.PriorityStatus
+    priorityScore?: number
+    congestionScore?: number
+    scheduledAt?: Date | string
+    retryCount?: number
+    statusMessage?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PriorityQueueJobUncheckedCreateInput = {
+    id?: string
+    emailJobId: string
+    userId: string
+    status?: $Enums.PriorityStatus
+    priorityScore?: number
+    congestionScore?: number
+    scheduledAt?: Date | string
+    retryCount?: number
+    statusMessage?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PriorityQueueJobUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    emailJobId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: EnumPriorityStatusFieldUpdateOperationsInput | $Enums.PriorityStatus
+    priorityScore?: IntFieldUpdateOperationsInput | number
+    congestionScore?: IntFieldUpdateOperationsInput | number
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    retryCount?: IntFieldUpdateOperationsInput | number
+    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PriorityQueueJobUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    emailJobId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: EnumPriorityStatusFieldUpdateOperationsInput | $Enums.PriorityStatus
+    priorityScore?: IntFieldUpdateOperationsInput | number
+    congestionScore?: IntFieldUpdateOperationsInput | number
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    retryCount?: IntFieldUpdateOperationsInput | number
+    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PriorityQueueJobCreateManyInput = {
+    id?: string
+    emailJobId: string
+    userId: string
+    status?: $Enums.PriorityStatus
+    priorityScore?: number
+    congestionScore?: number
+    scheduledAt?: Date | string
+    retryCount?: number
+    statusMessage?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PriorityQueueJobUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    emailJobId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: EnumPriorityStatusFieldUpdateOperationsInput | $Enums.PriorityStatus
+    priorityScore?: IntFieldUpdateOperationsInput | number
+    congestionScore?: IntFieldUpdateOperationsInput | number
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    retryCount?: IntFieldUpdateOperationsInput | number
+    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PriorityQueueJobUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    emailJobId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    status?: EnumPriorityStatusFieldUpdateOperationsInput | $Enums.PriorityStatus
+    priorityScore?: IntFieldUpdateOperationsInput | number
+    congestionScore?: IntFieldUpdateOperationsInput | number
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    retryCount?: IntFieldUpdateOperationsInput | number
+    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SmtpSignalLogCreateInput = {
+    id?: string
+    senderId: string
+    recipientDomain: string
+    tcpConnectMs?: number
+    greetingDelayMs?: number
+    tlsHandshakeMs?: number
+    mailFromMs?: number
+    rcptToMs?: number
+    dataMs?: number
+    congestionScore?: number
+    recordedAt?: Date | string
+  }
+
+  export type SmtpSignalLogUncheckedCreateInput = {
+    id?: string
+    senderId: string
+    recipientDomain: string
+    tcpConnectMs?: number
+    greetingDelayMs?: number
+    tlsHandshakeMs?: number
+    mailFromMs?: number
+    rcptToMs?: number
+    dataMs?: number
+    congestionScore?: number
+    recordedAt?: Date | string
+  }
+
+  export type SmtpSignalLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientDomain?: StringFieldUpdateOperationsInput | string
+    tcpConnectMs?: IntFieldUpdateOperationsInput | number
+    greetingDelayMs?: IntFieldUpdateOperationsInput | number
+    tlsHandshakeMs?: IntFieldUpdateOperationsInput | number
+    mailFromMs?: IntFieldUpdateOperationsInput | number
+    rcptToMs?: IntFieldUpdateOperationsInput | number
+    dataMs?: IntFieldUpdateOperationsInput | number
+    congestionScore?: IntFieldUpdateOperationsInput | number
+    recordedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SmtpSignalLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientDomain?: StringFieldUpdateOperationsInput | string
+    tcpConnectMs?: IntFieldUpdateOperationsInput | number
+    greetingDelayMs?: IntFieldUpdateOperationsInput | number
+    tlsHandshakeMs?: IntFieldUpdateOperationsInput | number
+    mailFromMs?: IntFieldUpdateOperationsInput | number
+    rcptToMs?: IntFieldUpdateOperationsInput | number
+    dataMs?: IntFieldUpdateOperationsInput | number
+    congestionScore?: IntFieldUpdateOperationsInput | number
+    recordedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SmtpSignalLogCreateManyInput = {
+    id?: string
+    senderId: string
+    recipientDomain: string
+    tcpConnectMs?: number
+    greetingDelayMs?: number
+    tlsHandshakeMs?: number
+    mailFromMs?: number
+    rcptToMs?: number
+    dataMs?: number
+    congestionScore?: number
+    recordedAt?: Date | string
+  }
+
+  export type SmtpSignalLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientDomain?: StringFieldUpdateOperationsInput | string
+    tcpConnectMs?: IntFieldUpdateOperationsInput | number
+    greetingDelayMs?: IntFieldUpdateOperationsInput | number
+    tlsHandshakeMs?: IntFieldUpdateOperationsInput | number
+    mailFromMs?: IntFieldUpdateOperationsInput | number
+    rcptToMs?: IntFieldUpdateOperationsInput | number
+    dataMs?: IntFieldUpdateOperationsInput | number
+    congestionScore?: IntFieldUpdateOperationsInput | number
+    recordedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SmtpSignalLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    recipientDomain?: StringFieldUpdateOperationsInput | string
+    tcpConnectMs?: IntFieldUpdateOperationsInput | number
+    greetingDelayMs?: IntFieldUpdateOperationsInput | number
+    tlsHandshakeMs?: IntFieldUpdateOperationsInput | number
+    mailFromMs?: IntFieldUpdateOperationsInput | number
+    rcptToMs?: IntFieldUpdateOperationsInput | number
+    dataMs?: IntFieldUpdateOperationsInput | number
+    congestionScore?: IntFieldUpdateOperationsInput | number
+    recordedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PriorityUserQuotaCreateInput = {
+    userId: string
+    dailyCount?: number
+    dailyLimit?: number
+    dailyResetAt?: Date | string
+    isEnabled?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PriorityUserQuotaUncheckedCreateInput = {
+    userId: string
+    dailyCount?: number
+    dailyLimit?: number
+    dailyResetAt?: Date | string
+    isEnabled?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PriorityUserQuotaUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    dailyCount?: IntFieldUpdateOperationsInput | number
+    dailyLimit?: IntFieldUpdateOperationsInput | number
+    dailyResetAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isEnabled?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PriorityUserQuotaUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    dailyCount?: IntFieldUpdateOperationsInput | number
+    dailyLimit?: IntFieldUpdateOperationsInput | number
+    dailyResetAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isEnabled?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PriorityUserQuotaCreateManyInput = {
+    userId: string
+    dailyCount?: number
+    dailyLimit?: number
+    dailyResetAt?: Date | string
+    isEnabled?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PriorityUserQuotaUpdateManyMutationInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    dailyCount?: IntFieldUpdateOperationsInput | number
+    dailyLimit?: IntFieldUpdateOperationsInput | number
+    dailyResetAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isEnabled?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PriorityUserQuotaUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    dailyCount?: IntFieldUpdateOperationsInput | number
+    dailyLimit?: IntFieldUpdateOperationsInput | number
+    dailyResetAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isEnabled?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DomainRateLimitCreateInput = {
+    domain: string
+    hourlyCount?: number
+    windowStart?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DomainRateLimitUncheckedCreateInput = {
+    domain: string
+    hourlyCount?: number
+    windowStart?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DomainRateLimitUpdateInput = {
+    domain?: StringFieldUpdateOperationsInput | string
+    hourlyCount?: IntFieldUpdateOperationsInput | number
+    windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DomainRateLimitUncheckedUpdateInput = {
+    domain?: StringFieldUpdateOperationsInput | string
+    hourlyCount?: IntFieldUpdateOperationsInput | number
+    windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DomainRateLimitCreateManyInput = {
+    domain: string
+    hourlyCount?: number
+    windowStart?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DomainRateLimitUpdateManyMutationInput = {
+    domain?: StringFieldUpdateOperationsInput | string
+    hourlyCount?: IntFieldUpdateOperationsInput | number
+    windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DomainRateLimitUncheckedUpdateManyInput = {
+    domain?: StringFieldUpdateOperationsInput | string
+    hourlyCount?: IntFieldUpdateOperationsInput | number
+    windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -24593,6 +30011,7 @@ export namespace Prisma {
     timezone?: SortOrder
     businessStartHour?: SortOrder
     businessEndHour?: SortOrder
+    isPriority?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -24621,6 +30040,7 @@ export namespace Prisma {
     timezone?: SortOrder
     businessStartHour?: SortOrder
     businessEndHour?: SortOrder
+    isPriority?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -24641,6 +30061,7 @@ export namespace Prisma {
     timezone?: SortOrder
     businessStartHour?: SortOrder
     businessEndHour?: SortOrder
+    isPriority?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25306,6 +30727,211 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTrackingEventTypeFilter<$PrismaModel>
     _max?: NestedEnumTrackingEventTypeFilter<$PrismaModel>
+  }
+
+  export type EnumPriorityStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.PriorityStatus | EnumPriorityStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PriorityStatus[] | ListEnumPriorityStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PriorityStatus[] | ListEnumPriorityStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriorityStatusFilter<$PrismaModel> | $Enums.PriorityStatus
+  }
+
+  export type PriorityQueueJobCountOrderByAggregateInput = {
+    id?: SortOrder
+    emailJobId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priorityScore?: SortOrder
+    congestionScore?: SortOrder
+    scheduledAt?: SortOrder
+    retryCount?: SortOrder
+    statusMessage?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PriorityQueueJobAvgOrderByAggregateInput = {
+    priorityScore?: SortOrder
+    congestionScore?: SortOrder
+    retryCount?: SortOrder
+  }
+
+  export type PriorityQueueJobMaxOrderByAggregateInput = {
+    id?: SortOrder
+    emailJobId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priorityScore?: SortOrder
+    congestionScore?: SortOrder
+    scheduledAt?: SortOrder
+    retryCount?: SortOrder
+    statusMessage?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PriorityQueueJobMinOrderByAggregateInput = {
+    id?: SortOrder
+    emailJobId?: SortOrder
+    userId?: SortOrder
+    status?: SortOrder
+    priorityScore?: SortOrder
+    congestionScore?: SortOrder
+    scheduledAt?: SortOrder
+    retryCount?: SortOrder
+    statusMessage?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PriorityQueueJobSumOrderByAggregateInput = {
+    priorityScore?: SortOrder
+    congestionScore?: SortOrder
+    retryCount?: SortOrder
+  }
+
+  export type EnumPriorityStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PriorityStatus | EnumPriorityStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PriorityStatus[] | ListEnumPriorityStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PriorityStatus[] | ListEnumPriorityStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriorityStatusWithAggregatesFilter<$PrismaModel> | $Enums.PriorityStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPriorityStatusFilter<$PrismaModel>
+    _max?: NestedEnumPriorityStatusFilter<$PrismaModel>
+  }
+
+  export type SmtpSignalLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    senderId?: SortOrder
+    recipientDomain?: SortOrder
+    tcpConnectMs?: SortOrder
+    greetingDelayMs?: SortOrder
+    tlsHandshakeMs?: SortOrder
+    mailFromMs?: SortOrder
+    rcptToMs?: SortOrder
+    dataMs?: SortOrder
+    congestionScore?: SortOrder
+    recordedAt?: SortOrder
+  }
+
+  export type SmtpSignalLogAvgOrderByAggregateInput = {
+    tcpConnectMs?: SortOrder
+    greetingDelayMs?: SortOrder
+    tlsHandshakeMs?: SortOrder
+    mailFromMs?: SortOrder
+    rcptToMs?: SortOrder
+    dataMs?: SortOrder
+    congestionScore?: SortOrder
+  }
+
+  export type SmtpSignalLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    senderId?: SortOrder
+    recipientDomain?: SortOrder
+    tcpConnectMs?: SortOrder
+    greetingDelayMs?: SortOrder
+    tlsHandshakeMs?: SortOrder
+    mailFromMs?: SortOrder
+    rcptToMs?: SortOrder
+    dataMs?: SortOrder
+    congestionScore?: SortOrder
+    recordedAt?: SortOrder
+  }
+
+  export type SmtpSignalLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    senderId?: SortOrder
+    recipientDomain?: SortOrder
+    tcpConnectMs?: SortOrder
+    greetingDelayMs?: SortOrder
+    tlsHandshakeMs?: SortOrder
+    mailFromMs?: SortOrder
+    rcptToMs?: SortOrder
+    dataMs?: SortOrder
+    congestionScore?: SortOrder
+    recordedAt?: SortOrder
+  }
+
+  export type SmtpSignalLogSumOrderByAggregateInput = {
+    tcpConnectMs?: SortOrder
+    greetingDelayMs?: SortOrder
+    tlsHandshakeMs?: SortOrder
+    mailFromMs?: SortOrder
+    rcptToMs?: SortOrder
+    dataMs?: SortOrder
+    congestionScore?: SortOrder
+  }
+
+  export type PriorityUserQuotaCountOrderByAggregateInput = {
+    userId?: SortOrder
+    dailyCount?: SortOrder
+    dailyLimit?: SortOrder
+    dailyResetAt?: SortOrder
+    isEnabled?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PriorityUserQuotaAvgOrderByAggregateInput = {
+    dailyCount?: SortOrder
+    dailyLimit?: SortOrder
+  }
+
+  export type PriorityUserQuotaMaxOrderByAggregateInput = {
+    userId?: SortOrder
+    dailyCount?: SortOrder
+    dailyLimit?: SortOrder
+    dailyResetAt?: SortOrder
+    isEnabled?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PriorityUserQuotaMinOrderByAggregateInput = {
+    userId?: SortOrder
+    dailyCount?: SortOrder
+    dailyLimit?: SortOrder
+    dailyResetAt?: SortOrder
+    isEnabled?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PriorityUserQuotaSumOrderByAggregateInput = {
+    dailyCount?: SortOrder
+    dailyLimit?: SortOrder
+  }
+
+  export type DomainRateLimitCountOrderByAggregateInput = {
+    domain?: SortOrder
+    hourlyCount?: SortOrder
+    windowStart?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DomainRateLimitAvgOrderByAggregateInput = {
+    hourlyCount?: SortOrder
+  }
+
+  export type DomainRateLimitMaxOrderByAggregateInput = {
+    domain?: SortOrder
+    hourlyCount?: SortOrder
+    windowStart?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DomainRateLimitMinOrderByAggregateInput = {
+    domain?: SortOrder
+    hourlyCount?: SortOrder
+    windowStart?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DomainRateLimitSumOrderByAggregateInput = {
+    hourlyCount?: SortOrder
   }
 
   export type SenderCreateNestedManyWithoutUserInput = {
@@ -26352,6 +31978,10 @@ export namespace Prisma {
     update?: XOR<XOR<EmailJobUpdateToOneWithWhereWithoutTrackingEventsInput, EmailJobUpdateWithoutTrackingEventsInput>, EmailJobUncheckedUpdateWithoutTrackingEventsInput>
   }
 
+  export type EnumPriorityStatusFieldUpdateOperationsInput = {
+    set?: $Enums.PriorityStatus
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -26680,6 +32310,23 @@ export namespace Prisma {
     _max?: NestedEnumTrackingEventTypeFilter<$PrismaModel>
   }
 
+  export type NestedEnumPriorityStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.PriorityStatus | EnumPriorityStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PriorityStatus[] | ListEnumPriorityStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PriorityStatus[] | ListEnumPriorityStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriorityStatusFilter<$PrismaModel> | $Enums.PriorityStatus
+  }
+
+  export type NestedEnumPriorityStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PriorityStatus | EnumPriorityStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PriorityStatus[] | ListEnumPriorityStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PriorityStatus[] | ListEnumPriorityStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriorityStatusWithAggregatesFilter<$PrismaModel> | $Enums.PriorityStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPriorityStatusFilter<$PrismaModel>
+    _max?: NestedEnumPriorityStatusFilter<$PrismaModel>
+  }
+
   export type SenderCreateWithoutUserInput = {
     id?: string
     email: string
@@ -26745,6 +32392,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     sender?: SenderCreateNestedOneWithoutCampaignsInput
     emails?: EmailJobCreateNestedManyWithoutCampaignInput
@@ -26770,6 +32418,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
@@ -26946,6 +32595,7 @@ export namespace Prisma {
     timezone?: StringFilter<"EmailCampaign"> | string
     businessStartHour?: IntNullableFilter<"EmailCampaign"> | number | null
     businessEndHour?: IntNullableFilter<"EmailCampaign"> | number | null
+    isPriority?: BoolFilter<"EmailCampaign"> | boolean
     createdAt?: DateTimeFilter<"EmailCampaign"> | Date | string
   }
 
@@ -27153,6 +32803,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCampaignsInput
     emails?: EmailJobCreateNestedManyWithoutCampaignInput
@@ -27178,6 +32829,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
@@ -27991,6 +33643,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCampaignsInput
     sender?: SenderCreateNestedOneWithoutCampaignsInput
@@ -28017,6 +33670,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     sequenceSteps?: SequenceStepUncheckedCreateNestedManyWithoutCampaignInput
@@ -28151,6 +33805,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCampaignsNestedInput
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
@@ -28177,6 +33832,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     sequenceSteps?: SequenceStepUncheckedUpdateManyWithoutCampaignNestedInput
@@ -28308,6 +33964,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCampaignsInput
     sender?: SenderCreateNestedOneWithoutCampaignsInput
@@ -28334,6 +33991,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
@@ -28417,6 +34075,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCampaignsNestedInput
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
@@ -28443,6 +34102,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
@@ -28580,6 +34240,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCampaignsInput
     sender?: SenderCreateNestedOneWithoutCampaignsInput
@@ -28606,6 +34267,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
     sequenceSteps?: SequenceStepUncheckedCreateNestedManyWithoutCampaignInput
@@ -28644,6 +34306,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCampaignsNestedInput
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
@@ -28670,6 +34333,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
     sequenceSteps?: SequenceStepUncheckedUpdateManyWithoutCampaignNestedInput
@@ -28756,6 +34420,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCampaignsInput
     sender?: SenderCreateNestedOneWithoutCampaignsInput
@@ -28782,6 +34447,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
@@ -28870,6 +34536,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCampaignsNestedInput
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
@@ -28896,6 +34563,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
@@ -28934,6 +34602,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutCampaignsInput
     sender?: SenderCreateNestedOneWithoutCampaignsInput
@@ -28960,6 +34629,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
@@ -28998,6 +34668,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCampaignsNestedInput
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
@@ -29024,6 +34695,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
@@ -29416,6 +35088,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
   }
 
@@ -29506,6 +35179,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
     emails?: EmailJobUpdateManyWithoutCampaignNestedInput
@@ -29531,6 +35205,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
@@ -29555,6 +35230,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -29625,6 +35301,7 @@ export namespace Prisma {
     timezone?: string
     businessStartHour?: number | null
     businessEndHour?: number | null
+    isPriority?: boolean
     createdAt?: Date | string
   }
 
@@ -29668,6 +35345,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCampaignsNestedInput
     emails?: EmailJobUpdateManyWithoutCampaignNestedInput
@@ -29693,6 +35371,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
@@ -29717,6 +35396,7 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
+    isPriority?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
