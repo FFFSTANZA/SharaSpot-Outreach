@@ -12,7 +12,11 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "postprisma:generate": "shx cp -r node_modules/.prisma/client/index.d.ts ../client/src/types/prismaTypes.d.ts",
+    "db:seed": "ts-node prisma/seed.ts",
     "test": "jest"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +29,7 @@
     "bullmq": "^5.70.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dodopayments": "^2.27.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "google-auth-library": "^10.5.0",

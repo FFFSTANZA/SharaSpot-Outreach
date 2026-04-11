@@ -22,14 +22,14 @@ function FAQAccordion({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boole
   return (
     <div className={cn(
       "border rounded-xl overflow-hidden transition-all duration-200",
-      isOpen ? "border-primary/20 bg-primary/[0.02] shadow-sm" : "border-gray-100 hover:border-gray-200"
+      isOpen ? "border-teal-600/20 bg-teal-600/[0.02] shadow-sm" : "border-gray-100 hover:border-gray-200"
     )}>
       <button onClick={onToggle} className="w-full flex items-center gap-3 px-5 py-4 text-left">
         <div className={cn(
           "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-          isOpen ? "bg-primary/10" : "bg-gray-50"
+          isOpen ? "bg-teal-600/10" : "bg-gray-50"
         )}>
-          <item.icon className={cn("h-4 w-4", isOpen ? "text-primary" : "text-gray-400")} />
+          <item.icon className={cn("h-4 w-4", isOpen ? "text-teal-600" : "text-gray-400")} />
         </div>
         <span className={cn(
           "flex-1 text-sm font-semibold transition-colors",
@@ -37,7 +37,7 @@ function FAQAccordion({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boole
         )}>{item.question}</span>
         <ChevronDown className={cn(
           "h-4 w-4 text-gray-400 transition-transform duration-200",
-          isOpen && "rotate-180 text-primary"
+          isOpen && "rotate-180 text-teal-600"
         )} />
       </button>
       <div className={cn(
@@ -208,7 +208,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>Google App Passwords are 16-character codes that let third-party apps access your Gmail via SMTP without using your main password. Google requires them since they disabled "Less Secure App" access in 2022.</p>
-        <p>To generate one: go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">myaccount.google.com/apppasswords</a> (requires 2-Step Verification enabled). Create one specifically for SharaSpot and paste it when adding a sender.</p>
+        <p>To generate one: go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">myaccount.google.com/apppasswords</a> (requires 2-Step Verification enabled). Create one specifically for SharaSpot and paste it when adding a sender.</p>
       </div>
     ),
   },
@@ -399,7 +399,7 @@ export default function FAQPage() {
               <p className="text-sm text-gray-400">No matching questions found.</p>
               <button
                 onClick={() => { setSearchQuery(""); setActiveCategory(null); }}
-                className="text-sm text-primary hover:underline mt-2"
+                className="text-sm text-teal-600 hover:underline mt-2"
               >
                 Clear filters
               </button>

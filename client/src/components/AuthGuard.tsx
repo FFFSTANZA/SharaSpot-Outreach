@@ -20,12 +20,16 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      // If a token existed but the auth check failed, the session expired
       const hadToken = typeof window !== "undefined" && localStorage.getItem("accessToken");
+
       if (hadToken) {
+        console.warn("AuthGuard: Token exists but user is null. Session likely expired.");
         localStorage.removeItem("accessToken");
         addToast("warning", "Session expired. Please sign in again.");
+      } else {
+        console.log("AuthGuard: No token found, redirecting to login.");
       }
+
       router.replace("/login");
     }
   }, [user, isLoading, router, addToast]);

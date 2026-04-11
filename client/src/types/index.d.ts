@@ -219,12 +219,13 @@ export interface SidebarProps {
 // GET /templates response item — email template
 export interface EmailTemplate {
   id: string;
-  userId: string;
+  userId: string | null;
   name: string;
   subject: string;
   body: string;
   createdAt: string;
   updatedAt: string;
+  isSystem?: boolean;
 }
 
 // POST /templates request body
@@ -378,6 +379,7 @@ export interface TrackingMetrics {
   repliedCount: number;
   uniqueOpens: number;
   uniqueClicks: number;
+  notOpened: number;
   openRate: number;
   clickRate: number;
   replyRate: number;
@@ -397,6 +399,19 @@ export interface TrackingEmailDetail {
 export interface TrackingLinkDetail {
   url: string;
   clickCount: number;
+}
+
+export interface LinkEmailDetail {
+  emailJobId: string;
+  toEmail: string;
+  clickedAt: string;
+}
+
+export interface LinkAnalyticsDetail {
+  url: string;
+  totalClicks: number;
+  uniqueEmails: number;
+  emails: LinkEmailDetail[];
 }
 
 
@@ -429,4 +444,59 @@ export interface UnrepliedEmailDetail {
   toEmail: string;
   sentAt: string | null;
   sender: { email: string; name: string | null } | null;
+}
+
+
+// ─── Analytics Types ───
+
+export interface DailySeriesPoint {
+  date: string;
+  opens: number;
+  clicks: number;
+  replies: number;
+}
+
+export interface HourlySeriesPoint {
+  hour: number;
+  opens: number;
+  clicks: number;
+}
+
+export interface TopCampaign {
+  id: string;
+  subject: string;
+  sent: number;
+  opens: number;
+  clicks: number;
+  replied: number;
+  openRate: number;
+  clickRate: number;
+  replyRate: number;
+  createdAt: string | null;
+}
+
+export interface AnalyticsOverview {
+  totalCampaigns: number;
+  totalSent: number;
+  totalOpens: number;
+  totalClicks: number;
+  uniqueOpens: number;
+  uniqueClicks: number;
+  totalReplied: number;
+  openRate: number;
+  clickRate: number;
+  replyRate: number;
+  dailySeries: DailySeriesPoint[];
+  hourlySeries: HourlySeriesPoint[];
+  topCampaigns: TopCampaign[];
+}
+
+export interface AnalyticsLink {
+  url: string;
+  count: number;
+  lastClicked: string | null;
+}
+
+export interface AnalyticsLinksResponse {
+  links: AnalyticsLink[];
 }

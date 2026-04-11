@@ -14,19 +14,19 @@ export function UserCard({ name, email, avatarUrl }: SidebarProfileProps) {
           <Image
             src={avatarUrl}
             alt={name}
-            className="h-10 w-10 rounded-lg object-cover"
-            width={40}
-            height={40}
+            className="h-9 w-9 rounded-full object-cover"
+            width={36}
+            height={36}
           />
         ) : (
-          <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm">
-            <span className="text-sm font-bold text-gray-400">{name?.charAt(0)?.toUpperCase()}</span>
+          <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+            <span className="text-sm font-medium text-gray-500">{name?.charAt(0)?.toUpperCase()}</span>
           </div>
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-gray-900 truncate tracking-tight">{name}</p>
-        <p className="text-[11px] font-medium text-gray-400 truncate tracking-tight">{email}</p>
+        <p className="text-sm font-medium text-gray-900 truncate">{name}</p>
+        <p className="text-xs text-gray-500 truncate">{email}</p>
       </div>
     </div>
   );

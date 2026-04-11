@@ -1,19 +1,17 @@
 "use client";
 
 import { useRef, useCallback, useState } from "react";
-import Button from "@/components/Button";
 import { SidebarItem } from "@/components/SidebarItem";
-import { UserCard } from "@/components/UserCard";
 import { SidebarProps } from "@/types";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { X, PenSquare, Megaphone, LogOut, FileText } from "lucide-react";
+import { X, Megaphone, LogOut, FileText, Plus } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { logout } from "@/lib/apis";
 import { cn } from "@/lib/utils";
 
-export function Sidebar({ currentLabel, setLabel, onItemClick, profile, items }: SidebarProps) {
+export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { isOpen, close } = useSidebar();
   const router = useRouter();
@@ -27,7 +25,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, profile, items }:
         if (item.label === "Scheduled") queryParams.set("status", "PENDING");
         if (item.label === "Sent") queryParams.set("status", "SENT");
         if (item.label === "Starred") queryParams.set("starred", "true");
-        
+
         const qs = queryParams.toString();
         router.push(qs ? `/dashboard?${qs}` : "/dashboard");
         close();
@@ -65,33 +63,34 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, profile, items }:
   const sidebarContent = (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Logo Group */}
-      <div className="mb-5 pt-0.5 shrink-0">
+      <div className="mb-5 pt-1 shrink-0">
         <Link href="/dashboard" onClick={close} className="inline-block hover:opacity-80 transition-opacity">
           <Logo size="md" />
         </Link>
       </div>
 
-      {/* Account Info */}
+      {/* Compose Button - Brand CTA with glow */}
       <div className="mb-5 shrink-0">
-        <UserCard {...profile} />
-      </div>
-
-      {/* Compose */}
-      <div className="mb-5 shrink-0">
-        <Button
-          variant="primary"
-          className="w-full rounded-xl gap-2.5 py-3 text-sm font-semibold shadow-lg shadow-emerald-600/15 active:scale-[0.99] transition-all bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border-none"
+        <button
           onClick={handleCompose}
+          className="
+            w-full flex items-center gap-2 px-4 py-2.5
+            bg-[#FF6D01] text-white rounded-lg
+            text-sm font-medium shadow-sm
+            hover:bg-[#E56200] hover:shadow-[0_0_16px_rgba(255,109,1,0.25)]
+            active:scale-[0.99] active:duration-75
+            transition-all duration-150
+          "
         >
-          <PenSquare className="h-4 w-4" />
-          New Campaign
-        </Button>
+          <Plus className="h-4 w-4" />
+          <span>Compose</span>
+        </button>
       </div>
 
-      {/* Primary Context Navigation */}
+      {/* Primary Context Navigation - Gmail style with brand colors */}
       <nav className="space-y-0.5 shrink-0">
         <div className="px-3 mb-1.5">
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-none">Inbox</p>
+          <p className="text-[10px] font-bold text-[#9AA0A6] uppercase tracking-widest leading-none">Inbox</p>
         </div>
         {items.map((item, idx) => (
           <SidebarItem
@@ -104,22 +103,22 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, profile, items }:
       </nav>
 
       {/* System Actions & Footer */}
-      <div className="mt-auto pt-4 border-t border-gray-100 space-y-0.5 shrink-0">
+      <div className="mt-auto pt-4 border-t border-[#E8EAED] space-y-0.5 shrink-0">
         <div className="px-3 mb-1.5">
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-none">Management</p>
+          <p className="text-[10px] font-bold text-[#9AA0A6] uppercase tracking-widest leading-none">Management</p>
         </div>
-        
+
         <Link
           href="/dashboard/campaigns"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all min-h-[36px]",
+            "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
             pathname === "/dashboard/campaigns"
-              ? "bg-emerald-50 text-emerald-700"
-              : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
+              : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
           )}
         >
-          <Megaphone className={cn("h-4 w-4 transition-colors", pathname === "/dashboard/campaigns" ? "text-emerald-600" : "text-gray-500 group-hover:text-gray-700")} />
+          <Megaphone className={cn("h-4 w-4", pathname === "/dashboard/campaigns" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
           <span>Campaigns</span>
         </Link>
 
@@ -127,25 +126,28 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, profile, items }:
           href="/dashboard/templates"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all min-h-[36px]",
+            "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
             pathname === "/dashboard/templates"
-              ? "bg-emerald-50 text-emerald-700"
-              : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
+              : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
           )}
         >
-          <FileText className={cn("h-4 w-4 transition-colors", pathname === "/dashboard/templates" ? "text-emerald-600" : "text-gray-500 group-hover:text-gray-700")} />
+          <FileText className={cn("h-4 w-4", pathname === "/dashboard/templates" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
           <span>Templates</span>
         </Link>
+
+        {/* Removed Analytics link from here as per user request */}
+
 
         <div className="pt-2">
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="group flex items-center justify-between px-3 py-1.5 text-gray-500 hover:bg-red-50/50 hover:text-red-500 rounded-lg cursor-pointer transition-all min-h-[36px] w-full disabled:opacity-50 active:scale-[0.99]"
+            className="group flex items-center justify-between px-3 py-2.5 text-[#9AA0A6] hover:bg-[#FCE8E7] hover:text-[#C5221F] rounded-md cursor-pointer transition-all duration-150 w-full disabled:opacity-50 active:scale-[0.99] border-l-4 border-l-transparent"
           >
             <div className="flex items-center gap-3">
-              <LogOut className="h-4 w-4 opacity-50 transition-opacity group-hover:opacity-100" />
-              <span className="text-[13px] font-medium">{isLoggingOut ? "Logging out..." : "Logout"}</span>
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm font-medium">{isLoggingOut ? "Logging out..." : "Logout"}</span>
             </div>
           </button>
         </div>
@@ -155,8 +157,8 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, profile, items }:
 
   return (
     <>
-      {/* Desktop View */}
-      <aside className="hidden lg:flex h-full w-[260px] flex-col bg-white p-6 border-r border-gray-100/80">
+      {/* Desktop View - Gmail/Outlook style */}
+      <aside className="hidden lg:flex h-full w-[256px] flex-col bg-white border-r border-[#E8EAED] p-4">
         {sidebarContent}
       </aside>
 
@@ -164,20 +166,20 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, profile, items }:
       {isOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 z-40 bg-black/25 backdrop-blur-[3px] transition-opacity duration-300"
+            className="lg:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-200"
             onClick={close}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             aria-hidden="true"
           />
           <aside
-            className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-white p-5 shadow-2xl transition-transform duration-300 animate-[fadeInUp_0.3s_ease-out] flex flex-col"
+            className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-white p-4 shadow-xl flex flex-col"
             role="dialog"
             aria-label="Navigation sidebar"
           >
             <button
               onClick={close}
-              className="absolute right-3 top-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all"
+              className="absolute right-3 top-3 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg text-[#5F6368] hover:text-[#1A1D21] hover:bg-[#F1F3F4] transition-all"
               aria-label="Close sidebar"
             >
               <X className="h-5 w-5" />

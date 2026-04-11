@@ -51,7 +51,7 @@ export default function TermsPage() {
 
       <main className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-16">
         <div className="mb-10">
-          <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Terms</p>
+          <p className="text-xs font-semibold text-teal-600 uppercase tracking-wider mb-3">Terms</p>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
             Terms of Service
           </h2>
@@ -65,8 +65,8 @@ export default function TermsPage() {
           {sections.map((section, i) => (
             <div key={i} className="rounded-xl border border-gray-100 p-5 sm:p-6 hover:border-gray-200 transition-colors">
               <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <section.icon className="h-5 w-5 text-primary" />
+                <div className="h-10 w-10 rounded-xl bg-teal-600/10 flex items-center justify-center shrink-0">
+                  <section.icon className="h-5 w-5 text-teal-600" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-1.5">{section.title}</h3>
@@ -80,7 +80,7 @@ export default function TermsPage() {
         <div className="mt-10 pt-6 border-t border-gray-100 text-center">
           <p className="text-xs text-gray-400">
             Questions about these terms?{" "}
-            <a href="/contact" className="text-primary hover:underline">Get in touch</a>
+            <a href="/contact" className="text-teal-600 hover:underline">Get in touch</a>
           </p>
         </div>
       </main>

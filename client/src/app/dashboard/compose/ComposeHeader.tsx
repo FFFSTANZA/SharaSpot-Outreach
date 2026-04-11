@@ -73,13 +73,13 @@ function ScheduleBadge({ date, onClear }: { date: Date; onClear: () => void }) {
   }).format(date);
 
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 pl-2.5 pr-1 py-1
+    <div className="inline-flex items-center gap-1.5 rounded-full bg-teal-700/10 pl-2.5 pr-1 py-1
       animate-[fadeIn_0.2s_ease-out]">
-      <CalendarClock className="h-3 w-3 text-primary" />
-      <span className="text-[11px] font-semibold text-primary">{formatted}</span>
+      <CalendarClock className="h-3 w-3 text-teal-700" />
+      <span className="text-[11px] font-semibold text-teal-700">{formatted}</span>
       <button
         onClick={(e) => { e.stopPropagation(); onClear(); }}
-        className="h-5 w-5 rounded-full flex items-center justify-center text-primary/50 hover:text-primary hover:bg-primary/10 transition-colors"
+        className="h-5 w-5 rounded-full flex items-center justify-center text-teal-700/50 hover:text-teal-700 hover:bg-teal-700/10 transition-colors"
         aria-label="Clear schedule"
       >
         <X className="h-2.5 w-2.5" />
@@ -192,19 +192,19 @@ export function ComposeHeader({
               className={cn(
                 "h-9 w-9 flex items-center justify-center rounded-xl transition-all relative",
                 hasAttachments
-                  ? "text-primary bg-primary/5 hover:bg-primary/10"
+                  ? "text-teal-700 bg-teal-600/5 hover:bg-teal-700/10"
                   : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
               )}
               onClick={() => setIsAttachOpen(true)}
               aria-label="Attachments"
             >
               {isUploading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <Loader2 className="h-4 w-4 animate-spin text-teal-700" />
               ) : (
                 <>
                   <Link2 className="h-4 w-4" />
                   {hasAttachments && (
-                    <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center px-1">
+                    <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] rounded-full bg-teal-600 text-white text-[9px] font-bold flex items-center justify-center px-1">
                       {uploadedAttachments.length}
                     </span>
                   )}
@@ -217,7 +217,7 @@ export function ComposeHeader({
               className={cn(
                 "h-9 w-9 flex items-center justify-center rounded-xl transition-all",
                 scheduledAt
-                  ? "text-primary bg-primary/5 hover:bg-primary/10"
+                  ? "text-teal-700 bg-teal-600/5 hover:bg-teal-700/10"
                   : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
               )}
               onClick={openSchedule}
@@ -286,7 +286,7 @@ export function ComposeHeader({
                 <div
                   className={cn(
                     "h-full rounded-full transition-all duration-500",
-                    usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-primary"
+                    usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-teal-600"
                   )}
                   style={{ width: `${usagePercent}%` }}
                 />
@@ -384,7 +384,7 @@ export function ComposeHeader({
                   onChange={(e) => setTempDate(e.target.value)}
                   min={new Date().toISOString().split("T")[0]}
                   className="w-full h-10 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700
-                    outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all"
+                    outline-none focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/10 transition-all"
                 />
               </div>
             </div>
@@ -395,7 +395,7 @@ export function ComposeHeader({
                 value={tempTime}
                 onChange={(e) => setTempTime(e.target.value)}
                 className="w-full h-10 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700
-                  outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all"
+                  outline-none focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/10 transition-all"
               />
             </div>
           </div>
@@ -413,10 +413,10 @@ export function ComposeHeader({
                   key={label}
                   onClick={() => quickPick(days, hour)}
                   className="rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2.5 text-center
-                    hover:border-primary/30 hover:bg-primary/5 transition-all group"
+                    hover:border-teal-600/30 hover:bg-teal-600/5 transition-all group"
                 >
-                  <Calendar className="h-3.5 w-3.5 text-gray-300 group-hover:text-primary mx-auto mb-1 transition-colors" />
-                  <p className="text-[11px] font-medium text-gray-600 group-hover:text-primary whitespace-pre-line leading-tight transition-colors">
+                  <Calendar className="h-3.5 w-3.5 text-gray-300 group-hover:text-teal-700 mx-auto mb-1 transition-colors" />
+                  <p className="text-[11px] font-medium text-gray-600 group-hover:text-teal-700 whitespace-pre-line leading-tight transition-colors">
                     {label}
                   </p>
                 </button>

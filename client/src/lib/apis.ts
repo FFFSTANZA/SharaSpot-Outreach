@@ -215,7 +215,7 @@ export const toggleReplied = async (emailId: string): Promise<EmailJob> => {
 
 // ─── Tracking ───
 
-import type { TrackingMetrics, TrackingEmailDetail, TrackingLinkDetail, ReplyMetrics, RepliedEmailDetail, UnrepliedEmailDetail } from "@/types";
+import type { TrackingMetrics, TrackingEmailDetail, TrackingLinkDetail, LinkAnalyticsDetail, ReplyMetrics, RepliedEmailDetail, UnrepliedEmailDetail, AnalyticsOverview, AnalyticsLinksResponse } from "@/types";
 
 export const getTrackingMetrics = async (campaignId: string): Promise<TrackingMetrics> => {
   const res = await api.get(`/api/tracking/campaigns/${campaignId}`);
@@ -229,6 +229,11 @@ export const getTrackingEmails = async (campaignId: string): Promise<{ emails: T
 
 export const getTrackingLinks = async (campaignId: string): Promise<{ links: TrackingLinkDetail[] }> => {
   const res = await api.get(`/api/tracking/campaigns/${campaignId}/links`);
+  return res.data;
+};
+
+export const getLinkAnalytics = async (campaignId: string): Promise<{ links: LinkAnalyticsDetail[] }> => {
+  const res = await api.get(`/api/tracking/campaigns/${campaignId}/link-analytics`);
   return res.data;
 };
 
@@ -262,5 +267,169 @@ export const searchEmails = async (params: Record<string, string>): Promise<{ re
 export const searchCampaigns = async (params: Record<string, string>): Promise<{ results: any[]; total: number; filters: Record<string, string> }> => {
   const qs = new URLSearchParams(params).toString();
   const res = await api.get(`/campaigns/search?${qs}`);
+  return res.data;
+};
+
+
+// ─── Analytics ───
+
+export const getAnalyticsOverview = async (days?: number): Promise<AnalyticsOverview> => {
+  const qs = days ? `?days=${days}` : "";
+  const res = await api.get(`/api/analytics/overview${qs}`);
+  return res.data;
+};
+
+export const getAnalyticsLinks = async (): Promise<AnalyticsLinksResponse> => {
+  const res = await api.get("/api/analytics/links");
+  return res.data;
+};
+
+
+// ─── Subscription ───
+
+export interface SubscriptionResponse {
+  isPremium: boolean;
+  subscription: {
+    status: string;
+    currentPeriodStart: string;
+    currentPeriodEnd: string;
+    cancelAtPeriodEnd: boolean;
+    trialEnd: string | null;
+  } | null;
+  pricing: {
+    amount: number;
+    interval: string;
+    currency: string;
+  };
+}
+
+export const getSubscription = async (): Promise<SubscriptionResponse> => {
+  const res = await api.get("/api/subscription");
+  return res.data;
+};
+
+export const createSubscription = async (): Promise<{ checkoutUrl: string; sessionId: string }> => {
+  const res = await api.post("/api/subscription");
+  return res.data;
+};
+
+export const cancelSubscription = async (): Promise<{ message: string }> => {
+  const res = await api.post("/api/subscription/cancel");
+  return res.data;
+};
+
+export const reactivateSubscription = async (): Promise<{ message: string }> => {
+  const res = await api.post("/api/subscription/reactivate");
+  return res.data;
+};
+
+export interface ValidationIssue {
+  type: "syntax" | "mx_record" | "disposable" | "role_based" | "typo" | "subdomain" | "free_email" | "catch_all" | "suspicious_tld" | "missing_name";
+  severity: "warning" | "error" | "info";
+  message: string;
+  suggestion?: string;
+}
+
+export interface ValidationCheck {
+  name: string;
+  status: "pass" | "fail" | "warning";
+  message: string;
+}
+
+export interface ValidationResult {
+  email: string;
+  valid: boolean;
+  issues: ValidationIssue[];
+  riskScore: number;
+  riskLevel: "low" | "medium" | "high" | "critical";
+  checks: ValidationCheck[];
+  isFreeEmail: boolean;
+  isCorporateEmail: boolean;
+  isCatchAll: boolean;
+}
+
+export interface BatchValidationResponse {
+  message: string;
+  total: number;
+  valid: number;
+  invalid: number;
+  risky: number;
+  freeEmails: number;
+  corporateEmails: number;
+  results: ValidationResult[];
+  summary: {
+    criticalCount: number;
+    highCount: number;
+    mediumCount: number;
+    lowCount: number;
+    syntaxErrors: number;
+    mxErrors: number;
+    disposableEmails: number;
+    typosFound: number;
+  };
+  recommendations: string[];
+  processingTimeMs: number;
+  deduplicated: boolean;
+  originalCount: number;
+}
+
+export const validateEmails = async (emails: string[]): Promise<BatchValidationResponse> => {
+  const res = await api.post("/api/validate-emails", { emails });
+  return res.data;
+};
+
+// ─── Premium Features ───
+
+export interface SpamAnalysisResult {
+  score: number;
+  level: "safe" | "warning" | "high_risk" | "very_high_risk";
+  checks: Array<{
+    check: string;
+    passed: boolean;
+    details: string;
+    penalty: number;
+  }>;
+  suggestions: string[];
+}
+
+export const analyzeSpamScore = async (
+  subject: string,
+  body: string,
+  html?: string
+): Promise<SpamAnalysisResult> => {
+  const res = await api.post("/api/premium/analyze-spam", { subject, body, html });
+  return res.data;
+};
+
+export interface CalendlyGenerateParams {
+  username: string;
+  eventType?: string;
+  prefill?: {
+    name?: string;
+    email?: string;
+    company?: string;
+  };
+}
+
+export interface CalendlyGenerateResult {
+  url: string;
+  button: {
+    html: string;
+    text: string;
+  };
+}
+
+export const generateCalendlyLink = async (
+  params: CalendlyGenerateParams
+): Promise<CalendlyGenerateResult> => {
+  const res = await api.post("/api/premium/calendly/generate", params);
+  return res.data;
+};
+
+export const verifyCalendlyLink = async (
+  calendlyUrl: string,
+  apiToken?: string
+): Promise<{ valid: boolean; username?: string; eventType?: string }> => {
+  const res = await api.post("/api/premium/calendly/verify", { calendlyUrl, apiToken });
   return res.data;
 };

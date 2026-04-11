@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import Image from "next/image";
+import Script from "next/script";
 import { loginWithGoogle } from "../../lib/apis";
 import { useRouter } from "next/navigation";
 import { Shield, Zap, Send, ArrowLeft } from "lucide-react";
@@ -18,40 +19,66 @@ declare global {
 const LoginPage = () => {
   const router = useRouter();
   const { addToast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [sdkLoaded, setSdkLoaded] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) router.replace("/dashboard");
   }, [router]);
 
-  const handleGoogleLogin = () => {
-    if (!window.google) { console.error("Google SDK not loaded"); return; }
-
+  useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId) { console.error("NEXT_PUBLIC_GOOGLE_CLIENT_ID not configured"); return; }
+    if (!clientId || !window.google) return;
 
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: async (response: any) => {
-        try {
-          const data = await loginWithGoogle(response.credential);
-          localStorage.setItem("accessToken", data.accessToken);
-          addToast("success", "Welcome back!");
-          router.push("/dashboard");
-        } catch (err) {
-          console.error("Google login failed", err);
-          addToast("error", "Login failed. Please try again.");
+    try {
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response: any) => {
+          setIsLoading(true);
+          try {
+            const data = await loginWithGoogle(response.credential);
+            localStorage.setItem("accessToken", data.accessToken);
+            addToast("success", "Welcome back!");
+            router.push("/dashboard");
+          } catch (err) {
+            console.error("Google login failed", err);
+            addToast("error", "Login failed. Please try again.");
+          } finally {
+            setIsLoading(false);
+          }
+        },
+        use_fedcm_for_prompt: false,
+      });
+
+      // Render the standard button into the container
+      // This is much more reliable than id.prompt() for a button click action
+      window.google.accounts.id.renderButton(
+        document.getElementById("googleButtonContainer"),
+        {
+          theme: "outline",
+          size: "large",
+          width: "384",
+          text: "continue_with",
+          shape: "rectangular",
+          logo_alignment: "center"
         }
-      },
-      use_fedcm_for_prompt: false,
-    });
-    window.google.accounts.id.prompt((n: any) => {
-      if (n.isNotDisplayed()) console.error("Google popup not displayed:", n.getNotDisplayedReason());
-    });
-  };
+      );
+
+      // We still try one-tap for convenience
+      window.google.accounts.id.prompt();
+    } catch (error) {
+      console.error("Initialization error", error);
+    }
+  }, [router, addToast, sdkLoaded]);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-gray-50 to-emerald-50/20">
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={() => setSdkLoaded(true)}
+      />
       {/* Left panel — branding (hidden on mobile) */}
       <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950 flex-col justify-between p-12">
         {/* Decorative elements */}
@@ -67,7 +94,7 @@ const LoginPage = () => {
 
         {/* Hero text */}
         <div className="relative">
-          <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-4">
+          <h2 className="text-4xl font-extrabold text-white leading-tight tracking-tighter mb-4">
             Reach the right people<br />
             <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">with smart outreach</span>
           </h2>
@@ -128,23 +155,31 @@ const LoginPage = () => {
           </div>
 
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome back</h1>
-            <p className="text-sm text-gray-600 mt-1.5">Sign in to continue your outreach</p>
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tighter">Welcome back</h1>
+            <p className="text-sm text-gray-600 mt-2">Sign in to continue your outreach</p>
           </div>
 
-          {/* Google login */}
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full h-12 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 flex items-center justify-center gap-2.5 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
-          >
-            <Image
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              alt="Google"
-              width={18}
-              height={18}
+          {/* Google login container */}
+          <div className="relative w-full h-12 overflow-hidden rounded-xl">
+            {/* The Google button is rendered here and made invisible to the eye but clickable over our custom design */}
+            <div
+              id="googleButtonContainer"
+              className="absolute inset-0 z-20 opacity-[0.01]"
             />
-            Continue with Google
-          </button>
+
+            <button
+              className={`w-full h-12 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 flex items-center justify-center gap-2.5 transition-all shadow-sm
+                ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-gray-300'}`}
+            >
+              <Image
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                alt="Google"
+                width={18}
+                height={18}
+              />
+              Continue with Google
+            </button>
+          </div>
 
           <div className="my-7 flex items-center gap-4">
             <div className="h-px flex-1 bg-gray-200" />

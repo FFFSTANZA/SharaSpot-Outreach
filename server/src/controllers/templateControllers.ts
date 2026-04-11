@@ -35,9 +35,8 @@ export const createTemplate = async (
       },
     });
 
-    res.status(201).json(template);
+    res.status(201).json({ ...template, isSystem: false });
   } catch (error: any) {
-    // Prisma unique constraint violation
     if (error?.code === "P2002") {
       res
         .status(409)
@@ -51,17 +50,29 @@ export const createTemplate = async (
 
 /**
  * GET /api/templates — List all templates for the authenticated user,
- * ordered by most recently updated first.
+ * plus system templates available to all users.
+ * System templates are read-only and shown with isSystem: true.
  */
 export const getTemplates = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const templates = await prisma.emailTemplate.findMany({
-      where: { userId: req.user!.id },
-      orderBy: { updatedAt: "desc" },
-    });
+    const [userTemplates, systemTemplates] = await Promise.all([
+      prisma.emailTemplate.findMany({
+        where: { userId: req.user!.id },
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.emailTemplate.findMany({
+        where: { userId: null },
+        orderBy: { name: "asc" },
+      }),
+    ]);
+
+    const templates = [
+      ...systemTemplates.map((t) => ({ ...t, isSystem: true })),
+      ...userTemplates.map((t) => ({ ...t, isSystem: false })),
+    ];
 
     res.status(200).json(templates);
   } catch (error: any) {
@@ -107,7 +118,7 @@ export const updateTemplate = async (
       },
     });
 
-    res.status(200).json(template);
+    res.status(200).json({ ...template, isSystem: false });
   } catch (error: any) {
     if (error?.code === "P2002") {
       res
@@ -121,7 +132,7 @@ export const updateTemplate = async (
 
 /**
  * DELETE /api/templates/:id — Delete a template.
- * Validates existence (404) and ownership (403).
+ * Validates existence (404), ownership (403), and prevents deleting system templates.
  */
 export const deleteTemplate = async (
   req: Request,
@@ -134,6 +145,11 @@ export const deleteTemplate = async (
 
     if (!existing) {
       res.status(404).json({ message: "Template not found" });
+      return;
+    }
+
+    if (existing.userId === null) {
+      res.status(403).json({ message: "System templates cannot be deleted" });
       return;
     }
 

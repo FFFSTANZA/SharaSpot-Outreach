@@ -1,26 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Menu, RefreshCw, Search, Bell, X } from "lucide-react";
+import { Menu, RefreshCw, Search, Bell, X, SlidersHorizontal } from "lucide-react";
 import { useSidebar } from "@/hooks/useSidebar";
 
 interface TopBarProps {
   placeholder?: string;
   initialValue?: string;
   rightActions?: React.ReactNode;
-  // Search callback — filters emails by query string
   onSearch?: (query: string) => void;
-  // Refresh callback — re-fetches data from the backend
   onRefresh?: () => void;
-  // Whether a refresh is currently in progress
   isRefreshing?: boolean;
-  // Filter options for the status filter dropdown
   filterOptions?: string[];
-  // Currently active filter
   activeFilter?: string;
-  // Filter change callback
   onFilterChange?: (filter: string) => void;
-  // Render prop for filter panel slot
   filterSlot?: React.ReactNode;
 }
 
@@ -38,12 +31,10 @@ export function TopBar({
   const [showNotifications, setShowNotifications] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // Sync with external resets (like "Clear all" tags)
   useEffect(() => {
     setSearchValue(initialValue);
   }, [initialValue]);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
@@ -54,7 +45,6 @@ export function TopBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounced search — triggers after user stops typing for 300ms
   useEffect(() => {
     if (!onSearch) return;
     const timer = setTimeout(() => {
@@ -64,48 +54,51 @@ export function TopBar({
   }, [searchValue, onSearch]);
 
   return (
-    <div className="flex items-center gap-2 md:gap-3 px-4 md:px-6 py-3 md:py-4 bg-[#f9fafb]">
+    <header className="flex items-center gap-3 px-4 md:px-6 py-3 bg-white border-b border-[#E8EAED]">
       {/* Hamburger — mobile sidebar toggle */}
       <button
         onClick={toggle}
-        className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-900 hover:bg-white transition-all"
+        className="lg:hidden min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg text-[#5F6368] hover:text-[#1A1D21] hover:bg-[#F1F3F4] transition-all"
         aria-label="Toggle sidebar"
       >
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* Search — filters emails by recipient or subject */}
-      <div className="relative flex-1 lg:max-w-lg">
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-        <input
-          type="text"
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder={placeholder}
-          className="w-full min-h-[44px] rounded-xl bg-white border border-gray-200/60 py-2.5 pl-10 pr-10 text-sm text-gray-700 outline-none shadow-sm transition-all placeholder:text-gray-500 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:shadow-md"
-        />
-        {/* Clear search button */}
-        {searchValue && (
-          <button
-            onClick={() => { setSearchValue(""); onSearch?.(""); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-500"
-            aria-label="Clear search"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+      {/* Search — Gmail style pill search */}
+      <div className="relative flex-1 lg:max-w-2xl mx-auto">
+        <div className="flex items-center bg-[#F1F3F4] rounded-full border border-transparent hover:border-[#DADCE0] hover:bg-white hover:shadow-sm transition-all duration-200">
+          <div className="pl-4">
+            <Search className="h-4 w-4 text-[#9AA0A6]" />
+          </div>
+          <input
+            type="text"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder={placeholder}
+            className="flex-1 min-h-[40px] bg-transparent py-2.5 px-3 text-sm text-[#1A1D21] outline-none placeholder:text-[#9AA0A6]"
+          />
+          {searchValue && (
+            <button
+              onClick={() => { setSearchValue(""); onSearch?.(""); }}
+              className="pr-4 text-[#9AA0A6] hover:text-[#5F6368]"
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-0.5 md:gap-1">
-        {/* Filter slot — rendered by parent */}
+      <div className="flex items-center gap-1">
+        {/* Filter slot */}
         {filterSlot}
 
-        {/* Refresh button — spins while refreshing */}
+        {/* Refresh button */}
         <button
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="h-10 w-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm transition-all disabled:opacity-50"
+          className="h-9 w-9 flex items-center justify-center rounded-full text-[#5F6368] hover:text-[#1A1D21] hover:bg-[#F1F3F4] transition-all duration-150 disabled:opacity-50"
           aria-label="Refresh"
         >
           <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -115,22 +108,22 @@ export function TopBar({
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative h-10 w-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm transition-all"
+            className="relative h-9 w-9 flex items-center justify-center rounded-full text-[#5F6368] hover:text-[#1A1D21] hover:bg-[#F1F3F4] transition-all duration-150"
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-[#f9fafb]" />
+            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#00A63E] ring-2 ring-white" />
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-72 rounded-xl bg-white border border-gray-200 shadow-lg animate-[fadeInUp_0.15s_ease-out]">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <p className="text-sm font-semibold text-gray-900">Notifications</p>
+            <div className="absolute right-0 top-11 z-50 w-[calc(100vw-2rem)] max-w-80 rounded-lg bg-white border border-[#E8EAED] shadow-lg">
+              <div className="px-4 py-3 border-b border-[#E8EAED]">
+                <p className="text-sm font-semibold text-[#1A1D21]">Notifications</p>
               </div>
               <div className="px-4 py-8 text-center">
-                <Bell className="h-8 w-8 text-gray-200 mx-auto mb-2" />
-                <p className="text-sm text-gray-400">No new notifications</p>
-                <p className="text-xs text-gray-500 mt-1">Campaign updates will appear here</p>
+                <Bell className="h-8 w-8 text-[#DADCE0] mx-auto mb-2" />
+                <p className="text-sm text-[#9AA0A6]">No new notifications</p>
+                <p className="text-xs text-[#9AA0A6] mt-1">Campaign updates will appear here</p>
               </div>
             </div>
           )}
@@ -138,6 +131,6 @@ export function TopBar({
       </div>
 
       {rightActions}
-    </div>
+    </header>
   );
 }

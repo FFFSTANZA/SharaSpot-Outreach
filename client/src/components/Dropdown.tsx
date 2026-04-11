@@ -117,7 +117,7 @@ export default function Dropdown({
   return (
     <div ref={containerRef} className={cn("relative", className)}>
       {label && (
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">
+        <label className="mb-1.5 block text-sm font-medium text-[#1A1D21]">
           {label}
         </label>
       )}
@@ -131,21 +131,21 @@ export default function Dropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className={cn(
-          "flex w-full items-center justify-between rounded-md bg-gray-100 px-4 py-3 text-sm",
+          "flex w-full items-center justify-between rounded-md bg-[#F1F3F4] px-4 py-3 text-sm",
           "min-h-[44px] transition-all duration-150",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A63E]/50",
           disabled
             ? "cursor-not-allowed opacity-50"
-            : "cursor-pointer hover:bg-gray-200/70",
-          isOpen && "ring-2 ring-primary/50"
+            : "cursor-pointer hover:bg-[#E8EAED]",
+          isOpen && "ring-2 ring-[#00A63E]/50"
         )}
       >
-        <span className={selectedOption ? "text-gray-900" : "text-gray-500"}>
+        <span className={selectedOption ? "text-[#1A1D21]" : "text-[#9AA0A6]"}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-gray-400 transition-transform duration-200",
+            "h-4 w-4 text-[#9AA0A6] transition-transform duration-200",
             isOpen && "rotate-180"
           )}
         />
@@ -154,7 +154,7 @@ export default function Dropdown({
       {/* Options list */}
       <div
         className={cn(
-          "absolute z-50 mt-1.5 w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg",
+          "absolute z-50 mt-1.5 w-full overflow-hidden rounded-md border border-[#E8EAED] bg-white shadow-lg",
           "origin-top transition-all duration-200 ease-out",
           isOpen
             ? "scale-y-100 opacity-100"
@@ -162,7 +162,7 @@ export default function Dropdown({
         )}
       >
         {options.length === 0 ? (
-          <div className="px-4 py-3 text-sm text-gray-400">
+          <div className="px-4 py-3 text-sm text-[#9AA0A6]">
             No options available
           </div>
         ) : (
@@ -181,11 +181,11 @@ export default function Dropdown({
                 className={cn(
                   "cursor-pointer px-4 py-2.5 text-sm transition-colors duration-100",
                   option.value === value
-                    ? "bg-primary-light font-medium text-primary"
-                    : "text-gray-700",
+                    ? "bg-[#E8F5E9] font-medium text-[#037A31]"
+                    : "text-[#5F6368]",
                   highlightedIndex === index &&
                     option.value !== value &&
-                    "bg-gray-50"
+                    "bg-[#F1F3F4]"
                 )}
               >
                 {option.label}

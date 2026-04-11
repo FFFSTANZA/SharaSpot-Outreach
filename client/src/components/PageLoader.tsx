@@ -25,7 +25,7 @@ export function PageLoader({ message }: { message?: string }) {
       </div>
 
       {/* Brand name */}
-      <p className="text-lg font-bold text-gray-900 tracking-tight mb-2">Shara<span className="text-primary">Spot</span></p>
+      <p className="text-lg font-bold text-gray-900 tracking-tight mb-2">Shara<span className="text-teal-600">Spot</span></p>
 
       {/* Loading message */}
       {message && (
@@ -34,9 +34,9 @@ export function PageLoader({ message }: { message?: string }) {
 
       {/* Three-dot bounce */}
       <div className="flex items-center gap-1.5">
-        <div className="h-2 w-2 rounded-full bg-primary/40 animate-[bounce_1.4s_ease-in-out_infinite]" />
-        <div className="h-2 w-2 rounded-full bg-primary/40 animate-[bounce_1.4s_ease-in-out_0.2s_infinite]" />
-        <div className="h-2 w-2 rounded-full bg-primary/40 animate-[bounce_1.4s_ease-in-out_0.4s_infinite]" />
+        <div className="h-2 w-2 rounded-full bg-teal-600/40 animate-[bounce_1.4s_ease-in-out_infinite]" />
+        <div className="h-2 w-2 rounded-full bg-teal-600/40 animate-[bounce_1.4s_ease-in-out_0.2s_infinite]" />
+        <div className="h-2 w-2 rounded-full bg-teal-600/40 animate-[bounce_1.4s_ease-in-out_0.4s_infinite]" />
       </div>
     </div>
   );
@@ -52,15 +52,15 @@ export function InlineLoader({ message }: { message?: string }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-20">
       <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/10 to-emerald-100/50 flex items-center justify-center mb-4">
-        <Sparkles className="h-5 w-5 text-primary/60 animate-pulse" />
+        <Sparkles className="h-5 w-5 text-teal-600/60 animate-pulse" />
       </div>
       {message && (
         <p className="text-sm text-gray-400 mb-4">{message}</p>
       )}
       <div className="flex items-center gap-1.5">
-        <div className="h-1.5 w-1.5 rounded-full bg-primary/30 animate-[bounce_1.4s_ease-in-out_infinite]" />
-        <div className="h-1.5 w-1.5 rounded-full bg-primary/30 animate-[bounce_1.4s_ease-in-out_0.2s_infinite]" />
-        <div className="h-1.5 w-1.5 rounded-full bg-primary/30 animate-[bounce_1.4s_ease-in-out_0.4s_infinite]" />
+        <div className="h-1.5 w-1.5 rounded-full bg-teal-600/30 animate-[bounce_1.4s_ease-in-out_infinite]" />
+        <div className="h-1.5 w-1.5 rounded-full bg-teal-600/30 animate-[bounce_1.4s_ease-in-out_0.2s_infinite]" />
+        <div className="h-1.5 w-1.5 rounded-full bg-teal-600/30 animate-[bounce_1.4s_ease-in-out_0.4s_infinite]" />
       </div>
     </div>
   );

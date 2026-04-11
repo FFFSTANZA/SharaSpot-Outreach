@@ -21,6 +21,10 @@ import sequenceRoutes from "./routes/sequenceRoutes";
 import trackingRoutes from "./routes/trackingRoutes";
 import trackingMetricsRoutes from "./routes/trackingMetricsRoutes";
 import replyRoutes from "./routes/replyRoutes";
+import analyticsRoutes from "./routes/analyticsRoutes";
+import subscriptionRoutes, { webhookRouter } from "./routes/subscriptionRoutes";
+import validationRoutes from "./routes/validationRoutes";
+import premiumRoutes from "./routes/premiumRoutes";
 
 /* CONFIGURATIONS */
 const app = express();
@@ -48,6 +52,11 @@ app.use("/templates", authMiddleware, templateRoutes);
 app.use("/campaigns/:id/sequence", authMiddleware, sequenceRoutes);
 app.use("/api/tracking", authMiddleware, trackingMetricsRoutes);
 app.use("/api/replies", authMiddleware, replyRoutes);
+app.use("/api/analytics", authMiddleware, analyticsRoutes);
+app.use("/api/subscription", authMiddleware, subscriptionRoutes);
+app.use("/api/subscription/webhook", webhookRouter);
+app.use("/api", authMiddleware, validationRoutes);
+app.use("/api/premium", authMiddleware, premiumRoutes);
 
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;

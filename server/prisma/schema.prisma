@@ -18,6 +18,36 @@ model User {
   campaigns     EmailCampaign[]
   refreshTokens RefreshToken[]
   templates     EmailTemplate[]
+  subscription  Subscription?
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+  ON_HOLD
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  userId                 String             @unique
+  dodoCustomerId         String?
+  dodoSubscriptionId     String?
+  status                 SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart     DateTime           @default(now())
+  currentPeriodEnd       DateTime
+  cancelAtPeriodEnd      Boolean            @default(false)
+  cancelAt               DateTime?
+  trialEnd               DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([dodoSubscriptionId])
+  @@index([status])
 }
 
 model Sender {
@@ -225,8 +255,8 @@ model Attachment {
 }
 
 model EmailTemplate {
-  id      String @id @default(cuid())
-  userId  String
+  id      String  @id @default(cuid())
+  userId  String? // Null for system templates available to all users
   name    String
   subject String
   body    String
@@ -234,11 +264,12 @@ model EmailTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 
-  // Enforce unique template names per user
+  // System templates have unique names across all users
+  // User templates have unique names per user
   @@unique([userId, name])
-  // Index for efficient user-scoped queries
+  // Index for efficient queries
   @@index([userId])
 }
 

@@ -235,7 +235,7 @@ export default function LandingPage() {
               <Rocket className="h-3.5 w-3.5" />
               Not another email blast tool
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-gray-900 leading-[1.15] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-gray-900 leading-[1.1] tracking-tighter">
               Your inbox is your<br />
               <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">most powerful channel</span>
             </h1>
@@ -314,8 +314,8 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="text-center mb-12 md:mb-20">
             <p className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-3">Features</p>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Built for outreach that<br className="hidden sm:block" /> doesn't land in spam
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight max-w-2xl mx-auto">
+              Built for outreach that doesn't land in spam
             </h2>
             <p className="mt-4 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
               Not just another bulk emailer. SharaSpot is built for professionals who need smart, safe, and trackable cold outreach.
@@ -329,8 +329,8 @@ export default function LandingPage() {
                   <div className={`relative mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${f.color} shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all duration-300`}>
                     <f.icon className="h-5 w-5 text-white" strokeWidth={1.8} />
                   </div>
-                  <h3 className="relative text-sm font-bold text-gray-900 mb-1.5">{f.title}</h3>
-                  <p className="relative text-xs text-gray-600 leading-relaxed flex-1">{f.desc}</p>
+                  <h3 className="relative text-base font-bold text-gray-900 mb-2">{f.title}</h3>
+                  <p className="relative text-sm text-gray-600 leading-relaxed flex-1">{f.desc}</p>
                 </div>
               </AnimatedSection>
             ))}
@@ -357,8 +357,8 @@ export default function LandingPage() {
                   <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${uc.color} shadow-md mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     <uc.icon className="h-5 w-5 text-white" strokeWidth={1.8} />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-1.5">{uc.title}</h3>
-                  <p className="text-xs text-gray-600 leading-relaxed flex-1">{uc.desc}</p>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">{uc.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed flex-1">{uc.desc}</p>
                 </div>
               </AnimatedSection>
             ))}
@@ -481,8 +481,8 @@ export default function LandingPage() {
                   <div className="relative mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 group-hover:bg-emerald-100 transition-colors duration-300">
                     <f.icon className="h-4 w-4 text-gray-600 group-hover:text-emerald-600 transition-colors duration-300" strokeWidth={1.8} />
                   </div>
-                  <h3 className="relative text-sm font-bold text-gray-900 mb-1">{f.title}</h3>
-                  <p className="relative text-xs text-gray-600 leading-relaxed flex-1">{f.desc}</p>
+                  <h3 className="relative text-base font-bold text-gray-900 mb-1">{f.title}</h3>
+                  <p className="relative text-sm text-gray-600 leading-relaxed flex-1">{f.desc}</p>
                   <div className="relative mt-3 flex items-center gap-1.5">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">Coming Soon</span>

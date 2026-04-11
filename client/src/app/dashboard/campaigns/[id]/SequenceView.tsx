@@ -90,7 +90,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
       <div className="flex flex-col items-center justify-center py-12 gap-3">
         <AlertCircle className="h-8 w-8 text-red-300" />
         <p className="text-sm text-gray-500">{error}</p>
-        <button onClick={fetchData} className="text-sm text-primary hover:underline">Retry</button>
+        <button onClick={fetchData} className="text-sm text-teal-600 hover:underline">Retry</button>
       </div>
     );
   }
@@ -170,7 +170,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
                   {!recipient.completed && (
                     <>
                       {recipient.paused ? (
-                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary-light transition-colors"
+                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
                           onClick={() => handleRecipientAction(recipient.id, "resume")}
                           disabled={!!actionLoading}>
                           <Play className="h-3 w-3" />

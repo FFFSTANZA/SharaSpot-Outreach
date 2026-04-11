@@ -121,7 +121,7 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
       <div className="flex flex-col items-center justify-center py-12 gap-3">
         <AlertTriangle className="h-8 w-8 text-red-300" />
         <p className="text-sm text-gray-500">{error}</p>
-        <button onClick={fetchData} className="text-sm text-primary hover:underline">Retry</button>
+        <button onClick={fetchData} className="text-sm text-teal-600 hover:underline">Retry</button>
       </div>
     );
   }
@@ -226,7 +226,7 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
           className={cn(
             "flex-1 px-4 py-2.5 text-xs font-medium transition-colors",
             activeSection === "emails"
-              ? "text-primary border-b-2 border-primary"
+              ? "text-teal-600 border-b-2 border-teal-600"
               : "text-gray-500 hover:text-gray-600"
           )}
           onClick={() => setActiveSection("emails")}
@@ -239,7 +239,7 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
             className={cn(
               "flex-1 px-4 py-2.5 text-xs font-medium transition-colors",
               activeSection === "links"
-                ? "text-primary border-b-2 border-primary"
+                ? "text-teal-600 border-b-2 border-teal-600"
                 : "text-gray-500 hover:text-gray-600"
             )}
             onClick={() => setActiveSection("links")}

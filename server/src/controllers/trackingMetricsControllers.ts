@@ -58,6 +58,7 @@ export const getCampaignTrackingMetrics = async (req: Request, res: Response): P
       repliedCount,
       uniqueOpens: uniqueOpens.length,
       uniqueClicks: uniqueClicks.length,
+      notOpened: totalSent - uniqueOpens.length,
       openRate,
       clickRate,
       replyRate,
@@ -143,5 +144,94 @@ export const getCampaignTrackingLinks = async (req: Request, res: Response): Pro
     res.status(200).json({ links });
   } catch (error) {
     res.status(500).json({ message: "Error fetching tracking links" });
+  }
+};
+
+/**
+ * GET /api/tracking/campaigns/:campaignId/link-analytics
+ * Returns detailed link analytics with per-email breakdown.
+ */
+export const getCampaignLinkAnalytics = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+
+    const clickEvents = await prisma.trackingEvent.findMany({
+      where: {
+        emailJob: { campaignId: campaign.id },
+        eventType: "CLICK",
+        url: { not: null },
+      },
+      select: {
+        url: true,
+        createdAt: true,
+        emailJob: {
+          select: {
+            id: true,
+            toEmail: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    interface LinkEmailDetail {
+      emailJobId: string;
+      toEmail: string;
+      clickedAt: string;
+    }
+
+    interface LinkAnalyticsInternal {
+      url: string;
+      totalClicks: number;
+      uniqueEmailIds: Set<string>;
+      emails: LinkEmailDetail[];
+    }
+
+    interface LinkAnalytics {
+      url: string;
+      totalClicks: number;
+      uniqueEmails: number;
+      emails: LinkEmailDetail[];
+    }
+
+    const linkMap = new Map<string, LinkAnalyticsInternal>();
+
+    for (const event of clickEvents) {
+      if (!event.url) continue;
+
+      if (!linkMap.has(event.url)) {
+        linkMap.set(event.url, {
+          url: event.url,
+          totalClicks: 0,
+          uniqueEmailIds: new Set<string>(),
+          emails: [],
+        });
+      }
+
+      const link = linkMap.get(event.url)!;
+      link.totalClicks++;
+      if (!link.uniqueEmailIds.has(event.emailJob.id)) {
+        link.uniqueEmailIds.add(event.emailJob.id);
+        link.emails.push({
+          emailJobId: event.emailJob.id,
+          toEmail: event.emailJob.toEmail,
+          clickedAt: event.createdAt.toISOString(),
+        });
+      }
+    }
+
+    const links: LinkAnalytics[] = Array.from(linkMap.values())
+      .map((l) => ({
+        url: l.url,
+        totalClicks: l.totalClicks,
+        uniqueEmails: l.uniqueEmailIds.size,
+        emails: l.emails,
+      }))
+      .sort((a, b) => b.totalClicks - a.totalClicks);
+
+    res.status(200).json({ links });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching link analytics" });
   }
 };

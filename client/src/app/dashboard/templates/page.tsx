@@ -12,6 +12,7 @@ import { useToast } from "@/context/ToastContext";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 import TemplateFormModal from "./TemplateFormModal";
+import { cn } from "@/lib/utils";
 import {
   AlertCircle,
   Inbox,
@@ -21,6 +22,7 @@ import {
   Plus,
   Pencil,
   Trash2,
+  Star,
 } from "lucide-react";
 
 export default function TemplatesPage() {
@@ -173,7 +175,7 @@ export default function TemplatesPage() {
                 <p className="text-sm text-gray-500">{error}</p>
                 <button
                   onClick={fetchTemplates}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-teal-600 hover:underline"
                 >
                   Retry
                 </button>
@@ -217,31 +219,43 @@ export default function TemplatesPage() {
                   {(filteredTemplates || []).map((template, index) => (
                     <div
                       key={template.id}
-                      className="group rounded-xl bg-white border border-gray-100 p-5 shadow-sm
-                        hover:shadow-md hover:-translate-y-0.5 transition-all duration-200
-                        opacity-0 animate-[fadeIn_0.3s_ease-out_forwards]"
+                      className={cn(
+                        "group rounded-xl bg-white border p-5 shadow-sm transition-all duration-200 opacity-0 animate-[fadeIn_0.3s_ease-out_forwards]",
+                        template.isSystem
+                          ? "border-amber-100 hover:border-amber-200"
+                          : "border-gray-100 hover:shadow-md hover:-translate-y-0.5"
+                      )}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="text-sm font-semibold text-gray-900 truncate flex-1">
-                          {template.name}
-                        </h3>
-                        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
-                          <button
-                            onClick={() => handleEdit(template)}
-                            className="p-1.5 rounded-lg text-gray-500 hover:text-primary hover:bg-primary-light transition-colors"
-                            aria-label={`Edit ${template.name}`}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(template)}
-                            className="p-1.5 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
-                            aria-label={`Delete ${template.name}`}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <h3 className="text-sm font-semibold text-gray-900 truncate">
+                            {template.name}
+                          </h3>
+                          {template.isSystem && (
+                            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-100 px-2 py-0.5 text-[9px] font-semibold text-amber-600">
+                              <Star className="h-2.5 w-2.5" /> Default
+                            </span>
+                          )}
                         </div>
+                        {!template.isSystem && (
+                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
+                            <button
+                              onClick={() => handleEdit(template)}
+                              className="p-1.5 rounded-lg text-gray-500 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+                              aria-label={`Edit ${template.name}`}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(template)}
+                              className="p-1.5 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              aria-label={`Delete ${template.name}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                       <p className="text-xs text-gray-500 truncate mb-3">
                         {template.subject || "No subject"}
@@ -250,7 +264,7 @@ export default function TemplatesPage() {
                         {stripHtml(template.body).slice(0, 80) || "No content"}
                       </p>
                       <p className="text-[11px] text-gray-500">
-                        Updated {formatDate(template.updatedAt)}
+                        {template.isSystem ? "Default template" : `Updated ${formatDate(template.updatedAt)}`}
                       </p>
                     </div>
                   ))}

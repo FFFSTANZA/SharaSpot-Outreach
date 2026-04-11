@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
+import { checkPremiumStatus } from "../utils/premiumCheck";
 
 export const getUser = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -7,11 +8,18 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
-    if (user) {
-      res.json(user);
-    } else {
+
+    if (!user) {
       res.status(404).json({ message: "User not found" });
+      return;
     }
+
+    const { isPremium } = await checkPremiumStatus(userId);
+
+    res.json({
+      ...user,
+      isPremium,
+    });
   } catch (error: any) {
     res.status(500).json({ message: "An error occurred while retrieving user" });
   }

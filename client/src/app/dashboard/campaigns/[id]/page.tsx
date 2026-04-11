@@ -14,7 +14,7 @@ import CampaignControls from "@/components/CampaignControls";
 import SequenceView from "./SequenceView";
 import SenderStats from "./SenderStats";
 import ThrottlePanel from "./ThrottlePanel";
-import TrackingTab from "./TrackingTab";
+import AnalyticsTab from "./AnalyticsTab";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -52,7 +52,7 @@ export default function CampaignDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [label, setLabel] = useState("Campaign");
-  const [activeTab, setActiveTab] = useState<"emails" | "sequence" | "tracking">("emails");
+  const [activeTab, setActiveTab] = useState<"emails" | "sequence" | "analytics">("emails");
   const [senderFilter, setSenderFilter] = useState<string>("all");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -200,7 +200,7 @@ export default function CampaignDetailPage() {
               <div className="flex-1 flex flex-col items-center justify-center gap-3">
                 <AlertCircle className="h-8 w-8 text-red-300" />
                 <p className="text-sm text-gray-500">{error}</p>
-                <button onClick={fetchCampaign} className="text-sm text-primary hover:underline">Retry</button>
+                <button onClick={fetchCampaign} className="text-sm text-teal-600 hover:underline">Retry</button>
               </div>
             ) : campaign ? (
               <div className="px-3 md:px-6 py-4 md:py-6 space-y-4">
@@ -288,45 +288,45 @@ export default function CampaignDetailPage() {
                       className={cn(
                         "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
                         activeTab === "emails"
-                          ? "text-primary"
+                          ? "text-teal-600"
                           : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
                       )}
                       onClick={() => setActiveTab("emails")}
                     >
-                      <Mail className={cn("h-4 w-4", activeTab === "emails" ? "text-primary" : "text-gray-500")} />
+                      <Mail className={cn("h-4 w-4", activeTab === "emails" ? "text-teal-600" : "text-gray-500")} />
                       <span>Emails ({campaign.emails.length})</span>
                       {activeTab === "emails" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-[stretch_0.2s_ease-out]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
                       )}
                     </button>
                     <button
                       className={cn(
                         "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
                         activeTab === "sequence"
-                          ? "text-primary"
+                          ? "text-teal-600"
                           : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
                       )}
                       onClick={() => setActiveTab("sequence")}
                     >
-                      <Layout className={cn("h-4 w-4", activeTab === "sequence" ? "text-primary" : "text-gray-500")} />
+                      <Layout className={cn("h-4 w-4", activeTab === "sequence" ? "text-teal-600" : "text-gray-500")} />
                       <span>Sequence</span>
                       {activeTab === "sequence" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-[stretch_0.2s_ease-out]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
                       )}
                     </button>
                     <button
                       className={cn(
                         "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
-                        activeTab === "tracking"
-                          ? "text-primary"
+                        activeTab === "analytics"
+                          ? "text-teal-600"
                           : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
                       )}
-                      onClick={() => setActiveTab("tracking")}
+                      onClick={() => setActiveTab("analytics")}
                     >
-                      <BarChart3 className={cn("h-4 w-4", activeTab === "tracking" ? "text-primary" : "text-gray-500")} />
-                      <span>Tracking</span>
-                      {activeTab === "tracking" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-[stretch_0.2s_ease-out]" />
+                      <BarChart3 className={cn("h-4 w-4", activeTab === "analytics" ? "text-teal-600" : "text-gray-500")} />
+                      <span>Analytics</span>
+                      {activeTab === "analytics" && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
                       )}
                     </button>
                   </div>
@@ -445,7 +445,7 @@ export default function CampaignDetailPage() {
                       <SequenceView campaignId={campaign.id} />
                     </div>
                   ) : (
-                    <TrackingTab campaignId={campaign.id} />
+                    <AnalyticsTab campaignId={campaign.id} />
                   )}
                 </div>
               </div>

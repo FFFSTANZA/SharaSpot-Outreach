@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ComposeFormData, ComposeFormProps, SenderResponse, CreateCampaignPayload } from "@/types";
-import { getSenders } from "@/lib/apis";
+import { getSenders, BatchValidationResponse } from "@/lib/apis";
 import { SenderModal } from "./SenderModal";
 import { Editor } from "./Editor";
 import { X, FileSpreadsheet, CheckCircle2, AlertCircle, Plus, Check, AlertTriangle, Clock, Gauge, ChevronDown, Users, FileText, Eye, MousePointer2 } from "lucide-react";
@@ -12,6 +12,7 @@ import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import VariablePreview from "./VariablePreview";
 import SequenceBuilder from "./SequenceBuilder";
+import { EmailValidator } from "./EmailValidator";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
   const [sequenceSteps, setSequenceSteps] = useState<SequenceStepInput[]>([]);
   const [trackOpens, setTrackOpens] = useState(false);
   const [trackClicks, setTrackClicks] = useState(false);
+  const [validationResult, setValidationResult] = useState<BatchValidationResponse | null>(null);
 
   const verifiedSenders = senders.filter(s => s.isVerified);
   const selectedSenders = senders.filter(s => data.selectedSenderIds.includes(s.id));
@@ -360,10 +362,15 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                         }}
                       />
                       <button type="button" onClick={() => csvInputRef.current?.click()}
-                        className="shrink-0 h-7 md:h-8 px-2 md:px-3 rounded-lg border border-gray-200 bg-gray-50/50 text-[9px] md:text-[10px] font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center gap-1.5 ml-auto group">
+                        className="shrink-0 h-7 md:h-8 px-2 md:px-3 rounded-lg border border-gray-200 bg-gray-50/50 text-[9px] md:text-[10px] font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center gap-1.5 group">
                         <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-500 group-hover:scale-110 transition-transform" />
                         <span>Import CSV</span>
                       </button>
+                      <EmailValidator 
+                        emails={data.to} 
+                        onRemoveEmail={(email) => setData({ ...data, to: data.to.filter(e => e !== email) })}
+                        onValidationComplete={(result) => setValidationResult(result)}
+                      />
                     </div>
                     {errors.to && <p className="text-[11px] text-red-500 mt-1">{errors.to}</p>}
                     {csvMessage && <p className="text-[10px] text-emerald-600 mt-1 flex items-center gap-1 font-medium"><CheckCircle2 className="h-3 w-3" />{csvMessage}</p>}
@@ -421,7 +428,7 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                       <div className="flex items-center gap-1">
                         <input type="text" inputMode="numeric" placeholder="30" value={data.delayBetweenEmails || ""}
                           onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); setData({ ...data, delayBetweenEmails: v === "" ? 0 : Number(v) }); }}
-                          className="h-6 w-9 md:w-11 rounded-md border border-gray-200 bg-white text-center text-[10px] md:text-xs font-bold text-gray-900 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/5 transition-all transition-all" />
+                          className="h-6 w-9 md:w-11 rounded-md border border-gray-200 bg-white text-center text-[10px] md:text-xs font-bold text-gray-900 outline-none focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/5 transition-all transition-all" />
                         <span className="text-[9px] text-gray-400 font-medium">s</span>
                       </div>
                     </div>
@@ -436,7 +443,7 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                       <div className="flex items-center gap-1">
                         <input type="text" inputMode="numeric" placeholder="50" value={data.hourlyLimit || ""}
                           onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); setData({ ...data, hourlyLimit: v === "" ? 0 : Number(v) }); }}
-                          className="h-6 w-9 md:w-11 rounded-md border border-gray-200 bg-white text-center text-[10px] md:text-xs font-bold text-gray-900 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/5 transition-all transition-all" />
+                          className="h-6 w-9 md:w-11 rounded-md border border-gray-200 bg-white text-center text-[10px] md:text-xs font-bold text-gray-900 outline-none focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/5 transition-all transition-all" />
                         <span className="text-[9px] text-gray-400 font-medium">/hr</span>
                       </div>
                     </div>

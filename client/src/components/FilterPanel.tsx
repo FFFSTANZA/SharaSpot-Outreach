@@ -59,7 +59,7 @@ export default function FilterPanel({
         <Filter className="h-4 w-4" />
         <span className="hidden md:inline">Filters</span>
         {activeFilterCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-teal-600 text-white text-[9px] font-bold flex items-center justify-center">
             {activeFilterCount}
           </span>
         )}

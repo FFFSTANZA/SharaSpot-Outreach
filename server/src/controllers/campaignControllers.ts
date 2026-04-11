@@ -11,6 +11,8 @@ import { getEffectiveLimits } from "../utils/throttleEngine";
 import { isInWarmup } from "../utils/warmupEvaluator";
 import { getAdaptiveState } from "../utils/adaptiveThrottle";
 import { getSentCountToday } from "../utils/dailyLimitTracker";
+import { requirePremium } from "../utils/premiumCheck";
+import { FREE_TIER_LIMITS } from "../config/subscription";
 
 /**
  * createCampaign — Creates an email campaign with full input validation,
@@ -164,6 +166,37 @@ export const createCampaign = async (
           email,
           columnData: typeof entry === "object" ? entry.columnData : undefined,
         });
+      }
+    }
+
+    // --- Step 4b: Premium check for multi-sender routing ---
+    if (senderIds.length > 1) {
+      const premiumCheck = await requirePremium(req.user!.id, "Multi-sender routing");
+      if (!premiumCheck.allowed) {
+        res.status(403).json({
+          message: premiumCheck.message,
+          upgradeRequired: true,
+        });
+        return;
+      }
+    }
+
+    // --- Step 4c: Free tier limits ---
+    const { isPremium } = await import("../utils/premiumCheck").then(m => m.checkPremiumStatus(req.user!.id));
+    if (!isPremium) {
+      // Check campaign count limit (free tier: 3 active campaigns)
+      const activeCampaigns = await prisma.emailCampaign.count({
+        where: {
+          userId: req.user!.id,
+          status: { in: ["SCHEDULED", "SENDING"] },
+        },
+      });
+      if (activeCampaigns >= FREE_TIER_LIMITS.maxCampaigns) {
+        res.status(403).json({
+          message: `Free tier is limited to ${FREE_TIER_LIMITS.maxCampaigns} active campaigns. Upgrade to premium for unlimited campaigns.`,
+          upgradeRequired: true,
+        });
+        return;
       }
     }
 

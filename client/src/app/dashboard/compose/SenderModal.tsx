@@ -185,7 +185,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
                 href="https://myaccount.google.com/apppasswords"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline inline-flex items-center gap-0.5"
+                className="text-teal-600 hover:underline inline-flex items-center gap-0.5"
               >
                 Generate one here <ExternalLink className="h-2.5 w-2.5" />
               </a>
@@ -199,7 +199,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
               checked={skipWarmup}
               onChange={(e) => setSkipWarmup(e.target.checked)}
               disabled={isSubmitting}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary"
+              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-teal-600 focus:ring-teal-600"
             />
             <div>
               <span className="text-xs font-medium text-gray-600">Skip warmup period</span>

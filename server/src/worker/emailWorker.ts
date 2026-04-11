@@ -491,6 +491,25 @@ export async function processEmailJob(job: Job): Promise<void> {
     const emailBody = resolved.body;
 
     // ---------------------------------------------------------------------------
+    // Spam Score Check (pre-send) - Log warning if high risk
+    // ---------------------------------------------------------------------------
+    // Use the spam detector to check email content before sending
+    // This is a warning only - we don't block sending (that would be too aggressive)
+    // ---------------------------------------------------------------------------
+    try {
+      const { quickSpamScore } = await import("../utils/spamDetector");
+      const spamScore = quickSpamScore(emailSubject, emailBody.replace(/<[^>]*>?/gm, ''));
+      
+      // Log warning for scores >= 40
+      if (spamScore >= 40) {
+        console.warn(`[SPAM CHECK] EmailJob ${emailJobId} has spam score ${spamScore} (threshold: 40)`);
+      }
+    } catch (spamCheckError) {
+      // Non-blocking - spam check failure shouldn't stop sending
+      console.error(`[SPAM CHECK] Failed for ${emailJobId}:`, spamCheckError);
+    }
+
+    // ---------------------------------------------------------------------------
     // Email threading — build In-Reply-To and References for follow-ups
     // ---------------------------------------------------------------------------
     // For follow-up sequence emails, we find the previous step's email job for

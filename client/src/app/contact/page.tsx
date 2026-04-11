@@ -38,7 +38,7 @@ export default function ContactPage() {
 
       <main className="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-16">
         <div className="mb-10">
-          <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Contact</p>
+          <p className="text-xs font-semibold text-teal-600 uppercase tracking-wider mb-3">Contact</p>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
             Get in touch
           </h2>
@@ -53,7 +53,7 @@ export default function ContactPage() {
             href="mailto:support@folonite.in"
             className="flex items-center gap-4 rounded-xl border border-gray-100 p-5 hover:border-gray-200 hover:shadow-sm transition-all group"
           >
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <div className="h-10 w-10 rounded-xl bg-teal-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
               <Mail className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -100,7 +100,7 @@ export default function ContactPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full h-11 rounded-lg border border-gray-200 bg-gray-50 px-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-300 transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                  className="w-full h-11 rounded-lg border border-gray-200 bg-gray-50 px-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-300 transition-all focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/10"
                 />
               </div>
               <div>
@@ -111,7 +111,7 @@ export default function ContactPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full h-11 rounded-lg border border-gray-200 bg-gray-50 px-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-300 transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                  className="w-full h-11 rounded-lg border border-gray-200 bg-gray-50 px-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-300 transition-all focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/10"
                 />
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function ContactPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="What's on your mind?"
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-900 outline-none placeholder:text-gray-300 transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10 resize-none"
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-900 outline-none placeholder:text-gray-300 transition-all focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/10 resize-none"
               />
             </div>
             <button
