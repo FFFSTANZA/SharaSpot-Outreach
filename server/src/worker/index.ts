@@ -2,13 +2,15 @@ import "dotenv/config";
 import crypto from "crypto";
 import { prisma } from "../config/prisma";
 import { emailQueue } from "../queues/emailQueue";
+import { priorityQueue, PRIORITY_QUEUE_NAME } from "../queues/priorityQueue";
 import { processSchedulerJob } from "./sequenceScheduler";
 import { autoResumePausedCampaigns } from "./autoResumeJob";
 import { processReplyDetectionJob, startIdleSessions, stopIdleSessions } from "./replyDetector";
 import { startTrackingBuffer, stopTrackingBuffer } from "../controllers/trackingControllers";
 import { pruneOldTrackingEvents } from "./trackingPruner";
-import { Queue, Worker } from "bullmq";
+import { Queue, Worker, Job } from "bullmq";
 import { redis } from "../config/redis";
+import { processPriorityJob } from "./priorityEmailWorker";
 
 /**
  * Startup Recovery Sweep
@@ -110,6 +112,91 @@ async function sweepStaleSendingJobs(): Promise<void> {
 }
 
 /**
+ * Priority Queue Recovery Sweep
+ * 
+ * WHY: Similar to the email queue, priority queue jobs can be orphaned
+ * if the worker crashes while processing. This sweeps PRIORITY_SENDING
+ * jobs and resets them to PRIORITY_PENDING for reprocessing.
+ */
+async function recoverOrphanedPriorityJobs(): Promise<void> {
+  const orphanedJobs = await prisma.priorityQueueJob.findMany({
+    where: { status: "PRIORITY_SENDING" },
+    select: { emailJobId: true, userId: true },
+  });
+
+  if (orphanedJobs.length === 0) {
+    console.log("📋 Priority recovery: No orphaned PRIORITY_SENDING jobs found");
+    return;
+  }
+
+  console.log(`📋 Priority recovery: Found ${orphanedJobs.length} orphaned PRIORITY_SENDING jobs`);
+
+  for (const job of orphanedJobs) {
+    await prisma.priorityQueueJob.updateMany({
+      where: { emailJobId: job.emailJobId, status: "PRIORITY_SENDING" },
+      data: { status: "PRIORITY_PENDING", statusMessage: "Recovered from crash" },
+    });
+
+    await priorityQueue.add(
+      "send-priority-email",
+      { emailJobId: job.emailJobId, userId: job.userId },
+      {
+        jobId: `priority-${job.emailJobId}-recovery-${crypto.randomUUID()}`,
+        delay: 0,
+      },
+    );
+  }
+
+  console.log(`✅ Priority recovery: Recovered ${orphanedJobs.length} orphaned priority jobs`);
+}
+
+/**
+ * Periodic Stale Priority Job Sweep
+ * 
+ * WHY: Jobs can get stuck in PRIORITY_SENDING state if SMTP calls hang
+ * or unhandled errors occur. This periodic sweep finds jobs that have
+ * been in PRIORITY_SENDING for longer than the threshold and resets them.
+ */
+const PRIORITY_STALE_THRESHOLD_MS = parseInt(
+  process.env.PRIORITY_STALE_THRESHOLD_MS || "300000", // 5 minutes
+  10,
+);
+
+async function sweepStalePriorityJobs(): Promise<void> {
+  const cutoff = new Date(Date.now() - PRIORITY_STALE_THRESHOLD_MS);
+
+  const staleJobs = await prisma.priorityQueueJob.findMany({
+    where: {
+      status: "PRIORITY_SENDING",
+      updatedAt: { lt: cutoff },
+    },
+    select: { emailJobId: true, userId: true },
+  });
+
+  if (staleJobs.length === 0) return;
+
+  console.log(`🔍 Priority stale sweep: Found ${staleJobs.length} PRIORITY_SENDING jobs older than ${PRIORITY_STALE_THRESHOLD_MS / 1000}s`);
+
+  for (const job of staleJobs) {
+    await prisma.priorityQueueJob.updateMany({
+      where: { emailJobId: job.emailJobId, status: "PRIORITY_SENDING" },
+      data: { status: "PRIORITY_PENDING", statusMessage: "Recovered from stale state" },
+    });
+
+    await priorityQueue.add(
+      "send-priority-email",
+      { emailJobId: job.emailJobId, userId: job.userId },
+      {
+        jobId: `priority-${job.emailJobId}-stale-recovery-${crypto.randomUUID()}`,
+        delay: 0,
+      },
+    );
+  }
+
+  console.log(`✅ Priority stale sweep: Recovered ${staleJobs.length} jobs`);
+}
+
+/**
  * Stuck Campaign Cleanup Sweep
  * 
  * WHY: This is the failsafe for the "stuck in Sending" bug. 
@@ -170,13 +257,18 @@ async function sweepStuckCampaigns(): Promise<void> {
 
 async function main(): Promise<void> {
   await recoverOrphanedJobs();
+  await recoverOrphanedPriorityJobs();
   await sweepStuckCampaigns(); // Run once at startup to fix any existing stuck campaigns
   
-  // Import the worker module AFTER recovery completes.
-  // This ensures orphaned jobs are reset before the worker starts polling.
+  // Import the worker modules AFTER recovery completes.
+  // This ensures orphaned jobs are reset before workers start polling.
   await import("./emailWorker");
   
+  // Start the priority email worker
+  await import("./priorityEmailWorker");
+  
   console.log("📨 Email worker started and accepting jobs");
+  console.log("⭐ Priority email worker started and accepting jobs");
 
   // Start sequence scheduler as a repeatable job
   const schedulerInterval = parseInt(process.env.SEQUENCE_SCHEDULER_INTERVAL_MS || "900000", 10); // 15 min default
@@ -260,6 +352,15 @@ async function main(): Promise<void> {
   }, STALE_SWEEP_INTERVAL_MS);
 
   console.log(`🔍 Stale-SENDING sweep started (interval: ${STALE_SWEEP_INTERVAL_MS / 1000}s, threshold: ${STALE_SENDING_THRESHOLD_MS / 1000}s)`);
+
+  // Start periodic stale-PRIORITY_SENDING sweep
+  setInterval(() => {
+    sweepStalePriorityJobs().catch((err) =>
+      console.error("❌ Priority stale sweep error:", err),
+    );
+  }, STALE_SWEEP_INTERVAL_MS);
+
+  console.log(`🔍 Priority stale sweep started (interval: ${STALE_SWEEP_INTERVAL_MS / 1000}s, threshold: ${PRIORITY_STALE_THRESHOLD_MS / 1000}s)`);
 
   // Start periodic stuck-campaign sweep (every 5 minutes)
   const STUCK_CAMPAIGN_INTERVAL_MS = 300000;
