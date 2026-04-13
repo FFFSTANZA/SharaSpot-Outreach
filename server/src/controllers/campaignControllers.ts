@@ -405,13 +405,14 @@ export const createCampaign = async (
 
         // Create follow-up steps (1–N)
         for (let s = 0; s < typedSteps.length; s++) {
-          await tx.sequenceStep.create({
+          await (tx.sequenceStep as any).create({
             data: {
               campaignId: campaign.id,
               stepNumber: s + 1,
               subject: typedSteps[s].subject,
               body: typedSteps[s].body,
               waitDays: typedSteps[s].waitDays,
+              stepConditions: typedSteps[s].condition ? { type: typedSteps[s].condition } : null,
             },
           });
         }

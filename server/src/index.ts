@@ -25,6 +25,10 @@ import analyticsRoutes from "./routes/analyticsRoutes";
 import subscriptionRoutes, { webhookRouter } from "./routes/subscriptionRoutes";
 import validationRoutes from "./routes/validationRoutes";
 import premiumRoutes from "./routes/premiumRoutes";
+import snippetRoutes from "./routes/snippetRoutes";
+import previewRoutes from "./routes/previewRoutes";
+import webhookRoutes from "./routes/webhookRoutes";
+import commentRoutes from "./routes/commentRoutes";
 
 /* CONFIGURATIONS */
 const app = express();
@@ -57,6 +61,10 @@ app.use("/api/subscription", authMiddleware, subscriptionRoutes);
 app.use("/api/subscription/webhook", webhookRouter);
 app.use("/api", authMiddleware, validationRoutes);
 app.use("/api/premium", authMiddleware, premiumRoutes);
+app.use("/api/snippets", authMiddleware, snippetRoutes);
+app.use("/api/previews", authMiddleware, previewRoutes);
+app.use("/api/webhooks", authMiddleware, webhookRoutes);
+app.use("/api/comments", authMiddleware, commentRoutes);
 
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;

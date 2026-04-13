@@ -123,19 +123,37 @@ export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProp
               )}
             >
               <div className="px-3 pb-3 space-y-3 border-t border-gray-50 pt-3">
-                {/* Wait days */}
-                <div className="flex items-center gap-2">
-                  <label className="text-[11px] font-medium text-gray-500 shrink-0">
-                    Wait
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={step.waitDays}
-                    onChange={(e) => updateStep(index, "waitDays", parseInt(e.target.value) || 1)}
-                    className="h-8 w-16 rounded-md border border-gray-200 bg-white text-center text-xs font-semibold text-gray-900 outline-none focus:border-gray-300"
-                  />
-                  <span className="text-[11px] text-gray-400">days after previous step</span>
+                {/* Condition & Wait days */}
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <label className="text-[11px] font-medium text-gray-500 shrink-0">
+                      Send if
+                    </label>
+                    <select
+                      value={step.condition || "no_reply"}
+                      onChange={(e) => updateStep(index, "condition", e.target.value)}
+                      className="h-8 rounded-md border border-gray-200 bg-white px-2 text-[11px] font-medium text-gray-700 outline-none focus:border-gray-300"
+                    >
+                      <option value="no_reply">No reply received</option>
+                      <option value="opened">Email was opened</option>
+                      <option value="clicked">Link was clicked</option>
+                      <option value="replied">Replied (manual follow-up)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="text-[11px] font-medium text-gray-500 shrink-0">
+                      after
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={step.waitDays}
+                      onChange={(e) => updateStep(index, "waitDays", parseInt(e.target.value) || 1)}
+                      className="h-8 w-16 rounded-md border border-gray-200 bg-white text-center text-xs font-semibold text-gray-900 outline-none focus:border-gray-300"
+                    />
+                    <span className="text-[11px] text-gray-400">days</span>
+                  </div>
                 </div>
 
                 {/* Subject */}

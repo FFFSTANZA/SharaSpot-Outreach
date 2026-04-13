@@ -2,6 +2,7 @@ export interface SequenceStepInput {
   subject: string;
   body: string;
   waitDays: number;
+  condition?: string;
 }
 
 export interface ValidationResult {

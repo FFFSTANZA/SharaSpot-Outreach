@@ -445,3 +445,44 @@ export const getPriorityStatus = async (campaignId: string): Promise<PriorityCam
   const res = await api.get(`/api/premium/priority/status/${campaignId}`);
   return res.data;
 };
+
+// ─── Snippets ───
+
+export interface ContentSnippet {
+  id: string;
+  name: string;
+  content: string;
+  category: string | null;
+}
+
+export const getSnippets = async (): Promise<ContentSnippet[]> => {
+  const res = await api.get("/api/snippets");
+  return res.data;
+};
+
+export const createSnippet = async (data: Partial<ContentSnippet>): Promise<ContentSnippet> => {
+  const res = await api.post("/api/snippets", data);
+  return res.data;
+};
+
+// ─── Previews ───
+
+export interface PreviewRecipient {
+  email: string;
+  columnData: Record<string, string>;
+}
+
+export interface TemplatePreview {
+  email: string;
+  subject: string;
+  body: string;
+}
+
+export const getTemplatePreviews = async (data: {
+  subject: string;
+  body: string;
+  recipients: PreviewRecipient[];
+}): Promise<TemplatePreview[]> => {
+  const res = await api.post("/api/previews", data);
+  return res.data;
+};

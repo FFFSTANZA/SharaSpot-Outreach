@@ -293,6 +293,7 @@ export interface SequenceStepInput {
   subject: string;
   body: string;
   waitDays: number;
+  condition?: "no_reply" | "opened" | "clicked" | "replied";
 }
 
 

@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ComposeFormData, ComposeFormProps, SenderResponse, CreateCampaignPayload } from "@/types";
-import { getSenders, BatchValidationResponse } from "@/lib/apis";
+import { getSenders, BatchValidationResponse, getSnippets, ContentSnippet } from "@/lib/apis";
 import { SenderModal } from "./SenderModal";
 import { Editor } from "./Editor";
-import { X, FileSpreadsheet, CheckCircle2, AlertCircle, Plus, Check, AlertTriangle, Clock, Gauge, ChevronDown, Users, FileText, Eye, MousePointer2 } from "lucide-react";
+import { X, FileSpreadsheet, CheckCircle2, AlertCircle, Plus, Check, AlertTriangle, Clock, Gauge, ChevronDown, Users, FileText, Eye, MousePointer2, Sparkles, Wand2 } from "lucide-react";
 import TemplateSelector from "./TemplateSelector";
 import type { EmailTemplate, SequenceStepInput } from "@/types";
 import Modal from "@/components/Modal";
@@ -20,6 +20,7 @@ import { getSubscription } from "@/lib/apis";
 export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, submitTrigger }: ComposeFormProps) {
   const { addToast } = useToast();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
+  const [snippets, setSnippets] = useState<ContentSnippet[]>([]);
   const [isPremium, setIsPremium] = useState(false);
   const [priorityEnabled, setPriorityEnabled] = useState(false);
   const [isSenderLoading, setIsSenderLoading] = useState(true);
@@ -41,6 +42,8 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
   const [sequenceSteps, setSequenceSteps] = useState<SequenceStepInput[]>([]);
   const [trackOpens, setTrackOpens] = useState(false);
   const [trackClicks, setTrackClicks] = useState(false);
+  const [timezone, setTimezone] = useState("UTC");
+  const [businessHours, setBusinessHours] = useState({ start: 9, end: 17, enabled: false });
   const [validationResult, setValidationResult] = useState<BatchValidationResponse | null>(null);
 
   const verifiedSenders = senders.filter(s => s.isVerified);
@@ -72,6 +75,12 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
         } else if (list.length > 0) {
           setData(prev => ({ ...prev, from: list[0].email, selectedSenderIds: [list[0].id] }));
         }
+        // Fetch snippets
+        try {
+          const s = await getSnippets();
+          setSnippets(s);
+        } catch {}
+
         // Check premium status
         try {
           const sub = await getSubscription();
@@ -130,6 +139,9 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
         trackOpens,
         trackClicks,
         isPriority: priorityEnabled,
+        timezone,
+        businessStartHour: businessHours.enabled ? businessHours.start : null,
+        businessEndHour: businessHours.enabled ? businessHours.end : null,
       });
     } catch (err: any) {
       setSubmitError(err?.response?.data?.message || "Failed to create campaign.");
@@ -222,7 +234,6 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                   <span className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-wider shrink-0 w-12 md:w-16">From</span>
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <div className="relative flex-1 min-w-0" ref={senderDropdownRef}>
-                      {/* Dropdown trigger */}
                       <button
                         type="button"
                         className="w-full h-8 md:h-9 bg-transparent text-xs md:text-sm text-gray-900 outline-none truncate cursor-pointer text-left flex items-center justify-between pr-1"
@@ -230,20 +241,15 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                         disabled={isSenderLoading}
                       >
                         <span className="flex-1 truncate pr-2 font-medium">
-                          {isSenderLoading
-                            ? "Loading senders..."
-                            : senders.length === 0
-                            ? "No senders added"
-                            : data.selectedSenderIds.length === 0
-                            ? "Select senders..."
-                            : data.selectedSenderIds.length === 1
-                            ? (selectedSender?.name ? `${selectedSender.name} (${selectedSender.email})` : selectedSender?.email || "")
-                            : `${data.selectedSenderIds.length} senders selected`}
+                          {isSenderLoading ? "Loading senders..." : 
+                           senders.length === 0 ? "No senders added" : 
+                           data.selectedSenderIds.length === 0 ? "Select senders..." : 
+                           data.selectedSenderIds.length === 1 ? (selectedSender?.name ? `${selectedSender.name} (${selectedSender.email})` : selectedSender?.email || "") : 
+                           `${data.selectedSenderIds.length} senders selected`}
                         </span>
                         <ChevronDown className={`h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400 shrink-0 transition-transform ${isSenderDropdownOpen ? "rotate-180" : ""}`} />
                       </button>
 
-                      {/* Dropdown panel */}
                       {isSenderDropdownOpen && (
                         <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[280px] md:min-w-[320px]">
                           <div className="max-h-60 overflow-y-auto py-1.5">
@@ -255,39 +261,18 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                               senders.map(s => {
                                 const isChecked = data.selectedSenderIds.includes(s.id);
                                 return (
-                                  <label
-                                    key={s.id}
-                                    className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors ${isChecked ? "bg-blue-50/50" : ""}`}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={isChecked}
-                                      onChange={() => toggleSender(s.id)}
-                                      className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
-                                    />
+                                  <label key={s.id} className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors ${isChecked ? "bg-blue-50/50" : ""}`}>
+                                    <input type="checkbox" checked={isChecked} onChange={() => toggleSender(s.id)} className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0" />
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-1.5">
-                                        <span className="text-xs font-medium text-gray-900 truncate">
-                                          {s.email}
-                                        </span>
-                                        {!s.isVerified && (
-                                          <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
-                                        )}
+                                        <span className="text-xs font-medium text-gray-900 truncate">{s.email}</span>
+                                        {!s.isVerified && <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />}
                                       </div>
-                                      {s.name && (
-                                        <span className="text-[10px] text-gray-400 truncate block">{s.name}</span>
-                                      )}
+                                      {s.name && <span className="text-[10px] text-gray-400 truncate block">{s.name}</span>}
                                     </div>
                                     <div className="flex items-center shrink-0 ml-auto">
-                                      {s.isVerified ? (
-                                        <span className="text-[11px] font-medium text-gray-400 tabular-nums">
-                                          {s.currentDailyCount ?? 0} / {s.dailyLimit}
-                                        </span>
-                                      ) : (
-                                        <span className="shrink-0 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-600 shadow-sm uppercase tracking-wider border border-amber-100/50">
-                                          Unverified
-                                        </span>
-                                      )}
+                                      {s.isVerified ? <span className="text-[11px] font-medium text-gray-400 tabular-nums">{s.currentDailyCount ?? 0} / {s.dailyLimit}</span> : 
+                                       <span className="shrink-0 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-600 shadow-sm uppercase tracking-wider border border-amber-100/50">Unverified</span>}
                                     </div>
                                   </label>
                                 );
@@ -299,20 +284,17 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                     </div>
                     
                     <div className="flex items-center gap-1 shrink-0">
-                      {/* Verified/unverified badge for single selection */}
                       {data.selectedSenderIds.length === 1 && selectedSender && (
                         selectedSender.isVerified
                           ? <span className="hidden sm:inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-600 shadow-sm"><Check className="h-2.5 w-2.5" />Verified</span>
                           : <span className="hidden sm:inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-600 shadow-sm"><AlertTriangle className="h-2.5 w-2.5" />Unverified</span>
                       )}
-                      {/* Multi-sender badge */}
                       {data.selectedSenderIds.length > 1 && (
                         <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 shadow-sm">
                           <Users className="h-3 w-3" />{data.selectedSenderIds.length}
                         </span>
                       )}
-                      <button onClick={() => setIsSenderModalOpen(true)}
-                        className="h-8 w-8 md:h-9 md:w-9 flex items-center justify-center rounded-lg md:rounded-xl border border-dashed border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all">
+                      <button onClick={() => setIsSenderModalOpen(true)} className="h-8 w-8 md:h-9 md:w-9 flex items-center justify-center rounded-lg md:rounded-xl border border-dashed border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all">
                         <Plus className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -320,7 +302,6 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                 </div>
                 {errors.from && <p className="text-[11px] text-red-500 mt-1 sm:ml-12 md:ml-16">{errors.from}</p>}
                 
-                {/* Unverified sender warning */}
                 {data.selectedSenderIds.length === 1 && selectedSender && !selectedSender.isVerified && !errors.from && (
                   <div className="mt-2 sm:ml-12 md:ml-16 flex items-center gap-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 p-2.5 md:p-3 shadow-sm">
                     <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
@@ -330,10 +311,7 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                       <p className="text-[10px] md:text-[11px] font-semibold text-amber-900">Verify Account</p>
                       <p className="text-[9px] md:text-[10px] text-amber-700/80 leading-tight">Needed for sending.</p>
                     </div>
-                    <button 
-                      onClick={() => setIsSenderModalOpen(true)}
-                      className="shrink-0 h-7 px-3 rounded-lg bg-amber-600 text-white text-[9px] md:text-[10px] font-bold hover:bg-amber-700 transition-all shadow-sm"
-                    >
+                    <button onClick={() => setIsSenderModalOpen(true)} className="shrink-0 h-7 px-3 rounded-lg bg-amber-600 text-white text-[9px] md:text-[10px] font-bold hover:bg-amber-700 transition-all shadow-sm">
                       Verify
                     </button>
                   </div>
@@ -349,15 +327,12 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                       {data.to.map(email => (
                         <span key={email} className="inline-flex items-center gap-1 rounded-lg bg-gray-50 border border-gray-100 pl-2 pr-1 py-0.5 md:py-1 text-[10px] md:text-[11px] font-medium text-gray-700 max-w-full">
                           <span className="truncate max-w-[120px] md:max-w-[180px]">{email}</span>
-                          <button type="button" className="text-gray-400 hover:text-red-500 transition-colors p-0.5"
-                            onClick={() => setData({ ...data, to: data.to.filter(e => e !== email) })}>
+                          <button type="button" className="text-gray-400 hover:text-red-500 transition-colors p-0.5" onClick={() => setData({ ...data, to: data.to.filter(e => e !== email) })}>
                             <X className="h-3 w-3" />
                           </button>
                         </span>
                       ))}
-                      <input ref={inputRef}
-                        placeholder={data.to.length === 0 ? "recipient@example.com" : "Add..."}
-                        className="flex-1 min-w-[100px] bg-transparent text-xs md:text-sm text-gray-900 outline-none placeholder:text-gray-300 py-1"
+                      <input ref={inputRef} placeholder={data.to.length === 0 ? "recipient@example.com" : "Add..."} className="flex-1 min-w-[100px] bg-transparent text-xs md:text-sm text-gray-900 outline-none placeholder:text-gray-300 py-1"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             const v = (e.target as HTMLInputElement).value.trim();
@@ -370,16 +345,11 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
                             setData({ ...data, to: data.to.slice(0, -1) });
                         }}
                       />
-                      <button type="button" onClick={() => csvInputRef.current?.click()}
-                        className="shrink-0 h-7 md:h-8 px-2 md:px-3 rounded-lg border border-gray-200 bg-gray-50/50 text-[9px] md:text-[10px] font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center gap-1.5 group">
+                      <button type="button" onClick={() => csvInputRef.current?.click()} className="shrink-0 h-7 md:h-8 px-2 md:px-3 rounded-lg border border-gray-200 bg-gray-50/50 text-[9px] md:text-[10px] font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center gap-1.5 group">
                         <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-500 group-hover:scale-110 transition-transform" />
                         <span>Import CSV</span>
                       </button>
-                      <EmailValidator 
-                        emails={data.to} 
-                        onRemoveEmail={(email) => setData({ ...data, to: data.to.filter(e => e !== email) })}
-                        onValidationComplete={(result) => setValidationResult(result)}
-                      />
+                      <EmailValidator emails={data.to} onRemoveEmail={(email) => setData({ ...data, to: data.to.filter(e => e !== email) })} onValidationComplete={(result) => setValidationResult(result)} />
                     </div>
                     {errors.to && <p className="text-[11px] text-red-500 mt-1">{errors.to}</p>}
                     {csvMessage && <p className="text-[10px] text-emerald-600 mt-1 flex items-center gap-1 font-medium"><CheckCircle2 className="h-3 w-3" />{csvMessage}</p>}
@@ -393,21 +363,15 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
               <div className="px-3 md:px-5 py-2.5 md:py-4 border-b border-gray-50">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-0">
                   <span className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-wider shrink-0 w-12 md:w-16">Subject</span>
-                  <input 
-                    placeholder="Enter subject line..." 
-                    value={data.subject}
-                    onChange={(e) => { setData({ ...data, subject: e.target.value }); setErrors(p => ({ ...p, subject: "" })); }}
-                    className="flex-1 h-8 md:h-10 bg-transparent text-xs md:text-sm font-medium text-gray-900 outline-none placeholder:text-gray-300" 
-                  />
+                  <input placeholder="Enter subject line..." value={data.subject} onChange={(e) => { setData({ ...data, subject: e.target.value }); setErrors(p => ({ ...p, subject: "" })); }} className="flex-1 h-8 md:h-10 bg-transparent text-xs md:text-sm font-medium text-gray-900 outline-none placeholder:text-gray-300" />
                 </div>
                 {errors.subject && <p className="text-[11px] text-red-500 mt-1 sm:ml-12 md:ml-16">{errors.subject}</p>}
               </div>
 
               {/* Editor */}
-              <Editor value={data.body} onChange={(body) => setData({ ...data, body })} />
+              <Editor value={data.body} onChange={(body) => setData({ ...data, body })} variables={Object.keys(Object.values(recipientColumnData)[0] || {})} snippets={snippets} />
             </div>
 
-            {/* Sequence Builder stays below editor on wide layout as it is primary content */}
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
               <SequenceBuilder steps={sequenceSteps} onChange={setSequenceSteps} />
             </div>
@@ -415,7 +379,6 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
 
           {/* RIGHT COLUMN: Sidebar Settings */}
           <div className="lg:col-span-4 space-y-4 md:space-y-6">
-            {/* Template Selector */}
             <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 md:p-5">
               <p className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3 md:mb-4 flex items-center gap-2">
                 <FileText className="h-3 w-3 md:h-3.5 md:w-3.5" /> Template
@@ -423,123 +386,104 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
               <TemplateSelector onSelect={handleTemplateSelect} />
             </div>
 
-            {/* Sending settings */}
             <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 md:p-5">
               <p className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3 md:mb-4">Campaign Settings</p>
               <div className="space-y-3 md:space-y-4">
                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
                   <div className="flex items-center gap-2.5 md:gap-3 rounded-xl bg-gray-50/80 border border-gray-100 p-2 md:p-3">
-                    <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-sky-500 text-white flex items-center justify-center shrink-0">
-                      <Clock className="h-3.5 w-3.5" />
-                    </div>
+                    <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-sky-500 text-white flex items-center justify-center shrink-0"><Clock className="h-3.5 w-3.5" /></div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[9px] md:text-[10px] font-semibold text-gray-400 mb-0.5 truncate">Min delay</p>
                       <div className="flex items-center gap-1">
-                        <input type="text" inputMode="numeric" placeholder="30" value={data.delayBetweenEmails || ""}
-                          onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); setData({ ...data, delayBetweenEmails: v === "" ? 0 : Number(v) }); }}
-                          className="h-6 w-9 md:w-11 rounded-md border border-gray-200 bg-white text-center text-[10px] md:text-xs font-bold text-gray-900 outline-none focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/5 transition-all transition-all" />
+                        <input type="text" inputMode="numeric" placeholder="30" value={data.delayBetweenEmails || ""} onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); setData({ ...data, delayBetweenEmails: v === "" ? 0 : Number(v) }); }} className="h-6 w-9 md:w-11 rounded-md border border-gray-200 bg-white text-center text-[10px] md:text-xs font-bold text-gray-900 outline-none focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/5 transition-all" />
                         <span className="text-[9px] text-gray-400 font-medium">s</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2.5 md:gap-3 rounded-xl bg-gray-50/80 border border-gray-100 p-2 md:p-3">
-                    <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0">
-                      <Gauge className="h-3.5 w-3.5" />
-                    </div>
+                    <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0"><Gauge className="h-3.5 w-3.5" /></div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[9px] md:text-[10px] font-semibold text-gray-400 mb-0.5 truncate">Limit</p>
                       <div className="flex items-center gap-1">
-                        <input type="text" inputMode="numeric" placeholder="50" value={data.hourlyLimit || ""}
-                          onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); setData({ ...data, hourlyLimit: v === "" ? 0 : Number(v) }); }}
-                          className="h-6 w-9 md:w-11 rounded-md border border-gray-200 bg-white text-center text-[10px] md:text-xs font-bold text-gray-900 outline-none focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/5 transition-all transition-all" />
+                        <input type="text" inputMode="numeric" placeholder="50" value={data.hourlyLimit || ""} onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); setData({ ...data, hourlyLimit: v === "" ? 0 : Number(v) }); }} className="h-6 w-9 md:w-11 rounded-md border border-gray-200 bg-white text-center text-[10px] md:text-xs font-bold text-gray-900 outline-none focus:border-teal-600/40 focus:ring-2 focus:ring-teal-600/5 transition-all" />
                         <span className="text-[9px] text-gray-400 font-medium">/hr</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Tracking toggles */}
                 <div className="pt-3 border-t border-gray-100 space-y-2">
-                  <div className="grid grid-cols-1 gap-2">
-                    <button 
-                      type="button"
-                      onClick={() => setTrackOpens(!trackOpens)}
-                      className={cn(
-                        "flex items-center gap-3 w-full p-2.5 rounded-xl transition-all border text-left group",
-                        trackOpens ? "bg-emerald-50 border-emerald-100" : "bg-gray-50 border-gray-100"
-                      )}
-                    >
-                      <div className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                        trackOpens ? "bg-emerald-500 text-white" : "bg-gray-200 text-gray-400"
-                      )}>
-                        <Eye className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn("text-xs font-bold leading-none mb-1", trackOpens ? "text-emerald-700" : "text-gray-500")}>Track Opens</p>
-                        <p className="text-[10px] text-gray-400 leading-tight">Know when they see your email</p>
-                      </div>
-                      <div className={`relative h-4 w-7 rounded-full transition-colors shrink-0 ${trackOpens ? "bg-emerald-500" : "bg-gray-300"}`}>
-                        <div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${trackOpens ? "translate-x-3.5" : "translate-x-0.5"}`} />
-                      </div>
-                    </button>
+                  <button type="button" onClick={() => setTrackOpens(!trackOpens)} className={cn("flex items-center gap-3 w-full p-2.5 rounded-xl transition-all border text-left group", trackOpens ? "bg-emerald-50 border-emerald-100" : "bg-gray-50 border-gray-100")}>
+                    <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors", trackOpens ? "bg-emerald-500 text-white" : "bg-gray-200 text-gray-400")}><Eye className="h-4 w-4" /></div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn("text-xs font-bold leading-none mb-1", trackOpens ? "text-emerald-700" : "text-gray-500")}>Track Opens</p>
+                      <p className="text-[10px] text-gray-400 leading-tight">Know when they see your email</p>
+                    </div>
+                    <div className={`relative h-4 w-7 rounded-full transition-colors shrink-0 ${trackOpens ? "bg-emerald-500" : "bg-gray-300"}`}><div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${trackOpens ? "translate-x-3.5" : "translate-x-0.5"}`} /></div>
+                  </button>
 
-                    <button 
-                      type="button"
-                      onClick={() => setTrackClicks(!trackClicks)}
-                      className={cn(
-                        "flex items-center gap-3 w-full p-2.5 rounded-xl transition-all border text-left group",
-                        trackClicks ? "bg-indigo-50 border-indigo-100" : "bg-gray-50 border-gray-100"
-                      )}
-                    >
-                      <div className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                        trackClicks ? "bg-indigo-500 text-white" : "bg-gray-200 text-gray-400"
-                      )}>
-                        <MousePointer2 className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn("text-xs font-bold leading-none mb-1", trackClicks ? "text-indigo-700" : "text-gray-500")}>Track Clicks</p>
-                        <p className="text-[10px] text-gray-400 leading-tight">See which links are clicked</p>
-                      </div>
-                      <div className={`relative h-4 w-7 rounded-full transition-colors shrink-0 ${trackClicks ? "bg-indigo-500" : "bg-gray-300"}`}>
-                        <div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${trackClicks ? "translate-x-3.5" : "translate-x-0.5"}`} />
-                      </div>
-                    </button>
+                  <button type="button" onClick={() => setTrackClicks(!trackClicks)} className={cn("flex items-center gap-3 w-full p-2.5 rounded-xl transition-all border text-left group", trackClicks ? "bg-indigo-50 border-indigo-100" : "bg-gray-50 border-gray-100")}>
+                    <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors", trackClicks ? "bg-indigo-500 text-white" : "bg-gray-200 text-gray-400")}><MousePointer2 className="h-4 w-4" /></div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn("text-xs font-bold leading-none mb-1", trackClicks ? "text-indigo-700" : "text-gray-500")}>Track Clicks</p>
+                      <p className="text-[10px] text-gray-400 leading-tight">See which links are clicked</p>
+                    </div>
+                    <div className={`relative h-4 w-7 rounded-full transition-colors shrink-0 ${trackClicks ? "bg-indigo-500" : "bg-gray-300"}`}><div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${trackClicks ? "translate-x-3.5" : "translate-x-0.5"}`} /></div>
+                  </button>
 
-                    {/* Priority Mail Toggle */}
-                    {isPremium ? (
-                      <button
-                        type="button"
-                        onClick={() => setPriorityEnabled(!priorityEnabled)}
-                        className={cn(
-                          "flex items-center gap-3 w-full p-2.5 rounded-xl transition-all border text-left group",
-                          priorityEnabled ? "bg-violet-50 border-violet-100" : "bg-gray-50 border-gray-100"
-                        )}
-                      >
-                        <div className={cn(
-                          "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                          priorityEnabled ? "bg-violet-500 text-white" : "bg-gray-200 text-gray-400"
-                        )}>
-                          <Gauge className="h-4 w-4" />
+                  {isPremium ? (
+                    <button type="button" onClick={() => setPriorityEnabled(!priorityEnabled)} className={cn("flex items-center gap-3 w-full p-2.5 rounded-xl transition-all border text-left group", priorityEnabled ? "bg-violet-50 border-violet-100" : "bg-gray-50 border-gray-100")}>
+                      <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors", priorityEnabled ? "bg-violet-500 text-white" : "bg-gray-200 text-gray-400")}><Gauge className="h-4 w-4" /></div>
+                      <div className="flex-1 min-w-0">
+                        <p className={cn("text-xs font-bold leading-none mb-1", priorityEnabled ? "text-violet-700" : "text-gray-500")}>Priority Mail</p>
+                        <p className="text-[10px] text-gray-400 leading-tight">Optimized delivery timing</p>
+                      </div>
+                      <div className={`relative h-4 w-7 rounded-full transition-colors shrink-0 ${priorityEnabled ? "bg-violet-500" : "bg-gray-300"}`}><div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${priorityEnabled ? "translate-x-3.5" : "translate-x-0.5"}`} /></div>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-3 w-full p-2.5 rounded-xl border border-gray-100 bg-gray-50/50 text-left opacity-60">
+                      <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 bg-gray-200 text-gray-400"><Gauge className="h-4 w-4" /></div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold leading-none mb-1 text-gray-500">Priority Mail</p>
+                        <p className="text-[10px] text-gray-400 leading-tight">Premium feature</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-3 border-t border-gray-100 space-y-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Timezone</label>
+                      <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className="w-full h-8 rounded-lg border border-gray-200 bg-gray-50 px-2 text-xs text-gray-700 outline-none focus:border-blue-300 transition-all">
+                        <option value="UTC">UTC (Universal Time)</option>
+                        <option value="America/New_York">Eastern Time (ET)</option>
+                        <option value="America/Chicago">Central Time (CT)</option>
+                        <option value="America/Denver">Mountain Time (MT)</option>
+                        <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                        <option value="Europe/London">London (GMT/BST)</option>
+                        <option value="Europe/Paris">Paris (CET/CEST)</option>
+                        <option value="Asia/Tokyo">Tokyo (JST)</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Business Hours</label>
+                      <button type="button" onClick={() => setBusinessHours({ ...businessHours, enabled: !businessHours.enabled })} className={`relative h-4 w-7 rounded-full transition-colors ${businessHours.enabled ? "bg-emerald-500" : "bg-gray-300"}`}><div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${businessHours.enabled ? "translate-x-3.5" : "translate-x-0.5"}`} /></button>
+                    </div>
+
+                    {businessHours.enabled && (
+                      <div className="grid grid-cols-2 gap-2 animate-in fade-in zoom-in-95 duration-200">
+                        <div>
+                          <p className="text-[9px] text-gray-400 mb-1">Start Hour</p>
+                          <select value={businessHours.start} onChange={(e) => setBusinessHours({ ...businessHours, start: Number(e.target.value) })} className="w-full h-7 rounded-md border border-gray-100 bg-white px-1 text-[10px] text-gray-700 outline-none">
+                            {Array.from({ length: 24 }).map((_, i) => (<option key={i} value={i}>{i === 0 ? "12 AM" : i < 12 ? `${i} AM` : i === 12 ? "12 PM" : `${i-12} PM`}</option>))}
+                          </select>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={cn("text-xs font-bold leading-none mb-1", priorityEnabled ? "text-violet-700" : "text-gray-500")}>Priority Mail</p>
-                          <p className="text-[10px] text-gray-400 leading-tight">Optimized delivery timing</p>
-                        </div>
-                        <div className={`relative h-4 w-7 rounded-full transition-colors shrink-0 ${priorityEnabled ? "bg-violet-500" : "bg-gray-300"}`}>
-                          <div className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform ${priorityEnabled ? "translate-x-3.5" : "translate-x-0.5"}`} />
-                        </div>
-                      </button>
-                    ) : (
-                      <div className="flex items-center gap-3 w-full p-2.5 rounded-xl border border-gray-100 bg-gray-50/50 text-left opacity-60">
-                        <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 bg-gray-200 text-gray-400">
-                          <Gauge className="h-4 w-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold leading-none mb-1 text-gray-500">Priority Mail</p>
-                          <p className="text-[10px] text-gray-400 leading-tight">Premium feature</p>
+                        <div>
+                          <p className="text-[9px] text-gray-400 mb-1">End Hour</p>
+                          <select value={businessHours.end} onChange={(e) => setBusinessHours({ ...businessHours, end: Number(e.target.value) })} className="w-full h-7 rounded-md border border-gray-100 bg-white px-1 text-[10px] text-gray-700 outline-none">
+                            {Array.from({ length: 24 }).map((_, i) => (<option key={i} value={i}>{i === 0 ? "12 AM" : i < 12 ? `${i} AM` : i === 12 ? "12 PM" : `${i-12} PM`}</option>))}
+                          </select>
                         </div>
                       </div>
                     )}
@@ -548,50 +492,23 @@ export function ComposeForm({ user, scheduledAt, uploadedAttachments, onSubmit, 
               </div>
             </div>
 
-            {/* Variable Preview */}
             <div className="animate-in fade-in slide-in-from-right-4 duration-500 delay-300">
-              <VariablePreview
-                subject={data.subject}
-                body={data.body}
-                recipientColumnData={recipientColumnData}
-                recipients={data.to}
-              />
+              <VariablePreview subject={data.subject} body={data.body} recipientColumnData={recipientColumnData} recipients={data.to} />
             </div>
           </div>
         </div>
       </div>
 
-      <SenderModal
-        isOpen={isSenderModalOpen}
-        onClose={() => setIsSenderModalOpen(false)}
-        onSuccess={handleSenderUpdated}
-        existingSender={selectedSender && !selectedSender.isVerified ? selectedSender : null}
-      />
+      <SenderModal isOpen={isSenderModalOpen} onClose={() => setIsSenderModalOpen(false)} onSuccess={handleSenderUpdated} existingSender={selectedSender && !selectedSender.isVerified ? selectedSender : null} />
 
-      {/* Template overwrite confirmation */}
       {pendingTemplate && (
         <Modal isOpen onClose={() => setPendingTemplate(null)}>
           <div className="p-6 text-center">
-            <h3 className="text-base font-semibold text-gray-900 mb-1">
-              Replace current content?
-            </h3>
-            <p className="text-sm text-gray-500 mb-5">
-              Your subject and body will be replaced with the &ldquo;{pendingTemplate.name}&rdquo; template.
-            </p>
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Replace current content?</h3>
+            <p className="text-sm text-gray-500 mb-5">Your subject and body will be replaced with the &ldquo;{pendingTemplate.name}&rdquo; template.</p>
             <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                className="flex-1 rounded-lg"
-                onClick={() => setPendingTemplate(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 rounded-lg"
-                onClick={() => applyTemplate(pendingTemplate)}
-              >
-                Replace
-              </Button>
+              <Button variant="secondary" className="flex-1 rounded-lg" onClick={() => setPendingTemplate(null)}>Cancel</Button>
+              <Button className="flex-1 rounded-lg" onClick={() => applyTemplate(pendingTemplate)}>Replace</Button>
             </div>
           </div>
         </Modal>

@@ -4,8 +4,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, CheckCircle2, AlertTriangle, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { matchVariablesToColumns } from "@/lib/csvParser";
-
-const VARIABLE_PATTERN = /\{\{([a-zA-Z0-9_]+)\}\}/g;
+import { renderTemplate, extractVariables } from "@/lib/templateEngine";
 
 interface VariablePreviewProps {
   subject: string;
@@ -24,14 +23,7 @@ export default function VariablePreview({
 
   // Extract all unique variable names from subject + body
   const variables = useMemo(() => {
-    const combined = `${subject} ${body}`;
-    const vars = new Set<string>();
-    let match;
-    const re = new RegExp(VARIABLE_PATTERN.source, "g");
-    while ((match = re.exec(combined)) !== null) {
-      vars.add(match[1]);
-    }
-    return Array.from(vars);
+    return extractVariables(`${subject} ${body}`);
   }, [subject, body]);
 
   // Get first recipient's column data for preview
@@ -49,14 +41,7 @@ export default function VariablePreview({
   // Resolve preview content
   const resolveContent = (content: string): string => {
     if (!firstRecipient || !Object.keys(firstColumnData).length) return content;
-    const lowerMap: Record<string, string> = {};
-    for (const key of Object.keys(firstColumnData)) {
-      lowerMap[key.toLowerCase()] = firstColumnData[key];
-    }
-    return content.replace(VARIABLE_PATTERN, (match, varName: string) => {
-      const val = lowerMap[varName.toLowerCase()];
-      return val !== undefined ? val : match;
-    });
+    return renderTemplate(content, firstColumnData);
   };
 
   const resolvedSubject = resolveContent(subject);
