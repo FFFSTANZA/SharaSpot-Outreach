@@ -18,6 +18,7 @@ model User {
   campaigns     EmailCampaign[]
   refreshTokens RefreshToken[]
   templates     EmailTemplate[]
+  sequenceTemplates SequenceTemplate[]
   subscription  Subscription?
 }
 
@@ -91,6 +92,7 @@ model Sender {
   providerProfileId String?
   warmupSchedule    WarmupSchedule?
   cooldown          SenderCooldown?
+  sequenceSteps     SequenceStep[]   @relation("StepSender")
 
   // Prevent duplicate sender emails per user — a user can't register the same
   // email address twice.
@@ -162,6 +164,7 @@ model EmailJob {
   columnData     Json?
   isReplied      Boolean     @default(false)
   sequenceStepId String?
+  sequenceABVariantId String?
 
   // Email threading headers — captured at send time so follow-ups can
   // reference the original message thread (In-Reply-To, References).
@@ -174,6 +177,7 @@ model EmailJob {
 
   campaign     EmailCampaign @relation(fields: [campaignId], references: [id])
   sequenceStep SequenceStep? @relation(fields: [sequenceStepId], references: [id])
+  sequenceABVariant SequenceABVariant? @relation(fields: [sequenceABVariantId], references: [id])
   sender       Sender?       @relation(fields: [senderId], references: [id])
   trackingEvents TrackingEvent[]
 
@@ -284,11 +288,68 @@ model SequenceStep {
   body       String
   waitDays   Int // 0 for step 0 (initial), >= 1 for follow-ups
 
+  // NEW FIELDS
+  waitHours       Int?
+  senderId        String?
+  conditions      Json?
+  sendTimeConfig  Json?
+  abVariantConfig Json?
+
   campaign  EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   emailJobs EmailJob[]
 
+  // NEW RELATIONS
+  stepSender Sender?             @relation("StepSender", fields: [senderId], references: [id])
+  variants   SequenceABVariant[]
+
   @@unique([campaignId, stepNumber])
   @@index([campaignId])
+}
+
+model SequenceABVariant {
+  id          String @id @default(cuid())
+  stepId      String
+  variantName String
+  subject     String
+  body       String
+  weight      Int // Percentage 0-100
+
+  step      SequenceStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  emailJobs EmailJob[]
+
+  @@index([stepId])
+}
+
+model SequenceTemplate {
+  id          String   @id @default(cuid())
+  userId      String?
+  name        String
+  description String?
+  category    String?
+  steps       Json
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model SequenceRecipientOverride {
+  id             String    @id @default(cuid())
+  campaignId     String
+  recipientEmail String
+  stepNumber     Int
+  scheduledAt    DateTime?
+  skipped        Boolean   @default(false)
+  forced         Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([campaignId, recipientEmail, stepNumber])
+  @@index([campaignId, recipientEmail])
 }
 
 model RecipientSequenceState {

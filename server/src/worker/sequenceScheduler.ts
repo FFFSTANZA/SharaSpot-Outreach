@@ -2,6 +2,9 @@ import { Prisma } from "@prisma/client";
 import crypto from "crypto";
 import { prisma } from "../config/prisma";
 import { emailQueue } from "../queues/emailQueue";
+import { evaluateConditions, StepCondition } from "../utils/sequenceConditions";
+import { selectVariant } from "../utils/sequenceABTesting";
+import { calculateSendTime, SendTimeConfig } from "../utils/sequenceTiming";
 
 /**
  * Sequence Scheduler — runs on a recurring interval to evaluate which recipients
@@ -16,11 +19,11 @@ export async function processSchedulerJob(): Promise<void> {
       sequenceSteps: { some: {} },
       status: { in: ["SCHEDULED", "SENDING"] },
     },
-    select: {
-      id: true,
-      senderId: true,
-      delaySeconds: true,
-      sequenceSteps: { orderBy: { stepNumber: "asc" } },
+    include: {
+      sequenceSteps: {
+        orderBy: { stepNumber: "asc" },
+        include: { variants: true },
+      },
       campaignSenders: {
         orderBy: { rotationOrder: "asc" },
         select: { senderId: true, rotationOrder: true },
@@ -46,8 +49,8 @@ export async function processSchedulerJob(): Promise<void> {
         const statuses = recipient.stepStatuses as any[];
         const currentStatus = statuses[recipient.currentStep];
 
-        // Current step must be SENT before we advance
-        if (!currentStatus || currentStatus.status !== "SENT") continue;
+        // Current step must be SENT (or skipped) before we advance
+        if (!currentStatus || !["SENT", "SKIPPED_CONDITION", "SKIPPED_MANUAL", "FORCED_SENT"].includes(currentStatus.status)) continue;
 
         const nextStepNumber = recipient.currentStep + 1;
 
@@ -63,13 +66,73 @@ export async function processSchedulerJob(): Promise<void> {
         const nextStep = campaign.sequenceSteps.find((s) => s.stepNumber === nextStepNumber);
         if (!nextStep) continue;
 
-        // Check if wait period has elapsed
-        const sentAt = new Date(currentStatus.sentAt);
-        const dueAt = new Date(sentAt.getTime() + nextStep.waitDays * 24 * 60 * 60 * 1000);
-        if (new Date() < dueAt) continue;
+        // Check for recipient override
+        const override = await prisma.sequenceRecipientOverride.findUnique({
+          where: {
+            campaignId_recipientEmail_stepNumber: {
+              campaignId: campaign.id,
+              recipientEmail: recipient.recipientEmail,
+              stepNumber: nextStepNumber,
+            },
+          },
+        });
+
+        let dueAt: Date;
+        if (override?.scheduledAt) {
+          dueAt = override.scheduledAt;
+        } else {
+          // Check if wait period has elapsed
+          const lastActionAt = new Date(currentStatus.sentAt || currentStatus.updatedAt || recipient.updatedAt);
+          
+          let waitMs = nextStep.waitDays * 24 * 60 * 60 * 1000;
+          if (nextStep.waitHours) {
+            waitMs = nextStep.waitHours * 60 * 60 * 1000;
+          }
+          
+          dueAt = new Date(lastActionAt.getTime() + waitMs);
+
+          // Apply advanced timing config
+          if (nextStep.sendTimeConfig) {
+            dueAt = calculateSendTime(dueAt, nextStep.sendTimeConfig as unknown as SendTimeConfig);
+          }
+        }
+
+        if (new Date() < dueAt && !override?.forced) continue;
+
+        // Check conditions
+        const metConditions = await evaluateConditions(
+          recipient.recipientEmail,
+          campaign.id,
+          nextStep.conditions as unknown as StepCondition[]
+        );
+
+        if (!metConditions || override?.skipped) {
+          // Skip this step
+          const claimResult = await prisma.recipientSequenceState.updateMany({
+            where: {
+              id: recipient.id,
+              currentStep: recipient.currentStep,
+            },
+            data: { currentStep: nextStepNumber },
+          });
+
+          if (claimResult.count > 0) {
+            const updatedStatuses = [...statuses];
+            updatedStatuses[nextStepNumber] = {
+              stepNumber: nextStepNumber,
+              status: override?.skipped ? "SKIPPED_MANUAL" : "SKIPPED_CONDITION",
+              updatedAt: new Date(),
+            };
+            await prisma.recipientSequenceState.update({
+              where: { id: recipient.id },
+              data: { stepStatuses: updatedStatuses },
+            });
+            console.log(`[SequenceScheduler] Skipped step ${nextStepNumber} for ${recipient.recipientEmail} (Conditions not met or manual skip)`);
+          }
+          continue;
+        }
 
         // Atomic claim: advance currentStep and set status to SCHEDULED
-        // Only succeeds if currentStep hasn't changed (prevents duplicate jobs)
         const claimResult = await prisma.recipientSequenceState.updateMany({
           where: {
             id: recipient.id,
@@ -78,32 +141,43 @@ export async function processSchedulerJob(): Promise<void> {
           data: { currentStep: nextStepNumber },
         });
 
-        if (claimResult.count === 0) {
-          // Another scheduler instance already handled this recipient
-          continue;
-        }
+        if (claimResult.count === 0) continue;
 
         // Update step status to SCHEDULED
         const updatedStatuses = [...statuses];
         updatedStatuses[nextStepNumber] = {
-          ...updatedStatuses[nextStepNumber],
-          status: "SCHEDULED",
+          stepNumber: nextStepNumber,
+          status: override?.forced ? "FORCED_SENT" : "SCHEDULED",
+          updatedAt: new Date(),
         };
         await prisma.recipientSequenceState.update({
           where: { id: recipient.id },
           data: { stepStatuses: updatedStatuses },
         });
 
-        // Create EmailJob for the next step.
-        // Assign a sender from the pool via round-robin, falling back to the
-        // campaign's legacy senderId for campaigns without a sender pool.
-        const poolSenders = campaign.campaignSenders;
-        const assignedSenderId = poolSenders.length > 0
-          ? poolSenders[nextStepNumber % poolSenders.length].senderId
-          : campaign.senderId;
+        // Handle A/B variant
+        let selectedSubject = nextStep.subject;
+        let selectedBody = nextStep.body;
+        let variantId: string | undefined;
 
-        // Retrieve columnData from the original (step 0) email job for this recipient
-        // so follow-up sequence emails can resolve template variables too.
+        if (nextStep.variants && nextStep.variants.length > 0) {
+          const variant = selectVariant(recipient.recipientEmail, nextStep.id, nextStep.variants);
+          if (variant) {
+            selectedSubject = variant.subject;
+            selectedBody = variant.body;
+            variantId = variant.id;
+          }
+        }
+
+        // Determine sender
+        let assignedSenderId = nextStep.senderId;
+        if (!assignedSenderId) {
+          const poolSenders = campaign.campaignSenders;
+          assignedSenderId = poolSenders.length > 0
+            ? poolSenders[nextStepNumber % poolSenders.length].senderId
+            : campaign.senderId;
+        }
+
         const originalJob = await prisma.emailJob.findFirst({
           where: { campaignId: campaign.id, toEmail: recipient.recipientEmail, columnData: { not: Prisma.DbNull } },
           select: { columnData: true },
@@ -116,6 +190,7 @@ export async function processSchedulerJob(): Promise<void> {
             toEmail: recipient.recipientEmail,
             scheduledAt: new Date(),
             sequenceStepId: nextStep.id,
+            sequenceABVariantId: variantId,
             ...(assignedSenderId ? { senderId: assignedSenderId } : {}),
             ...(originalJob?.columnData ? { columnData: originalJob.columnData } : {}),
           },
@@ -143,14 +218,10 @@ export async function processSchedulerJob(): Promise<void> {
           `[SequenceScheduler] Error processing recipient ${recipient.recipientEmail}:`,
           err
         );
-        // Continue to next recipient — retry on next scheduler run
       }
     }
     
     // Check if the overall campaign is complete.
-    // A sequence campaign is complete when all recipients have completed the sequence
-    // (completed: true) OR have reached a terminal state (paused/replied/etc),
-    // AND there are no non-terminal EmailJobs left for this campaign.
     try {
       const activeStatesCount = await prisma.recipientSequenceState.count({
         where: {

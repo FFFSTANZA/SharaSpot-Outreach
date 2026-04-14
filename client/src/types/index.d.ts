@@ -252,6 +252,27 @@ export interface RecipientWithData {
 
 // ─── Sequence Types ───
 
+export interface SequenceCondition {
+  type: "if_no_reply" | "if_opened" | "if_not_opened" | "if_clicked" | "if_not_clicked";
+}
+
+export interface SendTimeConfig {
+  businessHoursOnly?: boolean;
+  businessStartHour?: number;
+  businessEndHour?: number;
+  skipWeekends?: boolean;
+  sendAtSpecificTime?: string;
+  timezone?: string;
+}
+
+export interface SequenceABVariant {
+  id: string;
+  variantName: string;
+  subject: string;
+  body: string;
+  weight: number;
+}
+
 export interface SequenceStepType {
   id: string;
   campaignId: string;
@@ -259,14 +280,20 @@ export interface SequenceStepType {
   subject: string;
   body: string;
   waitDays: number;
+  waitHours?: number | null;
+  senderId?: string | null;
+  conditions?: SequenceCondition[] | null;
+  sendTimeConfig?: SendTimeConfig | null;
+  variants?: SequenceABVariant[] | null;
 }
 
 export interface StepStatusType {
   stepNumber: number;
-  status: "PENDING" | "SCHEDULED" | "SENT" | "FAILED" | "SKIPPED";
+  status: "PENDING" | "SCHEDULED" | "SENT" | "FAILED" | "SKIPPED" | "SKIPPED_CONDITION" | "SKIPPED_MANUAL" | "FORCED_SENT";
   sentAt: string | null;
   error: string | null;
   emailJobId: string | null;
+  updatedAt?: string;
 }
 
 export interface RecipientSequenceStateType {
@@ -293,6 +320,23 @@ export interface SequenceStepInput {
   subject: string;
   body: string;
   waitDays: number;
+  waitHours?: number;
+  senderId?: string;
+  conditions?: SequenceCondition[];
+  sendTimeConfig?: SendTimeConfig;
+  variants?: { name: string; subject: string; body: string; weight: number }[];
+}
+
+export interface SequenceTemplate {
+  id: string;
+  userId: string | null;
+  name: string;
+  description: string | null;
+  category: string | null;
+  steps: any;
+  isSystem: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 

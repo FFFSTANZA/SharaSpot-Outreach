@@ -12,6 +12,7 @@ import type {
   CreateTemplatePayload,
   UpdateTemplatePayload,
   SequenceResponse,
+  SequenceTemplate,
 } from "@/types";
 
 // ─── Auth ───
@@ -205,6 +206,44 @@ export const resumeAllSequence = async (campaignId: string): Promise<void> => {
 
 export const stopAllSequence = async (campaignId: string): Promise<void> => {
   await api.patch(`/campaigns/${campaignId}/sequence/stop`);
+};
+
+export const skipStep = async (campaignId: string, recipientId: string, stepNumber: number): Promise<void> => {
+  await api.patch(`/campaigns/${campaignId}/sequence/recipients/${recipientId}/steps/${stepNumber}/skip`);
+};
+
+export const forceSend = async (campaignId: string, recipientId: string, stepNumber: number): Promise<void> => {
+  await api.patch(`/campaigns/${campaignId}/sequence/recipients/${recipientId}/steps/${stepNumber}/force`);
+};
+
+export const updateStepTiming = async (campaignId: string, recipientId: string, stepNumber: number, scheduledAt: string): Promise<void> => {
+  await api.patch(`/campaigns/${campaignId}/sequence/recipients/${recipientId}/steps/${stepNumber}/timing`, { scheduledAt });
+};
+
+export const getSequenceAnalytics = async (campaignId: string): Promise<any> => {
+  const res = await api.get(`/campaigns/${campaignId}/sequence/analytics`);
+  return res.data;
+};
+
+export const getSequenceTimeline = async (campaignId: string): Promise<any> => {
+  const res = await api.get(`/campaigns/${campaignId}/sequence/timeline`);
+  return res.data;
+};
+
+// ─── Sequence Templates ───
+
+export const getSequenceTemplates = async (): Promise<SequenceTemplate[]> => {
+  const res = await api.get("/sequence-templates");
+  return res.data;
+};
+
+export const createSequenceTemplate = async (data: any): Promise<SequenceTemplate> => {
+  const res = await api.post("/sequence-templates", data);
+  return res.data;
+};
+
+export const deleteSequenceTemplate = async (id: string): Promise<void> => {
+  await api.delete(`/sequence-templates/${id}`);
 };
 
 export const toggleReplied = async (emailId: string): Promise<EmailJob> => {

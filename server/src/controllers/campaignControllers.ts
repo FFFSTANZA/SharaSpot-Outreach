@@ -247,6 +247,26 @@ export const createCampaign = async (
         res.status(400).json({ message: validation.message });
         return;
       }
+
+      // Premium checks for advanced sequence features
+      const typedSteps = steps as SequenceStepInput[];
+      const usesAdvanced = typedSteps.some(s => (s.conditions && s.conditions.length > 0) || s.waitHours || s.senderId || s.sendTimeConfig);
+      if (usesAdvanced) {
+        const premiumCheck = await requirePremium(req.user!.id, "Advanced sequences");
+        if (!premiumCheck.allowed) {
+          res.status(403).json({ message: premiumCheck.message, upgradeRequired: true });
+          return;
+        }
+      }
+
+      const usesABTesting = typedSteps.some(s => s.variants && s.variants.length > 0);
+      if (usesABTesting) {
+        const premiumCheck = await requirePremium(req.user!.id, "A/B testing");
+        if (!premiumCheck.allowed) {
+          res.status(403).json({ message: premiumCheck.message, upgradeRequired: true });
+          return;
+        }
+      }
     }
 
     // --- Step 5: Transactional creation ---
@@ -405,15 +425,34 @@ export const createCampaign = async (
 
         // Create follow-up steps (1–N)
         for (let s = 0; s < typedSteps.length; s++) {
-          await tx.sequenceStep.create({
+          const stepInput = typedSteps[s];
+          const step = await tx.sequenceStep.create({
             data: {
               campaignId: campaign.id,
               stepNumber: s + 1,
-              subject: typedSteps[s].subject,
-              body: typedSteps[s].body,
-              waitDays: typedSteps[s].waitDays,
+              subject: stepInput.subject,
+              body: stepInput.body,
+              waitDays: stepInput.waitDays || 0,
+              waitHours: stepInput.waitHours,
+              senderId: stepInput.senderId,
+              conditions: stepInput.conditions as any,
+              sendTimeConfig: stepInput.sendTimeConfig as any,
             },
           });
+
+          if (stepInput.variants && stepInput.variants.length > 0) {
+            for (const v of stepInput.variants) {
+              await tx.sequenceABVariant.create({
+                data: {
+                  stepId: step.id,
+                  variantName: v.name,
+                  subject: v.subject,
+                  body: v.body,
+                  weight: v.weight,
+                },
+              });
+            }
+          }
         }
 
         // Create RecipientSequenceState for each recipient

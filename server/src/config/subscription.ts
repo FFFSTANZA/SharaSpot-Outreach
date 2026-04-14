@@ -10,6 +10,9 @@ export const PREMIUM_FEATURES = {
   customTemplates: true,
   apiAccess: true,
   priorityMail: true,
+  advancedSequences: true,
+  sequenceTemplates: true,
+  sequenceABTesting: true,
 } as const;
 
 export const FREE_TIER_LIMITS = {

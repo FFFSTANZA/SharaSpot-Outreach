@@ -282,3 +282,232 @@ export const stopSequence = async (
     res.status(500).json({ message: "An error occurred" });
   }
 };
+
+/**
+ * PATCH /api/campaigns/:id/sequence/recipients/:recipientId/steps/:stepNumber/skip
+ */
+export const skipStep = async (req: Request, res: Response) => {
+  try {
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+
+    const { recipientId, stepNumber } = req.params as { recipientId: string; stepNumber: string };
+    const stepNum = parseInt(stepNumber);
+
+    const state = await prisma.recipientSequenceState.findUnique({
+      where: { id: recipientId },
+    });
+
+    if (!state || state.campaignId !== campaign.id) {
+      return res.status(404).json({ message: "Recipient not found" });
+    }
+
+    await prisma.sequenceRecipientOverride.upsert({
+      where: {
+        campaignId_recipientEmail_stepNumber: {
+          campaignId: campaign.id,
+          recipientEmail: state.recipientEmail,
+          stepNumber: stepNum,
+        },
+      },
+      update: { skipped: true },
+      create: {
+        campaignId: campaign.id,
+        recipientEmail: state.recipientEmail,
+        stepNumber: stepNum,
+        skipped: true,
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+/**
+ * PATCH /api/campaigns/:id/sequence/recipients/:recipientId/steps/:stepNumber/force
+ */
+export const forceSend = async (req: Request, res: Response) => {
+  try {
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+
+    const { recipientId, stepNumber } = req.params as { recipientId: string; stepNumber: string };
+    const stepNum = parseInt(stepNumber);
+
+    const state = await prisma.recipientSequenceState.findUnique({
+      where: { id: recipientId },
+    });
+
+    if (!state || state.campaignId !== campaign.id) {
+      return res.status(404).json({ message: "Recipient not found" });
+    }
+
+    await prisma.sequenceRecipientOverride.upsert({
+      where: {
+        campaignId_recipientEmail_stepNumber: {
+          campaignId: campaign.id,
+          recipientEmail: state.recipientEmail,
+          stepNumber: stepNum,
+        },
+      },
+      update: { forced: true },
+      create: {
+        campaignId: campaign.id,
+        recipientEmail: state.recipientEmail,
+        stepNumber: stepNum,
+        forced: true,
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+/**
+ * PATCH /api/campaigns/:id/sequence/recipients/:recipientId/steps/:stepNumber/timing
+ */
+export const updateTiming = async (req: Request, res: Response) => {
+  try {
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+
+    const { recipientId, stepNumber } = req.params as { recipientId: string; stepNumber: string };
+    const { scheduledAt } = req.body;
+    const stepNum = parseInt(stepNumber);
+
+    const state = await prisma.recipientSequenceState.findUnique({
+      where: { id: recipientId },
+    });
+
+    if (!state || state.campaignId !== campaign.id) {
+      return res.status(404).json({ message: "Recipient not found" });
+    }
+
+    await prisma.sequenceRecipientOverride.upsert({
+      where: {
+        campaignId_recipientEmail_stepNumber: {
+          campaignId: campaign.id,
+          recipientEmail: state.recipientEmail,
+          stepNumber: stepNum,
+        },
+      },
+      update: { scheduledAt: new Date(scheduledAt) },
+      create: {
+        campaignId: campaign.id,
+        recipientEmail: state.recipientEmail,
+        stepNumber: stepNum,
+        scheduledAt: new Date(scheduledAt),
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+/**
+ * GET /api/campaigns/:id/sequence/analytics
+ */
+export const getSequenceAnalytics = async (req: Request, res: Response) => {
+  try {
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+
+    const steps = await prisma.sequenceStep.findMany({
+      where: { campaignId: campaign.id },
+      orderBy: { stepNumber: "asc" },
+      include: {
+        variants: {
+          include: {
+            _count: {
+              select: { emailJobs: true }
+            }
+          }
+        },
+        _count: {
+          select: { emailJobs: true }
+        }
+      }
+    });
+
+    // Get more detailed stats
+    const stats = await Promise.all(steps.map(async (step) => {
+      const sentCount = await prisma.emailJob.count({
+        where: { sequenceStepId: step.id, status: "SENT" }
+      });
+      const openedCount = await prisma.emailJob.count({
+        where: { sequenceStepId: step.id, trackingEvents: { some: { eventType: "OPEN" } } }
+      });
+      const clickedCount = await prisma.emailJob.count({
+        where: { sequenceStepId: step.id, trackingEvents: { some: { eventType: "CLICK" } } }
+      });
+      const repliedCount = await prisma.emailJob.count({
+        where: { sequenceStepId: step.id, isReplied: true }
+      });
+
+      const variantStats = await Promise.all(step.variants.map(async (v) => {
+        const vSent = await prisma.emailJob.count({ where: { sequenceABVariantId: v.id, status: "SENT" } });
+        const vOpened = await prisma.emailJob.count({ where: { sequenceABVariantId: v.id, trackingEvents: { some: { eventType: "OPEN" } } } });
+        const vReplied = await prisma.emailJob.count({ where: { sequenceABVariantId: v.id, isReplied: true } });
+        return {
+          id: v.id,
+          name: v.variantName,
+          sent: vSent,
+          opened: vOpened,
+          replied: vReplied,
+        };
+      }));
+
+      return {
+        stepNumber: step.stepNumber,
+        subject: step.subject,
+        sent: sentCount,
+        opened: openedCount,
+        clicked: clickedCount,
+        replied: repliedCount,
+        variants: variantStats,
+      };
+    }));
+
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+/**
+ * GET /api/campaigns/:id/sequence/timeline
+ */
+export const getTimeline = async (req: Request, res: Response) => {
+  try {
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+
+    const recipients = await prisma.recipientSequenceState.findMany({
+      where: { campaignId: campaign.id },
+      select: {
+        recipientEmail: true,
+        currentStep: true,
+        stepStatuses: true,
+      }
+    });
+
+    const steps = await prisma.sequenceStep.findMany({
+      where: { campaignId: campaign.id },
+      orderBy: { stepNumber: "asc" }
+    });
+
+    const overrides = await prisma.sequenceRecipientOverride.findMany({
+      where: { campaignId: campaign.id }
+    });
+
+    res.json({ recipients, steps, overrides });
+  } catch (error) {
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
