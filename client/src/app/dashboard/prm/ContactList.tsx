@@ -28,7 +28,7 @@ export function ContactList({ contacts, selectedContactId, selectedIds, onContac
   }
 
   return (
-    <div className="flex flex-col divide-y divide-gray-100">
+    <div className="flex flex-col pt-2">
       {contacts.map((contact) => (
         <ContactRow
           key={contact.id}

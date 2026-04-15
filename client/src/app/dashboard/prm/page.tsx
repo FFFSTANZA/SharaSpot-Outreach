@@ -11,7 +11,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InlineLoader } from "@/components/PageLoader";
 import { ContactList } from "./ContactList";
 import { ContactDetails } from "./ContactDetails";
-import AddContactModal from "./AddContactModal";
+import ContactModal from "./ContactModal";
 import { 
   Users, UserPlus, Filter, Tag as TagIcon, 
   Search, ChevronDown,
@@ -38,7 +38,8 @@ export default function PRMPage() {
   const [selectedStage, setSelectedStage] = useState<ContactStage | "ALL">("ALL");
   const [selectedTag, setSelectedTag] = useState<string | "ALL">("ALL");
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
   
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -175,7 +176,7 @@ export default function PRMPage() {
     <AuthGuard>
       <ErrorBoundary>
         <SidebarProvider>
-          <div className="flex h-screen bg-[#F8F9FA]">
+          <div className="flex h-screen bg-gray-50">
             <Sidebar
               currentLabel="PRM"
               setLabel={() => {}}
@@ -195,122 +196,160 @@ export default function PRMPage() {
                 isRefreshing={isLoading}
               />
 
-              {/* Enhanced Header */}
-              <div className="bg-white border-b border-gray-200 px-6 py-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-900 leading-none">Relationships</h1>
-                    <p className="text-sm text-gray-500 mt-2 font-medium">Manage your network and track engagement across your contacts</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex bg-gray-100 p-1 rounded-xl mr-2">
-                      <button 
-                        onClick={() => setSelectedStage("ALL")}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                          selectedStage === "ALL" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                        )}
-                      >
-                        All ({stats.total})
-                      </button>
-                      <button 
-                        onClick={() => setSelectedStage("CONTACTED")}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                          selectedStage === "CONTACTED" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                        )}
-                      >
-                        Contacted ({stats.contacted})
-                      </button>
-                      <button 
-                        onClick={() => setSelectedStage("REPLIED")}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                          selectedStage === "REPLIED" ? "bg-white text-emerald-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                        )}
-                      >
-                        Replied ({stats.replied})
-                      </button>
+              <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Header Area */}
+                <div className="bg-white border-b border-gray-200 px-8 py-6 shrink-0">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                      <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Personal Relationship Manager</h1>
+                      <p className="text-sm text-gray-500 mt-1 font-medium">Database of {stats.total} professional connections</p>
                     </div>
-                    <Button 
-                      variant="secondary" 
-                      onClick={fetchContacts}
-                      disabled={isLoading}
-                      className="h-11 px-4 gap-2 font-bold bg-white"
-                    >
-                      <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                      Sync
-                    </Button>
-                    <Button 
-                      variant="primary" 
-                      className="h-11 px-5 gap-2 font-bold shadow-lg shadow-blue-100"
-                      onClick={() => setIsAddModalOpen(true)}
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add Contact
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Search & Filters Bar */}
-                <div className="flex flex-wrap items-center gap-3 mt-8">
-                  <div className="relative flex-1 min-w-[240px] max-w-md">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input 
-                      type="text"
-                      placeholder="Search name, email, or company..."
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white transition-all font-medium"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="h-8 w-px bg-gray-200 mx-1 hidden md:block" />
-
-                  <div className="flex items-center gap-2">
-                    <div className="relative group">
-                      <select 
-                        className="appearance-none pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 cursor-pointer transition-all hover:border-gray-300"
-                        value={selectedStage}
-                        onChange={(e) => setSelectedStage(e.target.value as any)}
+                    <div className="flex items-center gap-3">
+                       <Button 
+                        variant="primary" 
+                        className="h-11 px-5 gap-2 font-bold shadow-lg shadow-blue-100"
+                        onClick={() => {
+                          setEditingContact(null);
+                          setIsModalOpen(true);
+                        }}
                       >
-                        {STAGES.map(stage => (
-                          <option key={stage} value={stage}>{stage === "ALL" ? "All Stages" : stage}</option>
-                        ))}
-                      </select>
-                      <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                      <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                        <UserPlus className="h-4 w-4" />
+                        Add Contact
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 mt-8">
+                    <div className="relative flex-1 min-w-[300px] max-w-md">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input 
+                        type="text"
+                        placeholder="Search contacts..."
+                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white transition-all font-medium"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
                     </div>
 
-                    <div className="relative group">
-                      <select 
-                        className="appearance-none pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 cursor-pointer transition-all hover:border-gray-300"
-                        value={selectedTag}
-                        onChange={(e) => setSelectedTag(e.target.value)}
-                      >
-                        <option value="ALL">All Tags</option>
-                        {tags.map(tag => (
-                          <option key={tag.id} value={tag.id}>{tag.name}</option>
-                        ))}
-                      </select>
-                      <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                      <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <select 
+                          className="appearance-none pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-500 cursor-pointer"
+                          value={selectedStage}
+                          onChange={(e) => setSelectedStage(e.target.value as any)}
+                        >
+                          {STAGES.map(stage => (
+                            <option key={stage} value={stage}>{stage === "ALL" ? "All Stages" : stage}</option>
+                          ))}
+                        </select>
+                        <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                      </div>
+
+                      <div className="relative">
+                        <select 
+                          className="appearance-none pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-500 cursor-pointer"
+                          value={selectedTag}
+                          onChange={(e) => setSelectedTag(e.target.value)}
+                        >
+                          <option value="ALL">All Tags</option>
+                          {tags.map(tag => (
+                            <option key={tag.id} value={tag.id}>{tag.name}</option>
+                          ))}
+                        </select>
+                        <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Main Split-View Content */}
-              <div className="flex-1 flex overflow-hidden relative">
+                {/* Split-View Content */}
+                <div className="flex-1 flex overflow-hidden bg-gray-50/50">
+                  {/* Left Column: List */}
+                  <div className="w-[380px] xl:w-[420px] shrink-0 border-r border-gray-200 bg-white flex flex-col overflow-hidden">
+                    <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/30 shrink-0">
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={handleSelectAll}
+                          className="group flex items-center justify-center h-5 w-5 rounded border border-gray-300 bg-white"
+                        >
+                          {selectedIds.size === contacts.length && contacts.length > 0 ? (
+                            <CheckSquare className="h-4 w-4 text-blue-600" />
+                          ) : selectedIds.size > 0 ? (
+                            <div className="h-2 w-2 bg-blue-600 rounded-sm" />
+                          ) : null}
+                        </button>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Directory</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button className="p-1.5 text-blue-600 bg-blue-50 rounded-lg"><List className="h-3.5 w-3.5" /></button>
+                        <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg"><LayoutGrid className="h-3.5 w-3.5" /></button>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto pb-20">
+                      {isLoading && contacts.length === 0 ? (
+                        <div className="py-20">
+                          <InlineLoader message="Finding contacts..." />
+                        </div>
+                      ) : (
+                        <ContactList 
+                          contacts={contacts} 
+                          selectedContactId={selectedContactId}
+                          selectedIds={selectedIds}
+                          onContactClick={handleContactClick}
+                          onToggleSelect={handleToggleSelect}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Details */}
+                  <div className="flex-1 overflow-hidden">
+                    {selectedContactId ? (
+                      <ContactDetails 
+                        contactId={selectedContactId} 
+                        onUpdate={fetchContacts}
+                        onDelete={() => {
+                          setSelectedContactId(null);
+                          fetchContacts();
+                        }}
+                      />
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-white">
+                        <div className="h-24 w-24 bg-gray-50 rounded-[2rem] flex items-center justify-center mb-8 border border-gray-100 shadow-sm rotate-3 group hover:rotate-0 transition-transform duration-500">
+                          <Users className="h-12 w-12 text-gray-200" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900">Select a Relationship</h3>
+                        <p className="text-sm text-gray-500 mt-3 max-w-[320px] leading-relaxed">
+                          Choose a contact from your directory to view their full profile, interaction history, and personal notes.
+                        </p>
+                        <Button 
+                          variant="secondary" 
+                          className="mt-10 h-12 px-8 font-bold rounded-2xl border-2 border-gray-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all"
+                          onClick={() => {
+                            setEditingContact(null);
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add First Contact
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Bulk Action Bar */}
                 {selectedIds.size > 0 && (
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-4 duration-300">
-                    <div className="bg-gray-900 text-white rounded-2xl shadow-2xl px-6 py-3 flex items-center gap-6 border border-white/10 backdrop-blur-xl bg-opacity-90">
+                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-8 duration-300">
+                    <div className="bg-gray-900 text-white rounded-2xl shadow-2xl px-6 py-3 flex items-center gap-6 border border-white/10 backdrop-blur-xl bg-opacity-95">
                       <div className="flex items-center gap-3 border-r border-white/10 pr-6">
                         <div className="h-6 w-6 bg-blue-500 rounded-full flex items-center justify-center text-[10px] font-black">
                           {selectedIds.size}
                         </div>
-                        <span className="text-sm font-bold tracking-tight">Selected</span>
+                        <span className="text-sm font-bold">Selected</span>
                       </div>
                       
                       <div className="flex items-center gap-2">
@@ -334,31 +373,6 @@ export default function PRMPage() {
                           Enroll
                         </Button>
 
-                        <div className="relative group/bulk">
-                          <Button 
-                            variant="secondary" 
-                            size="sm" 
-                            className="h-9 bg-white/10 border-transparent hover:bg-white/20 text-white gap-2"
-                          >
-                            <Filter className="h-3.5 w-3.5" />
-                            Stage
-                            <ChevronDown className="h-3.5 w-3.5" />
-                          </Button>
-                          <div className="absolute bottom-full left-0 mb-2 hidden group-hover/bulk:block">
-                            <div className="bg-gray-800 border border-white/10 rounded-xl shadow-xl py-2 min-w-[160px] animate-in fade-in zoom-in-95">
-                              {STAGES.filter(s => s !== "ALL").map(stage => (
-                                <button
-                                  key={stage}
-                                  onClick={() => handleBulkStageChange(stage as ContactStage)}
-                                  className="w-full text-left px-4 py-2 text-xs font-bold hover:bg-white/10 transition-colors"
-                                >
-                                  {stage}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
                         <Button 
                           variant="secondary" 
                           size="sm" 
@@ -379,83 +393,17 @@ export default function PRMPage() {
                     </div>
                   </div>
                 )}
-
-                {/* Left Panel: Contact List */}
-                <div className="w-[400px] flex-shrink-0 border-r border-gray-200 bg-white flex flex-col">
-                  <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={handleSelectAll}
-                        className="group flex items-center justify-center"
-                      >
-                        {selectedIds.size === contacts.length && contacts.length > 0 ? (
-                          <CheckSquare className="h-4 w-4 text-blue-600" />
-                        ) : (
-                          <Square className="h-4 w-4 text-gray-300 group-hover:text-gray-400" />
-                        )}
-                      </button>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Contact Directory</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button className="p-1.5 text-blue-600 bg-blue-50 rounded-md"><List className="h-3.5 w-3.5" /></button>
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md"><LayoutGrid className="h-3.5 w-3.5" /></button>
-                    </div>
-                  </div>
-                  <div className="flex-1 overflow-y-auto">
-                    {isLoading && contacts.length === 0 ? (
-                      <div className="py-20">
-                        <InlineLoader message="Finding contacts..." />
-                      </div>
-                    ) : (
-                      <ContactList 
-                        contacts={contacts} 
-                        selectedContactId={selectedContactId}
-                        selectedIds={selectedIds}
-                        onContactClick={handleContactClick}
-                        onToggleSelect={handleToggleSelect}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Panel: Contact Details */}
-                <div className="flex-1 overflow-hidden bg-white">
-                  {selectedContactId ? (
-                    <ContactDetails 
-                      contactId={selectedContactId} 
-                      onUpdate={fetchContacts}
-                      onDelete={() => {
-                        setSelectedContactId(null);
-                        fetchContacts();
-                      }}
-                    />
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center p-8 text-center">
-                      <div className="h-20 w-20 bg-gray-50 rounded-3xl flex items-center justify-center mb-6 border border-gray-100 shadow-sm">
-                        <Users className="h-10 w-10 text-gray-200" />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900">No contact selected</h3>
-                      <p className="text-sm text-gray-500 mt-2 max-w-[280px]">
-                        Select a contact from the list on the left to view their profile, activity history, and notes.
-                      </p>
-                      <Button 
-                        variant="secondary" 
-                        className="mt-8 h-11 px-6 font-bold"
-                        onClick={() => setIsAddModalOpen(true)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create New Contact
-                      </Button>
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* Modals */}
-              <AddContactModal 
-                isOpen={isAddModalOpen} 
-                onClose={() => setIsAddModalOpen(false)}
+              <ContactModal 
+                isOpen={isModalOpen} 
+                onClose={() => {
+                  setIsModalOpen(false);
+                  setEditingContact(null);
+                }}
                 onSuccess={fetchContacts}
+                contact={editingContact}
               />
             </main>
           </div>

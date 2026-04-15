@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { 
   Mail, Eye, MousePointer2, MessageSquare, 
   AlertCircle, Tag as TagIcon, PlusCircle, 
-  UserPlus, CheckCircle2, Calendar
+  UserPlus, CheckCircle2, Calendar, Clock
 } from "lucide-react";
 import { format, isToday, isYesterday, isSameYear, parseISO, startOfDay } from "date-fns";
 import type { ContactActivity, ActivityType } from "@/types";
@@ -48,7 +48,14 @@ export function Timeline({ activities }: TimelineProps) {
     if (isYesterday(date)) return "Yesterday";
     
     const yearFormat = isSameYear(date, new Date()) ? "" : ", yyyy";
-    return format(date, `EEEE, MMMM d${yearFormat}`);
+    return format(date, `MMM d${yearFormat}`);
+  };
+
+  const getDayName = (dateStr: string) => {
+    const date = parseISO(dateStr);
+    if (isToday(date)) return "";
+    if (isYesterday(date)) return "";
+    return format(date, "EEEE");
   };
 
   if (activities.length === 0) {
@@ -66,19 +73,23 @@ export function Timeline({ activities }: TimelineProps) {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col space-y-6">
       {groupedActivities.map(([date, items]) => (
         <div key={date} className="relative">
-          {/* Date Header */}
-          <div className="sticky top-0 z-10 bg-gray-50/90 backdrop-blur-sm border-y border-gray-100 px-6 py-2">
-            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-              {getDateLabel(date)}
-            </h4>
+          {/* Date Section Header */}
+          <div className="flex items-center gap-4 mb-3 px-1">
+            <div className="flex flex-col">
+              <span className="text-lg font-black text-gray-900 leading-none">{getDateLabel(date)}</span>
+              {getDayName(date) && (
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{getDayName(date)}</span>
+              )}
+            </div>
+            <div className="h-px flex-1 bg-gray-100" />
           </div>
 
-          {/* Activity Items */}
-          <div className="divide-y divide-gray-50">
-            {items.map((activity, idx) => {
+          {/* Agenda items */}
+          <div className="space-y-1">
+            {items.map((activity) => {
               const config = ACTIVITY_CONFIG[activity.type] || { 
                 icon: AlertCircle, 
                 color: "text-gray-400", 
@@ -90,14 +101,16 @@ export function Timeline({ activities }: TimelineProps) {
               return (
                 <div 
                   key={activity.id} 
-                  className="group flex items-start gap-4 px-6 py-4 hover:bg-blue-50/30 transition-colors"
+                  className="group flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50 transition-all cursor-default"
                 >
-                  <div className="text-[11px] font-bold text-gray-400 w-12 pt-1 shrink-0">
-                    {format(parseISO(activity.createdAt), "HH:mm")}
+                  <div className="w-12 shrink-0 flex flex-col items-end">
+                    <span className="text-[11px] font-bold text-gray-400 group-hover:text-gray-600 transition-colors">
+                      {format(parseISO(activity.createdAt), "HH:mm")}
+                    </span>
                   </div>
                   
                   <div className={cn(
-                    "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm",
+                    "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-white",
                     config.bg,
                     config.color
                   )}>
@@ -105,32 +118,23 @@ export function Timeline({ activities }: TimelineProps) {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-900 leading-tight">
-                      {config.label}
-                    </p>
-                    {activity.type === "STAGE_CHANGED" ? (
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Moved from <span className="font-bold text-gray-700">{activity.metadata?.from}</span> to <span className="font-bold text-blue-600">{activity.metadata?.to}</span>
-                      </p>
-                    ) : activity.type === "CAMPAIGN_ENROLLED" ? (
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Campaign: <span className="font-bold text-gray-900">{activity.metadata?.subject}</span>
-                      </p>
-                    ) : (
-                      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1">
-                        {Object.entries(activity.metadata || {}).map(([key, value]) => {
-                          if (key === "from" || key === "to" || key === "subject") return null;
-                          return (
-                            <span 
-                              key={key} 
-                              className="text-[10px] text-gray-500 bg-white border border-gray-100 px-1.5 py-0.5 rounded font-medium"
-                            >
-                              <span className="opacity-50 font-normal">{key}:</span> {String(value)}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-gray-800">{config.label}</span>
+                      <div className="h-1 w-1 rounded-full bg-gray-300" />
+                      {activity.type === "STAGE_CHANGED" ? (
+                        <span className="text-xs text-gray-500">
+                          To <span className="font-bold text-blue-600">{activity.metadata?.to}</span>
+                        </span>
+                      ) : activity.type === "CAMPAIGN_ENROLLED" ? (
+                        <span className="text-xs text-gray-500 truncate max-w-[200px]">
+                          {activity.metadata?.subject}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400 truncate">
+                          {Object.values(activity.metadata || {}).find(v => typeof v === 'string' && v.length < 50) as string}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

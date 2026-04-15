@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { logContactActivity } from "../utils/contactService";
+import { logContactActivity, upsertContact } from "../utils/contactService";
 
 const prisma = new PrismaClient();
 
@@ -82,22 +82,13 @@ export const createContact = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
     const { email, firstName, lastName, company, jobTitle, stage, tags } = req.body;
 
-    const contact = await (prisma as any).contact.create({
-      data: {
-        userId,
-        email,
-        firstName,
-        lastName,
-        company,
-        jobTitle,
-        stage: stage || "LEAD",
-        tags: tags ? {
-          connect: tags.map((tagId: string) => ({ id: tagId })),
-        } : undefined,
-      },
-      include: {
-        tags: true,
-      },
+    const contact = await upsertContact(userId, email, {
+      firstName,
+      lastName,
+      company,
+      jobTitle,
+      stage,
+      tags,
     });
 
     res.status(201).json(contact);
