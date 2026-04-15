@@ -27,7 +27,6 @@
 
 import { prisma } from "../config/prisma";
 import { decrypt } from "../utils/encryption";
-import { ActivityType } from "@prisma/client";
 import { logContactActivityByEmail, updateContactStageByEmail } from "../utils/contactService";
 import Imap from "imap";
 import { simpleParser, ParsedMail } from "mailparser";
@@ -733,7 +732,7 @@ async function matchHeadersAndResolve(
           select: { userId: true },
         });
         if (campaign) {
-          await logContactActivityByEmail(campaign.userId, matchedJob.toEmail, ActivityType.EMAIL_REPLIED, {
+          await logContactActivityByEmail(campaign.userId, matchedJob.toEmail, "EMAIL_REPLIED", {
             emailJobId: match.id,
             campaignId: match.campaignId,
           });
@@ -903,7 +902,7 @@ async function processSenderReplies(sender: {
         select: { userId: true },
       });
       if (campaign) {
-        await logContactActivityByEmail(campaign.userId, matchedJob.toEmail, ActivityType.EMAIL_REPLIED, {
+        await logContactActivityByEmail(campaign.userId, matchedJob.toEmail, "EMAIL_REPLIED", {
           emailJobId: match.id,
           campaignId: match.campaignId,
         });

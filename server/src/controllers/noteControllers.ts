@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, ActivityType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { logContactActivity } from "../utils/contactService";
 
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ export const createNote = async (req: Request, res: Response) => {
     const { contactId, content } = req.body;
 
     // Verify contact belongs to user
-    const contact = await prisma.contact.findFirst({
+    const contact = await (prisma as any).contact.findFirst({
       where: { id: contactId, userId },
     });
 
@@ -18,14 +18,14 @@ export const createNote = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Contact not found" });
     }
 
-    const note = await prisma.contactNote.create({
+    const note = await (prisma as any).contactNote.create({
       data: {
         contactId,
         content,
       },
     });
 
-    await logContactActivity(contactId, ActivityType.NOTE_ADDED, { noteId: note.id });
+    await logContactActivity(contactId, "NOTE_ADDED" as any, { noteId: note.id });
 
     res.status(201).json(note);
   } catch (error: any) {
@@ -39,16 +39,16 @@ export const updateNote = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const { content } = req.body;
 
-    const note = await prisma.contactNote.findUnique({
+    const note = await (prisma as any).contactNote.findUnique({
       where: { id },
       include: { contact: true },
-    }) as any;
+    });
 
     if (!note || note.contact.userId !== userId) {
       return res.status(404).json({ message: "Note not found" });
     }
 
-    const updatedNote = await prisma.contactNote.update({
+    const updatedNote = await (prisma as any).contactNote.update({
       where: { id },
       data: { content },
     });
@@ -64,16 +64,16 @@ export const deleteNote = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
     const id = req.params.id as string;
 
-    const note = await prisma.contactNote.findUnique({
+    const note = await (prisma as any).contactNote.findUnique({
       where: { id },
       include: { contact: true },
-    }) as any;
+    });
 
     if (!note || note.contact.userId !== userId) {
       return res.status(404).json({ message: "Note not found" });
     }
 
-    await prisma.contactNote.delete({
+    await (prisma as any).contactNote.delete({
       where: { id },
     });
 

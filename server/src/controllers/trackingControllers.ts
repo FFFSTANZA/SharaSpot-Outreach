@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
 import { redis } from "../config/redis";
-import { ActivityType } from "@prisma/client";
 import { logContactActivityByEmail } from "../utils/contactService";
 
 /**
@@ -99,7 +98,7 @@ async function flushTrackingBuffer(): Promise<void> {
         await logContactActivityByEmail(
           job.campaign.userId,
           job.toEmail,
-          event.eventType === "OPEN" ? ActivityType.EMAIL_OPENED : ActivityType.EMAIL_CLICKED,
+          event.eventType === "OPEN" ? "EMAIL_OPENED" : "EMAIL_CLICKED",
           {
             emailJobId: event.emailJobId,
             campaignId: job.campaignId,

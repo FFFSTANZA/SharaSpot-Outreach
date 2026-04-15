@@ -11,7 +11,6 @@ import { preprocessEmailHtml } from "../utils/emailPreprocessor";
 import { resolveForRecipient } from "../utils/variableResolver";
 import { isWithinBusinessHours, getDelayUntilBusinessHours } from "../utils/businessHours";
 import { buildThreadingHeaders, extractDomain } from "../utils/emailThreading";
-import { ActivityType } from "@prisma/client";
 import { logContactActivityByEmail, updateContactStageByEmail } from "../utils/contactService";
 
 // ---------------------------------------------------------------------------
@@ -619,7 +618,7 @@ export async function processEmailJob(job: Job): Promise<void> {
 
     console.log(`EmailJob ${emailJobId} sent successfully to ${emailJob.toEmail}`);
 
-    await logContactActivityByEmail(campaign.userId, emailJob.toEmail, ActivityType.EMAIL_SENT, {
+    await logContactActivityByEmail(campaign.userId, emailJob.toEmail, "EMAIL_SENT", {
       campaignId: campaign.id,
       emailJobId: emailJob.id,
       subject: emailSubject,
@@ -665,7 +664,7 @@ export async function processEmailJob(job: Job): Promise<void> {
     // Record failed send for adaptive throttle tracking
     await recordSendResult(sender.id, false, isBounce);
 
-    await logContactActivityByEmail(campaign.userId, emailJob.toEmail, ActivityType.EMAIL_FAILED, {
+    await logContactActivityByEmail(campaign.userId, emailJob.toEmail, "EMAIL_FAILED", {
       campaignId: campaign.id,
       emailJobId: emailJob.id,
       error: smtpError.message || "SMTP send failed",

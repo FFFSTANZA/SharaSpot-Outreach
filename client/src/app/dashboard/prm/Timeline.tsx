@@ -42,7 +42,7 @@ export function Timeline({ activities }: TimelineProps) {
 
   return (
     <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-[#E8EAED] before:to-transparent">
-      {activities.map((activity, idx) => {
+      {activities.map((activity) => {
         const config = ACTIVITY_ICONS[activity.type] || { icon: Mail, color: "text-gray-400", bg: "bg-gray-50" };
         const Icon = config.icon;
 
@@ -90,7 +90,7 @@ function formatActivityTitle(activity: ContactActivity) {
     case "EMAIL_FAILED": return "Email Failed";
     case "NOTE_ADDED": return "Note Added";
     case "STAGE_CHANGED": return "Stage Updated";
-    default: return activity.type.replace(/_/g, " ");
+    default: return (activity.type as string).replace(/_/g, " ");
   }
 }
 

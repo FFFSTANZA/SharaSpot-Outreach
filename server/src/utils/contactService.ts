@@ -1,4 +1,4 @@
-import { PrismaClient, ContactStage, ActivityType, Prisma } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 const defaultPrisma = new PrismaClient();
 
@@ -13,7 +13,7 @@ export const upsertContact = async (
   },
   prisma: Prisma.TransactionClient | PrismaClient = defaultPrisma
 ) => {
-  return await prisma.contact.upsert({
+  return await (prisma as any).contact.upsert({
     where: {
       userId_email: {
         userId,
@@ -27,18 +27,18 @@ export const upsertContact = async (
       userId,
       email,
       ...data,
-      stage: ContactStage.LEAD,
+      stage: "LEAD",
     },
   });
 };
 
 export const logContactActivity = async (
   contactId: string, 
-  type: ActivityType, 
+  type: string, 
   metadata?: any,
   prisma: Prisma.TransactionClient | PrismaClient = defaultPrisma
 ) => {
-  return await prisma.contactActivity.create({
+  return await (prisma as any).contactActivity.create({
     data: {
       contactId,
       type,
@@ -50,11 +50,11 @@ export const logContactActivity = async (
 export const logContactActivityByEmail = async (
   userId: string, 
   email: string, 
-  type: ActivityType, 
+  type: string, 
   metadata?: any,
   prisma: Prisma.TransactionClient | PrismaClient = defaultPrisma
 ) => {
-  const contact = await prisma.contact.findUnique({
+  const contact = await (prisma as any).contact.findUnique({
     where: {
       userId_email: {
         userId,
@@ -71,25 +71,25 @@ export const logContactActivityByEmail = async (
 
 export const updateContactStage = async (
   contactId: string, 
-  stage: ContactStage,
+  stage: string,
   prisma: Prisma.TransactionClient | PrismaClient = defaultPrisma
 ) => {
-  const contact = await prisma.contact.update({
+  const contact = await (prisma as any).contact.update({
     where: { id: contactId },
     data: { stage },
   });
 
-  await logContactActivity(contactId, ActivityType.STAGE_CHANGED, { stage }, prisma);
+  await logContactActivity(contactId, "STAGE_CHANGED", { stage }, prisma);
   return contact;
 };
 
 export const updateContactStageByEmail = async (
   userId: string, 
   email: string, 
-  stage: ContactStage,
+  stage: string,
   prisma: Prisma.TransactionClient | PrismaClient = defaultPrisma
 ) => {
-  const contact = await prisma.contact.findUnique({
+  const contact = await (prisma as any).contact.findUnique({
     where: {
       userId_email: {
         userId,

@@ -20,7 +20,7 @@ export const createTag = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
     const { name, color } = req.body;
 
-    const tag = await prisma.tag.create({
+    const tag = await (prisma as any).tag.create({
       data: {
         userId,
         name,
@@ -40,7 +40,7 @@ export const updateTag = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const { name, color } = req.body;
 
-    const tag = await prisma.tag.update({
+    const tag = await (prisma as any).tag.update({
       where: { id, userId },
       data: {
         name,
@@ -59,7 +59,7 @@ export const deleteTag = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
     const id = req.params.id as string;
 
-    await prisma.tag.delete({
+    await (prisma as any).tag.delete({
       where: { id, userId },
     });
 

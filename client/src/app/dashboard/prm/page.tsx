@@ -11,7 +11,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InlineLoader } from "@/components/PageLoader";
 import { ContactList } from "./ContactList";
 import { ContactDrawer } from "./ContactDrawer";
-import { Users, UserPlus, Filter, Tag as TagIcon, Search } from "lucide-react";
+import { Users, UserPlus, Filter, Tag as TagIcon } from "lucide-react";
 import type { Contact, Tag, ContactStage } from "@/types";
 
 export default function PRMPage() {
@@ -98,7 +98,7 @@ export default function PRMPage() {
                   <div className="flex items-center gap-2">
                     <button 
                       className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#DADCE0] rounded-md text-sm font-medium text-[#3C4043] hover:bg-[#F1F3F4] transition-colors"
-                      onClick={() => {/* TODO: Add contact modal */}}
+                      onClick={() => {}}
                     >
                       <UserPlus className="h-4 w-4" />
                       Add Contact

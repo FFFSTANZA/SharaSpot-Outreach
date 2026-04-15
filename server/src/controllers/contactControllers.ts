@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, ContactStage } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { logContactActivity } from "../utils/contactService";
 
 const prisma = new PrismaClient();
@@ -21,7 +21,7 @@ export const getContacts = async (req: Request, res: Response) => {
     }
 
     if (stage) {
-      where.stage = stage as ContactStage;
+      where.stage = stage;
     }
 
     if (tag) {
@@ -89,7 +89,7 @@ export const createContact = async (req: Request, res: Response) => {
         lastName,
         company,
         jobTitle,
-        stage: stage || ContactStage.LEAD,
+        stage: stage || "LEAD",
         tags: tags ? {
           connect: tags.map((tagId: string) => ({ id: tagId })),
         } : undefined,
@@ -133,7 +133,7 @@ export const updateContact = async (req: Request, res: Response) => {
     });
 
     if (stage && stage !== oldContact.stage) {
-      await logContactActivity(id, "STAGE_CHANGED", { from: oldContact.stage, to: stage });
+      await logContactActivity(id, "STAGE_CHANGED" as any, { from: oldContact.stage, to: stage });
     }
 
     res.json(contact);

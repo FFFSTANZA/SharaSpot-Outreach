@@ -19,7 +19,7 @@ const STAGE_COLORS: Record<string, string> = {
 
 export function ContactRow({ contact, onClick }: ContactRowProps) {
   const name = contact.firstName || contact.lastName 
-    ? \`\${contact.firstName || ""} \${contact.lastName || ""}\`.trim()
+    ? `${contact.firstName || ""} ${contact.lastName || ""}`.trim()
     : contact.email.split("@")[0];
 
   return (
@@ -65,7 +65,7 @@ export function ContactRow({ contact, onClick }: ContactRowProps) {
           ))}
           {contact.tags && contact.tags.length > 2 && (
             <span className="text-[10px] text-[#5F6368] font-medium">
-              +\{contact.tags.length - 2\}
+              +{contact.tags.length - 2}
             </span>
           )}
           {(!contact.tags || contact.tags.length === 0) && (

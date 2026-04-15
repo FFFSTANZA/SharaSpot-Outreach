@@ -148,7 +148,7 @@ export function ContactDrawer({ contactId, onClose, onUpdate }: ContactDrawerPro
                 ) : (
                   <h3 className="text-xl font-bold text-[#1A1D21] truncate mb-1">
                     {contact.firstName || contact.lastName 
-                      ? \`\${contact.firstName || ""} \${contact.lastName || ""}\`.trim()
+                      ? `${contact.firstName || ""} ${contact.lastName || ""}`.trim()
                       : "Unnamed Contact"}
                   </h3>
                 )}
