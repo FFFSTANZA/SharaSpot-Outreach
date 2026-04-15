@@ -10,9 +10,12 @@ export const upsertContact = async (
     lastName?: string;
     company?: string;
     jobTitle?: string;
+    stage?: string;
+    tags?: string[];
   },
   prisma: Prisma.TransactionClient | PrismaClient = defaultPrisma
 ) => {
+  const { tags, stage, ...rest } = data;
   return await (prisma as any).contact.upsert({
     where: {
       userId_email: {
@@ -21,13 +24,23 @@ export const upsertContact = async (
       },
     },
     update: {
-      ...data,
+      ...rest,
+      stage: stage || undefined,
+      tags: tags ? {
+        set: tags.map((tagId: string) => ({ id: tagId })),
+      } : undefined,
     },
     create: {
       userId,
       email,
-      ...data,
-      stage: "LEAD",
+      ...rest,
+      stage: stage || "LEAD",
+      tags: tags ? {
+        connect: tags.map((tagId: string) => ({ id: tagId })),
+      } : undefined,
+    },
+    include: {
+      tags: true,
     },
   });
 };
