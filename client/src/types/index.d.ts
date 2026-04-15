@@ -44,6 +44,9 @@ export interface CreateCampaignPayload {
   delaySeconds: number;
   hourlyLimit: number;
   emails: (string | { email: string; columnData?: Record<string, string> })[];
+  ccEmails?: string[];
+  bccEmails?: string[];
+  replyTo?: string;
   attachments?: UploadedAttachment[];
   steps?: SequenceStepInput[];
   trackOpens?: boolean;
@@ -136,10 +139,16 @@ export interface ComposeFormData {
   from: string;                  // Legacy: kept for backward compat
   selectedSenderIds: string[];   // New: multi-sender selection (sender IDs)
   to: string[];
+  cc: string[];
+  bcc: string[];
+  replyTo?: string;
   subject: string;
   body: string;
   delayBetweenEmails: number;
   hourlyLimit: number;
+  selectedRecipients: Set<string>;  // For bulk operations
+  attachments: UploadedAttachment[];
+  scheduleDate: Date | null;
 }
 
 // EmailRow component props — receives destructured email + campaign
@@ -160,10 +169,7 @@ export interface EmailListProps {
 }
 
 // ComposeForm component props — receives lifted state from parent
-// submitTrigger: counter incremented by the parent when the Header's Send button
-// is clicked. The Form watches this in a useEffect to trigger validation + submission.
 export interface ComposeFormProps {
-  user: User | null;
   scheduledAt: Date | null;
   uploadedAttachments: UploadedAttachment[];
   onSubmit: (data: CreateCampaignPayload) => Promise<void>;
@@ -181,6 +187,7 @@ export interface ComposeHeaderProps {
   isUploading: boolean;
   onSend: () => void;
   isSubmitting: boolean;
+  customTrigger?: React.ReactNode;
 }
 
 // SenderModal component props
@@ -293,6 +300,14 @@ export interface SequenceStepInput {
   subject: string;
   body: string;
   waitDays: number;
+  condition?: SequenceCondition;
+}
+
+export type SequenceConditionType = "opened" | "clicked" | "replied" | "none";
+
+export interface SequenceCondition {
+  type: SequenceConditionType;
+  waitHours?: number;
 }
 
 

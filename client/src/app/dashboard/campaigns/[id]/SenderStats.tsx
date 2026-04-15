@@ -52,7 +52,7 @@ export default function SenderStats({ senderStats }: SenderStatsProps) {
         isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
       )}>
         <div className="px-5 md:px-6 pb-5 md:pb-6 space-y-4 border-t border-gray-50 pt-4">
-          {senderStats.map((stat, idx) => {
+          {senderStats.map((stat) => {
             const rawPercent = stat.dailyLimit > 0 ? (stat.sent / stat.dailyLimit) * 100 : 0;
             const usagePercent = Math.min(rawPercent, 100);
             const displayPercent = usagePercent > 0 && usagePercent < 1 

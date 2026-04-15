@@ -2,18 +2,18 @@
 
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import Button from "@/components/Button";
 import {
-  Mail, Zap, Shield, Clock, BarChart3, Users,
-  ArrowRight, Menu, X, Send, Target, Gauge,
-  Rocket, Eye, MousePointerClick,
-  RefreshCw, Paperclip, FileText, Flame,
-  MessageSquare, TrendingUp, Headphones,
+  Mail, Zap, Shield, Clock,
+  ArrowRight, Menu, X, Gauge,
+  Rocket, Eye,
+  MessageSquare, TrendingUp,
   Briefcase, GraduationCap, Store, Building2,
   Megaphone, HeartHandshake, Layers, CheckCircle2,
   Brain, Calendar, Clock4, Globe, ScanEye,
-  LockKeyhole, Sparkles, Crown,
+  LockKeyhole, Sparkles, Crown, Users, Flame,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
@@ -187,13 +187,13 @@ export default function LandingPage() {
       {/* ─── Navbar ─── */}
       <nav className={`sticky top-0 z-30 transition-all duration-300 bg-white/95 backdrop-blur-xl ${scrolled ? "shadow-sm border-b border-gray-100" : "border-b border-transparent"}`}>
         <div className="mx-auto max-w-6xl flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3.5">
-          <a href="/" aria-label="Go to homepage"><Logo size="md" /></a>
+          <Link href="/" aria-label="Go to homepage"><Logo size="md" /></Link>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#features" className="hover:text-gray-900 transition-colors">Features</a>
             <a href="#use-cases" className="hover:text-gray-900 transition-colors">Use Cases</a>
             <a href="#how-it-works" className="hover:text-gray-900 transition-colors">How It Works</a>
-            <a href="/guide" className="hover:text-gray-900 transition-colors">Guide</a>
-            <a href="/faq" className="hover:text-gray-900 transition-colors">FAQ</a>
+            <Link href="/guide" className="hover:text-gray-900 transition-colors">Guide</Link>
+            <Link href="/faq" className="hover:text-gray-900 transition-colors">FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">Support</a>
           </div>
           <div className="hidden md:block">
@@ -214,8 +214,8 @@ export default function LandingPage() {
             <a href="#features" className="block text-sm text-gray-700 py-3" onClick={() => setMobileMenuOpen(false)}>Features</a>
             <a href="#use-cases" className="block text-sm text-gray-700 py-3" onClick={() => setMobileMenuOpen(false)}>Use Cases</a>
             <a href="#how-it-works" className="block text-sm text-gray-700 py-3" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
-            <a href="/guide" className="block text-sm text-gray-700 py-3" onClick={() => setMobileMenuOpen(false)}>Guide</a>
-            <a href="/faq" className="block text-sm text-gray-700 py-3" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+            <Link href="/guide" className="block text-sm text-gray-700 py-3" onClick={() => setMobileMenuOpen(false)}>Guide</Link>
+            <Link href="/faq" className="block text-sm text-gray-700 py-3" onClick={() => setMobileMenuOpen(false)}>FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="block text-sm text-gray-700 py-3" onClick={() => setMobileMenuOpen(false)}>Support</a>
             <Button className="w-full rounded-full mt-2" onClick={() => router.push("/login")}>Get Started</Button>
           </div>
@@ -532,16 +532,16 @@ export default function LandingPage() {
       {/* ─── Footer ─── */}
       <footer className="py-8 border-t border-gray-100 bg-gray-50/50">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col items-center gap-5 md:flex-row md:justify-between">
-          <a href="/" aria-label="Go to homepage"><Logo size="sm" /></a>
+          <Link href="/" aria-label="Go to homepage"><Logo size="sm" /></Link>
           <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            <a href="/guide" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Guide</a>
-            <a href="/faq" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">FAQ</a>
+            <Link href="/guide" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Guide</Link>
+            <Link href="/faq" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Support</a>
-            <a href="/privacy" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Privacy</a>
-            <a href="/terms" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Terms</a>
-            <a href="/contact" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
+            <Link href="/privacy" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Terms</Link>
+            <Link href="/contact" className="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">Contact</Link>
           </nav>
-          <span className="text-xs text-gray-500">© 2026 SharaSpot</span>
+          <span className="text-xs text-gray-500">&copy; 2026 SharaSpot</span>
         </div>
       </footer>
     </div>

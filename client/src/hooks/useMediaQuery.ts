@@ -17,6 +17,7 @@ export function useMediaQuery(query: string): boolean {
     if (typeof window === "undefined" || !window.matchMedia) return;
 
     const mql = window.matchMedia(query);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initializing state from media query is intentional
     setMatches(mql.matches);
 
     const handler = (e: MediaQueryListEvent) => setMatches(e.matches);

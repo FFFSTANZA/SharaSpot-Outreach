@@ -58,7 +58,7 @@ export default function PrivacyPage() {
             Your data, your control
           </h2>
           <p className="mt-3 text-sm sm:text-base text-gray-500 leading-relaxed max-w-xl">
-            SharaSpot is designed with privacy in mind. Here's exactly what we collect, how we protect it, and what we don't do.
+            SharaSpot is designed with privacy in mind. Here&apos;s exactly what we collect, how we protect it, and what we don&apos;t do.
           </p>
           <p className="mt-2 text-xs text-gray-500">Last updated: March 2026</p>
         </div>

@@ -20,12 +20,15 @@ export function ToastContainer({
   onExitComplete,
 }: ToastContainerProps) {
   const prevCountRef = useRef(toasts.length);
+  const shouldNudgeRef = useRef(false);
 
   // Track whether a new toast was just added (for nudge animation)
-  const shouldNudge = toasts.length > prevCountRef.current;
   useEffect(() => {
+    shouldNudgeRef.current = toasts.length > prevCountRef.current;
     prevCountRef.current = toasts.length;
   }, [toasts.length]);
+  
+  const shouldNudge = shouldNudgeRef.current;
 
   // Escape key dismisses the most recently added non-exiting toast
   const handleKeyDown = useCallback(

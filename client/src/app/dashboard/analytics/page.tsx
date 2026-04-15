@@ -6,7 +6,7 @@ import type { AnalyticsOverview, AnalyticsLink, DailySeriesPoint, HourlySeriesPo
 import {
   Eye, MousePointerClick, Send, MessageSquare, TrendingUp,
   BarChart3, Clock, Link2, RefreshCw, AlertTriangle, Trophy,
-  ArrowUpRight, ArrowDownRight, ExternalLink,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,7 +60,6 @@ function MultiLineChart({ data, height = 120 }: { data: DailySeriesPoint[]; heig
 
 function HourlyHeatmap({ data }: { data: HourlySeriesPoint[] }) {
   const max = Math.max(...data.flatMap((d) => [d.opens, d.clicks]), 1);
-  const cellW = 100 / 24;
 
   return (
     <div className="space-y-1">

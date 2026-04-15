@@ -131,21 +131,21 @@ export default function Dropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className={cn(
-          "flex w-full items-center justify-between rounded-md bg-[#F1F3F4] px-4 py-3 text-sm",
-          "min-h-[44px] transition-all duration-150",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A63E]/50",
+          "flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 text-sm",
+          "transition-all duration-150 border border-gray-100",
+          "focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500",
           disabled
             ? "cursor-not-allowed opacity-50"
-            : "cursor-pointer hover:bg-[#E8EAED]",
-          isOpen && "ring-2 ring-[#00A63E]/50"
+            : "cursor-pointer hover:bg-gray-100/50 hover:border-gray-200",
+          isOpen && "ring-2 ring-blue-500/20 border-blue-500 bg-white"
         )}
       >
-        <span className={selectedOption ? "text-[#1A1D21]" : "text-[#9AA0A6]"}>
+        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-[#9AA0A6] transition-transform duration-200",
+            "h-4 w-4 text-gray-400 transition-transform duration-200",
             isOpen && "rotate-180"
           )}
         />
@@ -154,7 +154,7 @@ export default function Dropdown({
       {/* Options list */}
       <div
         className={cn(
-          "absolute z-50 mt-1.5 w-full overflow-hidden rounded-md border border-[#E8EAED] bg-white shadow-lg",
+          "absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl",
           "origin-top transition-all duration-200 ease-out",
           isOpen
             ? "scale-y-100 opacity-100"
@@ -179,13 +179,13 @@ export default function Dropdown({
                 onClick={() => select(option.value)}
                 onMouseEnter={() => setHighlightedIndex(index)}
                 className={cn(
-                  "cursor-pointer px-4 py-2.5 text-sm transition-colors duration-100",
+                  "cursor-pointer px-4 py-2 text-sm transition-colors duration-100",
                   option.value === value
-                    ? "bg-[#E8F5E9] font-medium text-[#037A31]"
-                    : "text-[#5F6368]",
+                    ? "bg-blue-50 font-bold text-blue-700"
+                    : "text-gray-600",
                   highlightedIndex === index &&
-                    option.value !== value &&
-                    "bg-[#F1F3F4]"
+                  option.value !== value &&
+                  "bg-gray-50"
                 )}
               >
                 {option.label}

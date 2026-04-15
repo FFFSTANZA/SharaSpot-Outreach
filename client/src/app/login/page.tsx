@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Button from "@/components/Button";
 import Image from "next/image";
 import Script from "next/script";
 import { loginWithGoogle } from "../../lib/apis";
@@ -12,7 +11,7 @@ import { useToast } from "@/context/ToastContext";
 
 declare global {
   interface Window {
-    google?: any;
+    google?: { accounts: { id: { initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void; renderButton: (element: HTMLElement, config: { theme: string; size: string; text: string; shape: string }) => void } } };
   }
 }
 
@@ -34,7 +33,7 @@ const LoginPage = () => {
     try {
       window.google.accounts.id.initialize({
         client_id: clientId,
-        callback: async (response: any) => {
+        callback: async (response: { credential: string }) => {
           setIsLoading(true);
           try {
             const data = await loginWithGoogle(response.credential);

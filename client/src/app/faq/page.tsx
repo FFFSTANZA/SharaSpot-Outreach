@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import Button from "@/components/Button";
 import {
@@ -61,7 +62,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>When you add a new sender, SharaSpot automatically starts a 14-day warmup period that gradually increases your daily sending limit from 20 to 500 emails/day. This builds your sender reputation with email providers and prevents your account from being flagged.</p>
-        <p>You can skip warmup by checking "Skip warmup period" when adding a sender — but only do this if the account already has established sending history. Skipping warmup on a brand-new account risks triggering Gmail's spam filters.</p>
+        <p>You can skip warmup by checking &ldquo;Skip warmup period&rdquo; when adding a sender — but only do this if the account already has established sending history. Skipping warmup on a brand-new account risks triggering Gmail&apos;s spam filters.</p>
       </div>
     ),
   },
@@ -71,8 +72,8 @@ const faqItems: FAQItem[] = [
     question: "What happens when I hit my sending limit?",
     answer: (
       <div className="space-y-2">
-        <p>SharaSpot enforces three layers of rate limiting: per-minute, per-hour, and per-day. When any limit is reached, pending emails are automatically rescheduled with a small random delay — they're not lost.</p>
-        <p>If you're using multiple senders, SharaSpot will automatically rotate to the next available sender. If all senders are exhausted, the campaign pauses and auto-resumes when capacity is available (checked every hour).</p>
+        <p>SharaSpot enforces three layers of rate limiting: per-minute, per-hour, and per-day. When any limit is reached, pending emails are automatically rescheduled with a small random delay — they&apos;re not lost.</p>
+        <p>If you&apos;re using multiple senders, SharaSpot will automatically rotate to the next available sender. If all senders are exhausted, the campaign pauses and auto-resumes when capacity is available (checked every hour).</p>
       </div>
     ),
   },
@@ -103,7 +104,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>When you select multiple senders for a campaign, SharaSpot distributes emails across them using round-robin — each sender gets roughly equal volume, respecting their individual daily limits.</p>
-        <p>During sending, if one sender hits its limit, emails are automatically reassigned to the next available sender. This lets you send higher volumes without exceeding any single account's limits.</p>
+        <p>During sending, if one sender hits its limit, emails are automatically reassigned to the next available sender. This lets you send higher volumes without exceeding any single account&apos;s limits.</p>
       </div>
     ),
   },
@@ -111,7 +112,7 @@ const faqItems: FAQItem[] = [
     category: "Multi-Sender",
     icon: Users,
     question: "Do all senders need to be verified?",
-    answer: <p>Yes. Every sender in a campaign must have verified SMTP credentials (a Google App Password). Unverified senders are shown in the dropdown but can't be selected for campaigns.</p>,
+    answer: <p>Yes. Every sender in a campaign must have verified SMTP credentials (a Google App Password). Unverified senders are shown in the dropdown but can&apos;t be selected for campaigns.</p>,
   },
   // ─── Sequences ───
   {
@@ -146,10 +147,10 @@ const faqItems: FAQItem[] = [
   {
     category: "Templates & Variables",
     icon: FileText,
-    question: "What's the difference between templates and template variables?",
+    question: "What&apos;s the difference between templates and template variables?",
     answer: (
       <div className="space-y-2">
-        <p>Templates are saved subject/body pairs you can reuse across campaigns — like a "cold outreach" template or a "follow-up" template. You create them in the Templates page.</p>
+        <p>Templates are saved subject/body pairs you can reuse across campaigns — like a &ldquo;cold outreach&rdquo; template or a &ldquo;follow-up&rdquo; template. You create them in the Templates page.</p>
         <p>Template variables (<code className="bg-gray-100 px-1 rounded text-xs">{"{{variable}}"}</code>) are placeholders that get replaced with per-recipient data from your CSV. They work inside any email, whether you started from a template or wrote it from scratch.</p>
       </div>
     ),
@@ -162,7 +163,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>10 MB per file, 25 MB total per campaign, up to 10 files. Supported formats: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, PNG, JPG, GIF.</p>
-        <p>The 25 MB limit matches Gmail's attachment limit — exceeding it would cause emails to bounce. Files are stored in Supabase Storage and downloaded by the worker at send time.</p>
+        <p>The 25 MB limit matches Gmail&apos;s attachment limit — exceeding it would cause emails to bounce. Files are stored in Supabase Storage and downloaded by the worker at send time.</p>
       </div>
     ),
   },
@@ -181,7 +182,7 @@ const faqItems: FAQItem[] = [
     category: "Campaign Controls",
     icon: Shield,
     question: "What happens when I cancel a campaign?",
-    answer: <p>All pending emails are immediately marked as cancelled and won't be sent. Emails already sent are not affected. Cancellation is permanent — you can't resume a cancelled campaign.</p>,
+    answer: <p>All pending emails are immediately marked as cancelled and won&apos;t be sent. Emails already sent are not affected. Cancellation is permanent — you can&apos;t resume a cancelled campaign.</p>,
   },
   {
     category: "Campaign Controls",
@@ -219,7 +220,7 @@ const faqItems: FAQItem[] = [
     question: "How does open tracking work?",
     answer: (
       <div className="space-y-2">
-        <p>SharaSpot adds a tiny transparent 1x1 pixel image to each outgoing email. When the recipient's email client loads this image, the server records an open event. This is the industry-standard method used by all email marketing platforms.</p>
+        <p>SharaSpot adds a tiny transparent 1x1 pixel image to each outgoing email. When the recipient&apos;s email client loads this image, the server records an open event. This is the industry-standard method used by all email marketing platforms.</p>
         <p>Limitation: some email clients (notably Outlook desktop) block images by default, so open rates will undercount. Apple Mail Privacy Protection may inflate rates by pre-fetching images. Open rates are best used as a relative indicator, not an absolute measure.</p>
       </div>
     ),
@@ -228,19 +229,19 @@ const faqItems: FAQItem[] = [
     category: "Tracking",
     icon: Mail,
     question: "How does click tracking work?",
-    answer: <p>Links in your email are automatically rewritten to route through SharaSpot's server. When a recipient clicks a link, the server records the click and immediately redirects them to the original URL. The redirect is instant (302) so recipients don't notice any delay. <code className="bg-gray-100 px-1 rounded text-xs">mailto:</code> links and anchor links are not rewritten.</p>,
+    answer: <p>Links in your email are automatically rewritten to route through SharaSpot&apos;s server. When a recipient clicks a link, the server records the click and immediately redirects them to the original URL. The redirect is instant (302) so recipients don&apos;t notice any delay. <code className="bg-gray-100 px-1 rounded text-xs">mailto:</code> links and anchor links are not rewritten.</p>,
   },
   {
     category: "Tracking",
     icon: Mail,
     question: "Can I disable tracking for a specific campaign?",
-    answer: <p>Yes. In the compose form's Sending Settings section, you'll see "Track opens" and "Track clicks" toggles. Both are enabled by default. Turn them off before sending if you want to respect recipient privacy for that campaign. The Tracking tab will show a "Tracking not enabled" message for campaigns with tracking disabled.</p>,
+    answer: <p>Yes. In the compose form&apos;s Sending Settings section, you&apos;ll see &ldquo;Track opens&rdquo; and &ldquo;Track clicks&rdquo; toggles. Both are enabled by default. Turn them off before sending if you want to respect recipient privacy for that campaign. The Tracking tab will show a &ldquo;Tracking not enabled&rdquo; message for campaigns with tracking disabled.</p>,
   },
   {
     category: "Tracking",
     icon: Mail,
     question: "Why is my open rate higher than expected?",
-    answer: <p>Apple Mail Privacy Protection (introduced in iOS 15 / macOS Monterey) pre-fetches all email images through a proxy, which triggers the tracking pixel even if the recipient never actually reads the email. This inflates open rates. There's no reliable way to filter these out — it's an industry-wide issue affecting all email tracking platforms.</p>,
+    answer: <p>Apple Mail Privacy Protection (introduced in iOS 15 / macOS Monterey) pre-fetches all email images through a proxy, which triggers the tracking pixel even if the recipient never actually reads the email. This inflates open rates. There&apos;s no reliable way to filter these out — it&apos;s an industry-wide issue affecting all email tracking platforms.</p>,
   },
   // ─── General ───
   {
@@ -258,7 +259,7 @@ const faqItems: FAQItem[] = [
     category: "General",
     icon: Clock,
     question: "When do daily limits reset?",
-    answer: <p>Daily sending limits reset at midnight UTC. This means if you're in a timezone behind UTC, your limit resets in the evening. If you're ahead of UTC, it resets in the morning. All rate limiting (per-minute, per-hour, per-day) uses UTC time.</p>,
+    answer: <p>Daily sending limits reset at midnight UTC. This means if you&apos;re in a timezone behind UTC, your limit resets in the evening. If you&apos;re ahead of UTC, it resets in the morning. All rate limiting (per-minute, per-hour, per-day) uses UTC time.</p>,
   },
   {
     category: "General",
@@ -310,7 +311,7 @@ export default function FAQPage() {
       {/* Navbar */}
       <nav className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-gray-100">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
-          <a href="/" aria-label="Go to homepage"><Logo size="md" /></a>
+          <Link href="/" aria-label="Go to homepage"><Logo size="md" /></Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-500">
             <a href="/guide" className="hover:text-gray-900 transition-colors">Guide</a>
             <a href="/faq" className="text-gray-900">FAQ</a>
@@ -340,7 +341,7 @@ export default function FAQPage() {
             Frequently Asked Questions
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-            Got questions? We've got answers.
+            Got questions? We&apos;ve got answers.
           </h1>
           <p className="mt-4 text-base text-gray-500 max-w-lg mx-auto">
             Everything you need to know about warmup, throttling, sequences, and more.

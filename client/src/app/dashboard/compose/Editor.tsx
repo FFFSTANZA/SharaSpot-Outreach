@@ -9,13 +9,18 @@ import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Table } from "@tiptap/extension-table";
+import TableRow from "@tiptap/extension-table-row";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
 import { useEffect, useCallback, useState } from "react";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, Quote, Code, Undo2, Redo2,
   Link as LinkIcon, Unlink, Highlighter, Minus, Type,
-  Heading1, Heading2, Heading3, RemoveFormatting,
+  Heading1, Heading2, Heading3, RemoveFormatting, Table as TableIcon,
+  ClipboardPaste,
 } from "lucide-react";
 
 interface EditorProps {
@@ -43,8 +48,8 @@ function ToolbarButton({
         ${isActive
           ? "bg-blue-100 text-blue-700"
           : disabled
-            ? "text-gray-500 cursor-not-allowed"
-            : "text-gray-500 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200"
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-gray-600 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200"
         }
       `}
     >
@@ -107,9 +112,93 @@ const FONT_COLORS = [
   { label: "Gray", value: "#6b7280" },
 ];
 
+function stripStylesFromHTML(html: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+
+  const allowedTags = ["p", "br", "strong", "b", "em", "i", "u", "a", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "code", "pre"];
+
+  function cleanNode(node: Node): void {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as Element;
+      if (!allowedTags.includes(el.tagName.toLowerCase())) {
+        while (el.firstChild) {
+          el.parentNode?.insertBefore(el.firstChild, el);
+        }
+        el.parentNode?.removeChild(el);
+        return;
+      }
+
+      const removeAttrs = Array.from(el.attributes).filter(
+        attr => !["href", "target"].includes(attr.name)
+      );
+      removeAttrs.forEach(attr => el.removeAttribute(attr.name));
+
+      Array.from(el.childNodes).forEach(cleanNode);
+    }
+  }
+
+  Array.from(doc.body.childNodes).forEach(cleanNode);
+
+  return doc.body.innerHTML;
+}
+
+function TableModal({
+  onSubmit, onClose,
+}: {
+  onSubmit: (rows: number, cols: number) => void;
+  onClose: () => void;
+}) {
+  const [rows, setRows] = useState(3);
+  const [cols, setCols] = useState(3);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/30" onClick={onClose}>
+      <div className="bg-white rounded-t-2xl md:rounded-xl shadow-xl p-5 w-full max-w-sm md:mx-4 pb-8 md:pb-5" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-sm font-semibold text-gray-900 mb-4">Insert Table</h3>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1.5">Rows</label>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={rows}
+              onChange={(e) => setRows(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1.5">Columns</label>
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={cols}
+              onChange={(e) => setCols(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-50">
+            Cancel
+          </button>
+          <button type="button" onClick={() => { onSubmit(rows, cols); onClose(); }}
+            className="px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+            Insert
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Editor({ value = "", onChange }: EditorProps) {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showTableModal, setShowTableModal] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -121,7 +210,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
       }),
       Underline,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-        Link.configure({
+      Link.configure({
         openOnClick: false,
         HTMLAttributes: { class: "text-emerald-600 underline cursor-pointer" },
       }),
@@ -129,17 +218,46 @@ export function Editor({ value = "", onChange }: EditorProps) {
       Color,
       Highlight.configure({ multicolor: true }),
       Placeholder.configure({ placeholder: "Write your email..." }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: { class: "border-collapse w-full" },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content: value,
     onUpdate: ({ editor: e }) => onChange(e.getHTML()),
     editorProps: {
       attributes: {
         class:
-          "min-h-[120px] md:min-h-[380px] px-3 md:px-5 py-3 md:py-5 text-sm text-gray-800 outline-none leading-relaxed " +
+          "min-h-[200px] md:min-h-[380px] px-3 md:px-5 py-3 md:py-5 text-sm text-gray-800 outline-none leading-relaxed " +
           "prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 " +
           "prose-blockquote:border-l-emerald-500 prose-blockquote:text-gray-600 " +
           "prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-emerald-600 prose-code:text-xs " +
           "prose-a:text-emerald-600 prose-a:underline",
+      },
+      handlePaste: (view, event) => {
+        const clipboardData = event.clipboardData;
+        if (!clipboardData) return false;
+
+        const html = clipboardData.getData("text/html");
+        if (html) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, "text/html");
+          const body = doc.body;
+
+          if (body.querySelector("table")) {
+            return false;
+          }
+
+          const strippedHTML = stripStylesFromHTML(html);
+          if (strippedHTML && editor) {
+            editor.chain().focus().insertContent(strippedHTML).run();
+            return true;
+          }
+        }
+        return false;
       },
     },
   });
@@ -157,6 +275,20 @@ export function Editor({ value = "", onChange }: EditorProps) {
     setShowLinkModal(false);
   }, [editor]);
 
+  const insertTable = useCallback((rows: number, cols: number) => {
+    if (!editor) return;
+    editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+  }, [editor]);
+
+  const handlePaste = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && editor) {
+        editor.chain().focus().insertContent(text).run();
+      }
+    } catch { }
+  }, [editor]);
+
   if (!editor) return null;
 
   const iconSize = "h-4 w-4";
@@ -165,7 +297,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
     <div className="relative">
       {/* Toolbar — horizontally scrollable on mobile, wraps on desktop */}
       <div className="overflow-x-auto md:overflow-x-visible scrollbar-none">
-        <div className="flex items-center gap-0.5 px-2 md:px-3 py-2 border-b border-gray-100 bg-gray-50/50 md:flex-wrap min-w-max md:min-w-0">
+        <div className="flex items-center gap-0.5 px-2 md:px-3 py-2 border-b border-gray-100 bg-gray-50 md:flex-wrap min-w-max md:min-w-0">
           {/* Undo / Redo */}
           <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo">
             <Undo2 className={iconSize} />
@@ -279,6 +411,25 @@ export function Editor({ value = "", onChange }: EditorProps) {
             isActive={editor.isActive("blockquote")} title="Blockquote">
             <Quote className={iconSize} />
           </ToolbarButton>
+
+          <ToolbarDivider />
+
+          {/* Table */}
+          <ToolbarButton
+            onClick={() => setShowTableModal(true)}
+            isActive={editor.isActive("table")}
+            title="Insert table"
+          >
+            <TableIcon className={iconSize} />
+          </ToolbarButton>
+
+          {/* Paste */}
+          <ToolbarButton onClick={handlePaste} title="Paste from clipboard">
+            <ClipboardPaste className={iconSize} />
+          </ToolbarButton>
+
+          <ToolbarDivider />
+
           {/* Code & HR hidden on mobile */}
           <div className="hidden md:flex items-center gap-0.5">
             <ToolbarButton onClick={() => editor.chain().focus().toggleCode().run()}
@@ -344,6 +495,14 @@ export function Editor({ value = "", onChange }: EditorProps) {
           initialUrl={editor.getAttributes("link").href || ""}
           onSubmit={setLink}
           onClose={() => setShowLinkModal(false)}
+        />
+      )}
+
+      {/* Table modal */}
+      {showTableModal && (
+        <TableModal
+          onSubmit={insertTable}
+          onClose={() => setShowTableModal(false)}
         />
       )}
     </div>

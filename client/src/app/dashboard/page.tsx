@@ -19,16 +19,12 @@ import {
   Send,
   Clock,
   Star,
-  TrendingDown,
   TrendingUp,
   Mail,
   AlertCircle,
-  Users,
   BarChart3,
   CheckCircle,
-  XCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const EMAIL_STATUS_OPTIONS = ["PENDING", "SENDING", "SENT", "FAILED", "CANCELLED"];
 
@@ -42,7 +38,7 @@ function AnalyticsCard({
   subValue,
   trend,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | number;
   subValue?: string;
@@ -94,7 +90,7 @@ const Dashboard = () => {
     }
   }, [setFilters]);
 
-  const emailItems = results.map((r: any) => ({
+  const emailItems = results.map((r: Record<string, unknown>) => ({
     email: r,
     campaign: r.campaign,
     searchQuery: filters.q,
@@ -107,25 +103,21 @@ const Dashboard = () => {
     } catch { }
   }, [refresh]);
 
-  useEffect(() => {
-    if (filters.starred === "true") {
-      setLabel("Starred");
-    } else if (filters.status === "PENDING") {
-      setLabel("Scheduled");
-    } else if (filters.status === "SENT") {
-      setLabel("Sent");
-    } else if (!filters.status && !filters.starred) {
-      setLabel("All");
-    } else {
-      setLabel("Custom");
-    }
-  }, [filters.status, filters.starred]);
+  const newLabel = filters.starred === "true" ? "Starred"
+    : filters.status === "PENDING" ? "Scheduled"
+    : filters.status === "SENT" ? "Sent"
+    : !filters.status && !filters.starred ? "All"
+    : "Custom";
+  
+  if (newLabel !== label) {
+    setLabel(newLabel);
+  }
 
   const stats = useMemo(() => {
-    const sent = results.filter((r: any) => r.status === "SENT").length;
-    const failed = results.filter((r: any) => r.status === "FAILED").length;
-    const pending = results.filter((r: any) => r.status === "PENDING").length;
-    const replied = results.filter((r: any) => r.isReplied).length;
+    const sent = results.filter((r: Record<string, unknown>) => r.status === "SENT").length;
+    const failed = results.filter((r: Record<string, unknown>) => r.status === "FAILED").length;
+    const pending = results.filter((r: Record<string, unknown>) => r.status === "PENDING").length;
+    const replied = results.filter((r: Record<string, unknown>) => r.isReplied).length;
 
     const totalAttempted = sent + failed;
     const efficiency = totalAttempted > 0 ? Math.round((sent / totalAttempted) * 100) : 100;
@@ -171,7 +163,7 @@ const Dashboard = () => {
                     onToggle={() => setIsFilterOpen(!isFilterOpen)}
                     onClose={() => setIsFilterOpen(false)}
                     filters={filters}
-                    onFilterChange={(key, value) => setFilter(key as any, value)}
+                    onFilterChange={(key, value) => setFilter(key as keyof import("@/hooks/useSearchFilters").SearchFilters, value)}
                     onClearAll={clearAllFilters}
                     activeFilterCount={activeFilterCount}
                     senders={senders}
@@ -183,7 +175,7 @@ const Dashboard = () => {
 
               <FilterSummaryBar
                 filters={filters}
-                onRemoveFilter={(key) => clearFilter(key as any)}
+                onRemoveFilter={(key) => clearFilter(key)}
                 onClearAll={clearAllFilters}
                 senders={senders}
               />

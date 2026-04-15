@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Menu, RefreshCw, Search, Bell, X, SlidersHorizontal } from "lucide-react";
+import { Menu, RefreshCw, Search, Bell, X } from "lucide-react";
 import { useSidebar } from "@/hooks/useSidebar";
 
 interface TopBarProps {

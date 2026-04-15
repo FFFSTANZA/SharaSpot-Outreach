@@ -27,7 +27,6 @@ import {
   Mail,
   CheckCircle2,
   XCircle,
-  Pause,
   MessageSquare,
   Filter,
   Ban,

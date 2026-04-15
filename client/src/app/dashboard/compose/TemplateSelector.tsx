@@ -12,14 +12,18 @@ interface TemplateSelectorProps {
 export default function TemplateSelector({ onSelect }: TemplateSelectorProps) {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [selected, setSelected] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       try {
         const data = await getTemplates();
-        setTemplates(data);
+        setTemplates(data || []);
       } catch {
-        // Silently fail — template selector is optional
+        // Silently fail
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, []);
@@ -30,9 +34,12 @@ export default function TemplateSelector({ onSelect }: TemplateSelectorProps) {
   }));
 
   const handleChange = (value: string) => {
-    setSelected(value);
     const template = templates.find((t) => t.id === value);
-    if (template) onSelect(template);
+    if (template) {
+      onSelect(template);
+      // Reset after a short delay so the dropdown closes properly
+      setTimeout(() => setSelected(""), 100);
+    }
   };
 
   return (
@@ -40,8 +47,9 @@ export default function TemplateSelector({ onSelect }: TemplateSelectorProps) {
       options={options}
       value={selected}
       onChange={handleChange}
-      placeholder="Add template"
+      placeholder={isLoading ? "Loading templates..." : "Add template"}
       className="w-full"
+      disabled={isLoading}
     />
   );
 }

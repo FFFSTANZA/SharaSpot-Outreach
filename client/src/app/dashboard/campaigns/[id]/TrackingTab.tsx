@@ -5,7 +5,7 @@ import { getTrackingMetrics, getTrackingEmails, getTrackingLinks } from "@/lib/a
 import type { TrackingMetrics, TrackingEmailDetail, TrackingLinkDetail } from "@/types";
 import {
   Eye, MousePointerClick, Send, AlertTriangle, ExternalLink,
-  ArrowUpDown, ChevronDown, EyeOff, Link2, Mail, RefreshCw,
+  ArrowUpDown, EyeOff, Link2, Mail, RefreshCw,
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

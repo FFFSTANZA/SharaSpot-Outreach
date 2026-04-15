@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import Button from "@/components/Button";
 import {
@@ -9,7 +10,6 @@ import {
   ArrowRight, ChevronDown, Send, Users, Rocket,
   Zap, BookOpen, Target, BarChart3, Lock, Menu, X,
   Flame, Paperclip, RefreshCw, FileText, HelpCircle,
-  Headphones,
 } from "lucide-react";
 
 function Section({ id, children }: { id: string; children: React.ReactNode }) {
@@ -43,7 +43,7 @@ function Accordion({ title, children, icon: Icon }: { title: string; children: R
   );
 }
 
-function StepCard({ step, title, desc, icon: Icon }: { step: string; title: string; desc: string; icon: React.ElementType }) {
+function StepCard({ step, title, desc }: { step: string; title: string; desc: string }) {
   return (
     <div className="flex gap-4 p-5 rounded-xl bg-gradient-to-b from-white to-gray-50/50 border border-gray-100 hover:border-gray-200 hover:shadow-md hover:shadow-gray-100/50 transition-all group">
       <div className="h-8 w-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">{step}</div>
@@ -86,12 +86,12 @@ export default function GuidePage() {
       {/* Navbar */}
       <nav className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-gray-100">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
-          <a href="/" aria-label="Go to homepage"><Logo size="md" /></a>
+          <Link href="/" aria-label="Go to homepage"><Logo size="md" /></Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-500">
             {navItems.slice(0, 4).map((item) => (
               <a key={item.href} href={item.href} className="hover:text-gray-900 transition-colors">{item.label}</a>
             ))}
-            <a href="/faq" className="hover:text-gray-900 transition-colors">FAQ</a>
+            <Link href="/faq" className="hover:text-gray-900 transition-colors">FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">Support</a>
           </div>
           <Button className="hidden md:block w-auto px-5 py-2 rounded-full text-sm" onClick={() => router.push("/login")}>
@@ -106,7 +106,7 @@ export default function GuidePage() {
             {navItems.map((item) => (
               <a key={item.href} href={item.href} className="block text-sm text-gray-600 py-3" onClick={() => setMobileNav(false)}>{item.label}</a>
             ))}
-            <a href="/faq" className="block text-sm text-gray-600 py-3" onClick={() => setMobileNav(false)}>FAQ</a>
+            <Link href="/faq" className="block text-sm text-gray-600 py-3" onClick={() => setMobileNav(false)}>FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="block text-sm text-gray-600 py-3" onClick={() => setMobileNav(false)}>Support</a>
             <Button className="w-full rounded-full mt-2" onClick={() => router.push("/login")}>Get Started</Button>
           </div>
@@ -153,14 +153,14 @@ export default function GuidePage() {
           <div className="space-y-4">
             <div className="rounded-xl bg-blue-50/50 border border-blue-100 p-5">
               <h3 className="text-sm font-semibold text-blue-900 mb-2">Why use multiple senders?</h3>
-              <p className="text-sm text-blue-700 leading-relaxed">Gmail limits each account to ~500 emails/day. By rotating across 3 senders, you can send up to 1,500/day while staying within each account's limits. SharaSpot handles the rotation automatically.</p>
+              <p className="text-sm text-blue-700 leading-relaxed">Gmail limits each account to ~500 emails/day. By rotating across 3 senders, you can send up to 1,500/day while staying within each account&apos;s limits. SharaSpot handles the rotation automatically.</p>
             </div>
             <div className="space-y-3">
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
                 <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" strokeWidth={1.8} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Round-robin distribution</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Emails are evenly distributed across senders, respecting each sender's daily limit.</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Emails are evenly distributed across senders, respecting each sender&apos;s daily limit.</p>
                 </div>
               </div>
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
@@ -314,7 +314,7 @@ export default function GuidePage() {
 
             <div className="flex gap-3 items-start p-4 rounded-xl bg-cyan-50 border border-cyan-100">
               <Zap className="h-4 w-4 text-cyan-600 mt-0.5 shrink-0" />
-              <p className="text-sm text-cyan-700">The Variable Preview panel in the compose form shows you exactly how each recipient's email will look before you send.</p>
+              <p className="text-sm text-cyan-700">The Variable Preview panel in the compose form shows you exactly how each recipient&apos;s email will look before you send.</p>
             </div>
           </div>
         </Section>
@@ -325,28 +325,28 @@ export default function GuidePage() {
           <div className="space-y-4">
             <div className="rounded-xl bg-emerald-50/50 border border-emerald-100 p-5">
               <h3 className="text-sm font-semibold text-emerald-900 mb-2">Know who opens and clicks</h3>
-              <p className="text-sm text-emerald-700 leading-relaxed">SharaSpot automatically tracks email opens (via a transparent pixel) and link clicks (via URL rewriting). View real-time metrics on the campaign detail page's Tracking tab.</p>
+              <p className="text-sm text-emerald-700 leading-relaxed">SharaSpot automatically tracks email opens (via a transparent pixel) and link clicks (via URL rewriting). View real-time metrics on the campaign detail page&apos;s Tracking tab.</p>
             </div>
             <div className="space-y-3">
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" strokeWidth={1.8} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Open tracking</p>
-                  <p className="text-xs text-gray-500 mt-0.5">A tiny invisible pixel is added to each email. When the recipient's email client loads it, an open is recorded.</p>
+                  <p className="text-xs text-gray-500 mt-0.5">A tiny invisible pixel is added to each email. When the recipient&apos;s email client loads it, an open is recorded.</p>
                 </div>
               </div>
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
                 <CheckCircle2 className="h-4 w-4 text-indigo-500 mt-0.5 shrink-0" strokeWidth={1.8} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Click tracking</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Links in your email are rewritten to route through SharaSpot's server. When clicked, the click is recorded and the recipient is redirected to the original URL.</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Links in your email are rewritten to route through SharaSpot&apos;s server. When clicked, the click is recorded and the recipient is redirected to the original URL.</p>
                 </div>
               </div>
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
                 <CheckCircle2 className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" strokeWidth={1.8} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Optional per campaign</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Toggle "Track opens" and "Track clicks" in the compose form's sending settings. Both are enabled by default.</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Toggle &ldquo;Track opens&rdquo; and &ldquo;Track clicks&rdquo; in the compose form&apos;s sending settings. Both are enabled by default.</p>
                 </div>
               </div>
             </div>
@@ -399,7 +399,7 @@ export default function GuidePage() {
           <div className="space-y-3">
             <Accordion title="Write emails that get opened" icon={Mail}>
               <div className="space-y-3 mt-2">
-                <p>Keep subject lines clear and honest. Avoid spam triggers like "FREE", "URGENT", or all caps.</p>
+                <p>Keep subject lines clear and honest. Avoid spam triggers like &ldquo;FREE&rdquo;, &ldquo;URGENT&rdquo;, or all caps.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="rounded-lg bg-green-50 border border-green-100 p-3">
                     <p className="text-xs font-semibold text-green-700 mb-2 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Good subjects</p>
@@ -414,7 +414,7 @@ export default function GuidePage() {
                     <ul className="text-xs text-red-600 space-y-1">
                       <li>FREE OPPORTUNITY!!!</li>
                       <li>URGENT: ACT NOW</li>
-                      <li>You won't believe this</li>
+                      <li>You won&apos;t believe this</li>
                     </ul>
                   </div>
                 </div>
@@ -504,7 +504,7 @@ export default function GuidePage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-gradient-to-b from-primary/15 to-transparent rounded-full blur-3xl" />
           <div className="relative">
             <h3 className="text-lg sm:text-2xl font-bold text-white mb-3">Ready to start your outreach?</h3>
-            <p className="text-xs sm:text-sm text-gray-400 mb-6 max-w-md mx-auto">Follow this guide, stay within safe limits, and you'll be landing replies in no time.</p>
+            <p className="text-xs sm:text-sm text-gray-400 mb-6 max-w-md mx-auto">Follow this guide, stay within safe limits, and you&apos;ll be landing replies in no time.</p>
             <div className="flex flex-col items-center gap-3 max-w-xs mx-auto">
               <Button className="!w-full px-8 py-3 rounded-full text-sm shadow-lg shadow-primary/30" onClick={() => router.push("/login")}>
                 Get Started <ArrowRight className="ml-2 h-4 w-4 inline" />
@@ -520,15 +520,15 @@ export default function GuidePage() {
       {/* Footer */}
       <footer className="py-8 border-t border-gray-100 bg-gray-50/50">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col items-center gap-5 md:flex-row md:justify-between">
-          <a href="/" aria-label="Go to homepage"><Logo size="sm" /></a>
+          <Link href="/" aria-label="Go to homepage"><Logo size="sm" /></Link>
           <nav className="flex items-center gap-6">
-            <a href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</a>
-            <a href="/faq" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">FAQ</a>
+            <Link href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</Link>
+            <Link href="/faq" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Support</a>
-            <a href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</a>
-            <a href="/terms" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</a>
+            <Link href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>
           </nav>
-          <span className="text-xs text-gray-500">© 2026 SharaSpot</span>
+          <span className="text-xs text-gray-500">&copy; 2026 SharaSpot</span>
         </div>
       </footer>
     </div>

@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import {
   ArrowLeft, Link2, CalendarClock, Calendar, Send, Loader2, X,
   FileText, Image as ImageIcon, Trash2, Plus, CheckCircle2,
-  ChevronDown,
 } from "lucide-react";
 import { ComposeHeaderProps, UploadedAttachment } from "@/types";
 import Modal from "@/components/Modal";
@@ -89,8 +88,9 @@ function ScheduleBadge({ date, onClear }: { date: Date; onClear: () => void }) {
 }
 
 export function ComposeHeader({
-  onBack, scheduledAt, setScheduledAt, uploadedAttachments,
+  onBack, scheduledAt, setScheduledAt, uploadedAttachments = [],
   onFilesSelected, onRemoveAttachment, isUploading, onSend, isSubmitting,
+  customTrigger,
 }: ComposeHeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -159,9 +159,11 @@ export function ComposeHeader({
     setIsScheduleOpen(false);
   };
 
+  if (customTrigger) return <>{customTrigger}</>;
+
   return (
     <>
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl border-b border-gray-100">
+      <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-gray-100/80">
         <div className="mx-auto max-w-[1280px] flex items-center justify-between px-3 md:px-6 h-14">
           {/* Left */}
           <div className="flex items-center gap-2 md:gap-3">

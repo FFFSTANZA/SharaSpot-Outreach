@@ -81,12 +81,12 @@ export default function ContactPage() {
         {/* Contact form */}
         <div className="rounded-xl border border-gray-100 p-5 sm:p-8">
           <h3 className="text-base font-semibold text-gray-900 mb-1">Send a message</h3>
-          <p className="text-xs text-gray-600 mb-6">We'll get back to you as soon as possible.</p>
+          <p className="text-xs text-gray-600 mb-6">We&apos;ll get back to you as soon as possible.</p>
 
           {submitted && (
             <div className="mb-6 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-100 px-4 py-3 text-sm text-emerald-600">
               <CheckCircle2 className="h-4 w-4 shrink-0" />
-              Message sent! We'll be in touch.
+              Message sent! We&apos;ll be in touch.
             </div>
           )}
 

@@ -55,7 +55,7 @@ export default function Modal({
     return (
       <div
         className={cn(
-          "absolute right-0 top-12 z-50 w-[360px] rounded-xl bg-white p-5 border border-[#E8EAED] shadow-lg",
+          "absolute right-0 top-12 z-50 w-[360px] rounded-xl bg-white p-5 border border-gray-100 shadow-xl",
           "animate-[fadeInUp_0.2s_ease-out]",
           className,
         )}
@@ -63,7 +63,7 @@ export default function Modal({
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 p-1 text-[#9AA0A6] hover:text-[#5F6368] transition-colors"
+            className="absolute right-3 top-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -97,7 +97,7 @@ export default function Modal({
           // Center variant (desktop)
           variant === "center" && [
             "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-            "w-[90vw] sm:w-full max-w-[480px] rounded-xl sm:rounded-2xl bg-white p-4 sm:p-6 shadow-xl border border-[#E8EAED]",
+            "w-[90vw] sm:w-full max-w-[480px] rounded-2xl bg-white p-0 shadow-2xl border border-gray-100",
             "animate-[fadeInUp_0.2s_ease-out]",
             "max-h-[90vh] overflow-y-auto",
           ],
