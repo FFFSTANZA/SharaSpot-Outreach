@@ -6,7 +6,7 @@ import { SidebarProps } from "@/types";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { X, Megaphone, LogOut, FileText, Plus, Settings } from "lucide-react";
+import { X, Megaphone, LogOut, FileText, Plus, Settings, Users } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { logout } from "@/lib/apis";
 import { cn } from "@/lib/utils";
@@ -120,6 +120,20 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
         >
           <Megaphone className={cn("h-4 w-4", pathname === "/dashboard/campaigns" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
           <span>Campaigns</span>
+        </Link>
+
+        <Link
+          href="/dashboard/prm"
+          onClick={close}
+          className={cn(
+            "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
+            pathname === "/dashboard/prm"
+              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
+              : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
+          )}
+        >
+          <Users className={cn("h-4 w-4", pathname === "/dashboard/prm" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <span>PRM</span>
         </Link>
 
         <Link

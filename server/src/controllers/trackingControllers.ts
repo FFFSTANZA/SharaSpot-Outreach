@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
 import { redis } from "../config/redis";
+import { ActivityType } from "@prisma/client";
+import { logContactActivityByEmail } from "../utils/contactService";
 
 /**
  * 1x1 transparent GIF — smallest valid GIF89a image (43 bytes).
@@ -82,6 +84,31 @@ async function flushTrackingBuffer(): Promise<void> {
     }));
 
     await prisma.trackingEvent.createMany({ data });
+
+    // Log contact activity for each event (optimized)
+    const jobIds = [...new Set(data.map((e) => e.emailJobId))];
+    const jobs = await prisma.emailJob.findMany({
+      where: { id: { in: jobIds } },
+      include: { campaign: true },
+    });
+    const jobMap = new Map(jobs.map((j) => [j.id, j]));
+
+    for (const event of data) {
+      const job = jobMap.get(event.emailJobId);
+      if (job) {
+        await logContactActivityByEmail(
+          job.campaign.userId,
+          job.toEmail,
+          event.eventType === "OPEN" ? ActivityType.EMAIL_OPENED : ActivityType.EMAIL_CLICKED,
+          {
+            emailJobId: event.emailJobId,
+            campaignId: job.campaignId,
+            url: event.url,
+          }
+        );
+      }
+    }
+
     console.log(`[Tracking] Flushed ${events.length} events to Postgres`);
   } catch (err) {
     console.error("[Tracking] Flush error:", err);
