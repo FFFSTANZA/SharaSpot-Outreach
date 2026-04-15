@@ -33,13 +33,15 @@ export function ComposeForm({
   isUploading,
   onSubmit,
   submitTrigger,
-  isSubmitting
+  isSubmitting,
+  initialEmails
 }: ComposeFormProps & {
   setScheduledAt: (date: Date | null) => void;
   onFilesSelected: (files: File[]) => void;
   onRemoveAttachment: (url: string) => void;
   isUploading: boolean;
   isSubmitting?: boolean;
+  initialEmails?: string[];
 }) {
   const { addToast } = useToast();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
@@ -56,11 +58,20 @@ export function ComposeForm({
   const senderDropdownRef = useRef<HTMLDivElement>(null);
   const bulkMenuRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<ComposeFormData>({
-    from: "", selectedSenderIds: [], to: [], cc: [], bcc: [], subject: "", body: "",
+    from: "", selectedSenderIds: [], to: initialEmails || [], cc: [], bcc: [], subject: "", body: "",
     delayBetweenEmails: 30, hourlyLimit: 50, selectedRecipients: new Set(),
     attachments: [],
     scheduleDate: null,
   });
+
+  useEffect(() => {
+    if (initialEmails && initialEmails.length > 0) {
+      setData(prev => ({
+        ...prev,
+        to: Array.from(new Set([...prev.to, ...initialEmails]))
+      }));
+    }
+  }, [initialEmails]);
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

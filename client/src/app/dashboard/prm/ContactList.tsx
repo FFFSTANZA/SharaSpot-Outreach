@@ -7,10 +7,12 @@ import { Users } from "lucide-react";
 interface ContactListProps {
   contacts: Contact[];
   selectedContactId: string | null;
+  selectedIds: Set<string>;
   onContactClick: (contact: Contact) => void;
+  onToggleSelect: (id: string) => void;
 }
 
-export function ContactList({ contacts, selectedContactId, onContactClick }: ContactListProps) {
+export function ContactList({ contacts, selectedContactId, selectedIds, onContactClick, onToggleSelect }: ContactListProps) {
   if (contacts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
@@ -32,6 +34,8 @@ export function ContactList({ contacts, selectedContactId, onContactClick }: Con
           key={contact.id}
           contact={contact}
           isActive={selectedContactId === contact.id}
+          isSelected={selectedIds.has(contact.id)}
+          onSelect={() => onToggleSelect(contact.id)}
           onClick={() => onContactClick(contact)}
         />
       ))}

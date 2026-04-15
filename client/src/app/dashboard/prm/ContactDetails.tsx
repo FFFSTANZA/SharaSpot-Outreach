@@ -13,13 +13,14 @@ import {
   X, Mail, Building, Briefcase, Calendar, 
   Tag as TagIcon, Plus, Trash2, Send, Save, 
   MoreHorizontal, Edit2, Loader2, User,
-  ChevronDown
+  ChevronDown, ExternalLink, Linkedin
 } from "lucide-react";
 import { format } from "date-fns";
 import { Timeline } from "./Timeline";
 import { cn } from "@/lib/utils";
 import Button from "@/components/Button";
 import { useToast } from "@/context/ToastContext";
+import { useRouter } from "next/navigation";
 
 interface ContactDetailsProps {
   contactId: string;
@@ -29,6 +30,7 @@ interface ContactDetailsProps {
 
 export function ContactDetails({ contactId, onUpdate, onDelete }: ContactDetailsProps) {
   const { addToast } = useToast();
+  const router = useRouter();
   const [contact, setContact] = useState<Contact | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [noteContent, setNoteContent] = useState("");
@@ -134,12 +136,23 @@ export function ContactDetails({ contactId, onUpdate, onDelete }: ContactDetails
 
   if (!contact) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400">
-        <User className="h-12 w-12 mb-4 opacity-20" />
-        <p className="text-sm font-medium">Select a contact to view details</p>
+      <div className="h-full flex flex-col items-center justify-center p-8 text-center text-gray-400">
+        <div className="h-20 w-20 bg-gray-50 rounded-3xl flex items-center justify-center mb-6 border border-gray-100 shadow-sm">
+          <User className="h-10 w-10 text-gray-200" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-900">Select a contact</h3>
+        <p className="text-sm text-gray-500 mt-2 max-w-[280px]">
+          Choose a relationship from the directory to see full interaction history and profile details.
+        </p>
       </div>
     );
   }
+
+  const lastActivity = contact.activities?.[0];
+  const totalEmails = contact.activities?.filter(a => a.type === "EMAIL_SENT").length || 0;
+  const replies = contact.activities?.filter(a => a.type === "EMAIL_REPLIED").length || 0;
+
+  const linkedinSearchUrl = `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(`${contact.firstName || ""} ${contact.lastName || ""} ${contact.company || ""}`)}`;
 
   return (
     <div className="h-full flex flex-col bg-gray-50/50 overflow-hidden animate-in fade-in duration-300">
@@ -162,6 +175,24 @@ export function ContactDetails({ contactId, onUpdate, onDelete }: ContactDetails
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <a 
+            href={linkedinSearchUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="h-9 px-3 flex items-center gap-2 rounded-lg bg-[#0A66C2] text-white text-xs font-bold hover:bg-[#084d91] transition-colors shadow-sm"
+          >
+            <Linkedin className="h-4 w-4" />
+            LinkedIn
+          </a>
+          <Button 
+            variant="primary" 
+            size="sm" 
+            className="h-9 px-3 gap-2 shadow-md shadow-blue-100"
+            onClick={() => router.push(`/dashboard/compose?emails=${encodeURIComponent(contact.email)}`)}
+          >
+            <Send className="h-4 w-4" />
+            Enroll
+          </Button>
           <Button 
             variant="secondary" 
             size="sm" 
@@ -183,6 +214,24 @@ export function ContactDetails({ contactId, onUpdate, onDelete }: ContactDetails
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Interaction Stats */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Emails</p>
+            <p className="text-2xl font-black text-gray-900">{totalEmails}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Replies</p>
+            <p className="text-2xl font-black text-emerald-600">{replies}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Last Interaction</p>
+            <p className="text-sm font-bold text-gray-700 mt-2">
+              {lastActivity ? format(new Date(lastActivity.createdAt), "MMM d, yyyy") : "No activity"}
+            </p>
+          </div>
+        </div>
+
         {/* Info Card */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">

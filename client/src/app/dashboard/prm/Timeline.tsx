@@ -108,16 +108,29 @@ export function Timeline({ activities }: TimelineProps) {
                     <p className="text-sm font-bold text-gray-900 leading-tight">
                       {config.label}
                     </p>
-                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1">
-                      {Object.entries(activity.metadata || {}).map(([key, value]) => (
-                        <span 
-                          key={key} 
-                          className="text-[10px] text-gray-500 bg-white border border-gray-100 px-1.5 py-0.5 rounded font-medium"
-                        >
-                          <span className="opacity-50 font-normal">{key}:</span> {String(value)}
-                        </span>
-                      ))}
-                    </div>
+                    {activity.type === "STAGE_CHANGED" ? (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Moved from <span className="font-bold text-gray-700">{activity.metadata?.from}</span> to <span className="font-bold text-blue-600">{activity.metadata?.to}</span>
+                      </p>
+                    ) : activity.type === "CAMPAIGN_ENROLLED" ? (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Campaign: <span className="font-bold text-gray-900">{activity.metadata?.subject}</span>
+                      </p>
+                    ) : (
+                      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1">
+                        {Object.entries(activity.metadata || {}).map(([key, value]) => {
+                          if (key === "from" || key === "to" || key === "subject") return null;
+                          return (
+                            <span 
+                              key={key} 
+                              className="text-[10px] text-gray-500 bg-white border border-gray-100 px-1.5 py-0.5 rounded font-medium"
+                            >
+                              <span className="opacity-50 font-normal">{key}:</span> {String(value)}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
