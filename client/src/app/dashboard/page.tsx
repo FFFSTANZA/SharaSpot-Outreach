@@ -90,7 +90,7 @@ const Dashboard = () => {
     }
   }, [setFilters]);
 
-  const emailItems = results.map((r: Record<string, unknown>) => ({
+  const emailItems = (results as any[]).map((r: any) => ({
     email: r,
     campaign: r.campaign,
     searchQuery: filters.q,

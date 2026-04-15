@@ -17,6 +17,7 @@ export const getContacts = async (req: Request, res: Response) => {
         { firstName: { contains: search as string, mode: "insensitive" } },
         { lastName: { contains: search as string, mode: "insensitive" } },
         { company: { contains: search as string, mode: "insensitive" } },
+        { jobTitle: { contains: search as string, mode: "insensitive" } },
       ];
     }
 
@@ -152,6 +153,77 @@ export const deleteContact = async (req: Request, res: Response) => {
     });
 
     res.json({ message: "Contact deleted successfully" });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const bulkUpdateContacts = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const { ids, data } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "No IDs provided" });
+    }
+
+    const { stage, tags } = data;
+
+    const result = await (prisma as any).contact.updateMany({
+      where: {
+        id: { in: ids },
+        userId,
+      },
+      data: {
+        stage,
+      },
+    });
+
+    if (tags && Array.isArray(tags)) {
+      // updateMany doesn't support many-to-many relations in Prisma
+      // We have to do it individually or use a different approach.
+      // For simplicity and since it's a small number usually:
+      for (const id of ids) {
+        await (prisma as any).contact.update({
+          where: { id, userId },
+          data: {
+            tags: {
+              set: tags.map((tagId: string) => ({ id: tagId })),
+            },
+          },
+        });
+      }
+    }
+
+    if (stage) {
+      for (const id of ids) {
+        await logContactActivity(id, "STAGE_CHANGED" as any, { to: stage });
+      }
+    }
+
+    res.json({ message: `${result.count} contacts updated` });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const bulkDeleteContacts = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "No IDs provided" });
+    }
+
+    const result = await (prisma as any).contact.deleteMany({
+      where: {
+        id: { in: ids },
+        userId,
+      },
+    });
+
+    res.json({ message: `${result.count} contacts deleted` });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

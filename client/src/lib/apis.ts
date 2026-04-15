@@ -481,6 +481,14 @@ export const deleteContact = async (id: string): Promise<void> => {
   await api.delete(`/api/contacts/${id}`);
 };
 
+export const bulkUpdateContacts = async (ids: string[], data: { stage?: string; tags?: string[] }): Promise<void> => {
+  await api.post("/api/contacts/bulk-update", { ids, data });
+};
+
+export const bulkDeleteContacts = async (ids: string[]): Promise<void> => {
+  await api.post("/api/contacts/bulk-delete", { ids });
+};
+
 export const getTags = async (): Promise<Tag[]> => {
   const res = await api.get("/api/tags");
   return res.data;

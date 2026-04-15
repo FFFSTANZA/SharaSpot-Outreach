@@ -43,10 +43,12 @@ function Accordion({ title, children, icon: Icon }: { title: string; children: R
   );
 }
 
-function StepCard({ step, title, desc }: { step: string; title: string; desc: string }) {
+function StepCard({ step, title, desc, icon: Icon }: { step: string; title: string; desc: string; icon?: React.ElementType }) {
   return (
     <div className="flex gap-4 p-5 rounded-xl bg-gradient-to-b from-white to-gray-50/50 border border-gray-100 hover:border-gray-200 hover:shadow-md hover:shadow-gray-100/50 transition-all group">
-      <div className="h-8 w-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">{step}</div>
+      <div className="h-8 w-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">
+        {Icon ? <Icon className="h-4 w-4" /> : step}
+      </div>
       <div>
         <h3 className="text-sm font-semibold text-gray-900 mb-1 group-hover:text-emerald-600 transition-colors">{title}</h3>
         <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>

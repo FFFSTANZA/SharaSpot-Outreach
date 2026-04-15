@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ComposeForm } from "./ComposeForm";
@@ -10,6 +10,7 @@ import type { CreateCampaignPayload, UploadedAttachment } from "@/types";
 
 export default function ComposePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToast } = useToast();
 
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
@@ -17,6 +18,14 @@ export default function ComposePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitTrigger, setSubmitTrigger] = useState(0);
+  const [initialEmails, setInitialEmails] = useState<string[]>([]);
+
+  useEffect(() => {
+    const emails = searchParams.get("emails");
+    if (emails) {
+      setInitialEmails(emails.split(","));
+    }
+  }, [searchParams]);
 
   const handleFilesSelected = useCallback(async (files: File[]) => {
     setIsUploading(true);
@@ -73,6 +82,7 @@ export default function ComposePage() {
           onSubmit={handleSubmit}
           submitTrigger={submitTrigger}
           isSubmitting={isSubmitting}
+          initialEmails={initialEmails}
         />
       </div>
     </AuthGuard>
