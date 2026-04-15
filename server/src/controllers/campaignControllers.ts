@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import crypto from "crypto";
 import { prisma } from "../config/prisma";
+import { upsertContact, logContactActivity } from "../utils/contactService";
 import { emailQueue } from "../queues/emailQueue";
 import { priorityQueue } from "../queues/priorityQueue";
 import { resolveForRecipient } from "../utils/variableResolver";
@@ -359,6 +360,18 @@ export const createCampaign = async (
             columnData: recipient.columnData ?? undefined,
           },
         });
+
+        // Upsert contact and log activity
+        const contact = await upsertContact(req.user!.id, recipient.email, {
+          firstName: recipient.columnData?.FirstName || recipient.columnData?.firstName,
+          lastName: recipient.columnData?.LastName || recipient.columnData?.lastName,
+          company: recipient.columnData?.Company || recipient.columnData?.company,
+          jobTitle: recipient.columnData?.JobTitle || recipient.columnData?.jobTitle,
+        }, tx);
+        await logContactActivity(contact.id, "CAMPAIGN_ENROLLED", { 
+          campaignId: campaign.id,
+          subject: campaign.subject,
+        }, tx);
 
         emailJobs.push(emailJob);
       }

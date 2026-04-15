@@ -19,6 +19,8 @@ model User {
   refreshTokens RefreshToken[]
   templates     EmailTemplate[]
   subscription  Subscription?
+  contacts      Contact[]
+  tags          Tag[]
 }
 
 enum SubscriptionStatus {
@@ -470,4 +472,88 @@ model DomainRateLimit {
 
   @@index([domain])
   @@index([windowStart])
+}
+
+// ─── PRM Models ─────────────────────────────────────────────────────────────
+
+enum ContactStage {
+  LEAD
+  CONTACTED
+  REPLIED
+  BOUNCED
+  UNSUBSCRIBED
+  CHURNED
+}
+
+enum ActivityType {
+  CAMPAIGN_ENROLLED
+  EMAIL_SENT
+  EMAIL_OPENED
+  EMAIL_CLICKED
+  EMAIL_REPLIED
+  EMAIL_FAILED
+  NOTE_ADDED
+  STAGE_CHANGED
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String
+  firstName String?
+  lastName  String?
+  company   String?
+  jobTitle  String?
+  stage     ContactStage @default(LEAD)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User           @relation(fields: [userId], references: [id])
+  tags       Tag[]
+  notes      ContactNote[]
+  activities ContactActivity[]
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@index([email])
+  @@index([stage])
+}
+
+model Tag {
+  id     String @id @default(cuid())
+  userId String
+  name   String
+  color  String @default("#6366f1") // Default indigo-500
+
+  contacts Contact[]
+  user     User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model ContactNote {
+  id        String   @id @default(cuid())
+  contactId String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
+}
+
+model ContactActivity {
+  id        String       @id @default(cuid())
+  contactId String
+  type      ActivityType
+  metadata  Json?        // Stores extra info like campaignId, emailJobId, subject, etc.
+  createdAt DateTime     @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
+  @@index([type])
 }
