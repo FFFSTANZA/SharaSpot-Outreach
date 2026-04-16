@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export const getTags = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const tags = await (prisma as any).tag.findMany({
       where: { userId },
     });
@@ -17,7 +17,7 @@ export const getTags = async (req: Request, res: Response) => {
 
 export const createTag = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const { name, color } = req.body;
 
     const tag = await (prisma as any).tag.create({
@@ -36,7 +36,7 @@ export const createTag = async (req: Request, res: Response) => {
 
 export const updateTag = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const id = req.params.id as string;
     const { name, color } = req.body;
 
@@ -56,7 +56,7 @@ export const updateTag = async (req: Request, res: Response) => {
 
 export const deleteTag = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const id = req.params.id as string;
 
     await (prisma as any).tag.delete({

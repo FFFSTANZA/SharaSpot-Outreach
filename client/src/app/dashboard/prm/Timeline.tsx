@@ -88,7 +88,10 @@ export function Timeline({ activities }: TimelineProps) {
           </div>
 
           {/* Agenda items */}
-          <div className="space-y-1">
+          <div className="space-y-0.5 relative ml-14">
+            {/* Vertical Line */}
+            <div className="absolute left-[-28px] top-2 bottom-2 w-0.5 bg-gray-100" />
+
             {items.map((activity) => {
               const config = ACTIVITY_CONFIG[activity.type] || { 
                 icon: AlertCircle, 
@@ -101,36 +104,35 @@ export function Timeline({ activities }: TimelineProps) {
               return (
                 <div 
                   key={activity.id} 
-                  className="group flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50 transition-all cursor-default"
+                  className="group flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50/50 transition-all cursor-default relative"
                 >
-                  <div className="w-12 shrink-0 flex flex-col items-end">
-                    <span className="text-[11px] font-bold text-gray-400 group-hover:text-gray-600 transition-colors">
+                  <div className="absolute left-[-48px] w-10 flex flex-col items-end">
+                    <span className="text-[10px] font-bold text-gray-400">
                       {format(parseISO(activity.createdAt), "HH:mm")}
                     </span>
                   </div>
                   
                   <div className={cn(
-                    "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-white",
+                    "h-7 w-7 rounded-full flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm",
                     config.bg,
                     config.color
                   )}>
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-3.5 w-3.5" />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-800">{config.label}</span>
-                      <div className="h-1 w-1 rounded-full bg-gray-300" />
+                      <span className="text-xs font-bold text-gray-700">{config.label}</span>
                       {activity.type === "STAGE_CHANGED" ? (
-                        <span className="text-xs text-gray-500">
-                          To <span className="font-bold text-blue-600">{activity.metadata?.to}</span>
+                        <span className="text-[10px] text-gray-500 font-medium">
+                          → <span className="text-blue-600">{activity.metadata?.to}</span>
                         </span>
                       ) : activity.type === "CAMPAIGN_ENROLLED" ? (
-                        <span className="text-xs text-gray-500 truncate max-w-[200px]">
-                          {activity.metadata?.subject}
+                        <span className="text-[10px] text-gray-500 truncate max-w-[200px] font-medium italic">
+                          "{activity.metadata?.subject}"
                         </span>
                       ) : (
-                        <span className="text-xs text-gray-400 truncate">
+                        <span className="text-[10px] text-gray-400 truncate font-medium">
                           {Object.values(activity.metadata || {}).find(v => typeof v === 'string' && v.length < 50) as string}
                         </span>
                       )}

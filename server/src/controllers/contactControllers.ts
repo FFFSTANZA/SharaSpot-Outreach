@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 export const getContacts = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const { search, stage, tag } = req.query;
 
     const where: any = { userId };
@@ -51,7 +51,7 @@ export const getContacts = async (req: Request, res: Response) => {
 
 export const getContactById = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const id = req.params.id as string;
 
     const contact = await (prisma as any).contact.findFirst({
@@ -79,7 +79,7 @@ export const getContactById = async (req: Request, res: Response) => {
 
 export const createContact = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const { email, firstName, lastName, company, jobTitle, stage, tags } = req.body;
 
     const contact = await upsertContact(userId, email, {
@@ -99,7 +99,7 @@ export const createContact = async (req: Request, res: Response) => {
 
 export const updateContact = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const id = req.params.id as string;
     const { firstName, lastName, company, jobTitle, stage, tags } = req.body;
 
@@ -136,7 +136,7 @@ export const updateContact = async (req: Request, res: Response) => {
 
 export const deleteContact = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const id = req.params.id as string;
 
     await (prisma as any).contact.delete({
@@ -151,7 +151,7 @@ export const deleteContact = async (req: Request, res: Response) => {
 
 export const bulkUpdateContacts = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const { ids, data } = req.body;
 
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -200,7 +200,7 @@ export const bulkUpdateContacts = async (req: Request, res: Response) => {
 
 export const bulkDeleteContacts = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const { ids } = req.body;
 
     if (!Array.isArray(ids) || ids.length === 0) {

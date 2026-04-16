@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 export const createNote = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const { contactId, content } = req.body;
 
     // Verify contact belongs to user
@@ -35,7 +35,7 @@ export const createNote = async (req: Request, res: Response) => {
 
 export const updateNote = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const id = req.params.id as string;
     const { content } = req.body;
 
@@ -61,7 +61,7 @@ export const updateNote = async (req: Request, res: Response) => {
 
 export const deleteNote = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const id = req.params.id as string;
 
     const note = await (prisma as any).contactNote.findUnique({

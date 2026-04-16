@@ -198,16 +198,21 @@ export default function PRMPage() {
 
               <div className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Header Area */}
-                <div className="bg-white border-b border-gray-200 px-8 py-6 shrink-0">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div>
-                      <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Personal Relationship Manager</h1>
-                      <p className="text-sm text-gray-500 mt-1 font-medium">Database of {stats.total} professional connections</p>
+                <div className="bg-white border-b border-gray-200 px-6 py-4 shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-100">
+                        <Users className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h1 className="text-xl font-bold text-gray-900 leading-none">PRM</h1>
+                        <p className="text-xs text-gray-500 mt-1 font-medium">{stats.total} connections</p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-3">
                        <Button 
                         variant="primary" 
-                        className="h-11 px-5 gap-2 font-bold shadow-lg shadow-blue-100"
+                        className="h-10 px-4 gap-2 font-bold shadow-md shadow-blue-50"
                         onClick={() => {
                           setEditingContact(null);
                           setIsModalOpen(true);
@@ -219,13 +224,13 @@ export default function PRMPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-4 mt-8">
-                    <div className="relative flex-1 min-w-[300px] max-w-md">
-                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <input 
                         type="text"
-                        placeholder="Search contacts..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white transition-all font-medium"
+                        placeholder="Search by name, company, or email..."
+                        className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                       />
@@ -234,7 +239,7 @@ export default function PRMPage() {
                     <div className="flex items-center gap-2">
                       <div className="relative">
                         <select 
-                          className="appearance-none pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-500 cursor-pointer"
+                          className="appearance-none pl-8 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 focus:outline-none focus:border-blue-500 cursor-pointer hover:bg-gray-50 transition-colors"
                           value={selectedStage}
                           onChange={(e) => setSelectedStage(e.target.value as any)}
                         >
@@ -242,13 +247,13 @@ export default function PRMPage() {
                             <option key={stage} value={stage}>{stage === "ALL" ? "All Stages" : stage}</option>
                           ))}
                         </select>
-                        <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                        <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
                       </div>
 
                       <div className="relative">
                         <select 
-                          className="appearance-none pl-9 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-500 cursor-pointer"
+                          className="appearance-none pl-8 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 focus:outline-none focus:border-blue-500 cursor-pointer hover:bg-gray-50 transition-colors"
                           value={selectedTag}
                           onChange={(e) => setSelectedTag(e.target.value)}
                         >
@@ -257,34 +262,34 @@ export default function PRMPage() {
                             <option key={tag.id} value={tag.id}>{tag.name}</option>
                           ))}
                         </select>
-                        <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                        <TagIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Split-View Content */}
-                <div className="flex-1 flex overflow-hidden bg-gray-50/50">
+                <div className="flex-1 flex overflow-hidden bg-white">
                   {/* Left Column: List */}
-                  <div className="w-[380px] xl:w-[420px] shrink-0 border-r border-gray-200 bg-white flex flex-col overflow-hidden">
-                    <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/30 shrink-0">
+                  <div className="w-[350px] xl:w-[400px] shrink-0 border-r border-gray-200 flex flex-col overflow-hidden bg-gray-50/20">
+                    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
                       <div className="flex items-center gap-3">
                         <button 
                           onClick={handleSelectAll}
-                          className="group flex items-center justify-center h-5 w-5 rounded border border-gray-300 bg-white"
+                          className="group flex items-center justify-center h-4 w-4 rounded border border-gray-300 bg-white"
                         >
                           {selectedIds.size === contacts.length && contacts.length > 0 ? (
-                            <CheckSquare className="h-4 w-4 text-blue-600" />
+                            <CheckSquare className="h-3.5 w-3.5 text-blue-600" />
                           ) : selectedIds.size > 0 ? (
-                            <div className="h-2 w-2 bg-blue-600 rounded-sm" />
+                            <div className="h-1.5 w-1.5 bg-blue-600 rounded-sm" />
                           ) : null}
                         </button>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Directory</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Directory</p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <button className="p-1.5 text-blue-600 bg-blue-50 rounded-lg"><List className="h-3.5 w-3.5" /></button>
-                        <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg"><LayoutGrid className="h-3.5 w-3.5" /></button>
+                        <button className="p-1.5 text-blue-600 bg-blue-50 rounded-lg"><List className="h-3 w-3" /></button>
+                        <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg"><LayoutGrid className="h-3 w-3" /></button>
                       </div>
                     </div>
 
