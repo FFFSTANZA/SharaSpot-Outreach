@@ -362,9 +362,9 @@ export const createCampaign = async (
         });
 
         // Upsert contact and log activity
-        const fullName = recipient.columnData?.Name || recipient.columnData?.name || "";
-        let firstName = recipient.columnData?.FirstName || recipient.columnData?.firstName;
-        let lastName = recipient.columnData?.LastName || recipient.columnData?.lastName;
+        const fullName = recipient.columnData?.Name || recipient.columnData?.name || recipient.columnData?.["Full Name"] || "";
+        let firstName = recipient.columnData?.FirstName || recipient.columnData?.firstName || recipient.columnData?.["First Name"];
+        let lastName = recipient.columnData?.LastName || recipient.columnData?.lastName || recipient.columnData?.["Last Name"];
 
         if (!firstName && !lastName && fullName) {
           const parts = fullName.split(" ");
@@ -375,8 +375,8 @@ export const createCampaign = async (
         const contact = await upsertContact(req.user!.id, recipient.email, {
           firstName,
           lastName,
-          company: recipient.columnData?.Company || recipient.columnData?.company || recipient.columnData?.Organization || recipient.columnData?.organization,
-          jobTitle: recipient.columnData?.JobTitle || recipient.columnData?.jobTitle || recipient.columnData?.Role || recipient.columnData?.role,
+          company: recipient.columnData?.Company || recipient.columnData?.company || recipient.columnData?.Organization || recipient.columnData?.organization || recipient.columnData?.["Company Name"],
+          jobTitle: recipient.columnData?.JobTitle || recipient.columnData?.jobTitle || recipient.columnData?.Role || recipient.columnData?.role || recipient.columnData?.["Job Title"],
         }, tx);
         await logContactActivity(contact.id, "CAMPAIGN_ENROLLED", { 
           campaignId: campaign.id,

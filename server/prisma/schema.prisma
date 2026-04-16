@@ -505,7 +505,7 @@ model Contact {
   lastName  String?
   company   String?
   jobTitle  String?
-  stage     ContactStage @default(LEAD)
+  stage     ContactStage @default(COLD)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
