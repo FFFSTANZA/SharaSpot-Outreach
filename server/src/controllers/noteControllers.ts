@@ -25,7 +25,7 @@ export const createNote = async (req: Request, res: Response) => {
       },
     });
 
-    await logContactActivity(contactId, "NOTE_ADDED" as any, { noteId: note.id });
+    await logContactActivity(contactId, "NOTE_ADDED" as any, { noteId: note.id, content });
 
     res.status(201).json(note);
   } catch (error: any) {
