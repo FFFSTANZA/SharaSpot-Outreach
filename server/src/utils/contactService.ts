@@ -34,7 +34,7 @@ export const upsertContact = async (
       userId,
       email,
       ...rest,
-      stage: stage || "LEAD",
+      stage: stage || "COLD",
       tags: tags ? {
         connect: tags.map((tagId: string) => ({ id: tagId })),
       } : undefined,

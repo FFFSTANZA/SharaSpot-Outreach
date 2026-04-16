@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { 
   Mail, Eye, MousePointer2, MessageSquare, 
   AlertCircle, Tag as TagIcon, PlusCircle, 
-  UserPlus, CheckCircle2, Calendar, Clock
+  UserPlus, CheckCircle2, Calendar, Clock,
+  ChevronRight
 } from "lucide-react";
 import { format, isToday, isYesterday, isSameYear, parseISO, startOfDay } from "date-fns";
 import type { ContactActivity, ActivityType } from "@/types";
@@ -73,74 +74,89 @@ export function Timeline({ activities }: TimelineProps) {
   }
 
   return (
-    <div className="flex flex-col space-y-6">
+    <div className="flex flex-col space-y-8">
       {groupedActivities.map(([date, items]) => (
         <div key={date} className="relative">
-          {/* Date Section Header */}
-          <div className="flex items-center gap-4 mb-3 px-1">
-            <div className="flex flex-col">
-              <span className="text-lg font-black text-gray-900 leading-none">{getDateLabel(date)}</span>
-              {getDayName(date) && (
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{getDayName(date)}</span>
-              )}
+          {/* Date Section Header - Google Calendar Style */}
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-14 shrink-0 flex flex-col items-center">
+              <span className="text-[10px] font-black text-blue-600 uppercase tracking-tighter mb-0.5">{format(parseISO(date), "EEE")}</span>
+              <div className={cn(
+                "h-10 w-10 rounded-full flex items-center justify-center text-lg font-bold transition-colors",
+                isToday(parseISO(date)) ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
+              )}>
+                {format(parseISO(date), "d")}
+              </div>
             </div>
-            <div className="h-px flex-1 bg-gray-100" />
-          </div>
+            <div className="flex-1 pt-2">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-gray-900">{getDateLabel(date)}</span>
+                <div className="h-px flex-1 bg-gray-100" />
+              </div>
+              
+              {/* Agenda items for this day */}
+              <div className="mt-4 space-y-3">
+                {items.map((activity) => {
+                  const config = ACTIVITY_CONFIG[activity.type] || { 
+                    icon: AlertCircle, 
+                    color: "text-gray-400", 
+                    bg: "bg-gray-50", 
+                    label: activity.type 
+                  };
+                  const Icon = config.icon;
 
-          {/* Agenda items */}
-          <div className="space-y-0.5 relative ml-14">
-            {/* Vertical Line */}
-            <div className="absolute left-[-28px] top-2 bottom-2 w-0.5 bg-gray-100" />
-
-            {items.map((activity) => {
-              const config = ACTIVITY_CONFIG[activity.type] || { 
-                icon: AlertCircle, 
-                color: "text-gray-400", 
-                bg: "bg-gray-50", 
-                label: activity.type 
-              };
-              const Icon = config.icon;
-
-              return (
-                <div 
-                  key={activity.id} 
-                  className="group flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50/50 transition-all cursor-default relative"
-                >
-                  <div className="absolute left-[-48px] w-10 flex flex-col items-end">
-                    <span className="text-[10px] font-bold text-gray-400">
-                      {format(parseISO(activity.createdAt), "HH:mm")}
-                    </span>
-                  </div>
-                  
-                  <div className={cn(
-                    "h-7 w-7 rounded-full flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm",
-                    config.bg,
-                    config.color
-                  )}>
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gray-700">{config.label}</span>
-                      {activity.type === "STAGE_CHANGED" ? (
-                        <span className="text-[10px] text-gray-500 font-medium">
-                          → <span className="text-blue-600">{activity.metadata?.to}</span>
+                  return (
+                    <div 
+                      key={activity.id} 
+                      className="group flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-all cursor-default border border-transparent hover:border-gray-100"
+                    >
+                      <div className="w-12 pt-0.5 shrink-0 text-right">
+                        <span className="text-[10px] font-bold text-gray-400">
+                          {format(parseISO(activity.createdAt), "h:mm a")}
                         </span>
-                      ) : activity.type === "CAMPAIGN_ENROLLED" ? (
-                        <span className="text-[10px] text-gray-500 truncate max-w-[200px] font-medium italic">
-                          "{activity.metadata?.subject}"
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-gray-400 truncate font-medium">
-                          {Object.values(activity.metadata || {}).find(v => typeof v === 'string' && v.length < 50) as string}
-                        </span>
-                      )}
+                      </div>
+                      
+                      <div className={cn(
+                        "h-8 w-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-white",
+                        config.bg,
+                        config.color
+                      )}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-gray-800">{config.label}</span>
+                          <div className="mt-1">
+                            {activity.type === "STAGE_CHANGED" ? (
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-gray-400 line-through">{activity.metadata?.from}</span>
+                                <ChevronRight className="h-3 w-3 text-gray-300" />
+                                <span className="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-tighter">
+                                  {activity.metadata?.to}
+                                </span>
+                              </div>
+                            ) : activity.type === "CAMPAIGN_ENROLLED" ? (
+                              <p className="text-[11px] text-gray-500 leading-relaxed italic">
+                                "{activity.metadata?.subject}"
+                              </p>
+                            ) : activity.type === "NOTE_ADDED" ? (
+                              <p className="text-[11px] text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-100 mt-1">
+                                {activity.metadata?.content || "Note content unavailable"}
+                              </p>
+                            ) : (
+                              <span className="text-[10px] text-gray-400 font-medium">
+                                {Object.values(activity.metadata || {}).find(v => typeof v === 'string' && v.length < 100) as string}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       ))}

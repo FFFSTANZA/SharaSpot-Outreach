@@ -477,12 +477,13 @@ model DomainRateLimit {
 // ─── PRM Models ─────────────────────────────────────────────────────────────
 
 enum ContactStage {
-  LEAD
+  COLD
   CONTACTED
   REPLIED
+  WARM
+  CONVERTED
   BOUNCED
   UNSUBSCRIBED
-  CHURNED
 }
 
 enum ActivityType {

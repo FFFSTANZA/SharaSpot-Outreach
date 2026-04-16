@@ -16,10 +16,12 @@ export function ContactRow({ contact, isActive, isSelected, onSelect, onClick }:
   const getStageColor = (stage: string) => {
     switch (stage) {
       case "REPLIED": return "text-emerald-600 bg-emerald-50 border-emerald-100";
+      case "WARM": return "text-amber-600 bg-amber-50 border-amber-100";
+      case "CONVERTED": return "text-purple-600 bg-purple-50 border-purple-100";
       case "CONTACTED": return "text-blue-600 bg-blue-50 border-blue-100";
       case "BOUNCED": return "text-red-600 bg-red-50 border-red-100";
       case "UNSUBSCRIBED": return "text-gray-600 bg-gray-100 border-gray-200";
-      case "LEAD": return "text-indigo-600 bg-indigo-50 border-indigo-100";
+      case "COLD": return "text-indigo-600 bg-indigo-50 border-indigo-100";
       default: return "text-gray-500 bg-gray-50 border-gray-100";
     }
   };

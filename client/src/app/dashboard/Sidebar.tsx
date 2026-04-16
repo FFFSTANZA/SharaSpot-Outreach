@@ -133,7 +133,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           )}
         >
           <Users className={cn("h-4 w-4", pathname === "/dashboard/prm" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
-          <span>PRM</span>
+          <span>Hub</span>
         </Link>
 
         <Link

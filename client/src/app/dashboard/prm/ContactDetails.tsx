@@ -140,7 +140,7 @@ export function ContactDetails({ contactId, onUpdate, onDelete }: ContactDetails
                       "bg-gray-50 text-gray-500 border-gray-100 hover:bg-gray-100"
                     )}
                   >
-                    {["LEAD", "CONTACTED", "REPLIED", "BOUNCED", "UNSUBSCRIBED", "CHURNED"].map(s => (
+                    {["COLD", "CONTACTED", "REPLIED", "WARM", "CONVERTED", "BOUNCED", "UNSUBSCRIBED"].map(s => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
@@ -162,6 +162,25 @@ export function ContactDetails({ contactId, onUpdate, onDelete }: ContactDetails
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <div className="mr-4 flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100 shadow-inner">
+               <input 
+                type="text"
+                placeholder="Quick note..."
+                className="bg-transparent border-none focus:ring-0 text-xs py-1.5 px-3 w-48 font-medium placeholder:text-gray-400"
+                value={noteContent}
+                onChange={e => setNoteContent(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleAddNote(e);
+                }}
+              />
+              <button 
+                onClick={handleAddNote}
+                disabled={isSubmittingNote || !noteContent.trim()}
+                className="p-1.5 text-blue-600 hover:bg-white rounded-lg transition-all disabled:opacity-30"
+              >
+                {isSubmittingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+              </button>
+            </div>
             <Button 
               variant="primary" 
               className="h-10 px-5 gap-2 shadow-md shadow-blue-50 font-bold"

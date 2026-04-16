@@ -561,7 +561,7 @@ export interface AnalyticsLinksResponse {
 
 // ─── PRM Types ──────────────────────────────────────────────────────────────
 
-export type ContactStage = "LEAD" | "CONTACTED" | "REPLIED" | "BOUNCED" | "UNSUBSCRIBED" | "CHURNED";
+export type ContactStage = "COLD" | "CONTACTED" | "REPLIED" | "WARM" | "CONVERTED" | "BOUNCED" | "UNSUBSCRIBED";
 
 export type ActivityType = 
   | "CAMPAIGN_ENROLLED" 

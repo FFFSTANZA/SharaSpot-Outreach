@@ -16,7 +16,7 @@ interface ContactModalProps {
   contact?: Contact | null;
 }
 
-const STAGES: ContactStage[] = ["LEAD", "CONTACTED", "REPLIED", "BOUNCED", "UNSUBSCRIBED", "CHURNED"];
+const STAGES: ContactStage[] = ["COLD", "CONTACTED", "REPLIED", "WARM", "CONVERTED", "BOUNCED", "UNSUBSCRIBED"];
 
 export default function ContactModal({ isOpen, onClose, onSuccess, contact }: ContactModalProps) {
   const { addToast } = useToast();
@@ -29,7 +29,7 @@ export default function ContactModal({ isOpen, onClose, onSuccess, contact }: Co
     lastName: "",
     company: "",
     jobTitle: "",
-    stage: "LEAD" as ContactStage,
+    stage: "COLD" as ContactStage,
   });
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function ContactModal({ isOpen, onClose, onSuccess, contact }: Co
           lastName: "",
           company: "",
           jobTitle: "",
-          stage: "LEAD",
+          stage: "COLD",
         });
         setSelectedTags([]);
       }

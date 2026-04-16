@@ -362,11 +362,21 @@ export const createCampaign = async (
         });
 
         // Upsert contact and log activity
+        const fullName = recipient.columnData?.Name || recipient.columnData?.name || "";
+        let firstName = recipient.columnData?.FirstName || recipient.columnData?.firstName;
+        let lastName = recipient.columnData?.LastName || recipient.columnData?.lastName;
+
+        if (!firstName && !lastName && fullName) {
+          const parts = fullName.split(" ");
+          firstName = parts[0];
+          lastName = parts.slice(1).join(" ");
+        }
+
         const contact = await upsertContact(req.user!.id, recipient.email, {
-          firstName: recipient.columnData?.FirstName || recipient.columnData?.firstName,
-          lastName: recipient.columnData?.LastName || recipient.columnData?.lastName,
-          company: recipient.columnData?.Company || recipient.columnData?.company,
-          jobTitle: recipient.columnData?.JobTitle || recipient.columnData?.jobTitle,
+          firstName,
+          lastName,
+          company: recipient.columnData?.Company || recipient.columnData?.company || recipient.columnData?.Organization || recipient.columnData?.organization,
+          jobTitle: recipient.columnData?.JobTitle || recipient.columnData?.jobTitle || recipient.columnData?.Role || recipient.columnData?.role,
         }, tx);
         await logContactActivity(contact.id, "CAMPAIGN_ENROLLED", { 
           campaignId: campaign.id,
