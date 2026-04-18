@@ -156,14 +156,14 @@ export default function TemplatesPage() {
             {isLoading ? (
               /* Skeleton loading state */
               <div className="flex-1 px-3 md:px-6 pb-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[...Array(6)].map((_, i) => (
                     <div
                       key={i}
-                      className="rounded-xl bg-white border border-gray-100 p-5 animate-pulse"
+                      className="rounded-2xl bg-white border border-gray-100 p-6 animate-pulse"
                     >
-                      <div className="h-4 w-2/3 bg-gray-100 rounded mb-3" />
-                      <div className="h-3 w-full bg-gray-50 rounded mb-2" />
+                      <div className="h-4 w-2/3 bg-gray-100 rounded mb-4" />
+                      <div className="h-3 w-full bg-gray-50 rounded mb-3" />
                       <div className="h-3 w-1/2 bg-gray-50 rounded" />
                     </div>
                   ))}
@@ -171,11 +171,11 @@ export default function TemplatesPage() {
               </div>
             ) : error ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <AlertCircle className="h-8 w-8 text-red-300" />
+                <AlertCircle className="h-8 w-8 text-gray-300" />
                 <p className="text-sm text-gray-500">{error}</p>
                 <button
                   onClick={fetchTemplates}
-                  className="text-sm text-teal-600 hover:underline"
+                  className="text-sm text-brand hover:underline font-bold uppercase tracking-widest"
                 >
                   Retry
                 </button>
@@ -183,88 +183,93 @@ export default function TemplatesPage() {
             ) : !templates || templates.length === 0 ? (
               /* Empty state */
               <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-                <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4">
-                  <FileText className="h-8 w-8 text-gray-500" />
+                <div className="h-20 w-20 rounded-3xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100">
+                  <FileText className="h-8 w-8 text-gray-300" />
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-black text-gray-900 mb-2 tracking-tight">
                   No templates yet
                 </h3>
-                <p className="text-sm text-gray-500 max-w-xs mb-4">
+                <p className="text-sm text-gray-500 max-w-xs mb-8 font-medium">
                   Create your first template to speed up your outreach campaigns.
                 </p>
-                <Button
-                  className="w-auto px-5 py-2 rounded-lg text-xs"
+                <button
+                  className="flex items-center gap-2 px-8 h-12 bg-brand text-white rounded-xl text-sm font-black hover:bg-brand-hover transition-all active:scale-95 shadow-lg shadow-brand/20"
                   onClick={handleCreate}
                 >
                   Create Template
-                </Button>
+                </button>
               </div>
             ) : (filteredTemplates || []).length === 0 ? (
               /* No search results */
               <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-                <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4">
-                  <FileText className="h-8 w-8 text-gray-500" />
+                <div className="h-20 w-20 rounded-3xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100">
+                  <FileText className="h-8 w-8 text-gray-300" />
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-black text-gray-900 mb-2 tracking-tight">
                   No matching templates
                 </h3>
-                <p className="text-sm text-gray-500 max-w-xs mb-4">
+                <p className="text-sm text-gray-500 max-w-xs mb-8 font-medium">
                   Try adjusting your search query.
                 </p>
               </div>
             ) : (
               /* Template card grid */
               <div className="flex-1 px-3 md:px-6 pb-4 overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {(filteredTemplates || []).map((template, index) => (
                     <div
                       key={template.id}
                       className={cn(
-                        "group rounded-xl bg-white border p-5 shadow-sm transition-all duration-200 opacity-0 animate-[fadeIn_0.3s_ease-out_forwards]",
-                        template.isSystem
-                          ? "border-amber-100 hover:border-amber-200"
-                          : "border-gray-200 hover:shadow-md hover:-translate-y-0.5 hover:border-brand/20"
+                        "group rounded-2xl bg-white border p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] transition-all duration-300 opacity-0 animate-[fadeIn_0.3s_ease-out_forwards] border-transparent hover:border-brand/30",
+                        template.isSystem && "border-amber-100 bg-amber-50/10"
                       )}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <h3 className="text-sm font-bold text-gray-900 truncate">
-                            {template.name}
-                          </h3>
-                          {template.isSystem && (
-                            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-100 px-2 py-0.5 text-[9px] font-bold text-amber-600 uppercase tracking-tighter">
-                              <Star className="h-2.5 w-2.5" /> Default
-                            </span>
-                          )}
+                      <div className="flex items-start justify-between gap-4 mb-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 group-hover:bg-brand-light transition-colors">
+                            <FileText className="h-5 w-5 text-gray-400 group-hover:text-brand" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-bold text-gray-900 truncate">
+                              {template.name}
+                            </h3>
+                            {template.isSystem && (
+                              <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-black text-amber-700 uppercase tracking-tight">
+                                <Star className="h-2 w-2" /> Default
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {!template.isSystem && (
-                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <button
                               onClick={() => handleEdit(template)}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-brand hover:bg-brand-light transition-colors"
+                              className="p-2 rounded-xl text-gray-400 hover:text-brand hover:bg-brand-light transition-colors"
                               aria-label={`Edit ${template.name}`}
                             >
-                              <Pencil className="h-3.5 w-3.5" />
+                              <Pencil className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => setDeleteTarget(template)}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                               aria-label={`Delete ${template.name}`}
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         )}
                       </div>
-                      <p className="text-xs font-medium text-gray-700 truncate mb-1.5">
-                        {template.subject || "No subject"}
-                      </p>
-                      <p className="text-[11px] text-gray-400 truncate mb-4 italic">
-                        {stripHtml(template.body).slice(0, 80) || "No content"}
-                      </p>
-                      <div className="flex items-center justify-between mt-auto">
-                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+                      <div className="space-y-1.5 mb-6">
+                        <p className="text-xs font-bold text-gray-900 truncate uppercase tracking-tight">
+                          {template.subject || "No subject"}
+                        </p>
+                        <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed font-medium">
+                          {stripHtml(template.body) || "No content"}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-50 mt-auto">
+                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.15em]">
                           {template.isSystem ? "System" : formatDate(template.updatedAt)}
                         </span>
                       </div>

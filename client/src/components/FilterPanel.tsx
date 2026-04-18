@@ -51,15 +51,14 @@ export default function FilterPanel({
       <button
         onClick={onToggle}
         className={cn(
-          "relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-all",
-          "hover:bg-gray-100",
-          isOpen ? "bg-gray-100 text-gray-900" : "text-gray-500"
+          "relative flex items-center gap-2 px-4 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm",
+          isOpen ? "bg-brand text-white shadow-brand/20" : "bg-white text-gray-500 border border-gray-100 hover:bg-gray-50"
         )}
       >
-        <Filter className="h-4 w-4" />
+        <Filter className="h-3.5 w-3.5" />
         <span className="hidden md:inline">Filters</span>
         {activeFilterCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-teal-600 text-white text-[9px] font-bold flex items-center justify-center">
+          <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-brand text-white text-[9px] font-black flex items-center justify-center border-2 border-white shadow-sm">
             {activeFilterCount}
           </span>
         )}
@@ -68,76 +67,81 @@ export default function FilterPanel({
       {/* Dropdown panel */}
       <div
         className={cn(
-          "absolute right-0 top-12 z-50 w-[340px] md:w-[380px] rounded-xl bg-white border border-gray-100 shadow-xl p-5",
-          "origin-top-right transition-all duration-200 ease-out",
-          isOpen ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"
+          "absolute right-0 top-12 z-50 w-[340px] md:w-[380px] rounded-[1.5rem] bg-white border border-gray-100 shadow-2xl p-6 overflow-hidden",
+          "origin-top-right transition-all duration-300 ease-out",
+          isOpen ? "scale-100 opacity-100 translate-y-0" : "pointer-events-none scale-95 opacity-0 -translate-y-2"
         )}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-gray-900">Filters</h3>
-          <button onClick={onClose} className="p-1 rounded-md text-gray-400 hover:text-gray-800 hover:bg-gray-50 transition-colors">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Filter Options</h3>
+          <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Status */}
-          <Dropdown
-            label="Status"
-            options={statusOpts}
-            value={filters.status || ""}
-            onChange={(v) => onFilterChange("status", v)}
-            placeholder="All statuses"
-          />
+          <div className="space-y-1.5">
+            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-1">Status Protocol</label>
+            <Dropdown
+              options={statusOpts}
+              value={filters.status || ""}
+              onChange={(v) => onFilterChange("status", v)}
+              placeholder="All Campaign Statuses"
+            />
+          </div>
 
           {/* Sender */}
-          <Dropdown
-            label="Sender"
-            options={senderOpts}
-            value={filters.senderId || ""}
-            onChange={(v) => onFilterChange("senderId", v)}
-            placeholder="All senders"
-          />
+          <div className="space-y-1.5">
+            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-1">Account Channel</label>
+            <Dropdown
+              options={senderOpts}
+              value={filters.senderId || ""}
+              onChange={(v) => onFilterChange("senderId", v)}
+              placeholder="All Sending Channels"
+            />
+          </div>
 
           {/* Date range */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Date Range</label>
-            <div className="flex gap-2">
+          <div className="space-y-2">
+            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-1">Temporal Range</label>
+            <div className="flex gap-3">
               <input
                 type="date"
                 value={filters.dateFrom || ""}
                 onChange={(e) => onFilterChange("dateFrom", e.target.value)}
-                className="flex-1 h-10 rounded-md bg-gray-100 px-3 text-sm text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="flex-1 h-11 rounded-xl bg-gray-50 border border-gray-100 px-3 text-xs text-gray-900 outline-none focus:bg-white focus:ring-4 focus:ring-brand/10 focus:border-brand font-bold transition-all"
               />
               <input
                 type="date"
                 value={filters.dateTo || ""}
                 onChange={(e) => onFilterChange("dateTo", e.target.value)}
-                className="flex-1 h-10 rounded-md bg-gray-100 px-3 text-sm text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="flex-1 h-11 rounded-xl bg-gray-50 border border-gray-100 px-3 text-xs text-gray-900 outline-none focus:bg-white focus:ring-4 focus:ring-brand/10 focus:border-brand font-bold transition-all"
               />
             </div>
           </div>
 
           {/* Date field selector */}
           {showDateField && (
-            <Dropdown
-              label="Date Field"
-              options={DATE_FIELD_OPTIONS}
-              value={filters.dateField || "createdAt"}
-              onChange={(v) => onFilterChange("dateField", v)}
-              placeholder="Created At"
-            />
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-1">Attribute Mapping</label>
+              <Dropdown
+                options={DATE_FIELD_OPTIONS}
+                value={filters.dateField || "createdAt"}
+                onChange={(v) => onFilterChange("dateField", v)}
+                placeholder="Created At"
+              />
+            </div>
           )}
 
           {/* Clear all */}
           {activeFilterCount > 0 && (
-            <Button
-              variant="ghost"
-              className="w-full text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
+            <button
+              className="w-full h-11 flex items-center justify-center rounded-xl text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all border border-transparent hover:border-red-100"
               onClick={onClearAll}
             >
-              Clear all filters
-            </Button>
+              Reset Configuration
+            </button>
           )}
         </div>
       </div>

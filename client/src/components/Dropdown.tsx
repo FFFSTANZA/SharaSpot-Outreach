@@ -117,7 +117,7 @@ export default function Dropdown({
   return (
     <div ref={containerRef} className={cn("relative", className)}>
       {label && (
-        <label className="mb-1.5 block text-sm font-medium text-[#1A1D21]">
+        <label className="mb-2 block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
           {label}
         </label>
       )}
@@ -131,13 +131,11 @@ export default function Dropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className={cn(
-          "flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 text-sm",
-          "transition-all duration-150 border border-gray-100",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500",
+          "flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-sm font-bold tracking-tight transition-all duration-300 border border-gray-100 shadow-sm",
           disabled
             ? "cursor-not-allowed opacity-50"
-            : "cursor-pointer hover:bg-gray-100/50 hover:border-gray-200",
-          isOpen && "ring-2 ring-blue-500/20 border-blue-500 bg-white"
+            : "cursor-pointer hover:bg-white hover:border-brand/20",
+          isOpen && "ring-4 ring-brand/10 border-brand bg-white"
         )}
       >
         <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
@@ -145,8 +143,8 @@ export default function Dropdown({
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-gray-400 transition-transform duration-200",
-            isOpen && "rotate-180"
+            "h-4 w-4 text-gray-300 transition-transform duration-300",
+            isOpen && "rotate-180 text-brand"
           )}
         />
       </button>
@@ -154,22 +152,22 @@ export default function Dropdown({
       {/* Options list */}
       <div
         className={cn(
-          "absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl",
-          "origin-top transition-all duration-200 ease-out",
+          "absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl",
+          "origin-top transition-all duration-300 ease-out",
           isOpen
-            ? "scale-y-100 opacity-100"
-            : "pointer-events-none scale-y-95 opacity-0"
+            ? "scale-y-100 opacity-100 translate-y-0"
+            : "pointer-events-none scale-y-95 opacity-0 -translate-y-2"
         )}
       >
         {options.length === 0 ? (
-          <div className="px-4 py-3 text-sm text-[#9AA0A6]">
-            No options available
+          <div className="px-5 py-4 text-xs font-bold text-gray-300 uppercase tracking-widest text-center">
+            No active records
           </div>
         ) : (
           <ul
             ref={listRef}
             role="listbox"
-            className="max-h-60 overflow-y-auto py-1"
+            className="max-h-64 overflow-y-auto py-2"
           >
             {options.map((option, index) => (
               <li
@@ -179,13 +177,13 @@ export default function Dropdown({
                 onClick={() => select(option.value)}
                 onMouseEnter={() => setHighlightedIndex(index)}
                 className={cn(
-                  "cursor-pointer px-4 py-2 text-sm transition-colors duration-100",
+                  "cursor-pointer px-5 py-2.5 text-sm font-bold transition-all duration-200",
                   option.value === value
-                    ? "bg-blue-50 font-bold text-blue-700"
-                    : "text-gray-600",
+                    ? "bg-brand-light text-brand"
+                    : "text-gray-600 hover:bg-gray-50",
                   highlightedIndex === index &&
                   option.value !== value &&
-                  "bg-gray-50"
+                  "bg-gray-50/80"
                 )}
               >
                 {option.label}

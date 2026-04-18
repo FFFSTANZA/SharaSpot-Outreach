@@ -54,11 +54,11 @@ export function TopBar({
   }, [searchValue, onSearch]);
 
   return (
-    <header className="flex items-center gap-3 px-4 md:px-6 py-3 bg-white border-b border-[#E8EAED]">
+    <header className="flex items-center gap-3 px-4 md:px-6 py-4 bg-white border-b border-gray-100">
       {/* Hamburger — mobile sidebar toggle */}
       <button
         onClick={toggle}
-        className="lg:hidden min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg text-[#5F6368] hover:text-[#1A1D21] hover:bg-[#F1F3F4] transition-all"
+        className="lg:hidden h-10 w-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all"
         aria-label="Toggle sidebar"
       >
         <Menu className="h-5 w-5" />
@@ -66,21 +66,21 @@ export function TopBar({
 
       {/* Search — Gmail style pill search */}
       <div className="relative flex-1 lg:max-w-2xl mx-auto">
-        <div className="flex items-center bg-[#F1F3F4] rounded-full border border-transparent hover:border-[#DADCE0] hover:bg-white hover:shadow-sm transition-all duration-200">
-          <div className="pl-4">
-            <Search className="h-4 w-4 text-[#9AA0A6]" />
+        <div className="flex items-center bg-gray-50 rounded-2xl border border-transparent focus-within:border-brand/20 focus-within:bg-white focus-within:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] transition-all duration-300">
+          <div className="pl-5">
+            <Search className="h-4 w-4 text-gray-400" />
           </div>
           <input
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder={placeholder}
-            className="flex-1 min-h-[40px] bg-transparent py-2.5 px-3 text-sm text-[#1A1D21] outline-none placeholder:text-[#9AA0A6]"
+            className="flex-1 min-h-[44px] bg-transparent py-2.5 px-3 text-sm text-gray-900 outline-none placeholder:text-gray-400 font-medium"
           />
           {searchValue && (
             <button
               onClick={() => { setSearchValue(""); onSearch?.(""); }}
-              className="pr-4 text-[#9AA0A6] hover:text-[#5F6368]"
+              className="pr-5 text-gray-400 hover:text-gray-600"
               aria-label="Clear search"
             >
               <X className="h-4 w-4" />
@@ -90,7 +90,7 @@ export function TopBar({
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         {/* Filter slot */}
         {filterSlot}
 
@@ -98,7 +98,7 @@ export function TopBar({
         <button
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="h-9 w-9 flex items-center justify-center rounded-full text-[#5F6368] hover:text-[#1A1D21] hover:bg-[#F1F3F4] transition-all duration-150 disabled:opacity-50"
+          className="h-10 w-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-brand hover:bg-brand-light transition-all duration-200 disabled:opacity-50"
           aria-label="Refresh"
         >
           <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -108,22 +108,24 @@ export function TopBar({
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative h-9 w-9 flex items-center justify-center rounded-full text-[#5F6368] hover:text-[#1A1D21] hover:bg-[#F1F3F4] transition-all duration-150"
+            className="relative h-10 w-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-brand hover:bg-brand-light transition-all duration-200"
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#00A63E] ring-2 ring-white" />
+            <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-brand ring-2 ring-white" />
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-11 z-50 w-[calc(100vw-2rem)] max-w-80 rounded-lg bg-white border border-[#E8EAED] shadow-lg">
-              <div className="px-4 py-3 border-b border-[#E8EAED]">
-                <p className="text-sm font-semibold text-[#1A1D21]">Notifications</p>
+            <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-80 rounded-2xl bg-white border border-gray-100 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Notifications</p>
               </div>
-              <div className="px-4 py-8 text-center">
-                <Bell className="h-8 w-8 text-[#DADCE0] mx-auto mb-2" />
-                <p className="text-sm text-[#9AA0A6]">No new notifications</p>
-                <p className="text-xs text-[#9AA0A6] mt-1">Campaign updates will appear here</p>
+              <div className="px-5 py-10 text-center">
+                <div className="h-16 w-16 rounded-3xl bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                  <Bell className="h-6 w-6 text-gray-300" />
+                </div>
+                <p className="text-sm font-bold text-gray-900">No new notifications</p>
+                <p className="text-xs text-gray-500 mt-1 font-medium">Campaign updates will appear here</p>
               </div>
             </div>
           )}

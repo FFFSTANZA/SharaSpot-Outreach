@@ -70,7 +70,6 @@ const LoginPage = () => {
       });
 
       // Render the standard button into the container
-      // This is much more reliable than id.prompt() for a button click action
       window.google.accounts.id.renderButton(
         document.getElementById("googleButtonContainer"),
         {
@@ -91,19 +90,18 @@ const LoginPage = () => {
   }, [router, addToast, sdkLoaded]);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-gray-50 to-emerald-50/20">
+    <div className="flex min-h-screen bg-white">
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
         onLoad={() => setSdkLoaded(true)}
       />
+      
       {/* Left panel — branding (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950 flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-[50%] relative overflow-hidden bg-gray-950 flex-col justify-between p-16">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-emerald-600/15 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-teal-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-20 right-20 w-24 h-24 border border-white/5 rounded-2xl rotate-12" />
-        <div className="absolute bottom-32 left-16 w-16 h-16 border border-white/5 rounded-full" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand/5 rounded-full blur-[100px]" />
 
         {/* Logo */}
         <div className="relative">
@@ -112,102 +110,91 @@ const LoginPage = () => {
 
         {/* Hero text */}
         <div className="relative">
-          <h2 className="text-4xl font-extrabold text-white leading-tight tracking-tighter mb-4">
-            Reach the right people<br />
-            <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">with smart outreach</span>
+          <h2 className="text-5xl font-black text-white leading-[0.95] tracking-tighter mb-8 uppercase">
+            Standardize your<br />
+            <span className="text-brand">Outreach engine</span>
           </h2>
-          <p className="text-base text-gray-300 max-w-sm leading-relaxed">
-            Send personalized emails at scale with intelligent scheduling, reply detection, and real-time analytics.
+          <p className="text-lg text-gray-400 max-w-sm leading-relaxed font-medium">
+            The professional choice for multi-sender cold outreach and response management.
           </p>
 
           {/* Feature pills */}
-          <div className="flex flex-wrap gap-3 mt-8">
+          <div className="flex flex-wrap gap-4 mt-12">
             {[
-              { icon: Shield, text: "Encrypted credentials" },
-              { icon: Zap, text: "2 min setup" },
-              { icon: Send, text: "Smart sequencing" },
+              { icon: Shield, text: "AES-256 Security" },
+              { icon: Zap, text: "Instant Scalability" },
+              { icon: Send, text: "Human Protocol" },
             ].map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5">
-                <Icon className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-xs font-medium text-gray-200">{text}</span>
+              <div key={text} className="flex items-center gap-2.5 rounded-2xl bg-white/5 border border-white/10 px-5 py-2.5">
+                <Icon className="h-4 w-4 text-brand" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-200">{text}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Testimonial */}
+        {/* Status indicator */}
         <div className="relative">
-          <div className="rounded-xl bg-white/5 border border-white/10 p-5">
-            <p className="text-sm text-gray-300 leading-relaxed italic">
-              &ldquo;SharaSpot helped me land 3 investor meetings in my first week. The reply detection is a game changer.&rdquo;
-            </p>
-            <div className="flex items-center gap-3 mt-4">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">A</span>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-white">Alex Chen</p>
-                <p className="text-[10px] text-gray-500">Founder, NovaTech</p>
-              </div>
-            </div>
+          <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 w-fit">
+            <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">System operational</span>
           </div>
         </div>
       </div>
 
       {/* Right panel — login form */}
-      <div className="flex-1 flex items-center justify-center px-4 md:px-8 relative">
+      <div className="flex-1 flex flex-col items-center justify-center px-8 relative bg-gray-50/50">
         {/* Back button */}
         <button
           onClick={() => router.push("/")}
-          className="absolute top-4 left-4 md:top-6 md:left-6 h-10 w-10 rounded-xl flex items-center justify-center
-            text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all"
+          className="absolute top-8 left-8 h-12 w-12 rounded-2xl flex items-center justify-center
+            text-gray-400 hover:text-gray-900 bg-white border border-gray-100 shadow-sm transition-all"
           aria-label="Back to home"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-5 w-5" />
         </button>
 
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center mb-10">
+          <div className="lg:hidden flex items-center justify-center mb-16">
             <Logo size="lg" />
           </div>
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tighter">Welcome back</h1>
-            <p className="text-sm text-gray-600 mt-2">Sign in to continue your outreach</p>
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-black text-gray-900 tracking-tight uppercase leading-none">Authentication</h1>
+            <p className="text-[10px] font-black text-gray-400 mt-3 uppercase tracking-[0.2em]">Secure access to your outreach dashboard</p>
           </div>
 
           {/* Google login container */}
-          <div className="relative w-full h-12 overflow-hidden rounded-xl">
-            {/* The Google button is rendered here and made invisible to the eye but clickable over our custom design */}
+          <div className="relative w-full h-14 overflow-hidden rounded-2xl">
             <div
               id="googleButtonContainer"
               className="absolute inset-0 z-20 opacity-[0.01]"
             />
 
             <button
-              className={`w-full h-12 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 flex items-center justify-center gap-2.5 transition-all shadow-sm
-                ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-gray-300'}`}
+              className={`w-full h-full rounded-2xl border-2 border-gray-100 bg-white text-sm font-black uppercase tracking-widest text-gray-900 flex items-center justify-center gap-4 transition-all shadow-sm
+                ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:border-brand/20 hover:scale-[1.02] active:scale-[0.98]'}`}
             >
               <Image
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
                 alt="Google"
-                width={18}
-                height={18}
+                width={20}
+                height={20}
               />
               Continue with Google
             </button>
           </div>
 
-          <div className="my-7 flex items-center gap-4">
+          <div className="my-10 flex items-center gap-6">
             <div className="h-px flex-1 bg-gray-200" />
-            <span className="text-[11px] font-medium text-gray-300 uppercase tracking-wider">secure</span>
+            <span className="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em]">Encrypted</span>
             <div className="h-px flex-1 bg-gray-200" />
           </div>
 
-          <p className="text-center text-xs text-gray-500 leading-relaxed">
-            We use Google OAuth for secure authentication.<br />
-            No passwords stored on our servers.
+          <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+            Standard Google OAuth Protocol.<br />
+            Zero credential storage on platform.
           </p>
         </div>
       </div>

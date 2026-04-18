@@ -27,13 +27,13 @@ function ConditionBadge({ type }: { type: SequenceConditionType }) {
   if (!option || type === "none") return null;
 
   const colorClasses: Record<string, string> = {
-    brand: "bg-brand-light text-brand border-brand-muted",
-    purple: "bg-purple-50 text-purple-600 border-purple-200",
+    brand: "bg-brand text-white border-transparent shadow-sm",
+    purple: "bg-purple-600 text-white border-transparent shadow-sm",
   };
 
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border",
+      "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all",
       colorClasses[option.color]
     )}>
       <option.icon className="h-3 w-3" />
@@ -46,12 +46,11 @@ function TimelineConnector({ hasBranch = false }: { hasBranch?: boolean }) {
   return (
     <div className="flex items-center justify-center py-1">
       <div className={cn(
-        "flex items-center gap-2",
-        hasBranch ? "text-purple-500" : "text-gray-300"
+        "flex flex-col items-center",
+        hasBranch ? "text-purple-500" : "text-gray-200"
       )}>
-        <div className="h-6 w-px bg-current" />
-        {hasBranch && <GitBranch className="h-3 w-3" />}
-        <div className="h-6 w-px bg-current" />
+        <div className="h-8 w-1 bg-current rounded-full opacity-50" />
+        {hasBranch && <GitBranch className="h-4 w-4 my-1" />}
       </div>
     </div>
   );
@@ -77,9 +76,9 @@ function TimelineNode({
   const stepNumber = isInitial ? 1 : index + 2;
 
   const nodeColors: Record<string, string> = {
-    brand: "bg-brand border-brand-hover",
-    purple: "bg-purple-500 border-purple-600",
-    gray: "bg-gray-400 border-gray-500",
+    brand: "bg-brand shadow-brand/20",
+    purple: "bg-purple-600 shadow-purple-600/20",
+    gray: "bg-gray-900 shadow-gray-900/10",
   };
 
   return (
@@ -88,39 +87,41 @@ function TimelineNode({
       {!isInitial && <TimelineConnector hasBranch={step.condition?.type !== "none" && step.condition?.type !== undefined} />}
 
       <div className={cn(
-        "rounded-xl border transition-all duration-200 overflow-hidden",
-        isExpanded ? "border-brand-muted shadow-sm bg-white ring-1 ring-brand-light" : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
+        "rounded-2xl border transition-all duration-300 overflow-hidden bg-white",
+        isExpanded 
+          ? "border-brand shadow-xl ring-4 ring-brand/5 scale-[1.01]" 
+          : "border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:border-brand/20 hover:scale-[1.005]"
       )}>
         {/* Header */}
         <div
-          className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-gray-50/50 transition-colors"
+          className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
           onClick={onToggle}
         >
-          <GripVertical className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+          <GripVertical className="h-4 w-4 text-gray-300 shrink-0" />
 
           {/* Step number circle */}
           <div className={cn(
-            "h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm",
+            "h-10 w-10 rounded-2xl flex items-center justify-center text-white text-xs font-black shrink-0 shadow-lg",
             nodeColors[conditionOption.color]
           )}>
             {stepNumber}
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-bold text-gray-800 truncate">
-                {isInitial ? "Initial Email" : `Follow-up ${stepNumber - 1}`}
+            <div className="flex items-center gap-3 mb-1">
+              <p className="text-sm font-black text-gray-900 uppercase tracking-tight">
+                {isInitial ? "Initial Campaign Email" : `Follow-up sequence #${stepNumber - 1}`}
               </p>
               {step.condition?.type && step.condition.type !== "none" && (
                 <ConditionBadge type={step.condition.type} />
               )}
             </div>
-            <p className="text-xs text-gray-400 font-medium truncate">
+            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest truncate">
               {isInitial
-                ? "Uses main subject and body"
+                ? "Primary communication channel"
                 : step.subject
-                  ? `"${step.subject.substring(0, 30)}${step.subject.length > 30 ? '...' : ''}" · ${step.waitDays}d wait`
-                  : `Waiting: ${step.waitDays} day${step.waitDays !== 1 ? 's' : ''}`
+                  ? `${step.waitDays} DAY DELAY • SUBJECT: ${step.subject}`
+                  : `Waiting period: ${step.waitDays} business day${step.waitDays !== 1 ? 's' : ''}`
               }
             </p>
           </div>
@@ -128,91 +129,90 @@ function TimelineNode({
           {!isInitial && (
             <button
               onClick={(e) => { e.stopPropagation(); onRemove(); }}
-              className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+              className="h-9 w-9 flex items-center justify-center rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all shrink-0"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4" />
             </button>
           )}
 
           <ChevronDown
             className={cn(
-              "h-3.5 w-3.5 text-gray-300 transition-transform duration-200 shrink-0",
-              isExpanded && "rotate-180"
+              "h-5 w-5 text-gray-300 transition-transform duration-300 shrink-0",
+              isExpanded && "rotate-180 text-brand"
             )}
           />
         </div>
 
         {/* Expanded content */}
         {isExpanded && !isInitial && (
-          <div className="px-3 pb-4 pt-2 border-t border-gray-50 space-y-4">
+          <div className="px-6 pb-6 pt-4 border-t border-gray-50 space-y-6 animate-in slide-in-from-top-2 duration-300">
             {/* Condition selector */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Trigger Condition</label>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 px-1">Flow Trigger Condition</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {CONDITION_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => onUpdate("condition", opt.value === "none" ? undefined : { type: opt.value })}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg border text-left transition-all",
+                      "flex flex-col gap-2 p-4 rounded-2xl border text-left transition-all",
                       step.condition?.type === opt.value || (!step.condition?.type && opt.value === "none")
                         ? opt.value === "none"
-                          ? "bg-gray-100 border-gray-300 text-gray-700"
+                          ? "bg-gray-900 border-gray-900 text-white shadow-lg"
                           : opt.value === "opened"
-                            ? "bg-brand-light border-brand-muted text-brand"
+                            ? "bg-brand border-brand text-white shadow-lg shadow-brand/20"
                             : opt.value === "clicked"
-                              ? "bg-purple-50 border-purple-200 text-purple-700"
-                              : "bg-brand-light border-brand-muted text-brand"
-                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                              ? "bg-purple-600 border-purple-600 text-white shadow-lg shadow-purple-600/20"
+                              : "bg-brand border-brand text-white shadow-lg shadow-brand/20"
+                        : "bg-white border-gray-100 text-gray-500 hover:border-brand/20 hover:bg-gray-50"
                     )}
                   >
-                    <opt.icon className="h-4 w-4 shrink-0" />
+                    <opt.icon className="h-5 w-5" />
                     <div>
-                      <p className="text-xs font-bold">{opt.label}</p>
-                      <p className="text-[10px] opacity-80 font-medium">{opt.description}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest">{opt.label}</p>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-gray-700 shrink-0">Wait</label>
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-2xl border border-gray-100">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Delay</label>
                 <input
                   type="number"
                   min={1}
                   max={30}
                   value={step.waitDays}
                   onChange={(e) => onUpdate("waitDays", parseInt(e.target.value) || 1)}
-                  className="h-8 w-16 rounded-lg border border-gray-200 bg-white text-center text-xs font-bold text-gray-900 outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all"
+                  className="h-9 w-16 rounded-xl border border-gray-200 bg-white text-center text-sm font-black text-gray-900 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all shadow-sm"
                 />
-                <span className="text-xs text-gray-500 font-medium">day(s)</span>
+                <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Days</span>
               </div>
 
               {step.condition?.type && step.condition.type !== "none" && (
-                <div className="flex items-center gap-2 text-xs text-brand font-bold">
-                  <Zap className="h-3 w-3" />
-                  then send immediately
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-brand-light text-brand text-[10px] font-black uppercase tracking-widest border border-brand/10">
+                  <Zap className="h-3.5 w-3.5" />
+                  Trigger Response: Immediate Delivery
                 </div>
               )}
             </div>
 
             {/* Subject */}
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">Subject Line</label>
-              <Input
+            <div className="space-y-2">
+              <label className="px-1 block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Subject Line</label>
+              <input
                 value={step.subject}
                 onChange={(e) => onUpdate("subject", e.target.value)}
-                placeholder="Follow-up: {{company}} opportunity"
-                className="text-xs"
+                placeholder="Follow-up: regarding {{company}} opportunity"
+                className="w-full px-5 py-3 text-sm border border-gray-100 bg-gray-50/30 rounded-2xl focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all font-bold text-gray-900"
               />
             </div>
 
             {/* Body */}
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">Email Body</label>
-              <div className="rounded-md border border-gray-200 overflow-hidden">
+            <div className="space-y-2">
+              <label className="px-1 block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Message Content</label>
+              <div className="rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
                 <Editor
                   value={step.body}
                   onChange={(html) => onUpdate("body", html)}
@@ -228,7 +228,6 @@ function TimelineNode({
 
 export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProps) {
   const [expandedStep, setExpandedStep] = useState<number | null>(null);
-  const [showTimeline, setShowTimeline] = useState(true);
 
   const addStep = () => {
     if (steps.length >= MAX_FOLLOW_UPS) return;
@@ -262,72 +261,61 @@ export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProp
   };
 
   return (
-    <div className="mt-3 md:mt-4 rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-4 md:px-5 py-3.5 flex items-center justify-between border-b border-gray-100">
-        <div className="flex items-center gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-bold text-gray-700">
-                Follow-up Sequence
-              </p>
-              {steps.length > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-600 text-xs font-bold border border-teal-100">
-                  {steps.length} step{steps.length !== 1 ? "s" : ""}
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {steps.length === 0
-                ? "Add automated follow-ups to boost replies"
-                : steps.length === 1
-                  ? "1 follow-up after initial email"
-                  : `${steps.length} follow-ups in sequence`}
-            </p>
+    <div className="mt-8 space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 px-2">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">Sequence Workflow</h2>
+            {steps.length > 0 && (
+              <span className="px-3 py-1 rounded-full bg-brand text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20">
+                {steps.length} Follow-up{steps.length !== 1 ? "s" : ""}
+              </span>
+            )}
           </div>
+          <p className="text-xs text-gray-400 font-bold uppercase tracking-[0.15em]">
+            Automate your outreach journey
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            className={cn(
-              "w-auto px-3.5 py-1.5 rounded-lg text-xs gap-1.5 font-medium",
-              steps.length >= MAX_FOLLOW_UPS && "opacity-50 cursor-not-allowed"
-            )}
-            onClick={addStep}
-            disabled={steps.length >= MAX_FOLLOW_UPS}
-            title={steps.length >= MAX_FOLLOW_UPS ? `Maximum ${MAX_FOLLOW_UPS} follow-ups` : "Add follow-up step"}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add Follow-up
-          </Button>
-        </div>
+        <button
+          onClick={addStep}
+          disabled={steps.length >= MAX_FOLLOW_UPS}
+          className={cn(
+            "flex items-center justify-center gap-2 px-6 h-11 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-brand/20",
+            steps.length >= MAX_FOLLOW_UPS
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none"
+              : "bg-brand text-white hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98]"
+          )}
+        >
+          <Plus className="h-4 w-4" />
+          Add Sequence Step
+        </button>
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="space-y-4">
         {steps.length === 0 ? (
           /* Empty state */
-          <div className="text-center py-10">
-            <div className="h-14 w-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4">
-              <GitBranch className="h-6 w-6 text-indigo-400" />
+          <div className="text-center py-16 bg-white rounded-[2rem] border-2 border-dashed border-gray-100">
+            <div className="h-20 w-20 rounded-[2.5rem] bg-gray-50 flex items-center justify-center mx-auto mb-6 border border-gray-100">
+              <GitBranch className="h-8 w-8 text-gray-200" />
             </div>
-            <p className="text-sm font-semibold text-gray-700">No follow-up sequence yet</p>
-            <p className="text-xs text-gray-500 mt-1.5 max-w-xs mx-auto leading-relaxed">
-              Add automated follow-ups to increase replies. Each step can be sent after a delay or triggered by a recipient action.
+            <p className="text-lg font-black text-gray-900 uppercase tracking-tight mb-2">No follow-ups defined</p>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest max-w-xs mx-auto leading-relaxed mb-8">
+              Sequences significantly increase reply rates by staying top-of-mind.
             </p>
-            <Button
-              variant="outline"
-              className="mt-5 px-5 py-2 rounded-lg text-xs font-medium"
+            <button
+              className="inline-flex items-center gap-3 px-8 h-12 bg-brand text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-brand/20 hover:scale-105 transition-all"
               onClick={addStep}
             >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Add First Follow-up
-            </Button>
+              <Plus className="h-4 w-4" />
+              Build First Step
+            </button>
           </div>
         ) : (
           /* Follow-up accordion list */
-          <div className="space-y-0">
+          <div className="space-y-2">
             {/* Initial email node */}
             <TimelineNode
               step={{ subject: "", body: "", waitDays: 0 }}
@@ -352,19 +340,21 @@ export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProp
             ))}
 
             {/* Add step button at end */}
-            <div className="pt-4 flex justify-center">
+            <div className="pt-8 flex justify-center">
               <button
                 onClick={addStep}
                 disabled={steps.length >= MAX_FOLLOW_UPS}
                 className={cn(
-                  "flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-dashed transition-all text-xs font-semibold",
+                  "group flex flex-col items-center gap-3 transition-all",
                   steps.length >= MAX_FOLLOW_UPS
-                    ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                    : "border-indigo-200 text-indigo-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50"
+                    ? "opacity-30 cursor-not-allowed"
+                    : "hover:scale-110"
                 )}
               >
-                <Plus className="h-3.5 w-3.5" />
-                Add Step {steps.length + 1}
+                <div className="h-12 w-12 rounded-2xl bg-white border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 group-hover:border-brand group-hover:text-brand transition-all">
+                  <Plus className="h-6 w-6" />
+                </div>
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-300 group-hover:text-brand">Next Sequence Step</span>
               </button>
             </div>
           </div>

@@ -53,8 +53,8 @@ const STATUS_CONFIG: Record<CampaignStatus, {
   },
   COMPLETED: { 
     label: "Completed", 
-    bg: "bg-emerald-50", 
-    text: "text-emerald-700", 
+    bg: "bg-brand-light", 
+    text: "text-brand", 
     icon: CheckCircle2,
   },
 };
@@ -75,10 +75,10 @@ export default function StatusBadge({ status, size = "sm", pauseReason }: Status
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full font-bold uppercase tracking-widest border border-transparent",
+        "inline-flex items-center gap-1.5 rounded-full font-black uppercase tracking-tight border border-transparent",
         config.bg,
         config.text,
-        size === "sm" && "px-2 py-0.5 text-[10px]",
+        size === "sm" && "px-2 py-0.5 text-[9px]",
         size === "md" && "px-2.5 py-1 text-[10px]"
       )}
       title={reasonLabel ?? undefined}
