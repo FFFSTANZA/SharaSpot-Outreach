@@ -326,7 +326,7 @@ export function ComposeForm({
               <div className="flex items-center gap-3">
                 <Button
                   variant="primary"
-                  className="px-6 gap-2 h-10 font-bold shadow-lg shadow-blue-100"
+                  className="px-6 gap-2 h-10 font-bold shadow-lg shadow-brand/10"
                   onClick={handleFormSubmit}
                   disabled={isSubmitting}
                 >
@@ -380,20 +380,20 @@ export function ComposeForm({
                             {senders.map(s => (
                               <label key={s.id} className={cn(
                                 "flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50",
-                                data.selectedSenderIds.includes(s.id) && "bg-blue-50/50"
+                                data.selectedSenderIds.includes(s.id) && "bg-brand-light/50"
                               )}>
                                 <input
                                   type="checkbox"
                                   checked={data.selectedSenderIds.includes(s.id)}
                                   onChange={() => toggleSender(s.id)}
-                                  className="h-4 w-4 rounded border-gray-300"
+                                  className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand/20"
                                 />
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm text-gray-900 truncate">{s.email}</p>
+                                  <p className="text-sm text-gray-900 truncate font-medium">{s.email}</p>
                                   {s.name && <p className="text-xs text-gray-400 truncate">{s.name}</p>}
                                 </div>
                                 {s.isVerified ? (
-                                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                                  <CheckCircle2 className="h-4 w-4 text-brand shrink-0" />
                                 ) : (
                                   <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
                                 )}
@@ -427,16 +427,16 @@ export function ComposeForm({
                               setData({ ...data, selectedRecipients: newSelected });
                             }}
                             className={cn(
-                              "inline-flex items-center gap-1 rounded-md text-xs font-medium px-2 py-1 cursor-pointer transition-colors",
+                              "inline-flex items-center gap-1 rounded-md text-xs font-bold px-2 py-1 cursor-pointer transition-colors",
                               data.selectedRecipients.has(email)
-                                ? "bg-blue-600 text-white shadow-sm"
+                                ? "bg-brand text-white shadow-sm"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             )}
                           >
                             <span className="truncate max-w-[150px]">{email}</span>
                             <button
                               type="button"
-                              className={cn("ml-0.5 hover:scale-110 transition-transform", data.selectedRecipients.has(email) ? "text-blue-100" : "text-gray-400")}
+                              className={cn("ml-0.5 hover:scale-110 transition-transform", data.selectedRecipients.has(email) ? "text-brand-light" : "text-gray-400")}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setData({ ...data, to: data.to.filter(e => e !== email) });
@@ -464,7 +464,7 @@ export function ComposeForm({
                         />
                       </div>
                       {errors.to && <p className="text-xs text-red-500 mt-1">{errors.to}</p>}
-                      {csvMessage && <p className="text-xs text-green-600 mt-1">{csvMessage}</p>}
+                      {csvMessage && <p className="text-xs text-brand mt-1">{csvMessage}</p>}
                       {csvError && <p className="text-xs text-red-500 mt-1">{csvError}</p>}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
@@ -477,13 +477,13 @@ export function ComposeForm({
                       )}
                       <button
                         onClick={() => setShowCc(!showCc)}
-                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showCc ? "bg-blue-50 text-blue-600" : "text-gray-400 hover:bg-gray-50")}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showCc ? "bg-brand-light text-brand" : "text-gray-400 hover:bg-gray-50")}
                       >
                         CC
                       </button>
                       <button
                         onClick={() => setShowBcc(!showBcc)}
-                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showBcc ? "bg-blue-50 text-blue-600" : "text-gray-400 hover:bg-gray-50")}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showBcc ? "bg-brand-light text-brand" : "text-gray-400 hover:bg-gray-50")}
                       >
                         BCC
                       </button>
@@ -558,9 +558,9 @@ export function ComposeForm({
                         <button
                           onClick={() => setIsBulkMenuOpen(!isBulkMenuOpen)}
                           className={cn(
-                            "h-10 px-4 rounded-xl border text-sm font-semibold flex items-center gap-2 transition-all",
+                            "h-10 px-4 rounded-xl border text-sm font-bold flex items-center gap-2 transition-all",
                             data.selectedRecipients.size > 0
-                              ? "border-blue-200 bg-blue-50 text-blue-700"
+                              ? "border-brand-muted bg-brand-light text-brand"
                               : "border-gray-200 text-gray-600 hover:bg-gray-50"
                           )}
                         >
@@ -691,14 +691,14 @@ export function ComposeForm({
                     {/* Tracking */}
                     <div className="p-4 border-b border-gray-100">
                       <div className="flex items-center gap-2 mb-4">
-                        <Eye className="h-4 w-4 text-blue-500" />
+                        <Eye className="h-4 w-4 text-brand" />
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Engagement Tracking</p>
                       </div>
                       <div className="space-y-3">
                         <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 transition-all group">
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                              <Eye className="h-4 w-4 text-emerald-600" />
+                            <div className="h-8 w-8 rounded-lg bg-brand-light flex items-center justify-center">
+                              <Eye className="h-4 w-4 text-brand" />
                             </div>
                             <div>
                               <p className="text-sm font-bold text-gray-700">Track Opens</p>
@@ -709,13 +709,13 @@ export function ComposeForm({
                             type="checkbox"
                             checked={trackOpens}
                             onChange={(e) => setTrackOpens(e.target.checked)}
-                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500/20 transition-all"
+                            className="h-5 w-5 rounded-md border-gray-300 text-brand focus:ring-brand/20 transition-all"
                           />
                         </label>
                         <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 transition-all group">
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                              <MousePointer2 className="h-4 w-4 text-blue-600" />
+                            <div className="h-8 w-8 rounded-lg bg-brand-light flex items-center justify-center">
+                              <MousePointer2 className="h-4 w-4 text-brand" />
                             </div>
                             <div>
                               <p className="text-sm font-bold text-gray-700">Track Clicks</p>
@@ -726,7 +726,7 @@ export function ComposeForm({
                             type="checkbox"
                             checked={trackClicks}
                             onChange={(e) => setTrackClicks(e.target.checked)}
-                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500/20 transition-all"
+                            className="h-5 w-5 rounded-md border-gray-300 text-brand focus:ring-brand/20 transition-all"
                           />
                         </label>
                       </div>
@@ -755,7 +755,7 @@ export function ComposeForm({
                             <div>
                               <p className={cn("text-sm font-bold", isPremium ? "text-gray-700" : "text-gray-500")}>Priority Sending</p>
                               {!isPremium ? (
-                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Requires Subscription</p>
+                                <p className="text-[10px] text-brand font-bold uppercase tracking-tight">Included in Plan</p>
                               ) : (
                                 <p className="text-[10px] text-gray-400">Skip the queue</p>
                               )}
@@ -766,7 +766,7 @@ export function ComposeForm({
                               type="checkbox"
                               checked={priorityEnabled}
                               onChange={(e) => setPriorityEnabled(e.target.checked)}
-                              className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500/20 transition-all"
+                              className="h-5 w-5 rounded-md border-gray-300 text-brand focus:ring-brand/20 transition-all"
                             />
                           ) : (
                             <Shield className="h-4 w-4 text-gray-300" />
@@ -774,7 +774,7 @@ export function ComposeForm({
                         </label>
 
                         <p className="text-xs text-gray-400 text-center pt-1">
-                          Subscribe to unlock premium features
+                          All features included in your subscription
                         </p>
                       </div>
                     </div>
@@ -785,7 +785,7 @@ export function ComposeForm({
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Signature</p>
                         <button
                           onClick={() => setIsSignatureModalOpen(true)}
-                          className="text-xs text-blue-600 hover:underline"
+                          className="text-xs text-brand hover:underline font-bold"
                         >
                           Manage
                         </button>
@@ -796,7 +796,7 @@ export function ComposeForm({
                           const sig = signatures.find(s => s.id === e.target.value);
                           if (sig) setSelectedSignature(sig);
                         }}
-                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-brand transition-all font-medium"
                       >
                         <option value="">No signature</option>
                         {signatures.map(s => (
@@ -887,7 +887,7 @@ export function ComposeForm({
                     value={editingSignature.name}
                     onChange={(e) => setEditingSignature({ ...editingSignature!, name: e.target.value })}
                     placeholder="e.g. Professional, Informal, Sales"
-                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all font-medium"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -897,12 +897,12 @@ export function ComposeForm({
                     onChange={(e) => setEditingSignature({ ...editingSignature!, content: e.target.value })}
                     placeholder="Best regards,&#10;John Doe"
                     rows={6}
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium resize-none leading-relaxed"
+                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all font-medium resize-none leading-relaxed"
                   />
                 </div>
                 <div className="flex gap-3 pt-2">
                   <Button variant="secondary" className="flex-1 h-11 font-bold" onClick={() => setEditingSignature(null)}>Cancel</Button>
-                  <Button variant="primary" className="flex-1 h-11 font-bold shadow-md shadow-emerald-100" onClick={() => handleSaveSignature(editingSignature!)}>Save Signature</Button>
+                  <Button variant="primary" className="flex-1 h-11 font-bold shadow-md shadow-brand/10" onClick={() => handleSaveSignature(editingSignature!)}>Save Signature</Button>
                 </div>
               </div>
             ) : (
@@ -913,14 +913,14 @@ export function ComposeForm({
                       key={sig.id}
                       className={cn(
                         "group flex items-start justify-between p-4 rounded-2xl border transition-all cursor-default",
-                        sig.isDefault ? "bg-blue-50/30 border-blue-100 shadow-sm" : "bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
+                        sig.isDefault ? "bg-brand-light/30 border-brand-muted shadow-sm" : "bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
                       )}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p className="font-bold text-gray-900 truncate">{sig.name}</p>
                           {sig.isDefault && (
-                            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-tighter">Default</span>
+                            <span className="px-2 py-0.5 rounded-full bg-brand-light text-brand text-[10px] font-black uppercase tracking-tighter">Default</span>
                           )}
                         </div>
                         <p className="text-xs text-gray-400 line-clamp-1 italic">{sig.content || "No content"}</p>
@@ -928,7 +928,7 @@ export function ComposeForm({
                       <div className="flex items-center gap-1 ml-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => setEditingSignature({ ...sig, content: sig.content || "" })}
-                          className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-brand hover:bg-brand-light transition-colors"
                         >
                           Edit
                         </button>
@@ -940,7 +940,7 @@ export function ComposeForm({
                               localStorage.setItem("email_signatures", JSON.stringify(updated));
                               addToast("info", "Default signature updated");
                             }}
-                            className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                            className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-brand hover:bg-brand-light transition-colors"
                           >
                             Set Default
                           </button>
@@ -956,14 +956,13 @@ export function ComposeForm({
                   )}
                 </div>
 
-                <Button
-                  variant="secondary"
-                  className="w-full h-12 border-2 border-dashed border-gray-200 hover:border-blue-400 hover:bg-blue-50/30 font-bold transition-all text-gray-500 hover:text-blue-600 rounded-2xl"
+                <button
+                  className="w-full h-12 border-2 border-dashed border-gray-200 hover:border-brand hover:bg-brand-light/30 font-bold transition-all text-gray-500 hover:text-brand rounded-2xl flex items-center justify-center gap-2"
                   onClick={() => setEditingSignature({ id: Date.now().toString(), name: "", content: "", isDefault: false })}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4" />
                   Create Brand New Signature
-                </Button>
+                </button>
               </div>
             )}
           </div>

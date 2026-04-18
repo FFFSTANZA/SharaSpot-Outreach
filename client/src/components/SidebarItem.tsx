@@ -24,19 +24,19 @@ export function SidebarItem({
   return (
     <div
       className={`
-        group flex items-center gap-3 px-3 py-2.5 rounded-md 
-        text-sm font-medium cursor-pointer transition-all duration-150
+        group flex items-center gap-3 px-3 py-2.5 rounded-xl 
+        text-sm font-bold cursor-pointer transition-all duration-150
         border-l-4
         ${isActive
-          ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
-          : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
+          ? "bg-brand-light text-brand border-l-brand"
+          : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 border-l-transparent"
         }
       `}
       onClick={onClick}
     >
       <span className={`
         transition-colors duration-150
-        ${isActive ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]"}
+        ${isActive ? "text-brand" : "text-gray-400 group-hover:text-gray-600"}
       `}>
         {icon}
       </span>
@@ -44,8 +44,8 @@ export function SidebarItem({
 
       {count !== undefined && (
         <span className={`
-          ml-auto text-xs font-medium
-          ${isActive ? "text-[#00A63E]" : "text-[#9AA0A6]"}
+          ml-auto text-xs font-bold
+          ${isActive ? "text-brand" : "text-gray-400"}
         `}>
           {count}
         </span>

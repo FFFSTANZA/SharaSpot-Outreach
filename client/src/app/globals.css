@@ -27,19 +27,19 @@
 
   /* Neutral palette - warm grays for memorable feel */
   --color-surface: #FFFFFF;
-  --color-background: #FAFBFC;
-  --color-border-light: #E8EAED;
-  --color-border-medium: #DADCE0;
-  --color-border-strong: #B8B9BC;
-  --color-text-primary: #1A1D21;
-  --color-text-secondary: #5F6368;
-  --color-text-muted: #9AA0A6;
-  --color-text-disabled: #BDC1C6;
-  --color-divider: #F1F3F4;
+  --color-background: #F9FAFB;
+  --color-border-light: #E5E7EB;
+  --color-border-medium: #D1D5DB;
+  --color-border-strong: #9CA3AF;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4B5563;
+  --color-text-muted: #6B7280;
+  --color-text-disabled: #9CA3AF;
+  --color-divider: #F3F4F6;
 
   /* Interactive states */
-  --color-interactive-hover: #F7F8F8;
-  --color-interactive-active: #ECEDEE;
+  --color-interactive-hover: #F9FAFB;
+  --color-interactive-active: #F3F4F6;
   --color-interactive-focus: rgba(0, 166, 56, 0.2);
 
   /* Semantic colors - memorable, distinctive */
@@ -106,7 +106,7 @@
   --app-radius-sm: 4px;
   --app-radius-md: 8px;
   --app-radius-lg: 12px;
-  --app-radius-xl: 16px;
+  --app-radius-xl: 12px;
   --app-radius-full: 9999px;
 
   /* Shadows - layered for depth */

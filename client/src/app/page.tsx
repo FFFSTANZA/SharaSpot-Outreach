@@ -244,7 +244,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Button className="w-full sm:w-auto px-8 py-3.5 text-sm rounded-full shadow-lg shadow-emerald-600/25" onClick={() => router.push("/login")}>
-                Start 7-Day Free Trial <ArrowRight className="ml-2 h-4 w-4 inline" />
+                Get Full Access + 7-Day Trial <ArrowRight className="ml-2 h-4 w-4 inline" />
               </Button>
               <Button variant="ghost" className="w-full sm:w-auto px-8 py-3.5 text-sm text-gray-700" onClick={() => router.push("/guide")}>
                 Read the Guide
@@ -411,7 +411,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Premium Coming Soon ─── */}
+      {/* ─── Premium Features ─── */}
       <section className="py-16 sm:py-24 md:py-32">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="text-center mb-12 md:mb-16">
@@ -420,8 +420,8 @@ export default function LandingPage() {
               Premium Features
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-              One simple plan for<br />
-              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">maximum results</span>
+              Everything you need for<br />
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">successful outreach</span>
             </h2>
             <p className="mt-5 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Every feature we build is designed to make your outreach smarter. Get full access for $20 per month after your 7-day free trial. No limits, no compromises.
@@ -471,8 +471,8 @@ export default function LandingPage() {
               },
               {
                 icon: LockKeyhole,
-                title: "And More",
-                desc: "A/B testing, lead scoring, cross-campaign dedup, inbox placement testing. All coming.",
+                title: "Campaign Analytics",
+                desc: "Deep dive into your campaign performance with advanced metrics and exportable reports.",
               },
             ].map((f, i) => (
               <AnimatedSection key={i} delay={i * 60} className="h-full">
@@ -484,8 +484,8 @@ export default function LandingPage() {
                   <h3 className="relative text-base font-bold text-gray-900 mb-1">{f.title}</h3>
                   <p className="relative text-sm text-gray-600 leading-relaxed flex-1">{f.desc}</p>
                   <div className="relative mt-3 flex items-center gap-1.5">
-                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">Coming Soon</span>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">Included</span>
                   </div>
                 </div>
               </AnimatedSection>
@@ -515,7 +515,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <Button className="w-full sm:w-auto px-8 py-3.5 text-sm rounded-full shadow-lg shadow-emerald-600/30" onClick={() => router.push("/login")}>
-                  Start Your Outreach <ArrowRight className="ml-2 h-4 w-4 inline" />
+                  Get Full Access + 7-Day Trial <ArrowRight className="ml-2 h-4 w-4 inline" />
                 </Button>
                 <button
                   className="w-full sm:w-auto px-8 py-3.5 text-sm rounded-full font-medium text-gray-400 hover:text-white border border-white/10 hover:bg-white/5 transition-all"

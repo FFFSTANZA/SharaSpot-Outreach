@@ -112,7 +112,7 @@ export default function TemplatesPage() {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <div className="flex h-screen bg-[#f9fafb]">
+        <div className="flex h-screen bg-gray-50/50">
           <Sidebar
             setLabel={setLabel}
             profile={{
@@ -135,22 +135,22 @@ export default function TemplatesPage() {
             />
 
             {/* Page header */}
-            <div className="px-3 md:px-6 py-3 md:py-4 flex items-center justify-between">
+            <div className="px-4 md:px-6 py-6 flex items-center justify-between">
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Templates</h1>
-                <p className="text-xs text-gray-500">
+                <h1 className="text-xl font-bold text-gray-900 leading-none">Templates</h1>
+                <p className="text-xs text-gray-500 mt-1">
                   {filteredTemplates
-                    ? `${filteredTemplates.length} template${filteredTemplates.length !== 1 ? "s" : ""}`
-                    : "Loading..."}
+                    ? `${filteredTemplates.length} template${filteredTemplates.length !== 1 ? "s" : ""} available`
+                    : "Loading templates..."}
                 </p>
               </div>
-              <Button
-                className="w-auto px-4 py-2 rounded-lg text-xs gap-1.5"
+              <button
+                className="flex items-center gap-2 px-6 h-10 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-hover shadow-lg shadow-brand/10 transition-all active:scale-95"
                 onClick={handleCreate}
               >
                 <Plus className="h-3.5 w-3.5" />
                 New Template
-              </Button>
+              </button>
             </div>
 
             {isLoading ? (
@@ -223,17 +223,17 @@ export default function TemplatesPage() {
                         "group rounded-xl bg-white border p-5 shadow-sm transition-all duration-200 opacity-0 animate-[fadeIn_0.3s_ease-out_forwards]",
                         template.isSystem
                           ? "border-amber-100 hover:border-amber-200"
-                          : "border-gray-100 hover:shadow-md hover:-translate-y-0.5"
+                          : "border-gray-200 hover:shadow-md hover:-translate-y-0.5 hover:border-brand/20"
                       )}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <h3 className="text-sm font-semibold text-gray-900 truncate">
+                          <h3 className="text-sm font-bold text-gray-900 truncate">
                             {template.name}
                           </h3>
                           {template.isSystem && (
-                            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-100 px-2 py-0.5 text-[9px] font-semibold text-amber-600">
+                            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-100 px-2 py-0.5 text-[9px] font-bold text-amber-600 uppercase tracking-tighter">
                               <Star className="h-2.5 w-2.5" /> Default
                             </span>
                           )}
@@ -242,14 +242,14 @@ export default function TemplatesPage() {
                           <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
                             <button
                               onClick={() => handleEdit(template)}
-                              className="p-1.5 rounded-lg text-gray-500 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-brand hover:bg-brand-light transition-colors"
                               aria-label={`Edit ${template.name}`}
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
                             <button
                               onClick={() => setDeleteTarget(template)}
-                              className="p-1.5 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                               aria-label={`Delete ${template.name}`}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -257,15 +257,17 @@ export default function TemplatesPage() {
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 truncate mb-3">
+                      <p className="text-xs font-medium text-gray-700 truncate mb-1.5">
                         {template.subject || "No subject"}
                       </p>
-                      <p className="text-[11px] text-gray-500 truncate mb-3">
+                      <p className="text-[11px] text-gray-400 truncate mb-4 italic">
                         {stripHtml(template.body).slice(0, 80) || "No content"}
                       </p>
-                      <p className="text-[11px] text-gray-500">
-                        {template.isSystem ? "Default template" : `Updated ${formatDate(template.updatedAt)}`}
-                      </p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+                          {template.isSystem ? "System" : formatDate(template.updatedAt)}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

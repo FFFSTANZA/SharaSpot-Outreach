@@ -13,9 +13,9 @@ interface SequenceViewProps {
 
 const STEP_STATUS_STYLES: Record<string, string> = {
   PENDING: "text-gray-500 bg-gray-100",
-  SCHEDULED: "text-blue-600 bg-blue-50",
-  SENT: "text-emerald-600 bg-emerald-50",
-  FAILED: "text-red-500 bg-red-50",
+  SCHEDULED: "text-brand bg-brand-light",
+  SENT: "text-brand bg-brand-light",
+  FAILED: "text-red-600 bg-red-50",
   SKIPPED: "text-gray-400 bg-gray-50",
 };
 
@@ -153,12 +153,12 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
                       </span>
                     )}
                     {recipient.replied && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-brand-light px-1.5 py-0.5 text-[9px] font-bold text-brand uppercase tracking-widest">
                         <MessageSquare className="h-2 w-2" /> Replied
                       </span>
                     )}
                     {recipient.completed && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-semibold text-blue-600">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-brand-light px-1.5 py-0.5 text-[9px] font-bold text-brand uppercase tracking-widest">
                         <CheckCircle2 className="h-2 w-2" /> Done
                       </span>
                     )}
@@ -170,7 +170,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
                   {!recipient.completed && (
                     <>
                       {recipient.paused ? (
-                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-brand hover:bg-brand-light transition-colors"
                           onClick={() => handleRecipientAction(recipient.id, "resume")}
                           disabled={!!actionLoading}>
                           <Play className="h-3 w-3" />

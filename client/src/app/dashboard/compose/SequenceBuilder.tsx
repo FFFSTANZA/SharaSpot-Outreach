@@ -17,9 +17,9 @@ const MAX_FOLLOW_UPS = 8;
 
 const CONDITION_OPTIONS: { value: SequenceConditionType; label: string; icon: typeof Eye; color: string; description: string }[] = [
   { value: "none", label: "After delay", icon: Clock, color: "gray", description: "Send after waiting" },
-  { value: "opened", label: "If opened", icon: Eye, color: "blue", description: "Send if email was opened" },
+  { value: "opened", label: "If opened", icon: Eye, color: "brand", description: "Send if email was opened" },
   { value: "clicked", label: "If clicked", icon: MousePointer2, color: "purple", description: "Send if link was clicked" },
-  { value: "replied", label: "If replied", icon: MessageCircle, color: "green", description: "Send if recipient replied" },
+  { value: "replied", label: "If replied", icon: MessageCircle, color: "brand", description: "Send if recipient replied" },
 ];
 
 function ConditionBadge({ type }: { type: SequenceConditionType }) {
@@ -27,14 +27,13 @@ function ConditionBadge({ type }: { type: SequenceConditionType }) {
   if (!option || type === "none") return null;
 
   const colorClasses: Record<string, string> = {
-    blue: "bg-blue-50 text-blue-600 border-blue-200",
+    brand: "bg-brand-light text-brand border-brand-muted",
     purple: "bg-purple-50 text-purple-600 border-purple-200",
-    green: "bg-emerald-50 text-emerald-600 border-emerald-200",
   };
 
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border",
+      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border",
       colorClasses[option.color]
     )}>
       <option.icon className="h-3 w-3" />
@@ -78,9 +77,8 @@ function TimelineNode({
   const stepNumber = isInitial ? 1 : index + 2;
 
   const nodeColors: Record<string, string> = {
-    blue: "bg-blue-500 border-blue-600",
+    brand: "bg-brand border-brand-hover",
     purple: "bg-purple-500 border-purple-600",
-    green: "bg-emerald-500 border-emerald-600",
     gray: "bg-gray-400 border-gray-500",
   };
 
@@ -91,7 +89,7 @@ function TimelineNode({
 
       <div className={cn(
         "rounded-xl border transition-all duration-200 overflow-hidden",
-        isExpanded ? "border-indigo-200 shadow-sm bg-white ring-1 ring-indigo-100" : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
+        isExpanded ? "border-brand-muted shadow-sm bg-white ring-1 ring-brand-light" : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
       )}>
         {/* Header */}
         <div
@@ -110,14 +108,14 @@ function TimelineNode({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold text-gray-800 truncate">
+              <p className="text-sm font-bold text-gray-800 truncate">
                 {isInitial ? "Initial Email" : `Follow-up ${stepNumber - 1}`}
               </p>
               {step.condition?.type && step.condition.type !== "none" && (
                 <ConditionBadge type={step.condition.type} />
               )}
             </div>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs text-gray-400 font-medium truncate">
               {isInitial
                 ? "Uses main subject and body"
                 : step.subject
@@ -149,7 +147,7 @@ function TimelineNode({
           <div className="px-3 pb-4 pt-2 border-t border-gray-50 space-y-4">
             {/* Condition selector */}
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-2">Trigger Condition</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Trigger Condition</label>
               <div className="grid grid-cols-2 gap-2">
                 {CONDITION_OPTIONS.map(opt => (
                   <button
@@ -161,17 +159,17 @@ function TimelineNode({
                         ? opt.value === "none"
                           ? "bg-gray-100 border-gray-300 text-gray-700"
                           : opt.value === "opened"
-                            ? "bg-blue-50 border-blue-200 text-blue-700"
+                            ? "bg-brand-light border-brand-muted text-brand"
                             : opt.value === "clicked"
                               ? "bg-purple-50 border-purple-200 text-purple-700"
-                              : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                              : "bg-brand-light border-brand-muted text-brand"
                         : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
                     )}
                   >
                     <opt.icon className="h-4 w-4 shrink-0" />
                     <div>
-                      <p className="text-xs font-semibold">{opt.label}</p>
-                      <p className="text-[10px] opacity-80">{opt.description}</p>
+                      <p className="text-xs font-bold">{opt.label}</p>
+                      <p className="text-[10px] opacity-80 font-medium">{opt.description}</p>
                     </div>
                   </button>
                 ))}
@@ -187,13 +185,13 @@ function TimelineNode({
                   max={30}
                   value={step.waitDays}
                   onChange={(e) => onUpdate("waitDays", parseInt(e.target.value) || 1)}
-                  className="h-8 w-16 rounded-md border border-gray-200 bg-white text-center text-xs font-semibold text-gray-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10"
+                  className="h-8 w-16 rounded-lg border border-gray-200 bg-white text-center text-xs font-bold text-gray-900 outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all"
                 />
-                <span className="text-xs text-gray-500">day(s)</span>
+                <span className="text-xs text-gray-500 font-medium">day(s)</span>
               </div>
 
               {step.condition?.type && step.condition.type !== "none" && (
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-brand font-bold">
                   <Zap className="h-3 w-3" />
                   then send immediately
                 </div>

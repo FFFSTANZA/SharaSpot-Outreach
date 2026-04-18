@@ -76,25 +76,25 @@ export default function SettingsPage() {
   return (
     <AuthGuard>
       <ErrorBoundary>
-        <div className="min-h-screen bg-[#FAFBFC]">
+        <div className="min-h-screen bg-gray-50/50">
           <div className="max-w-3xl mx-auto px-4 py-8">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-[#1A1D21]">Settings</h1>
-              <p className="text-sm text-[#5F6368] mt-1">
+              <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+              <p className="text-sm text-gray-500 mt-1">
                 Manage your Calendly integration and preferences
               </p>
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-[#E8EAED] overflow-hidden">
-                <div className="px-6 py-4 border-b border-[#E8EAED] bg-[#FAFBFC]">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[#006BFF]/10 rounded-lg">
-                      <Calendar className="h-5 w-5 text-[#006BFF]" />
+                    <div className="p-2 bg-blue-50 rounded-lg border border-blue-100">
+                      <Calendar className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <h2 className="text-base font-semibold text-[#1A1D21]">Calendly Integration</h2>
-                      <p className="text-xs text-[#5F6368]">
+                      <h2 className="text-base font-bold text-gray-900">Calendly Integration</h2>
+                      <p className="text-xs text-gray-500 font-medium">
                         Enable meeting booking links in your email templates
                       </p>
                     </div>
@@ -102,11 +102,11 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="p-6 space-y-5">
-                  <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="flex items-start gap-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
                     <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
                     <div className="text-sm text-blue-800">
-                      <p className="font-medium mb-1">How it works</p>
-                      <p className="text-blue-700">
+                      <p className="font-bold mb-1">How it works</p>
+                      <p className="text-blue-700 font-medium">
                         Add your Calendly username below. When composing emails, you can insert a booking link that recipients can use to schedule meetings directly.
                       </p>
                     </div>
@@ -120,50 +120,50 @@ export default function SettingsPage() {
                         onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#00A63E]/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00A63E]"></div>
-                      <span className="ms-3 text-sm font-medium text-[#1A1D21]">Enable Calendly</span>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                      <span className="ms-3 text-sm font-bold text-gray-700">Enable Calendly Integration</span>
                     </label>
                   </div>
 
                   <div className="grid gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-[#1A1D21] mb-1.5">
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
                         Calendly Username <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                          <span className="text-[#5F6368] text-sm">calendly.com/</span>
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                          <span className="text-gray-400 text-sm font-medium">calendly.com/</span>
                         </div>
                         <input
                           type="text"
                           value={settings.username}
                           onChange={(e) => setSettings({ ...settings, username: e.target.value.replace(/[^a-zA-Z0-9-]/g, "") })}
                           placeholder="your-username"
-                          className="w-full pl-[95px] pr-4 py-2.5 text-sm border border-[#DADCE0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A63E]/30 focus:border-[#00A63E] transition-all"
+                          className="w-full pl-[105px] pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all font-medium"
                         />
                       </div>
-                      <p className="mt-1.5 text-xs text-[#5F6368]">
+                      <p className="mt-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1">
                         Your Calendly username (e.g., your-name or company-name)
                       </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-[#1A1D21] mb-1.5">
-                        Event Type <span className="text-[#9AA0A6] font-normal">(optional)</span>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+                        Event Type <span className="text-gray-300 font-normal">(optional)</span>
                       </label>
                       <div className="relative">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                          <span className="text-[#5F6368] text-sm">/</span>
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                          <span className="text-gray-400 text-sm font-medium">/</span>
                         </div>
                         <input
                           type="text"
                           value={settings.eventType}
                           onChange={(e) => setSettings({ ...settings, eventType: e.target.value.replace(/[^a-zA-Z0-9-]/g, "") })}
                           placeholder="30min"
-                          className="w-full pl-8 pr-4 py-2.5 text-sm border border-[#DADCE0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A63E]/30 focus:border-[#00A63E] transition-all"
+                          className="w-full pl-8 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all font-medium"
                         />
                       </div>
-                      <p className="mt-1.5 text-xs text-[#5F6368]">
+                      <p className="mt-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1">
                         Specific event type slug (e.g., 30min, 15min, discovery-call)
                       </p>
                     </div>
@@ -172,7 +172,7 @@ export default function SettingsPage() {
                   {verificationResult && (
                     <div
                       className={cn(
-                        "flex items-center gap-2 p-3 rounded-lg text-sm",
+                        "flex items-center gap-2 p-4 rounded-xl text-sm font-medium",
                         verificationResult.valid
                           ? "bg-green-50 text-green-800 border border-green-200"
                           : "bg-red-50 text-red-800 border border-red-200"
@@ -191,14 +191,14 @@ export default function SettingsPage() {
                     <button
                       onClick={handleVerify}
                       disabled={!settings.username || isVerifying}
-                      className="px-4 py-2 text-sm font-medium text-[#5F6368] bg-white border border-[#DADCE0] rounded-lg hover:bg-[#F1F3F4] hover:text-[#1A1D21] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      className="px-6 h-11 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                     >
                       {isVerifying ? "Verifying..." : "Verify Link"}
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={!settings.username || isSaving}
-                      className="px-4 py-2 text-sm font-medium text-white bg-[#00A63E] rounded-lg hover:bg-[#009134] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                      className="px-6 h-11 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-lg shadow-brand/10"
                     >
                       {isSaving ? "Saving..." : saveSuccess ? (
                         <>
@@ -214,11 +214,11 @@ export default function SettingsPage() {
               </div>
 
               {settings.username && settings.enabled && (
-                <div className="bg-white rounded-xl border border-[#E8EAED] overflow-hidden">
-                  <div className="px-6 py-4 border-b border-[#E8EAED] bg-[#FAFBFC]">
-                    <h2 className="text-base font-semibold text-[#1A1D21]">Preview</h2>
-                    <p className="text-xs text-[#5F6368]">
-                      See how your Calendly booking button will appear
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                    <h2 className="text-base font-bold text-gray-900">Preview</h2>
+                    <p className="text-xs text-gray-500 font-medium">
+                      See how your Calendly booking button will appear in emails
                     </p>
                   </div>
                   <div className="p-6">
@@ -231,12 +231,12 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <div className="bg-white rounded-xl border border-[#E8EAED] overflow-hidden">
-                <div className="px-6 py-4 border-b border-[#E8EAED] bg-[#FAFBFC]">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
                   <div className="flex items-center gap-3">
-                    <LinkIcon className="h-5 w-5 text-[#5F6368]" />
+                    <LinkIcon className="h-5 w-5 text-gray-400" />
                     <div>
-                      <h2 className="text-base font-semibold text-[#1A1D21]">Quick Links</h2>
+                      <h2 className="text-base font-bold text-gray-900">Quick Links</h2>
                     </div>
                   </div>
                 </div>
@@ -245,13 +245,15 @@ export default function SettingsPage() {
                     href="https://calendly.com/signup"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 rounded-lg border border-[#E8EAED] hover:bg-[#F8F9FA] transition-all group"
+                    className="flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all group shadow-sm"
                   >
                     <div className="flex items-center gap-3">
-                      <Calendar className="h-5 w-5 text-[#006BFF]" />
-                      <span className="text-sm font-medium text-[#1A1D21]">Create a Calendly Account</span>
+                      <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <Calendar className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <span className="text-sm font-bold text-gray-700">Create a Calendly Account</span>
                     </div>
-                    <ExternalLink className="h-4 w-4 text-[#9AA0A6] group-hover:text-[#5F6368] transition-colors" />
+                    <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
                   </a>
                 </div>
               </div>

@@ -45,16 +45,16 @@ function AnalyticsCard({
   trend?: string;
 }) {
   return (
-    <div className="bg-white rounded-lg border border-[#E8EAED] p-4 hover:shadow-sm transition-shadow duration-200">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-200">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-[#9AA0A6] uppercase tracking-wider">{label}</span>
-        <Icon className="h-4 w-4 text-[#9AA0A6]" />
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{label}</span>
+        <Icon className="h-4 w-4 text-gray-400" />
       </div>
-      <div className="text-2xl font-bold text-[#1A1D21] tracking-tight">{value}</div>
+      <div className="text-2xl font-bold text-gray-900 tracking-tight">{value}</div>
       {subValue && (
-        <div className="text-xs text-[#5F6368] mt-1 flex items-center gap-1">
+        <div className="text-xs text-gray-500 mt-1 flex items-center gap-1 font-medium">
           {subValue}
-          {trend && <span className="text-[#9AA0A6]">• {trend}</span>}
+          {trend && <span className="text-gray-400 font-normal">• {trend}</span>}
         </div>
       )}
     </div>
@@ -133,7 +133,7 @@ const Dashboard = () => {
     <AuthGuard>
       <ErrorBoundary>
         <SidebarProvider>
-          <div className="flex h-screen bg-[#FAFBFC]">
+          <div className="flex h-screen bg-gray-50/50">
             <Sidebar
               currentLabel={label}
               setLabel={setLabel}
@@ -219,13 +219,13 @@ const Dashboard = () => {
 
                   <div className="px-4 md:px-6 mt-2 mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-[#00A63E] animate-pulse" />
-                      <h2 className="text-base font-bold text-[#1A1D21] tracking-tight">Inbox</h2>
-                      <span className="text-xs text-[#5F6368]">({total} {total === 1 ? 'email' : 'emails'})</span>
+                      <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
+                      <h2 className="text-base font-bold text-gray-900 tracking-tight">Inbox</h2>
+                      <span className="text-xs text-gray-500 font-medium">({total} {total === 1 ? 'email' : 'emails'})</span>
                     </div>
                   </div>
 
-                  <div className="flex-1 mx-4 md:mx-6 mb-4 rounded-lg bg-white border border-[#E8EAED] overflow-hidden flex flex-col min-h-0">
+                  <div className="flex-1 mx-4 md:mx-6 mb-4 rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-0">
                     <EmailList
                       emails={emailItems}
                       onToggleStar={handleToggleStar}

@@ -50,43 +50,43 @@ export default function Button({
         
         /* Primary - brand green */
         variant === "primary" && [
-          "bg-[#00A63E] text-white",
-          "hover:bg-[#009134] hover:shadow-[0_0_16px_rgba(0,166,56,0.25)]",
-          "active:bg-[#007A2B]",
+          "bg-brand text-white",
+          "hover:bg-brand-hover hover:shadow-lg hover:shadow-brand/20",
+          "active:bg-brand-active",
         ],
         
         /* Secondary - subtle gray */
         variant === "secondary" && [
-          "bg-white border border-[#E8EAED] text-[#1A1D21]",
-          "hover:bg-[#F7F8F8] hover:border-[#DADCE0] hover:shadow-sm",
-          "active:bg-[#ECEDEE]",
+          "bg-white border border-gray-200 text-gray-900 shadow-sm",
+          "hover:bg-gray-50 hover:border-gray-300",
+          "active:bg-gray-100",
         ],
         
-        /* Compose - distinctive orange CTA */
+        /* Compose - now brand green for consistency */
         variant === "compose" && [
-          "bg-[#FF6D01] text-white",
-          "hover:bg-[#E56200] hover:shadow-[0_0_20px_rgba(255,109,1,0.3)] hover:scale-[1.02]",
-          "active:bg-[#CC5500] active:scale-[0.98]",
+          "bg-brand text-white",
+          "hover:bg-brand-hover hover:shadow-lg hover:shadow-brand/20 hover:scale-[1.02]",
+          "active:bg-brand-active active:scale-[0.98]",
         ],
         
         /* Danger - red */
         variant === "danger" && [
-          "bg-[#EA4335] text-white",
-          "hover:bg-[#D33833] hover:shadow-[0_0_16px_rgba(234,67,53,0.25)]",
-          "active:bg-[#C5221F]",
+          "bg-red-600 text-white",
+          "hover:bg-red-700 hover:shadow-lg hover:shadow-red-500/20",
+          "active:bg-red-800",
         ],
         
         /* Outline */
         variant === "outline" && [
-          "border border-[#E8EAED] bg-white text-[#1A1D21]",
-          "hover:bg-[#F7F8F8] active:bg-[#ECEDEE]",
+          "border border-gray-200 bg-white text-gray-700",
+          "hover:bg-gray-50 active:bg-gray-100",
         ],
         
         /* Ghost - subtle */
         variant === "ghost" && [
-          "bg-transparent text-[#5F6368]",
-          "hover:bg-[#F1F3F4] hover:text-[#1A1D21]",
-          "active:bg-[#E8EAED]",
+          "bg-transparent text-gray-500",
+          "hover:bg-gray-50 hover:text-gray-900",
+          "active:bg-gray-100",
         ],
         
         className,

@@ -164,7 +164,7 @@ export default function CampaignDetailPage() {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <div className="flex h-screen bg-[#f9fafb]">
+        <div className="flex h-screen bg-gray-50/50">
           <Sidebar
             setLabel={setLabel}
             profile={{
@@ -213,30 +213,30 @@ export default function CampaignDetailPage() {
                 </button>
 
                 {/* Campaign header card */}
-                <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5 md:p-6">
+                <div className="rounded-xl bg-white border border-gray-200 shadow-sm p-5 md:p-6">
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="min-w-0 flex-1">
-                      <h1 className="text-lg font-semibold text-gray-900 truncate">
+                      <h1 className="text-xl font-bold text-gray-900 truncate">
                         {campaign.subject}
                       </h1>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1 font-medium">
                         From: {campaign.sender.email}
                       </p>
                     </div>
                     <StatusBadge status={campaign.status} size="md" pauseReason={campaign.pauseReason} />
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-4 text-[11px] text-gray-500 mb-4">
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
+                  <div className="flex flex-wrap items-center gap-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">
+                    <span className="flex items-center gap-1.5">
+                      <Users className="h-3.5 w-3.5" />
                       {campaign.totalRecipients} recipients
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
                       {formatDate(campaign.startTime)}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5" />
                       {campaign.delaySeconds}s delay
                     </span>
                   </div>
@@ -281,51 +281,51 @@ export default function CampaignDetailPage() {
                 />
 
                 {/* Tabs: Emails | Sequence | Tracking */}
-                <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+                <div className="rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden">
                   <div className="flex border-b border-gray-100 bg-gray-50/30">
                     <button
                       className={cn(
-                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
+                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-widest uppercase",
                         activeTab === "emails"
-                          ? "text-teal-600"
-                          : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
+                          ? "text-brand"
+                          : "text-gray-400 hover:text-gray-600 hover:bg-gray-50/50"
                       )}
                       onClick={() => setActiveTab("emails")}
                     >
-                      <Mail className={cn("h-4 w-4", activeTab === "emails" ? "text-teal-600" : "text-gray-500")} />
+                      <Mail className={cn("h-4 w-4", activeTab === "emails" ? "text-brand" : "text-gray-400")} />
                       <span>Emails ({campaign.emails.length})</span>
                       {activeTab === "emails" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand animate-[stretch_0.2s_ease-out]" />
                       )}
                     </button>
                     <button
                       className={cn(
-                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
+                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-widest uppercase",
                         activeTab === "sequence"
-                          ? "text-teal-600"
-                          : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
+                          ? "text-brand"
+                          : "text-gray-400 hover:text-gray-600 hover:bg-gray-50/50"
                       )}
                       onClick={() => setActiveTab("sequence")}
                     >
-                      <Layout className={cn("h-4 w-4", activeTab === "sequence" ? "text-teal-600" : "text-gray-500")} />
+                      <Layout className={cn("h-4 w-4", activeTab === "sequence" ? "text-brand" : "text-gray-400")} />
                       <span>Sequence</span>
                       {activeTab === "sequence" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand animate-[stretch_0.2s_ease-out]" />
                       )}
                     </button>
                     <button
                       className={cn(
-                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
+                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-widest uppercase",
                         activeTab === "analytics"
-                          ? "text-teal-600"
-                          : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
+                          ? "text-brand"
+                          : "text-gray-400 hover:text-gray-600 hover:bg-gray-50/50"
                       )}
                       onClick={() => setActiveTab("analytics")}
                     >
-                      <BarChart3 className={cn("h-4 w-4", activeTab === "analytics" ? "text-teal-600" : "text-gray-500")} />
+                      <BarChart3 className={cn("h-4 w-4", activeTab === "analytics" ? "text-brand" : "text-gray-400")} />
                       <span>Analytics</span>
                       {activeTab === "analytics" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand animate-[stretch_0.2s_ease-out]" />
                       )}
                     </button>
                   </div>
@@ -368,7 +368,7 @@ export default function CampaignDetailPage() {
                                   </span>
                                 )}
                                 {email.isReplied && (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-100 px-2 py-0.5 text-[9px] font-bold text-blue-600 shadow-sm">
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-brand-light border border-brand-muted px-2 py-0.5 text-[9px] font-bold text-brand shadow-sm">
                                     <MessageSquare className="h-2.5 w-2.5" /> Replied
                                   </span>
                                 )}
@@ -376,7 +376,7 @@ export default function CampaignDetailPage() {
                               <p className="text-[11px] text-gray-500/80 flex items-center gap-1.5 font-normal">
                                 {email.status === "SENT" ? (
                                   <>
-                                    <CheckCircle2 className="h-3 w-3 text-emerald-500/60" />
+                                    <CheckCircle2 className="h-3 w-3 text-brand/60" />
                                     {formatDate(email.sentAt!)}
                                   </>
                                 ) : email.status === "FAILED" ? (
@@ -386,7 +386,7 @@ export default function CampaignDetailPage() {
                                   </>
                                 ) : email.status === "SENDING" ? (
                                   <>
-                                    <Loader2 className="h-3 w-3 text-blue-500/60 animate-spin" />
+                                    <Loader2 className="h-3 w-3 text-brand/60 animate-spin" />
                                     Sending...
                                   </>
                                 ) : email.status === "CANCELLED" ? (
@@ -409,7 +409,7 @@ export default function CampaignDetailPage() {
                                   className={cn(
                                     "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border shadow-sm",
                                     email.isReplied
-                                      ? "bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100"
+                                      ? "bg-brand-light text-brand border-brand-muted hover:bg-brand-muted"
                                       : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700 hover:bg-gray-50"
                                   )}
                                 >
@@ -419,16 +419,16 @@ export default function CampaignDetailPage() {
                               <div className="flex items-center gap-1.5 min-w-[60px] justify-end">
                                 <div className={cn(
                                   "h-1.5 w-1.5 rounded-full",
-                                  email.status === "SENT" ? "bg-emerald-500" :
+                                  email.status === "SENT" ? "bg-brand" :
                                   email.status === "FAILED" ? "bg-red-500" :
-                                  email.status === "SENDING" ? "bg-blue-500 animate-pulse" :
+                                  email.status === "SENDING" ? "bg-brand animate-pulse" :
                                   email.status === "PENDING" ? "bg-amber-500" : "bg-gray-400"
                                 )} />
                                 <span className={cn(
                                   "text-[10px] font-bold uppercase tracking-wider",
-                                  email.status === "SENT" ? "text-emerald-600" :
+                                  email.status === "SENT" ? "text-brand" :
                                   email.status === "FAILED" ? "text-red-500" :
-                                  email.status === "SENDING" ? "text-blue-600" :
+                                  email.status === "SENDING" ? "text-brand" :
                                   email.status === "PENDING" ? "text-amber-600" : "text-gray-500"
                                 )}>
                                   {email.status}
