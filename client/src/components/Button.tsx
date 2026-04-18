@@ -44,15 +44,15 @@ export default function Button({
       className={cn(
         "inline-flex items-center justify-center rounded-md font-medium",
         "transition-all duration-150 ease-out",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A63E]/50",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50",
         "active:scale-[0.98] active:duration-75",
         sizeClasses[size],
         
-        /* Primary - brand green */
+        /* Primary - brand blue */
         variant === "primary" && [
-          "bg-[#00A63E] text-white",
-          "hover:bg-[#009134] hover:shadow-[0_0_16px_rgba(0,166,56,0.25)]",
-          "active:bg-[#007A2B]",
+          "bg-blue-600 text-white",
+          "hover:bg-blue-700 hover:shadow-[0_0_16px_rgba(37,99,235,0.25)]",
+          "active:bg-blue-800",
         ],
         
         /* Secondary - subtle gray */
@@ -62,11 +62,11 @@ export default function Button({
           "active:bg-[#ECEDEE]",
         ],
         
-        /* Compose - distinctive orange CTA */
+        /* Compose - distinctive blue CTA */
         variant === "compose" && [
-          "bg-[#FF6D01] text-white",
-          "hover:bg-[#E56200] hover:shadow-[0_0_20px_rgba(255,109,1,0.3)] hover:scale-[1.02]",
-          "active:bg-[#CC5500] active:scale-[0.98]",
+          "bg-blue-700 text-white",
+          "hover:bg-blue-800 hover:shadow-[0_0_20px_rgba(29,78,216,0.3)] hover:scale-[1.02]",
+          "active:bg-blue-900 active:scale-[0.98]",
         ],
         
         /* Danger - red */

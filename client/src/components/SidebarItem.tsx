@@ -28,7 +28,7 @@ export function SidebarItem({
         text-sm font-medium cursor-pointer transition-all duration-150
         border-l-4
         ${isActive
-          ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
+          ? "bg-blue-50 text-blue-700 border-l-blue-600"
           : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
         }
       `}
@@ -36,7 +36,7 @@ export function SidebarItem({
     >
       <span className={`
         transition-colors duration-150
-        ${isActive ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]"}
+        ${isActive ? "text-blue-600" : "text-[#9AA0A6] group-hover:text-[#5F6368]"}
       `}>
         {icon}
       </span>
@@ -45,7 +45,7 @@ export function SidebarItem({
       {count !== undefined && (
         <span className={`
           ml-auto text-xs font-medium
-          ${isActive ? "text-[#00A63E]" : "text-[#9AA0A6]"}
+          ${isActive ? "text-blue-600" : "text-[#9AA0A6]"}
         `}>
           {count}
         </span>

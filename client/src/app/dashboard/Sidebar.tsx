@@ -69,15 +69,15 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
         </Link>
       </div>
 
-      {/* Compose Button - Brand CTA with glow */}
+      {/* Compose Button - Brand CTA with blue theme */}
       <div className="mb-5 shrink-0">
         <button
           onClick={handleCompose}
           className="
             w-full flex items-center gap-2 px-4 py-2.5
-            bg-[#FF6D01] text-white rounded-lg
+            bg-blue-600 text-white rounded-lg
             text-sm font-medium shadow-sm
-            hover:bg-[#E56200] hover:shadow-[0_0_16px_rgba(255,109,1,0.25)]
+            hover:bg-blue-700 hover:shadow-[0_0_16px_rgba(37,99,235,0.25)]
             active:scale-[0.99] active:duration-75
             transition-all duration-150
           "
@@ -114,11 +114,11 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           className={cn(
             "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
             pathname === "/dashboard/campaigns"
-              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
+              ? "bg-blue-50 text-blue-700 border-l-blue-600"
               : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
           )}
         >
-          <Megaphone className={cn("h-4 w-4", pathname === "/dashboard/campaigns" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <Megaphone className={cn("h-4 w-4", pathname === "/dashboard/campaigns" ? "text-blue-600" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
           <span>Campaigns</span>
         </Link>
 
@@ -130,11 +130,11 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           className={cn(
             "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
             pathname === "/dashboard/templates"
-              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
+              ? "bg-blue-50 text-blue-700 border-l-blue-600"
               : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
           )}
         >
-          <FileText className={cn("h-4 w-4", pathname === "/dashboard/templates" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <FileText className={cn("h-4 w-4", pathname === "/dashboard/templates" ? "text-blue-600" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
           <span>Templates</span>
         </Link>
 
@@ -144,11 +144,11 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           className={cn(
             "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
             pathname === "/dashboard/settings/billing"
-              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
+              ? "bg-blue-50 text-blue-700 border-l-blue-600"
               : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
           )}
         >
-          <CreditCard className={cn("h-4 w-4", pathname === "/dashboard/settings/billing" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <CreditCard className={cn("h-4 w-4", pathname === "/dashboard/settings/billing" ? "text-blue-600" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
           <span>Billing</span>
         </Link>
 
@@ -158,11 +158,11 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           className={cn(
             "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
             pathname === "/dashboard/settings"
-              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
+              ? "bg-blue-50 text-blue-700 border-l-blue-600"
               : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
           )}
         >
-          <Settings className={cn("h-4 w-4", pathname === "/dashboard/settings" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <Settings className={cn("h-4 w-4", pathname === "/dashboard/settings" ? "text-blue-600" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
           <span>Settings</span>
         </Link>
 

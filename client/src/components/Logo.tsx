@@ -21,14 +21,14 @@ function LogoMark({ className }: { className?: string }) {
     <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
         <linearGradient id="logo-gradient" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#00A63E"/>
-          <stop offset="60%" stopColor="#00B847"/>
-          <stop offset="100%" stopColor="#10B981"/>
+          <stop offset="0%" stopColor="#2563EB"/>
+          <stop offset="60%" stopColor="#1D4ED8"/>
+          <stop offset="100%" stopColor="#1E40AF"/>
         </linearGradient>
       </defs>
       <g transform="translate(16,16)">
         <path d="M-9,-8 L10,0 L-9,8 L-5.5,0 Z" fill="white" fillOpacity="0.95"/>
-        <path d="M-5.5,0 L10,0" stroke="rgba(0,166,62,0.35)" strokeWidth="0.8"/>
+        <path d="M-5.5,0 L10,0" stroke="rgba(37,99,235,0.35)" strokeWidth="0.8"/>
         <path d="M-9,8 L-5.5,0 L10,0 Z" fill="black" fillOpacity="0.06"/>
       </g>
     </svg>
@@ -50,9 +50,9 @@ export function Logo({ size = "md", variant = "dark", showText = true, className
     <div className={cn("flex items-center gap-2.5", className)}>
       <div className={cn(
         s.box,
-        "bg-gradient-to-br from-[#00A63E] via-[#00B847] to-[#10B981]",
+        "bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800",
         "flex items-center justify-center",
-        "shadow-[0_2px_12px_rgba(0,166,56,0.3)]",
+        "shadow-[0_2px_12px_rgba(37,99,235,0.3)]",
         "relative overflow-hidden",
       )}>
         <LogoMark className={s.svg} />
@@ -64,7 +64,7 @@ export function Logo({ size = "md", variant = "dark", showText = true, className
           "font-extrabold tracking-tight leading-none",
           textColor,
         )}>
-          Shara<span className="text-[#00A63E]">Spot</span>
+          Shara<span className="text-blue-600">Spot</span>
         </span>
       )}
     </div>
@@ -81,9 +81,9 @@ export function LogoIcon({ className, size = "md" }: { className?: string; size?
   return (
     <div className={cn(
       sizeClasses[size],
-      "bg-gradient-to-br from-[#00A63E] via-[#00B847] to-[#10B981]",
+      "bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800",
       "flex items-center justify-center",
-      "shadow-[0_2px_12px_rgba(0,166,56,0.3)]",
+      "shadow-[0_2px_12px_rgba(37,99,235,0.3)]",
       "relative overflow-hidden",
       className,
     )}>
