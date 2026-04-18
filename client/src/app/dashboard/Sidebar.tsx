@@ -64,33 +64,32 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
     <div className="flex flex-col h-full overflow-hidden">
       {/* Logo Group */}
       <div className="mb-8 pt-1 shrink-0">
-        <Link href="/dashboard" onClick={close} className="inline-block hover:opacity-80 transition-opacity">
+        <Link href="/dashboard" onClick={close} className="inline-block">
           <Logo size="md" />
         </Link>
       </div>
 
-      {/* Compose Button - Brand CTA with glow */}
+      {/* Compose Button */}
       <div className="mb-8 shrink-0">
         <button
           onClick={handleCompose}
           className="
-            w-full flex items-center justify-center gap-3 h-12
-            bg-brand text-white rounded-2xl
-            text-sm font-black shadow-lg shadow-brand/20
-            hover:bg-brand-hover hover:scale-[1.02]
-            active:scale-[0.98]
-            transition-all duration-300
+            w-full flex items-center justify-center gap-2 h-11
+            bg-brand text-white rounded-xl
+            text-sm font-semibold shadow-sm
+            hover:bg-brand-hover
+            transition-all duration-200
           "
         >
-          <Plus className="h-4 w-4" strokeWidth={3} />
-          <span>COMPOSE</span>
+          <Plus className="h-4 w-4" />
+          <span>New Campaign</span>
         </button>
       </div>
 
-      {/* Primary Context Navigation - Modern style with brand colors */}
+      {/* Primary Context Navigation */}
       <nav className="space-y-1 shrink-0">
         <div className="px-4 mb-2">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none">Inbox</p>
+          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Inbox</p>
         </div>
         {items.map((item, idx) => (
           <SidebarItem
@@ -102,23 +101,23 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
         ))}
       </nav>
 
-      {/* System Actions & Footer */}
-      <div className="mt-auto pt-8 border-t border-gray-50 space-y-1 shrink-0">
+      {/* Management Actions */}
+      <div className="mt-8 pt-8 border-t border-gray-100 space-y-1 shrink-0">
         <div className="px-4 mb-2">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none">Management</p>
+          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Management</p>
         </div>
 
         <Link
           href="/dashboard/campaigns"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300",
+            "group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
             pathname === "/dashboard/campaigns"
-              ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+              ? "bg-brand-light text-brand"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
-          <Megaphone className={cn("h-4 w-4", pathname === "/dashboard/campaigns" ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
+          <Megaphone className={cn("h-4 w-4", pathname === "/dashboard/campaigns" ? "text-brand" : "text-gray-400 group-hover:text-gray-600")} />
           <span>Campaigns</span>
         </Link>
 
@@ -126,13 +125,13 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           href="/dashboard/templates"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300",
+            "group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
             pathname === "/dashboard/templates"
-              ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+              ? "bg-brand-light text-brand"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
-          <FileText className={cn("h-4 w-4", pathname === "/dashboard/templates" ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
+          <FileText className={cn("h-4 w-4", pathname === "/dashboard/templates" ? "text-brand" : "text-gray-400 group-hover:text-gray-600")} />
           <span>Templates</span>
         </Link>
 
@@ -140,13 +139,13 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           href="/dashboard/settings/billing"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300",
+            "group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
             pathname === "/dashboard/settings/billing"
-              ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+              ? "bg-brand-light text-brand"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
-          <CreditCard className={cn("h-4 w-4", pathname === "/dashboard/settings/billing" ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
+          <CreditCard className={cn("h-4 w-4", pathname === "/dashboard/settings/billing" ? "text-brand" : "text-gray-400 group-hover:text-gray-600")} />
           <span>Billing</span>
         </Link>
 
@@ -154,13 +153,13 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           href="/dashboard/settings"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300",
+            "group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
             pathname === "/dashboard/settings"
-              ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+              ? "bg-brand-light text-brand"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
-          <Settings className={cn("h-4 w-4", pathname === "/dashboard/settings" ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
+          <Settings className={cn("h-4 w-4", pathname === "/dashboard/settings" ? "text-brand" : "text-gray-400 group-hover:text-gray-600")} />
           <span>Settings</span>
         </Link>
 
@@ -168,11 +167,11 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="group flex items-center justify-between px-4 py-3 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded-2xl cursor-pointer transition-all duration-300 w-full disabled:opacity-50 active:scale-[0.98]"
+            className="group flex items-center justify-between px-4 py-2.5 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-xl cursor-pointer transition-all duration-200 w-full disabled:opacity-50"
           >
             <div className="flex items-center gap-3">
               <LogOut className="h-4 w-4" />
-              <span className="text-sm font-bold">{isLoggingOut ? "Logging out..." : "Logout"}</span>
+              <span className="text-sm font-medium">{isLoggingOut ? "Logging out..." : "Logout"}</span>
             </div>
           </button>
         </div>
@@ -183,7 +182,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
   return (
     <>
       {/* Desktop View */}
-      <aside className="hidden lg:flex h-full w-[260px] flex-col bg-white border-r border-gray-100 p-5 shadow-[1px_0_0_0_rgba(0,0,0,0.02)]">
+      <aside className="hidden lg:flex h-full w-[260px] flex-col bg-white border-r border-gray-100 p-5">
         {sidebarContent}
       </aside>
 
@@ -198,7 +197,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
             aria-hidden="true"
           />
           <aside
-            className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-white p-5 shadow-2xl flex flex-col"
+            className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-white p-5 shadow-xl flex flex-col"
             role="dialog"
             aria-label="Navigation sidebar"
           >

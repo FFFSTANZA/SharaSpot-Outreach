@@ -5,8 +5,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getSubscription, createSubscription, cancelSubscription, reactivateSubscription } from "@/lib/apis";
 import type { SubscriptionResponse } from "@/lib/apis";
-import { CreditCard, Check, AlertTriangle, ArrowRight, Shield, Zap, Clock, Crown, X } from "lucide-react";
-import Button from "@/components/Button";
+import { CreditCard, Check, AlertTriangle, Shield, Zap, Crown, X } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 
@@ -94,50 +93,49 @@ export default function BillingPage() {
     return (
         <AuthGuard>
             <ErrorBoundary>
-                <div className="min-h-screen bg-gray-50/50">
+                <div className="min-h-screen bg-background">
                     <div className="max-w-4xl mx-auto px-4 md:px-6 py-12">
-                        <div className="mb-10">
-                            <h1 className="text-3xl font-black text-gray-900 tracking-tight uppercase">Billing & Access</h1>
-                            <p className="text-[10px] font-black text-gray-400 mt-2 uppercase tracking-[0.3em]">
-                                Manage your plan and professional capabilities
+                        <div className="mb-10 text-center md:text-left">
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Billing & Access</h1>
+                            <p className="text-sm text-text-secondary mt-2">
+                                Manage your professional outreach plan
                             </p>
                         </div>
 
                         <div className="space-y-8">
-                            {/* Status Banner */}
-                            <div className={cn("rounded-[2rem] border p-8 flex flex-col md:flex-row items-center gap-8 transition-all",
-                                "bg-white border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)]")}>
-                                <div className={cn("h-24 w-24 rounded-3xl flex items-center justify-center shrink-0 shadow-lg",
-                                    subData?.isPremium ? "bg-brand text-white shadow-brand/20" : "bg-gray-100 text-gray-400")}>
+                            {/* Status Card */}
+                            <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm flex flex-col md:flex-row items-center gap-8">
+                                <div className={cn("h-20 w-20 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                                    subData?.isPremium ? "bg-brand text-white" : "bg-gray-100 text-gray-400")}>
                                     <Crown className="h-10 w-10" />
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
                                     <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                                        <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
-                                            {subData?.isPremium ? "Full Access Plan" : "7-Day Trial"}
+                                        <h2 className="text-xl font-bold text-gray-900">
+                                            {subData?.isPremium ? "Professional Plan" : "7-Day Free Trial"}
                                         </h2>
-                                        <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-widest", statusConfig.color)}>
+                                        <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-semibold border uppercase tracking-wider", statusConfig.color)}>
                                             <StatusIcon className="h-3 w-3" />
                                             {statusConfig.label}
                                         </div>
                                     </div>
                                     {isTrial ? (
-                                        <p className="text-sm text-gray-600 font-medium">
-                                            Your professional trial is active. You have <span className="font-black text-brand">{trialDaysLeft} business days</span> remaining.
+                                        <p className="text-sm text-text-secondary">
+                                            Your 7-day trial is active. You have <span className="font-semibold text-brand">{trialDaysLeft} days</span> remaining.
                                         </p>
                                     ) : subData?.isPremium ? (
-                                        <p className="text-sm text-gray-600 font-medium">
-                                            Next billing cycle: <span className="font-black text-gray-900">{new Date(subData.subscription!.currentPeriodEnd).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                                        <p className="text-sm text-text-secondary">
+                                            Next billing date: <span className="font-semibold text-gray-900">{new Date(subData.subscription!.currentPeriodEnd).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                                         </p>
                                     ) : (
-                                        <p className="text-sm text-gray-500 font-medium">
-                                            Your professional access has concluded. Upgrade to maintain your outreach momentum.
+                                        <p className="text-sm text-text-secondary">
+                                            Your trial has ended. Upgrade to the Professional plan to continue.
                                         </p>
                                     )}
                                 </div>
                                 {!subData?.subscription?.dodoSubscriptionId && !isTrial && (
                                     <button
-                                        className="w-full md:w-auto h-14 px-8 bg-brand text-white rounded-2xl shadow-xl shadow-brand/20 font-black uppercase tracking-widest text-xs hover:scale-105 transition-all active:scale-95"
+                                        className="w-full md:w-auto h-12 px-8 bg-brand text-white rounded-xl font-semibold shadow-sm hover:bg-brand-hover transition-all"
                                         onClick={handleSubscribe}
                                         disabled={isProcessing}
                                     >
@@ -147,19 +145,19 @@ export default function BillingPage() {
                             </div>
 
                             {/* Plan Details */}
-                            <div className="bg-white rounded-[2rem] border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] overflow-hidden">
-                                <div className="px-8 py-6 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
+                            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                                <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 bg-white rounded-2xl border border-gray-100 flex items-center justify-center shadow-sm">
-                                            <Zap className="h-6 w-6 text-brand" />
+                                        <div className="h-10 w-10 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
+                                            <Zap className="h-5 w-5 text-brand" />
                                         </div>
                                         <div>
-                                            <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">Professional Suite</h2>
-                                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Full capabilities included</p>
+                                            <h2 className="text-lg font-bold text-gray-900">Professional Suite</h2>
+                                            <p className="text-xs text-text-secondary">Full access to all features</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xl font-black text-gray-900 tracking-tight">$20.00 <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">/ mo</span></p>
+                                        <p className="text-xl font-bold text-gray-900">$20.00 <span className="text-xs text-text-secondary font-normal">/ month</span></p>
                                     </div>
                                 </div>
                                 <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -173,9 +171,9 @@ export default function BillingPage() {
                                         "Dynamic Template Variables",
                                         "Adaptive Safe Warmup"
                                     ].map((feature, i) => (
-                                        <div key={i} className="flex items-center gap-3 text-sm text-gray-700 font-bold tracking-tight">
-                                            <div className="h-6 w-6 rounded-lg bg-brand-light flex items-center justify-center shrink-0">
-                                                <Check className="h-4 w-4 text-brand" />
+                                        <div key={i} className="flex items-center gap-3 text-sm text-gray-700 font-medium">
+                                            <div className="h-5 w-5 rounded-md bg-brand-light flex items-center justify-center shrink-0">
+                                                <Check className="h-3.5 w-3.5 text-brand" />
                                             </div>
                                             {feature}
                                         </div>
@@ -185,25 +183,23 @@ export default function BillingPage() {
 
                             {/* Subscription Management */}
                             {subData?.subscription?.dodoSubscriptionId && (
-                                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
-                                    <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/30 flex items-center justify-between">
-                                        <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">Subscription Management</h2>
-                                        <div className="h-10 w-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center shadow-sm">
-                                            <CreditCard className="h-5 w-5 text-gray-400" />
-                                        </div>
+                                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                                    <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                                        <h2 className="text-lg font-bold text-gray-900">Manage Subscription</h2>
+                                        <CreditCard className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <div className="p-8 flex flex-col sm:flex-row gap-4">
                                         {subData.subscription.cancelAtPeriodEnd ? (
                                             <button
-                                                className="flex-1 h-12 bg-brand text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
+                                                className="flex-1 h-11 bg-brand text-white rounded-xl font-semibold shadow-sm transition-all hover:bg-brand-hover"
                                                 onClick={handleReactivate}
                                                 disabled={isProcessing}
                                             >
-                                                Reactivate Full Access
+                                                Reactivate Subscription
                                             </button>
                                         ) : (
                                             <button
-                                                className="flex-1 h-12 bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border border-transparent hover:border-red-100"
+                                                className="flex-1 h-11 bg-white text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl font-semibold transition-all border border-gray-200 hover:border-red-100"
                                                 onClick={handleCancel}
                                                 disabled={isProcessing}
                                             >
@@ -215,18 +211,16 @@ export default function BillingPage() {
                             )}
 
                             {/* Support */}
-                            <div className="p-8 bg-white rounded-[2rem] border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div className="flex items-center gap-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">
-                                    <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center">
-                                        <Shield className="h-5 w-5 text-gray-300" />
-                                    </div>
+                            <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex items-center gap-3 text-xs text-gray-400 font-medium">
+                                    <Shield className="h-5 w-5 text-gray-300" />
                                     <span>Secure processing by Dodo Payments</span>
                                 </div>
                                 <a
                                     href="mailto:support@sharaspot.com"
-                                    className="h-12 px-6 flex items-center justify-center bg-gray-50 text-gray-900 hover:bg-white hover:text-brand border border-gray-100 hover:border-brand/20 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-sm"
+                                    className="h-10 px-5 flex items-center justify-center bg-gray-50 text-gray-900 hover:bg-gray-100 rounded-xl text-xs font-semibold transition-all border border-gray-200"
                                 >
-                                    Contact Support Team
+                                    Contact Support
                                 </a>
                             </div>
                         </div>

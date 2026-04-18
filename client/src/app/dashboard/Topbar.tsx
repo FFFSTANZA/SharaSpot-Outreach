@@ -64,10 +64,10 @@ export function TopBar({
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* Search — Gmail style pill search */}
+      {/* Search — Professional pill search */}
       <div className="relative flex-1 lg:max-w-2xl mx-auto">
-        <div className="flex items-center bg-gray-50 rounded-2xl border border-transparent focus-within:border-brand/20 focus-within:bg-white focus-within:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] transition-all duration-300">
-          <div className="pl-5">
+        <div className="flex items-center bg-gray-50 rounded-xl border border-transparent focus-within:border-brand/20 focus-within:bg-white transition-all duration-200">
+          <div className="pl-4">
             <Search className="h-4 w-4 text-gray-400" />
           </div>
           <input
@@ -75,12 +75,12 @@ export function TopBar({
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder={placeholder}
-            className="flex-1 min-h-[44px] bg-transparent py-2.5 px-3 text-sm text-gray-900 outline-none placeholder:text-gray-400 font-medium"
+            className="flex-1 min-h-[40px] bg-transparent py-2 px-3 text-sm text-gray-900 outline-none placeholder:text-gray-400 font-medium"
           />
           {searchValue && (
             <button
               onClick={() => { setSearchValue(""); onSearch?.(""); }}
-              className="pr-5 text-gray-400 hover:text-gray-600"
+              className="pr-4 text-gray-400 hover:text-gray-600"
               aria-label="Clear search"
             >
               <X className="h-4 w-4" />
@@ -116,16 +116,16 @@ export function TopBar({
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-80 rounded-2xl bg-white border border-gray-100 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
-                <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Notifications</p>
+            <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-80 rounded-xl bg-white border border-gray-100 shadow-xl overflow-hidden">
+              <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50">
+                <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider">Notifications</p>
               </div>
               <div className="px-5 py-10 text-center">
-                <div className="h-16 w-16 rounded-3xl bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-gray-100">
-                  <Bell className="h-6 w-6 text-gray-300" />
+                <div className="h-12 w-12 rounded-xl bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                  <Bell className="h-5 w-5 text-gray-300" />
                 </div>
-                <p className="text-sm font-bold text-gray-900">No new notifications</p>
-                <p className="text-xs text-gray-500 mt-1 font-medium">Campaign updates will appear here</p>
+                <p className="text-sm font-semibold text-gray-900">No new notifications</p>
+                <p className="text-xs text-gray-500 mt-1">Campaign updates will appear here</p>
               </div>
             </div>
           )}

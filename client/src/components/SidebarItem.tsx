@@ -7,12 +7,7 @@ interface SidebarItemProps {
 }
 
 /**
- * SidebarItem - Gmail-style navigation item with brand accents.
- * 
- * Distinctive features:
- * - Brand green on active state
- * - Border-left indicator
- * - Consistent count styling
+ * SidebarItem - Professional navigation item.
  */
 export function SidebarItem({
   label,
@@ -24,27 +19,27 @@ export function SidebarItem({
   return (
     <div
       className={`
-        group flex items-center gap-3 px-4 py-3 rounded-2xl 
-        text-sm font-bold cursor-pointer transition-all duration-300
+        group flex items-center gap-3 px-4 py-2.5 rounded-xl 
+        text-sm font-medium cursor-pointer transition-all duration-200
         ${isActive
-          ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
-          : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+          ? "bg-brand-light text-brand"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
         }
       `}
       onClick={onClick}
     >
       <span className={`
-        transition-colors duration-300
-        ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-600"}
+        transition-colors duration-200
+        ${isActive ? "text-brand" : "text-gray-400 group-hover:text-gray-600"}
       `}>
         {icon}
       </span>
-      <span className="tracking-tight">{label}</span>
+      <span>{label}</span>
 
       {count !== undefined && (
         <span className={`
-          ml-auto text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full
-          ${isActive ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200"}
+          ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full
+          ${isActive ? "bg-brand/10 text-brand" : "bg-gray-100 text-gray-500"}
         `}>
           {count}
         </span>
