@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Clock, Send, Pause, XCircle, CheckCircle2, Ban, Loader2 } from "lucide-react";
+import { Clock, Pause, XCircle, CheckCircle2, Loader2 } from "lucide-react";
 
 type CampaignStatus = "SCHEDULED" | "SENDING" | "PAUSED" | "CANCELLED" | "COMPLETED";
 
@@ -11,14 +11,6 @@ interface StatusBadgeProps {
   pauseReason?: string | null;
 }
 
-/**
- * StatusBadge - memorable status indicators.
- * 
- * Distinctive features:
- * - Icon + label combo for instant recognition
- * - Distinctive colors (not just generic colors)
- * - Animate for SENDING state
- */
 const STATUS_CONFIG: Record<CampaignStatus, {
   label: string;
   bg: string;
@@ -75,11 +67,11 @@ export default function StatusBadge({ status, size = "sm", pauseReason }: Status
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full font-black uppercase tracking-tight border border-transparent",
+        "inline-flex items-center gap-1.5 rounded-lg font-semibold border border-transparent whitespace-nowrap",
         config.bg,
         config.text,
-        size === "sm" && "px-2 py-0.5 text-[9px]",
-        size === "md" && "px-2.5 py-1 text-[10px]"
+        size === "sm" && "px-2 py-0.5 text-[10px]",
+        size === "md" && "px-2.5 py-1 text-[11px]"
       )}
       title={reasonLabel ?? undefined}
     >

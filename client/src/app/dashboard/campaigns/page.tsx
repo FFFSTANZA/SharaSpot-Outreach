@@ -54,14 +54,9 @@ export default function CampaignsPage() {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <div className="flex h-screen bg-gray-50/50">
+        <div className="flex h-screen bg-background">
           <Sidebar
             setLabel={setLabel}
-            profile={{
-              name: user?.name ?? "",
-              email: user?.email ?? "",
-              avatarUrl: user?.avatarUrl ?? "",
-            }}
             items={[
               { label: "All", icon: <Inbox className="h-4 w-4" /> },
               { label: "Scheduled", icon: <Clock className="h-4 w-4" /> },
@@ -101,11 +96,11 @@ export default function CampaignsPage() {
             <div className="px-4 md:px-6 py-6 flex items-center justify-between">
               <div>
                 <h1 className="text-xl font-bold text-gray-900 leading-none">Campaigns</h1>
-                <p className="text-xs text-gray-500 mt-1">{total} campaign{total !== 1 ? "s" : ""} in total</p>
+                <p className="text-xs text-text-secondary mt-1">{total} campaign{total !== 1 ? "s" : ""} total</p>
               </div>
               <button 
                 onClick={() => router.push("/dashboard/compose")}
-                className="flex items-center gap-2 px-6 h-10 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-hover shadow-lg shadow-brand/10 transition-all active:scale-95"
+                className="flex items-center gap-2 px-6 h-10 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-hover shadow-sm transition-all"
               >
                 <Plus className="h-4 w-4" />
                 New Campaign
@@ -117,26 +112,26 @@ export default function CampaignsPage() {
             ) : error ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3">
                 <AlertCircle className="h-8 w-8 text-gray-300" />
-                <p className="text-sm text-gray-500">{error}</p>
-                <button onClick={refresh} className="text-sm text-brand hover:underline font-bold uppercase tracking-widest">Retry</button>
+                <p className="text-sm text-text-secondary">{error}</p>
+                <button onClick={refresh} className="text-sm text-brand font-semibold hover:underline">Retry</button>
               </div>
             ) : results.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-                <div className="h-20 w-20 rounded-3xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100 shadow-sm">
+                <div className="h-20 w-20 rounded-xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100 shadow-sm">
                   <Megaphone className="h-8 w-8 text-gray-300" />
                 </div>
-                <h3 className="text-lg font-black text-gray-900 mb-2 tracking-tight">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
                   {activeFilterCount > 0 ? "No matching campaigns" : "No campaigns yet"}
                 </h3>
-                <p className="text-sm text-gray-500 max-w-xs mb-8 font-medium">
+                <p className="text-sm text-text-secondary max-w-xs mb-8 font-medium">
                   {activeFilterCount > 0
                     ? "Try adjusting your filters or search query."
-                    : "Create your first campaign to start sending cold outreach emails."}
+                    : "Create your first campaign to start sending outreach emails."}
                 </p>
                 {activeFilterCount === 0 && (
                   <button 
                     onClick={() => router.push("/dashboard/compose")}
-                    className="flex items-center gap-2 px-8 h-12 bg-brand text-white rounded-xl text-sm font-black hover:bg-brand-hover transition-all active:scale-95 shadow-lg shadow-brand/20"
+                    className="flex items-center gap-2 px-8 h-12 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-hover shadow-sm"
                   >
                     <Plus className="h-4 w-4" />
                     Create Campaign
@@ -145,15 +140,15 @@ export default function CampaignsPage() {
               </div>
             ) : (
               <div className="flex-1 px-4 md:px-6 pb-6 overflow-y-auto">
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] overflow-hidden">
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50/50">
-                        <th className="text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-6 py-5">Campaign</th>
-                        <th className="text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-6 py-5">Status</th>
-                        <th className="text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-6 py-5">Recipients</th>
-                        <th className="text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-6 py-5">Created</th>
-                        <th className="text-right text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-6 py-5">Actions</th>
+                        <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Campaign</th>
+                        <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Status</th>
+                        <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Recipients</th>
+                        <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Created</th>
+                        <th className="text-right text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -163,38 +158,37 @@ export default function CampaignsPage() {
                           className="group hover:bg-gray-50/50 cursor-pointer transition-colors"
                           onClick={() => router.push(`/dashboard/campaigns/${campaign.id}`)}
                         >
-                          <td className="px-6 py-5">
+                          <td className="px-6 py-4">
                             <div className="flex items-center gap-4">
-                              <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100 group-hover:bg-brand-light group-hover:border-brand/10 transition-colors">
-                                <Megaphone className="h-5 w-5 text-gray-400 group-hover:text-brand transition-colors" />
+                              <div className="h-10 w-10 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100 group-hover:bg-brand-light transition-colors">
+                                <Megaphone className="h-5 w-5 text-gray-400 group-hover:text-brand" />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-sm font-bold text-gray-900 truncate max-w-[200px] mb-0.5">
+                                <p className="text-sm font-semibold text-gray-900 truncate max-w-[240px]">
                                   <MatchHighlighter text={campaign.subject} query={filters.q} />
                                 </p>
-                                <p className="text-xs text-gray-500 font-medium truncate max-w-[200px]">
+                                <p className="text-xs text-text-muted truncate max-w-[240px]">
                                   {campaign.sender?.email}
                                 </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-5">
+                          <td className="px-6 py-4">
                             <StatusBadge status={campaign.status} pauseReason={campaign.pauseReason} />
                           </td>
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-1.5 text-xs text-gray-600 font-bold">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600 font-semibold">
                               <Users className="h-3.5 w-3.5 text-gray-400" />
                               {campaign.totalRecipients}
-                              <span className="text-gray-400 font-medium uppercase text-[10px] tracking-wider ml-1">recipients</span>
                             </div>
                           </td>
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1.5 text-xs text-text-muted font-medium">
                               <Calendar className="h-3.5 w-3.5 text-gray-400" />
                               {formatDate(campaign.createdAt)}
                             </div>
                           </td>
-                          <td className="px-6 py-5 text-right" onClick={(e) => e.stopPropagation()}>
+                          <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                             <CampaignControls
                               campaignId={campaign.id}
                               status={campaign.status}

@@ -29,38 +29,31 @@ import {
 const EMAIL_STATUS_OPTIONS = ["PENDING", "SENDING", "SENT", "FAILED", "CANCELLED"];
 
 /**
- * AnalyticsCard - memorable dashboard stat display.
+ * AnalyticsCard - Professional dashboard stat display.
  */
 function AnalyticsCard({
   icon: Icon,
   label,
   value,
   subValue,
-  trend,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | number;
   subValue?: string;
-  trend?: string;
 }) {
   return (
-    <div className="group bg-white rounded-2xl border-b-2 border-transparent hover:border-brand/30 p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] transition-all duration-300">
+    <div className="group bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:border-brand/20 transition-all duration-200">
       <div className="flex items-center justify-between mb-4">
-        <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-brand-light transition-colors">
+        <div className="h-10 w-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-brand-light transition-colors">
           <Icon className="h-5 w-5 text-gray-400 group-hover:text-brand transition-colors" />
         </div>
-        {trend && (
-          <span className="text-[10px] font-bold text-brand bg-brand-light px-2 py-1 rounded-full uppercase tracking-tight">
-            {trend}
-          </span>
-        )}
       </div>
       <div>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-1">{label}</p>
-        <h3 className="text-2xl font-black text-gray-900 tracking-tight">{value}</h3>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
+        <h3 className="text-2xl font-bold text-gray-900 tracking-tight">{value}</h3>
         {subValue && (
-          <p className="text-xs text-gray-500 mt-2 font-medium flex items-center gap-1.5">
+          <p className="text-xs text-text-secondary mt-2 font-medium flex items-center gap-1.5">
             <span className="h-1 w-1 rounded-full bg-gray-300" />
             {subValue}
           </p>
@@ -132,26 +125,18 @@ const Dashboard = () => {
     const efficiency = totalAttempted > 0 ? Math.round((sent / totalAttempted) * 100) : 100;
     const replyRate = sent > 0 ? ((replied / sent) * 100).toFixed(1) : "0";
 
-    const capacity = senders.reduce((acc, s) => acc + s.dailyLimit, 0);
-    const utilization = capacity > 0 ? Math.round((sent / capacity) * 100) : 0;
-
-    return { sent, failed, pending, replied, efficiency, replyRate, capacity, utilization };
-  }, [results, senders]);
+    return { sent, failed, pending, replied, efficiency, replyRate };
+  }, [results]);
 
   return (
     <AuthGuard>
       <ErrorBoundary>
         <SidebarProvider>
-          <div className="flex h-screen bg-gray-50/50">
+          <div className="flex h-screen bg-background">
             <Sidebar
               currentLabel={label}
               setLabel={setLabel}
               onItemClick={handleSidebarItemClick}
-              profile={{
-                name: user?.name ?? "",
-                email: user?.email ?? "",
-                avatarUrl: user?.avatarUrl ?? "",
-              }}
               items={[
                 { label: "All", count: total, icon: <Inbox className="h-4 w-4" /> },
                 { label: "Starred", icon: <Star className="h-4 w-4" /> },
@@ -193,48 +178,47 @@ const Dashboard = () => {
                 <InlineLoader message="Loading your emails..." />
               ) : error ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                  <AlertCircle className="h-8 w-8 text-[#DADCE0]" />
-                  <p className="text-sm text-[#5F6368]">{error}</p>
-                  <button onClick={refresh} className="text-sm text-[#00A63E] hover:underline">Retry</button>
+                  <AlertCircle className="h-8 w-8 text-gray-300" />
+                  <p className="text-sm text-text-secondary">{error}</p>
+                  <button onClick={refresh} className="text-sm text-brand hover:underline">Retry</button>
                 </div>
               ) : (
                 <>
-                  <div className="px-4 md:px-6 py-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="px-4 md:px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <AnalyticsCard
                       icon={Mail}
-                      label="Total"
+                      label="Total Emails"
                       value={total}
                       subValue={`${stats.pending} pending`}
                     />
                     <AnalyticsCard
                       icon={CheckCircle}
-                      label="Sent"
+                      label="Emails Sent"
                       value={stats.sent}
                       subValue={`${stats.failed} failed`}
                     />
                     <AnalyticsCard
                       icon={TrendingUp}
-                      label="Efficiency"
+                      label="Delivery Rate"
                       value={`${stats.efficiency}%`}
-                      subValue="Delivery rate"
+                      subValue="Overall success"
                     />
                     <AnalyticsCard
                       icon={BarChart3}
-                      label="Replies"
+                      label="Reply Rate"
                       value={`${stats.replyRate}%`}
                       subValue={`${stats.replied} replies`}
                     />
                   </div>
 
-                  <div className="px-4 md:px-6 mt-2 mb-2 flex items-center justify-between">
+                  <div className="px-4 md:px-6 mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
-                      <h2 className="text-base font-bold text-gray-900 tracking-tight">Inbox</h2>
-                      <span className="text-xs text-gray-500 font-medium">({total} {total === 1 ? 'email' : 'emails'})</span>
+                      <h2 className="text-lg font-bold text-gray-900 tracking-tight">Inbox</h2>
+                      <span className="text-xs text-text-secondary font-medium">({total} {total === 1 ? 'email' : 'emails'})</span>
                     </div>
                   </div>
 
-                  <div className="flex-1 mx-4 md:mx-6 mb-4 rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-0">
+                  <div className="flex-1 mx-4 md:mx-6 mb-6 rounded-xl bg-white border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-0">
                     <EmailList
                       emails={emailItems}
                       onToggleStar={handleToggleStar}

@@ -121,7 +121,7 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
       <div className="flex flex-col items-center justify-center py-12 gap-3">
         <AlertTriangle className="h-8 w-8 text-red-300" />
         <p className="text-sm text-gray-500">{error}</p>
-        <button onClick={fetchData} className="text-sm text-teal-600 hover:underline">Retry</button>
+        <button onClick={fetchData} className="text-sm text-brand hover:underline">Retry</button>
       </div>
     );
   }
@@ -163,12 +163,12 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
       {/* Headline metrics */}
       <div className="flex justify-center gap-8 md:gap-12">
         {metrics.trackOpens && (
-          <CircularProgress value={metrics.openRate} label="Open Rate" color="#059669" />
+          <CircularProgress value={metrics.openRate} label="Open Rate" color="#00A63E" />
         )}
         {metrics.trackClicks && (
-          <CircularProgress value={metrics.clickRate} label="Click Rate" color="#0d9488" />
+          <CircularProgress value={metrics.clickRate} label="Click Rate" color="#059669" />
         )}
-        <CircularProgress value={metrics.replyRate ?? 0} label="Reply Rate" color="#0284c7" />
+        <CircularProgress value={metrics.replyRate ?? 0} label="Reply Rate" color="#2563eb" />
       </div>
 
       {/* Stats row */}
@@ -179,17 +179,17 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
           <p className="text-[10px] text-gray-500 uppercase tracking-wider">Sent</p>
         </div>
         {metrics.trackOpens && (
-          <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-center">
-            <Eye className="h-3.5 w-3.5 text-emerald-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-emerald-700">{metrics.uniqueOpens}</p>
-            <p className="text-[10px] text-emerald-500 uppercase tracking-wider">Opens</p>
+          <div className="rounded-xl bg-brand-light border border-brand-muted p-3 text-center">
+            <Eye className="h-3.5 w-3.5 text-brand mx-auto mb-1" />
+            <p className="text-lg font-bold text-brand">{metrics.uniqueOpens}</p>
+            <p className="text-[10px] text-brand uppercase tracking-wider">Opens</p>
           </div>
         )}
         {metrics.trackClicks && (
-          <div className="rounded-xl bg-indigo-50 border border-indigo-100 p-3 text-center">
-            <MousePointerClick className="h-3.5 w-3.5 text-indigo-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-indigo-700">{metrics.uniqueClicks}</p>
-            <p className="text-[10px] text-indigo-500 uppercase tracking-wider">Clicks</p>
+          <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-center">
+            <MousePointerClick className="h-3.5 w-3.5 text-emerald-500 mx-auto mb-1" />
+            <p className="text-lg font-bold text-emerald-700">{metrics.uniqueClicks}</p>
+            <p className="text-[10px] text-emerald-500 uppercase tracking-wider">Clicks</p>
           </div>
         )}
       </div>
@@ -224,9 +224,9 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
       <div className="flex border-b border-gray-100">
         <button
           className={cn(
-            "flex-1 px-4 py-2.5 text-xs font-medium transition-colors",
+            "flex-1 px-4 py-2.5 text-xs font-bold transition-colors",
             activeSection === "emails"
-              ? "text-teal-600 border-b-2 border-teal-600"
+              ? "text-brand border-b-2 border-brand"
               : "text-gray-500 hover:text-gray-600"
           )}
           onClick={() => setActiveSection("emails")}
@@ -237,9 +237,9 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
         {metrics.trackClicks && (
           <button
             className={cn(
-              "flex-1 px-4 py-2.5 text-xs font-medium transition-colors",
+              "flex-1 px-4 py-2.5 text-xs font-bold transition-colors",
               activeSection === "links"
-                ? "text-teal-600 border-b-2 border-teal-600"
+                ? "text-brand border-b-2 border-brand"
                 : "text-gray-500 hover:text-gray-600"
             )}
             onClick={() => setActiveSection("links")}
@@ -258,24 +258,22 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
             {sortedEmails.map((email, i) => (
               <div
                 key={email.emailJobId}
-                className="rounded-xl border border-gray-100 p-3 space-y-2
-                  opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
-                style={{ animationDelay: `${i * 30}ms` }}
+                className="rounded-xl border border-gray-100 p-3 space-y-2"
               >
                 <p className="text-xs font-medium text-gray-900 truncate">{email.toEmail}</p>
-                <div className="flex items-center gap-3 text-[11px]">
+                <div className="flex items-center gap-3 text-[11px] font-bold">
                   {metrics.trackOpens && (
-                    <span className="flex items-center gap-1 text-emerald-600">
+                    <span className="flex items-center gap-1 text-brand">
                       <Eye className="h-3 w-3" /> {email.openCount} opens
                     </span>
                   )}
                   {metrics.trackClicks && (
-                    <span className="flex items-center gap-1 text-indigo-600">
+                    <span className="flex items-center gap-1 text-emerald-600">
                       <MousePointerClick className="h-3 w-3" /> {email.clickCount} clicks
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-[10px] text-gray-500">
+                <div className="flex items-center gap-3 text-[10px] text-gray-500 font-medium">
                   {email.lastOpenAt && <span>Last open: {formatTime(email.lastOpenAt)}</span>}
                   {email.lastClickAt && <span>Last click: {formatTime(email.lastClickAt)}</span>}
                 </div>
@@ -286,22 +284,22 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
           {/* Desktop: table layout */}
           <table className="hidden md:table w-full text-sm">
             <thead>
-              <tr className="text-[11px] text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                <th className="text-left py-2 px-3 font-medium">Recipient</th>
+              <tr className="text-[10px] text-gray-400 uppercase tracking-widest font-bold border-b border-gray-100">
+                <th className="text-left py-2 px-3">Recipient</th>
                 {metrics.trackOpens && (
-                  <th className="text-center py-2 px-3 font-medium cursor-pointer hover:text-gray-600" onClick={() => toggleSort("openCount")}>
+                  <th className="text-center py-2 px-3 cursor-pointer hover:text-brand" onClick={() => toggleSort("openCount")}>
                     <span className="inline-flex items-center gap-1">Opens <ArrowUpDown className="h-3 w-3" /></span>
                   </th>
                 )}
                 {metrics.trackClicks && (
-                  <th className="text-center py-2 px-3 font-medium cursor-pointer hover:text-gray-600" onClick={() => toggleSort("clickCount")}>
+                  <th className="text-center py-2 px-3 cursor-pointer hover:text-brand" onClick={() => toggleSort("clickCount")}>
                     <span className="inline-flex items-center gap-1">Clicks <ArrowUpDown className="h-3 w-3" /></span>
                   </th>
                 )}
-                <th className="text-right py-2 px-3 font-medium cursor-pointer hover:text-gray-600" onClick={() => toggleSort("lastOpenAt")}>
+                <th className="text-right py-2 px-3 cursor-pointer hover:text-brand" onClick={() => toggleSort("lastOpenAt")}>
                   <span className="inline-flex items-center gap-1">Last Open <ArrowUpDown className="h-3 w-3" /></span>
                 </th>
-                <th className="text-right py-2 px-3 font-medium cursor-pointer hover:text-gray-600" onClick={() => toggleSort("lastClickAt")}>
+                <th className="text-right py-2 px-3 cursor-pointer hover:text-brand" onClick={() => toggleSort("lastClickAt")}>
                   <span className="inline-flex items-center gap-1">Last Click <ArrowUpDown className="h-3 w-3" /></span>
                 </th>
               </tr>
@@ -310,16 +308,14 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
               {sortedEmails.map((email, i) => (
                 <tr
                   key={email.emailJobId}
-                  className="hover:bg-gray-50/50 transition-colors
-                    opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
-                  style={{ animationDelay: `${i * 20}ms` }}
+                  className="hover:bg-gray-50/50 transition-colors"
                 >
-                  <td className="py-2.5 px-3 text-xs text-gray-900 truncate max-w-[200px]">{email.toEmail}</td>
+                  <td className="py-2.5 px-3 text-xs text-gray-900 font-medium truncate max-w-[200px]">{email.toEmail}</td>
                   {metrics.trackOpens && (
                     <td className="py-2.5 px-3 text-center">
                       <span className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                        email.openCount > 0 ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-500"
+                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold",
+                        email.openCount > 0 ? "bg-brand-light text-brand" : "bg-gray-50 text-gray-400"
                       )}>
                         {email.openCount}
                       </span>
@@ -328,15 +324,15 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
                   {metrics.trackClicks && (
                     <td className="py-2.5 px-3 text-center">
                       <span className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                        email.clickCount > 0 ? "bg-indigo-50 text-indigo-600" : "bg-gray-50 text-gray-500"
+                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold",
+                        email.clickCount > 0 ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-400"
                       )}>
                         {email.clickCount}
                       </span>
                     </td>
                   )}
-                  <td className="py-2.5 px-3 text-right text-[11px] text-gray-500">{formatTime(email.lastOpenAt)}</td>
-                  <td className="py-2.5 px-3 text-right text-[11px] text-gray-500">{formatTime(email.lastClickAt)}</td>
+                  <td className="py-2.5 px-3 text-right text-[11px] text-gray-500 font-medium">{formatTime(email.lastOpenAt)}</td>
+                  <td className="py-2.5 px-3 text-right text-[11px] text-gray-500 font-medium">{formatTime(email.lastClickAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -356,18 +352,15 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
             links.map((link, i) => (
               <div
                 key={link.url}
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100
-                  hover:border-gray-200 transition-all
-                  opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
-                style={{ animationDelay: `${i * 40}ms` }}
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-brand/20 transition-all"
               >
-                <div className="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                  <ExternalLink className="h-4 w-4 text-indigo-500" />
+                <div className="h-9 w-9 rounded-lg bg-brand-light flex items-center justify-center shrink-0">
+                  <ExternalLink className="h-4 w-4 text-brand" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-900 truncate">{link.url}</p>
+                  <p className="text-xs text-gray-900 font-medium truncate">{link.url}</p>
                 </div>
-                <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-600">
+                <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-brand-light px-2.5 py-1 text-[11px] font-bold text-brand">
                   <MousePointerClick className="h-3 w-3" />
                   {link.clickCount}
                 </span>
@@ -378,7 +371,7 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
       )}
 
       {/* Disclaimer */}
-      <p className="text-[10px] text-gray-500 text-center leading-relaxed">
+      <p className="text-[10px] text-gray-500 text-center font-medium leading-relaxed">
         Open tracking relies on image loading — some email clients block images by default, so open rates may undercount.
         Apple Mail Privacy Protection may inflate open rates by pre-fetching images.
       </p>

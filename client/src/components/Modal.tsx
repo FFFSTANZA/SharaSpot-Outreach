@@ -56,7 +56,7 @@ export default function Modal({
       <div
         className={cn(
           "absolute right-0 top-12 z-50 w-[360px] rounded-xl bg-white p-5 border border-gray-100 shadow-xl",
-          "animate-[fadeInUp_0.2s_ease-out]",
+          "animate-fadeIn",
           className,
         )}
       >
@@ -90,15 +90,15 @@ export default function Modal({
           // Bottom-sheet variant (mobile)
           variant === "bottom-sheet" && [
             "inset-x-0 bottom-0",
-            "rounded-t-2xl bg-white p-5 shadow-xl",
-            "animate-[fadeInUp_0.3s_ease-out]",
+            "rounded-t-xl bg-white p-5 shadow-xl",
+            "animate-fadeInUp",
             "max-h-[85vh] overflow-y-auto",
           ],
           // Center variant (desktop)
           variant === "center" && [
             "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-            "w-[90vw] sm:w-full max-w-[480px] rounded-2xl bg-white p-0 shadow-2xl border border-gray-100",
-            "animate-[fadeInUp_0.2s_ease-out]",
+            "w-[90vw] sm:w-full max-w-[480px] rounded-xl bg-white p-6 shadow-2xl border border-gray-100",
+            "animate-fadeInUp",
             "max-h-[90vh] overflow-y-auto",
           ],
           className,
@@ -109,7 +109,7 @@ export default function Modal({
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 min-h-[44px] min-w-[44px] flex items-center justify-center text-[#9AA0A6] hover:text-[#5F6368] transition-colors"
+            className="absolute right-4 top-4 h-10 w-10 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />

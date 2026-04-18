@@ -8,7 +8,7 @@ import MatchHighlighter from "./MatchHighlighter";
 type EmailStatus = "PENDING" | "SENDING" | "SENT" | "FAILED" | "CANCELLED";
 
 /**
- * Email status configuration - distinctive, memorable colors.
+ * Email status configuration.
  */
 const statusConfig: Record<EmailStatus, { 
   bg: string; 
@@ -57,7 +57,7 @@ function EmailStatusBadge({ status, time }: { status?: string; time?: string }) 
 
   return (
     <div className={cn(
-      "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight border border-transparent",
+      "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-semibold border border-transparent whitespace-nowrap",
       config.bg, 
       config.text,
     )}>
@@ -84,7 +84,7 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
 
   return (
     <div className={cn(
-      "group flex items-center gap-4 px-6 py-4 cursor-pointer transition-all duration-300",
+      "group flex items-center gap-4 px-6 py-4 cursor-pointer transition-all duration-200 border-b border-gray-50",
       !isRead ? "bg-brand-light/20" : "hover:bg-gray-50/50"
     )}>
       {/* Star Button */}
@@ -93,14 +93,14 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
           e.stopPropagation();
           if (email?.id && onToggleStar) onToggleStar(email.id);
         }}
-        className="shrink-0 p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+        className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
         aria-label={email?.isStarred ? "Unstar email" : "Star email"}
       >
         <Star
           className={cn(
-            "h-4 w-4 transition-all duration-300",
+            "h-4 w-4 transition-all duration-200",
             email?.isStarred
-              ? "fill-amber-400 text-amber-400 scale-110"
+              ? "fill-amber-400 text-amber-400"
               : "text-gray-200 group-hover:text-gray-400",
           )}
         />
@@ -109,7 +109,7 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
       {/* Sender/Recipient */}
       <div className="w-48 shrink-0 min-w-0">
         <p className={cn(
-          "text-sm truncate font-bold tracking-tight",
+          "text-sm truncate font-semibold",
           !isRead ? "text-gray-900" : "text-gray-600"
         )}>
           <MatchHighlighter text={email?.toEmail ?? ""} query={searchQuery} />
@@ -120,11 +120,11 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
       <div className="flex-1 min-w-0 flex items-baseline gap-2">
         <span className={cn(
           "text-sm truncate",
-          !isRead ? "font-black text-gray-900" : "font-medium text-gray-700"
+          !isRead ? "font-bold text-gray-900" : "font-medium text-gray-700"
         )}>
           <MatchHighlighter text={resolvedSubject} query={searchQuery} />
         </span>
-        <span className="text-xs text-gray-400 truncate font-medium">— {plainPreview}</span>
+        <span className="text-xs text-gray-400 truncate font-normal">— {plainPreview}</span>
       </div>
 
       {/* Status Badge */}
@@ -133,7 +133,7 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
       </div>
 
       {/* Date */}
-      <div className="shrink-0 text-[11px] text-gray-400 font-bold whitespace-nowrap w-20 text-right uppercase tracking-wider">
+      <div className="shrink-0 text-[11px] text-gray-400 font-medium whitespace-nowrap w-20 text-right">
         {timeValue ? formatTime(timeValue) : "—"}
       </div>
     </div>

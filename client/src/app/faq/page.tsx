@@ -23,14 +23,14 @@ function FAQAccordion({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boole
   return (
     <div className={cn(
       "border rounded-xl overflow-hidden transition-all duration-200",
-      isOpen ? "border-teal-600/20 bg-teal-600/[0.02] shadow-sm" : "border-gray-100 hover:border-gray-200"
+      isOpen ? "border-brand/20 bg-brand/[0.02]" : "border-gray-100 hover:border-gray-200 bg-white"
     )}>
-      <button onClick={onToggle} className="w-full flex items-center gap-3 px-5 py-4 text-left">
+      <button onClick={onToggle} className="w-full flex items-center gap-3 px-5 py-4 text-left group">
         <div className={cn(
           "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-          isOpen ? "bg-teal-600/10" : "bg-gray-50"
+          isOpen ? "bg-brand/10" : "bg-gray-50 group-hover:bg-gray-100"
         )}>
-          <item.icon className={cn("h-4 w-4", isOpen ? "text-teal-600" : "text-gray-400")} />
+          <item.icon className={cn("h-4 w-4", isOpen ? "text-brand" : "text-gray-400")} />
         </div>
         <span className={cn(
           "flex-1 text-sm font-semibold transition-colors",
@@ -38,14 +38,14 @@ function FAQAccordion({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boole
         )}>{item.question}</span>
         <ChevronDown className={cn(
           "h-4 w-4 text-gray-400 transition-transform duration-200",
-          isOpen && "rotate-180 text-teal-600"
+          isOpen && "rotate-180 text-brand"
         )} />
       </button>
       <div className={cn(
-        "overflow-hidden transition-all duration-200 ease-out",
+        "overflow-hidden transition-all duration-200",
         isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
       )}>
-        <div className="px-5 pb-5 text-sm text-gray-600 leading-relaxed ml-11">
+        <div className="px-5 pb-5 text-sm text-text-secondary leading-relaxed ml-11 border-t border-gray-50 pt-4">
           {item.answer}
         </div>
       </div>
@@ -163,7 +163,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>10 MB per file, 25 MB total per campaign, up to 10 files. Supported formats: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, PNG, JPG, GIF.</p>
-        <p>The 25 MB limit matches Gmail&apos;s attachment limit — exceeding it would cause emails to bounce. Files are stored in Supabase Storage and downloaded by the worker at send time.</p>
+        <p>The 25 MB limit matches Gmail&apos;s attachment limit — exceeding it would cause emails to bounce.</p>
       </div>
     ),
   },
@@ -184,12 +184,6 @@ const faqItems: FAQItem[] = [
     question: "What happens when I cancel a campaign?",
     answer: <p>All pending emails are immediately marked as cancelled and won&apos;t be sent. Emails already sent are not affected. Cancellation is permanent — you can&apos;t resume a cancelled campaign.</p>,
   },
-  {
-    category: "Campaign Controls",
-    icon: Shield,
-    question: "Why does my campaign show 'Paused · All senders at limit'?",
-    answer: <p>This means every sender in the campaign has reached their daily sending limit. The campaign will automatically resume when any sender regains capacity (checked every hour). You can also manually resume it, which will trigger rescheduling.</p>,
-  },
   // ─── Security ───
   {
     category: "Security",
@@ -209,63 +203,9 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>Google App Passwords are 16-character codes that let third-party apps access your Gmail via SMTP without using your main password. Google requires them since they disabled "Less Secure App" access in 2022.</p>
-        <p>To generate one: go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">myaccount.google.com/apppasswords</a> (requires 2-Step Verification enabled). Create one specifically for SharaSpot and paste it when adding a sender.</p>
+        <p>To generate one: go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline font-semibold">myaccount.google.com/apppasswords</a> (requires 2-Step Verification enabled). Create one specifically for SharaSpot and paste it when adding a sender.</p>
       </div>
     ),
-  },
-  // ─── Tracking ───
-  {
-    category: "Tracking",
-    icon: Mail,
-    question: "How does open tracking work?",
-    answer: (
-      <div className="space-y-2">
-        <p>SharaSpot adds a tiny transparent 1x1 pixel image to each outgoing email. When the recipient&apos;s email client loads this image, the server records an open event. This is the industry-standard method used by all email marketing platforms.</p>
-        <p>Limitation: some email clients (notably Outlook desktop) block images by default, so open rates will undercount. Apple Mail Privacy Protection may inflate rates by pre-fetching images. Open rates are best used as a relative indicator, not an absolute measure.</p>
-      </div>
-    ),
-  },
-  {
-    category: "Tracking",
-    icon: Mail,
-    question: "How does click tracking work?",
-    answer: <p>Links in your email are automatically rewritten to route through SharaSpot&apos;s server. When a recipient clicks a link, the server records the click and immediately redirects them to the original URL. The redirect is instant (302) so recipients don&apos;t notice any delay. <code className="bg-gray-100 px-1 rounded text-xs">mailto:</code> links and anchor links are not rewritten.</p>,
-  },
-  {
-    category: "Tracking",
-    icon: Mail,
-    question: "Can I disable tracking for a specific campaign?",
-    answer: <p>Yes. In the compose form&apos;s Sending Settings section, you&apos;ll see &ldquo;Track opens&rdquo; and &ldquo;Track clicks&rdquo; toggles. Both are enabled by default. Turn them off before sending if you want to respect recipient privacy for that campaign. The Tracking tab will show a &ldquo;Tracking not enabled&rdquo; message for campaigns with tracking disabled.</p>,
-  },
-  {
-    category: "Tracking",
-    icon: Mail,
-    question: "Why is my open rate higher than expected?",
-    answer: <p>Apple Mail Privacy Protection (introduced in iOS 15 / macOS Monterey) pre-fetches all email images through a proxy, which triggers the tracking pixel even if the recipient never actually reads the email. This inflates open rates. There&apos;s no reliable way to filter these out — it&apos;s an industry-wide issue affecting all email tracking platforms.</p>,
-  },
-  // ─── General ───
-  {
-    category: "General",
-    icon: Clock,
-    question: "How does smart scheduling work?",
-    answer: (
-      <div className="space-y-2">
-        <p>Instead of sending emails at rigid fixed intervals (which looks robotic to email providers), SharaSpot uses your hourly limit to compute an average gap, then randomizes each gap by ±40%. For example, with an hourly limit of 40, the average gap is 90 seconds — but actual gaps range from ~54s to ~126s randomly.</p>
-        <p>Your "Min delay" setting acts as a floor — no two emails will ever be closer than this value. The result is a natural-looking send pattern that averages out to your hourly limit over time.</p>
-      </div>
-    ),
-  },
-  {
-    category: "General",
-    icon: Clock,
-    question: "When do daily limits reset?",
-    answer: <p>Daily sending limits reset at midnight UTC. This means if you&apos;re in a timezone behind UTC, your limit resets in the evening. If you&apos;re ahead of UTC, it resets in the morning. All rate limiting (per-minute, per-hour, per-day) uses UTC time.</p>,
-  },
-  {
-    category: "General",
-    icon: HelpCircle,
-    question: "Can I use SharaSpot with non-Gmail providers?",
-    answer: <p>Yes. While the default SMTP settings are configured for Gmail, the system supports any SMTP provider. The throttle engine uses provider profiles to set appropriate rate limits — Gmail, Outlook, and a default profile for custom SMTP hosts.</p>,
   },
 ];
 
@@ -287,120 +227,99 @@ export default function FAQPage() {
   });
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* JSON-LD FAQ Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: faqItems.map((item) => ({
-              "@type": "Question",
-              name: item.question,
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: typeof item.answer === "string"
-                  ? item.answer
-                  : item.answer?.toString() || "",
-              },
-            })),
-          }),
-        }}
-      />
+    <div className="min-h-screen bg-background">
       {/* Navbar */}
-      <nav className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-gray-100">
-        <div className="mx-auto max-w-6xl flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+      <nav className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="mx-auto max-w-6xl flex items-center justify-between px-4 sm:px-6 py-3">
           <Link href="/" aria-label="Go to homepage"><Logo size="md" /></Link>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-500">
-            <a href="/guide" className="hover:text-gray-900 transition-colors">Guide</a>
-            <a href="/faq" className="text-gray-900">FAQ</a>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-text-secondary">
+            <Link href="/guide" className="hover:text-brand transition-colors">Guide</Link>
+            <Link href="/faq" className="text-brand">FAQ</Link>
           </div>
-          <Button className="hidden md:block w-auto px-5 py-2 rounded-full text-sm" onClick={() => router.push("/login")}>
+          <Button className="hidden md:block" size="sm" onClick={() => router.push("/login")}>
             Get Started
           </Button>
-          <button className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setMobileNav(!mobileNav)}>
+          <button className="md:hidden h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50" onClick={() => setMobileNav(!mobileNav)}>
             {mobileNav ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
         {mobileNav && (
-          <div className="md:hidden border-t border-gray-100 px-6 py-4 space-y-1 bg-white">
-            <a href="/guide" className="block text-sm text-gray-600 py-3">Guide</a>
-            <a href="/faq" className="block text-sm text-gray-900 font-medium py-3">FAQ</a>
-            <Button className="w-full rounded-full mt-2" onClick={() => router.push("/login")}>Get Started</Button>
+          <div className="md:hidden border-t border-gray-100 px-6 py-6 space-y-4 bg-white">
+            <Link href="/guide" className="block text-sm font-semibold text-gray-900" onClick={() => setMobileNav(false)}>Guide</Link>
+            <Link href="/faq" className="block text-sm font-semibold text-gray-900" onClick={() => setMobileNav(false)}>FAQ</Link>
+            <Button className="w-full" onClick={() => router.push("/login")}>Get Started</Button>
           </div>
         )}
       </nav>
 
       {/* Hero */}
-      <div className="relative overflow-hidden py-16 md:py-20 bg-gradient-to-b from-violet-50/60 to-white">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-violet-200/20 to-transparent rounded-full blur-3xl" />
+      <div className="py-16 md:py-20 bg-white border-b border-gray-100">
         <div className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-violet-100 px-4 py-1.5 text-sm font-medium text-violet-700 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-4 py-1.5 text-xs font-bold text-brand mb-6 uppercase tracking-wider">
             <HelpCircle className="h-3.5 w-3.5" />
             Frequently Asked Questions
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
             Got questions? We&apos;ve got answers.
           </h1>
-          <p className="mt-4 text-base text-gray-500 max-w-lg mx-auto">
+          <p className="mt-4 text-base text-text-secondary max-w-lg mx-auto font-medium">
             Everything you need to know about warmup, throttling, sequences, and more.
           </p>
 
           {/* Search */}
           <div className="relative mt-8 max-w-md mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search questions..."
-              className="w-full h-12 rounded-xl bg-white border border-gray-200 pl-11 pr-4 text-sm text-gray-700 outline-none shadow-sm focus:border-violet-300 focus:ring-2 focus:ring-violet-100 placeholder:text-gray-300 transition-all"
+              className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 pl-11 pr-4 text-sm text-gray-900 outline-none focus:border-brand transition-all font-medium"
             />
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 md:py-12">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
         {/* Category pills */}
         <div className="flex flex-wrap gap-2 mb-8">
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
-              "rounded-full px-4 py-1.5 text-xs font-medium transition-all",
+              "rounded-lg px-4 py-2 text-xs font-bold transition-all",
               !activeCategory
                 ? "bg-gray-900 text-white shadow-sm"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             )}
           >
-            All ({faqItems.length})
+            All
           </button>
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
               className={cn(
-                "rounded-full px-4 py-1.5 text-xs font-medium transition-all",
+                "rounded-lg px-4 py-2 text-xs font-bold transition-all",
                 activeCategory === cat
                   ? "bg-gray-900 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               )}
             >
-              {cat} ({faqItems.filter((i) => i.category === cat).length})
+              {cat}
             </button>
           ))}
         </div>
 
         {/* FAQ items */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filtered.length === 0 ? (
-            <div className="text-center py-12">
-              <HelpCircle className="h-10 w-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-400">No matching questions found.</p>
+            <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
+              <HelpCircle className="h-10 w-10 text-gray-200 mx-auto mb-4" />
+              <p className="text-sm text-text-secondary font-medium">No matching questions found.</p>
               <button
                 onClick={() => { setSearchQuery(""); setActiveCategory(null); }}
-                className="text-sm text-teal-600 hover:underline mt-2"
+                className="text-sm text-brand font-bold hover:underline mt-2"
               >
                 Clear filters
               </button>
@@ -418,20 +337,19 @@ export default function FAQPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 sm:p-10 text-center relative overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-gradient-to-b from-violet-500/15 to-transparent rounded-full blur-3xl" />
-          <div className="relative">
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-3">Still have questions?</h3>
-            <p className="text-xs sm:text-sm text-gray-400 mb-6 max-w-md mx-auto">Check out our detailed guide or get started and explore the features yourself.</p>
-            <div className="flex flex-col items-center gap-3 max-w-xs mx-auto">
-              <Button className="!w-full px-6 py-3 rounded-full text-sm" onClick={() => router.push("/guide")}>
+        <div className="mt-16 rounded-xl bg-gray-900 p-8 sm:p-12 text-center relative overflow-hidden">
+          <div className="relative z-10">
+            <h3 className="text-2xl font-bold text-white mb-4">Still have questions?</h3>
+            <p className="text-sm text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">Check out our detailed guide or get started and explore the features yourself.</p>
+            <div className="flex flex-col items-center gap-4 max-w-xs mx-auto">
+              <Button className="w-full" onClick={() => router.push("/guide")}>
                 Read the Guide <ArrowRight className="ml-1.5 h-3.5 w-3.5 inline" />
               </Button>
               <button
                 onClick={() => router.push("/contact")}
-                className="w-full px-6 py-3 rounded-full text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                className="text-sm font-semibold text-gray-400 hover:text-white transition-colors"
               >
-                Contact Us
+                Contact Support Team
               </button>
             </div>
           </div>
@@ -439,16 +357,16 @@ export default function FAQPage() {
       </div>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-gray-100 bg-gray-50/50">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col items-center gap-5 md:flex-row md:justify-between">
-          <a href="/" aria-label="Go to homepage"><Logo size="sm" /></a>
-          <nav className="flex items-center gap-6">
-            <a href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</a>
-            <a href="/faq" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">FAQ</a>
-            <a href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</a>
-            <a href="/terms" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</a>
+      <footer className="py-12 border-t border-gray-100 bg-white">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col items-center gap-8 md:flex-row md:justify-between">
+          <Link href="/" aria-label="Go to homepage"><Logo size="sm" /></Link>
+          <nav className="flex flex-wrap justify-center gap-8">
+            <Link href="/guide" className="text-sm font-medium text-text-secondary hover:text-brand">Guide</Link>
+            <Link href="/faq" className="text-sm font-medium text-text-secondary hover:text-brand">FAQ</Link>
+            <Link href="/privacy" className="text-sm font-medium text-text-secondary hover:text-brand">Privacy</Link>
+            <Link href="/terms" className="text-sm font-medium text-text-secondary hover:text-brand">Terms</Link>
           </nav>
-          <span className="text-xs text-gray-500">© 2026 SharaSpot</span>
+          <span className="text-sm text-text-muted">&copy; 2026 SharaSpot Global</span>
         </div>
       </footer>
     </div>
