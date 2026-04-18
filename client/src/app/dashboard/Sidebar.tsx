@@ -63,34 +63,34 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
   const sidebarContent = (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Logo Group */}
-      <div className="mb-5 pt-1 shrink-0">
+      <div className="mb-8 pt-1 shrink-0">
         <Link href="/dashboard" onClick={close} className="inline-block hover:opacity-80 transition-opacity">
           <Logo size="md" />
         </Link>
       </div>
 
       {/* Compose Button - Brand CTA with glow */}
-      <div className="mb-5 shrink-0">
+      <div className="mb-8 shrink-0">
         <button
           onClick={handleCompose}
           className="
-            w-full flex items-center gap-2 px-4 py-2.5
-            bg-[#FF6D01] text-white rounded-lg
-            text-sm font-medium shadow-sm
-            hover:bg-[#E56200] hover:shadow-[0_0_16px_rgba(255,109,1,0.25)]
-            active:scale-[0.99] active:duration-75
-            transition-all duration-150
+            w-full flex items-center justify-center gap-3 h-12
+            bg-brand text-white rounded-2xl
+            text-sm font-black shadow-lg shadow-brand/20
+            hover:bg-brand-hover hover:scale-[1.02]
+            active:scale-[0.98]
+            transition-all duration-300
           "
         >
-          <Plus className="h-4 w-4" />
-          <span>Compose</span>
+          <Plus className="h-4 w-4" strokeWidth={3} />
+          <span>COMPOSE</span>
         </button>
       </div>
 
-      {/* Primary Context Navigation - Gmail style with brand colors */}
-      <nav className="space-y-0.5 shrink-0">
-        <div className="px-3 mb-1.5">
-          <p className="text-[10px] font-bold text-[#9AA0A6] uppercase tracking-widest leading-none">Inbox</p>
+      {/* Primary Context Navigation - Modern style with brand colors */}
+      <nav className="space-y-1 shrink-0">
+        <div className="px-4 mb-2">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none">Inbox</p>
         </div>
         {items.map((item, idx) => (
           <SidebarItem
@@ -103,38 +103,36 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
       </nav>
 
       {/* System Actions & Footer */}
-      <div className="mt-auto pt-4 border-t border-[#E8EAED] space-y-0.5 shrink-0">
-        <div className="px-3 mb-1.5">
-          <p className="text-[10px] font-bold text-[#9AA0A6] uppercase tracking-widest leading-none">Management</p>
+      <div className="mt-auto pt-8 border-t border-gray-50 space-y-1 shrink-0">
+        <div className="px-4 mb-2">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none">Management</p>
         </div>
 
         <Link
           href="/dashboard/campaigns"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
+            "group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300",
             pathname === "/dashboard/campaigns"
-              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
-              : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
+              ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
+              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
           )}
         >
-          <Megaphone className={cn("h-4 w-4", pathname === "/dashboard/campaigns" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <Megaphone className={cn("h-4 w-4", pathname === "/dashboard/campaigns" ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
           <span>Campaigns</span>
         </Link>
-
-
 
         <Link
           href="/dashboard/templates"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
+            "group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300",
             pathname === "/dashboard/templates"
-              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
-              : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
+              ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
+              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
           )}
         >
-          <FileText className={cn("h-4 w-4", pathname === "/dashboard/templates" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <FileText className={cn("h-4 w-4", pathname === "/dashboard/templates" ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
           <span>Templates</span>
         </Link>
 
@@ -142,13 +140,13 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           href="/dashboard/settings/billing"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
+            "group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300",
             pathname === "/dashboard/settings/billing"
-              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
-              : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
+              ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
+              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
           )}
         >
-          <CreditCard className={cn("h-4 w-4", pathname === "/dashboard/settings/billing" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <CreditCard className={cn("h-4 w-4", pathname === "/dashboard/settings/billing" ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
           <span>Billing</span>
         </Link>
 
@@ -156,28 +154,25 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           href="/dashboard/settings"
           onClick={close}
           className={cn(
-            "group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-150 border-l-4",
+            "group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300",
             pathname === "/dashboard/settings"
-              ? "bg-[#E8F5E9] text-[#037A31] border-l-[#00A63E]"
-              : "text-[#5F6368] hover:bg-[#F1F3F4] hover:text-[#1A1D21] border-l-transparent"
+              ? "bg-brand text-white shadow-lg shadow-brand/20 scale-[1.02]"
+              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
           )}
         >
-          <Settings className={cn("h-4 w-4", pathname === "/dashboard/settings" ? "text-[#00A63E]" : "text-[#9AA0A6] group-hover:text-[#5F6368]")} />
+          <Settings className={cn("h-4 w-4", pathname === "/dashboard/settings" ? "text-white" : "text-gray-400 group-hover:text-gray-600")} />
           <span>Settings</span>
         </Link>
 
-        {/* Removed Analytics link from here as per user request */}
-
-
-        <div className="pt-2">
+        <div className="pt-4">
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="group flex items-center justify-between px-3 py-2.5 text-[#9AA0A6] hover:bg-[#FCE8E7] hover:text-[#C5221F] rounded-md cursor-pointer transition-all duration-150 w-full disabled:opacity-50 active:scale-[0.99] border-l-4 border-l-transparent"
+            className="group flex items-center justify-between px-4 py-3 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded-2xl cursor-pointer transition-all duration-300 w-full disabled:opacity-50 active:scale-[0.98]"
           >
             <div className="flex items-center gap-3">
               <LogOut className="h-4 w-4" />
-              <span className="text-sm font-medium">{isLoggingOut ? "Logging out..." : "Logout"}</span>
+              <span className="text-sm font-bold">{isLoggingOut ? "Logging out..." : "Logout"}</span>
             </div>
           </button>
         </div>
@@ -187,8 +182,8 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
 
   return (
     <>
-      {/* Desktop View - Gmail/Outlook style */}
-      <aside className="hidden lg:flex h-full w-[256px] flex-col bg-white border-r border-[#E8EAED] p-4">
+      {/* Desktop View */}
+      <aside className="hidden lg:flex h-full w-[260px] flex-col bg-white border-r border-gray-100 p-5 shadow-[1px_0_0_0_rgba(0,0,0,0.02)]">
         {sidebarContent}
       </aside>
 
@@ -196,20 +191,20 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
       {isOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-200"
+            className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
             onClick={close}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             aria-hidden="true"
           />
           <aside
-            className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-white p-4 shadow-xl flex flex-col"
+            className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] bg-white p-5 shadow-2xl flex flex-col"
             role="dialog"
             aria-label="Navigation sidebar"
           >
             <button
               onClick={close}
-              className="absolute right-3 top-3 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg text-[#5F6368] hover:text-[#1A1D21] hover:bg-[#F1F3F4] transition-all"
+              className="absolute right-4 top-4 h-10 w-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all"
               aria-label="Close sidebar"
             >
               <X className="h-5 w-5" />

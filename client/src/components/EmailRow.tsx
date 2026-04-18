@@ -13,44 +13,38 @@ type EmailStatus = "PENDING" | "SENDING" | "SENT" | "FAILED" | "CANCELLED";
 const statusConfig: Record<EmailStatus, { 
   bg: string; 
   text: string; 
-  borderLeft: string;
   icon: typeof Clock; 
   label: string;
   animate?: boolean;
 }> = {
   PENDING: { 
-    bg: "bg-[#FEF7E0]", 
-    text: "text-[#B06000]", 
-    borderLeft: "border-l-[#F9AB00]",
+    bg: "bg-amber-50", 
+    text: "text-amber-700", 
     icon: Clock, 
     label: "Scheduled" 
   },
   SENDING: { 
-    bg: "bg-[#E8F0FE]", 
-    text: "text-[#1967D2]", 
-    borderLeft: "border-l-[#4285F4]",
+    bg: "bg-blue-50", 
+    text: "text-blue-700", 
     icon: Loader2, 
     label: "Sending",
     animate: true,
   },
   SENT: { 
-    bg: "bg-[#E8F8ED]", 
-    text: "text-[#048C4A]", 
-    borderLeft: "border-l-[#34A853]",
+    bg: "bg-brand-light", 
+    text: "text-brand", 
     icon: Check, 
     label: "Sent" 
   },
   FAILED: { 
-    bg: "bg-[#FCE8E7]", 
-    text: "text-[#C5221F]", 
-    borderLeft: "border-l-[#EA4335]",
+    bg: "bg-red-50", 
+    text: "text-red-700", 
     icon: XCircle, 
     label: "Failed" 
   },
   CANCELLED: { 
-    bg: "bg-[#F1F3F4]", 
-    text: "text-[#5F6368]", 
-    borderLeft: "border-l-[#9AA0A6]",
+    bg: "bg-gray-100", 
+    text: "text-gray-500", 
     icon: Ban, 
     label: "Cancelled" 
   },
@@ -63,20 +57,14 @@ function EmailStatusBadge({ status, time }: { status?: string; time?: string }) 
 
   return (
     <div className={cn(
-      "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium border-l-2",
+      "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight border border-transparent",
       config.bg, 
       config.text,
-      config.borderLeft
     )}>
       {config.animate ? (
-        <Icon className="h-3 w-3 animate-spin" />
+        <Icon className="h-2.5 w-2.5 animate-spin" />
       ) : (
-        <>
-          {(normalizedStatus === "SENDING" || normalizedStatus === "PENDING") && (
-            <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", config.borderLeft.replace('border-l-', 'bg-'))} />
-          )}
-          <Icon className="h-3 w-3" />
-        </>
+        <Icon className="h-2.5 w-2.5" />
       )}
       <span>{time ? formatTime(time) : config.label}</span>
     </div>
@@ -96,8 +84,8 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
 
   return (
     <div className={cn(
-      "group flex items-center gap-4 px-4 py-3 border-b border-[#F1F3F4] cursor-pointer transition-colors duration-150",
-      !isRead ? "bg-[#E8F0FE]/50" : "hover:bg-[#F7F8F8]"
+      "group flex items-center gap-4 px-6 py-4 cursor-pointer transition-all duration-300",
+      !isRead ? "bg-brand-light/20" : "hover:bg-gray-50/50"
     )}>
       {/* Star Button */}
       <button
@@ -105,15 +93,15 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
           e.stopPropagation();
           if (email?.id && onToggleStar) onToggleStar(email.id);
         }}
-        className="shrink-0 p-1 rounded hover:bg-[#F1F3F4] transition-colors"
+        className="shrink-0 p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
         aria-label={email?.isStarred ? "Unstar email" : "Star email"}
       >
         <Star
           className={cn(
-            "h-4 w-4 transition-colors duration-150",
+            "h-4 w-4 transition-all duration-300",
             email?.isStarred
-              ? "fill-[#FBBC04] text-[#FBBC04]"
-              : "text-[#DADCE0] group-hover:text-[#9AA0A6]",
+              ? "fill-amber-400 text-amber-400 scale-110"
+              : "text-gray-200 group-hover:text-gray-400",
           )}
         />
       </button>
@@ -121,8 +109,8 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
       {/* Sender/Recipient */}
       <div className="w-48 shrink-0 min-w-0">
         <p className={cn(
-          "text-sm truncate",
-          !isRead ? "font-semibold text-[#1A1D21]" : "font-medium text-[#5F6368]"
+          "text-sm truncate font-bold tracking-tight",
+          !isRead ? "text-gray-900" : "text-gray-600"
         )}>
           <MatchHighlighter text={email?.toEmail ?? ""} query={searchQuery} />
         </p>
@@ -132,20 +120,20 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
       <div className="flex-1 min-w-0 flex items-baseline gap-2">
         <span className={cn(
           "text-sm truncate",
-          !isRead ? "font-semibold text-[#1A1D21]" : "font-normal text-[#5F6368]"
+          !isRead ? "font-black text-gray-900" : "font-medium text-gray-700"
         )}>
           <MatchHighlighter text={resolvedSubject} query={searchQuery} />
         </span>
-        <span className="text-xs text-[#9AA0A6] truncate">— {plainPreview}</span>
+        <span className="text-xs text-gray-400 truncate font-medium">— {plainPreview}</span>
       </div>
 
       {/* Status Badge */}
-      <div className="shrink-0">
+      <div className="w-32 shrink-0">
         <EmailStatusBadge status={email?.status} time={timeValue ?? undefined} />
       </div>
 
       {/* Date */}
-      <div className="shrink-0 text-xs text-[#9AA0A6] whitespace-nowrap w-16 text-right">
+      <div className="shrink-0 text-[11px] text-gray-400 font-bold whitespace-nowrap w-20 text-right uppercase tracking-wider">
         {timeValue ? formatTime(timeValue) : "—"}
       </div>
     </div>

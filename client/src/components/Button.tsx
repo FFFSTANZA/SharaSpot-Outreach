@@ -17,13 +17,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /**
- * SharaSpot Button - memorable, consistent, tactile.
- * 
- * Features:
- * - Brand colors for primary actions
- * - Distinctive orange for compose CTA
- * - Subtle hover/active animations
- * - Focus ring on brand color
+ * SharaSpot Button - modern, consistent, professional.
  */
 export default function Button({
   children,
@@ -33,60 +27,54 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs",
-    md: "px-4 py-2 text-sm",
-    lg: "px-5 py-2.5 text-base",
+    sm: "h-9 px-4 text-xs font-black uppercase tracking-widest",
+    md: "h-11 px-6 text-xs font-black uppercase tracking-widest",
+    lg: "h-14 px-8 text-sm font-black uppercase tracking-widest",
   };
 
   return (
     <button
       {...props}
       className={cn(
-        "inline-flex items-center justify-center rounded-md font-medium",
-        "transition-all duration-150 ease-out",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A63E]/50",
-        "active:scale-[0.98] active:duration-75",
+        "inline-flex items-center justify-center rounded-2xl transition-all duration-300 ease-in-out",
+        "focus:outline-none focus-visible:ring-4 focus-visible:ring-brand/10",
+        "active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100",
         sizeClasses[size],
         
         /* Primary - brand green */
         variant === "primary" && [
-          "bg-[#00A63E] text-white",
-          "hover:bg-[#009134] hover:shadow-[0_0_16px_rgba(0,166,56,0.25)]",
-          "active:bg-[#007A2B]",
+          "bg-brand text-white shadow-lg shadow-brand/20",
+          "hover:bg-brand-hover hover:shadow-brand/30 hover:scale-[1.02]",
         ],
         
-        /* Secondary - subtle gray */
+        /* Secondary - refined gray */
         variant === "secondary" && [
-          "bg-white border border-[#E8EAED] text-[#1A1D21]",
-          "hover:bg-[#F7F8F8] hover:border-[#DADCE0] hover:shadow-sm",
-          "active:bg-[#ECEDEE]",
+          "bg-white border border-gray-100 text-gray-900 shadow-sm",
+          "hover:bg-gray-50 hover:border-gray-200 hover:scale-[1.02]",
         ],
         
-        /* Compose - distinctive orange CTA */
+        /* Compose - alias for primary but with extra prominence */
         variant === "compose" && [
-          "bg-[#FF6D01] text-white",
-          "hover:bg-[#E56200] hover:shadow-[0_0_20px_rgba(255,109,1,0.3)] hover:scale-[1.02]",
-          "active:bg-[#CC5500] active:scale-[0.98]",
+          "bg-brand text-white shadow-xl shadow-brand/20",
+          "hover:bg-brand-hover hover:scale-[1.05]",
         ],
         
-        /* Danger - red */
+        /* Danger - high contrast red */
         variant === "danger" && [
-          "bg-[#EA4335] text-white",
-          "hover:bg-[#D33833] hover:shadow-[0_0_16px_rgba(234,67,53,0.25)]",
-          "active:bg-[#C5221F]",
+          "bg-red-600 text-white shadow-lg shadow-red-500/20",
+          "hover:bg-red-700 hover:scale-[1.02]",
         ],
         
         /* Outline */
         variant === "outline" && [
-          "border border-[#E8EAED] bg-white text-[#1A1D21]",
-          "hover:bg-[#F7F8F8] active:bg-[#ECEDEE]",
+          "border-2 border-gray-100 bg-white text-gray-700",
+          "hover:bg-gray-50 hover:border-gray-200",
         ],
         
-        /* Ghost - subtle */
+        /* Ghost - minimal */
         variant === "ghost" && [
-          "bg-transparent text-[#5F6368]",
-          "hover:bg-[#F1F3F4] hover:text-[#1A1D21]",
-          "active:bg-[#E8EAED]",
+          "bg-transparent text-gray-500",
+          "hover:bg-gray-50 hover:text-gray-900",
         ],
         
         className,

@@ -145,26 +145,18 @@ export default function CampaignDetailPage() {
     : [];
 
   const statCards = campaign ? [
-    { label: "Sent", count: campaign._count.sent, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Sent", count: campaign._count.sent, icon: CheckCircle2, color: "text-brand", bg: "bg-brand-light" },
     { label: "Replied", count: repliedCount, icon: MessageSquare, color: "text-teal-600", bg: "bg-teal-50" },
-    { label: "Reply Rate", count: `${replyRate}%`, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Reply Rate", count: `${replyRate}%`, icon: TrendingUp, color: "text-brand", bg: "bg-brand-light" },
     { label: "Failed", count: campaign._count.failed, icon: XCircle, color: "text-red-500", bg: "bg-red-50" },
     { label: "Pending", count: campaign._count.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
     { label: "Cancelled", count: campaign._count.cancelled, icon: Ban, color: "text-gray-500", bg: "bg-gray-100" },
   ] : [];
 
-  const emailStatusColor: Record<string, string> = {
-    PENDING: "text-amber-600 bg-amber-50 border-amber-100",
-    SENDING: "text-blue-600 bg-blue-50 border-blue-100",
-    SENT: "text-emerald-600 bg-emerald-50 border-emerald-100",
-    FAILED: "text-red-500 bg-red-50 border-red-100",
-    CANCELLED: "text-gray-500 bg-gray-100 border-gray-200",
-  };
-
   return (
     <AuthGuard>
       <SidebarProvider>
-        <div className="flex h-screen bg-[#f9fafb]">
+        <div className="flex h-screen bg-gray-50/50">
           <Sidebar
             setLabel={setLabel}
             profile={{
@@ -190,245 +182,211 @@ export default function CampaignDetailPage() {
                   <div className="h-4 w-1/3 bg-gray-50 rounded mb-6" />
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[...Array(4)].map((_, i) => (
-                      <div key={i} className="h-20 bg-gray-50 rounded-xl" />
+                      <div key={i} className="h-24 bg-gray-50 rounded-2xl" />
                     ))}
                   </div>
                 </div>
               </div>
             ) : error ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <AlertCircle className="h-8 w-8 text-red-300" />
+                <AlertCircle className="h-8 w-8 text-gray-300" />
                 <p className="text-sm text-gray-500">{error}</p>
-                <button onClick={fetchCampaign} className="text-sm text-teal-600 hover:underline">Retry</button>
+                <button onClick={fetchCampaign} className="text-sm text-brand hover:underline font-black uppercase tracking-widest">Retry</button>
               </div>
             ) : campaign ? (
-              <div className="px-3 md:px-6 py-4 md:py-6 space-y-4">
+              <div className="px-4 md:px-6 py-6 md:py-8 space-y-6">
                 {/* Back button */}
                 <button
                   onClick={() => router.push("/dashboard/campaigns")}
-                  className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-600 transition-colors"
+                  className="inline-flex items-center gap-2 text-xs font-black text-gray-400 hover:text-gray-900 transition-all uppercase tracking-widest"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to campaigns
                 </button>
 
                 {/* Campaign header card */}
-                <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5 md:p-6">
-                  <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="rounded-2xl bg-white border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] p-6 md:p-8">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
                     <div className="min-w-0 flex-1">
-                      <h1 className="text-lg font-semibold text-gray-900 truncate">
-                        {campaign.subject}
-                      </h1>
-                      <p className="text-xs text-gray-500 mt-1">
-                        From: {campaign.sender.email}
+                      <div className="flex flex-wrap items-center gap-3 mb-2">
+                        <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
+                          {campaign.subject}
+                        </h1>
+                        <StatusBadge status={campaign.status} size="md" pauseReason={campaign.pauseReason} />
+                      </div>
+                      <p className="text-sm text-gray-500 font-medium">
+                        Sender: <span className="text-gray-900 font-bold">{campaign.sender.email}</span>
                       </p>
                     </div>
-                    <StatusBadge status={campaign.status} size="md" pauseReason={campaign.pauseReason} />
+                    <div className="shrink-0">
+                      <CampaignControls
+                        campaignId={campaign.id}
+                        status={campaign.status}
+                        pendingCount={campaign._count.pending}
+                        subject={campaign.subject}
+                        onStatusChange={handleStatusChange}
+                        size="md"
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-4 text-[11px] text-gray-500 mb-4">
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      {campaign.totalRecipients} recipients
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {formatDate(campaign.startTime)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {campaign.delaySeconds}s delay
-                    </span>
+                  <div className="flex flex-wrap items-center gap-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                      <Users className="h-3.5 w-3.5 text-gray-400" />
+                      {campaign.totalRecipients} <span className="font-medium text-gray-400">recipients</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                      <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                      <span className="font-medium text-gray-400">Created </span> {formatDate(campaign.startTime)}
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                      <Clock className="h-3.5 w-3.5 text-gray-400" />
+                      {campaign.delaySeconds}s <span className="font-medium text-gray-400">interval</span>
+                    </div>
                   </div>
-
-                  <CampaignControls
-                    campaignId={campaign.id}
-                    status={campaign.status}
-                    pendingCount={campaign._count.pending}
-                    subject={campaign.subject}
-                    onStatusChange={handleStatusChange}
-                    size="md"
-                  />
                 </div>
 
                 {/* Stats cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                   {statCards.map((card) => (
                     <div
                       key={card.label}
-                      className="rounded-xl bg-white border border-gray-100 shadow-sm p-3 flex items-center gap-2.5 transition-all hover:border-gray-200"
+                      className="group rounded-2xl bg-white border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] p-4 flex flex-col gap-3 transition-all hover:border-brand/20"
                     >
-                      <div className={`h-9 w-9 rounded-lg ${card.bg} flex items-center justify-center shrink-0`}>
-                        <card.icon className={`h-4 w-4 ${card.color}`} />
+                      <div className={`h-10 w-10 rounded-xl ${card.bg} flex items-center justify-center shrink-0 transition-transform group-hover:scale-110`}>
+                        <card.icon className={`h-5 w-5 ${card.color}`} />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-lg font-bold text-gray-900 leading-tight">{card.count}</p>
-                        <p className="text-[10px] font-medium text-gray-500 truncate uppercase tracking-tight">{card.label}</p>
+                      <div>
+                        <p className="text-2xl font-black text-gray-900 tracking-tight">{card.count}</p>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{card.label}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Sender Stats — only for multi-sender campaigns with data */}
+                {/* Sender Stats */}
                 {showSenderStats && (
                   <SenderStats senderStats={campaign.senderStats} />
                 )}
 
-                {/* Throttle Panel — live rate limit status */}
+                {/* Throttle Panel */}
                 <ThrottlePanel
                   campaignId={campaign.id}
                   isActive={ACTIVE_STATUSES.includes(campaign.status as CampaignStatus)}
                 />
 
-                {/* Tabs: Emails | Sequence | Tracking */}
-                <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="flex border-b border-gray-100 bg-gray-50/30">
-                    <button
-                      className={cn(
-                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
-                        activeTab === "emails"
-                          ? "text-teal-600"
-                          : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
-                      )}
-                      onClick={() => setActiveTab("emails")}
-                    >
-                      <Mail className={cn("h-4 w-4", activeTab === "emails" ? "text-teal-600" : "text-gray-500")} />
-                      <span>Emails ({campaign.emails.length})</span>
-                      {activeTab === "emails" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
-                      )}
-                    </button>
-                    <button
-                      className={cn(
-                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
-                        activeTab === "sequence"
-                          ? "text-teal-600"
-                          : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
-                      )}
-                      onClick={() => setActiveTab("sequence")}
-                    >
-                      <Layout className={cn("h-4 w-4", activeTab === "sequence" ? "text-teal-600" : "text-gray-500")} />
-                      <span>Sequence</span>
-                      {activeTab === "sequence" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
-                      )}
-                    </button>
-                    <button
-                      className={cn(
-                        "flex-1 px-5 py-4 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-tight",
-                        activeTab === "analytics"
-                          ? "text-teal-600"
-                          : "text-gray-500 hover:text-gray-600 hover:bg-gray-50/50"
-                      )}
-                      onClick={() => setActiveTab("analytics")}
-                    >
-                      <BarChart3 className={cn("h-4 w-4", activeTab === "analytics" ? "text-teal-600" : "text-gray-500")} />
-                      <span>Analytics</span>
-                      {activeTab === "analytics" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600 animate-[stretch_0.2s_ease-out]" />
-                      )}
-                    </button>
+                {/* Tabs */}
+                <div className="rounded-2xl bg-white border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] overflow-hidden">
+                  <div className="flex border-b border-gray-50 bg-gray-50/30 p-2 gap-2">
+                    {[
+                      { id: "emails", icon: Mail, label: `Emails (${campaign.emails.length})` },
+                      { id: "sequence", icon: Layout, label: "Sequence" },
+                      { id: "analytics", icon: BarChart3, label: "Analytics" },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        className={cn(
+                          "flex-1 px-4 py-3 text-[10px] font-black transition-all rounded-xl flex items-center justify-center gap-2 tracking-widest uppercase",
+                          activeTab === tab.id
+                            ? "bg-brand text-white shadow-lg shadow-brand/20"
+                            : "text-gray-400 hover:text-gray-600 hover:bg-white"
+                        )}
+                        onClick={() => setActiveTab(tab.id as any)}
+                      >
+                        <tab.icon className={cn("h-4 w-4", activeTab === tab.id ? "text-white" : "text-gray-400")} />
+                        <span>{tab.label}</span>
+                      </button>
+                    ))}
                   </div>
 
                   {activeTab === "emails" ? (
                     <div>
-                      {/* Sender filter dropdown — only for multi-sender campaigns */}
                       {showSenderFilter && (
-                        <div className="px-5 py-3 border-b border-gray-50 flex items-center gap-2">
-                          <Filter className="h-3.5 w-3.5 text-gray-500" />
+                        <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-3">
+                          <Filter className="h-4 w-4 text-gray-400" />
                           <select
                             value={senderFilter}
                             onChange={(e) => setSenderFilter(e.target.value)}
-                            className="text-sm text-gray-600 bg-transparent border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                            className="text-[11px] font-black uppercase tracking-widest text-gray-600 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand/20"
                           >
                             <option value="all">All senders</option>
                             {campaign.senderPool.map((s) => (
                               <option key={s.senderId} value={s.senderId}>
-                                {s.email}{s.name ? ` (${s.name})` : ""}
+                                {s.email}
                               </option>
                             ))}
                           </select>
                         </div>
                       )}
 
-                      <div className="divide-y divide-gray-100/50">
+                      <div className="divide-y divide-gray-50">
                         {filteredEmails.map((email, index) => (
                           <div
                             key={email.id}
-                            className="px-5 md:px-6 py-4 flex items-center justify-between gap-4 hover:bg-gray-50/80 transition-all group/row
+                            className="px-6 py-5 flex items-center justify-between gap-6 hover:bg-gray-50/50 transition-all group/row
                               opacity-0 animate-[fadeIn_0.3s_ease-out_forwards]"
                             style={{ animationDelay: `${index * 40}ms` }}
                           >
                             <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2.5 mb-1">
-                                <p className="text-sm font-medium text-gray-600 truncate tracking-tight">{email.toEmail}</p>
+                              <div className="flex items-center gap-3 mb-1.5">
+                                <p className="text-sm font-bold text-gray-900 truncate tracking-tight">{email.toEmail}</p>
                                 {email.sender && (
-                                  <span className="text-[10px] text-gray-500 truncate bg-gray-50 border border-gray-100/50 rounded-md px-1.5 py-0.5 group-hover/row:border-gray-200 transition-colors font-normal">
-                                    via {email.sender.email}
+                                  <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-2 py-0.5">
+                                    via {email.sender.email.split('@')[0]}
                                   </span>
                                 )}
                                 {email.isReplied && (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-100 px-2 py-0.5 text-[9px] font-bold text-blue-600 shadow-sm">
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-brand text-white px-2 py-0.5 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-brand/20">
                                     <MessageSquare className="h-2.5 w-2.5" /> Replied
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-gray-500/80 flex items-center gap-1.5 font-normal">
+                              <div className="text-[10px] text-gray-400 font-bold flex items-center gap-2 uppercase tracking-wider">
                                 {email.status === "SENT" ? (
                                   <>
-                                    <CheckCircle2 className="h-3 w-3 text-emerald-500/60" />
+                                    <CheckCircle2 className="h-3 w-3 text-brand" />
                                     {formatDate(email.sentAt!)}
                                   </>
                                 ) : email.status === "FAILED" ? (
                                   <>
-                                    <XCircle className="h-3 w-3 text-red-500/60" />
+                                    <XCircle className="h-3 w-3 text-red-500" />
                                     Failed · {email.sentAt ? formatDate(email.sentAt) : formatDate(email.scheduledAt)}
-                                  </>
-                                ) : email.status === "SENDING" ? (
-                                  <>
-                                    <Loader2 className="h-3 w-3 text-blue-500/60 animate-spin" />
-                                    Sending...
-                                  </>
-                                ) : email.status === "CANCELLED" ? (
-                                  <>
-                                    <Ban className="h-3 w-3 text-gray-500/60" />
-                                    Cancelled · {formatDate(email.scheduledAt)}
                                   </>
                                 ) : (
                                   <>
-                                    <Clock className="h-3 w-3 text-amber-500/60" />
-                                    Scheduled · {formatDate(email.scheduledAt)}
+                                    <Clock className="h-3 w-3 text-amber-500" />
+                                    {email.status} · {formatDate(email.scheduledAt)}
                                   </>
                                 )}
-                              </p>
+                              </div>
                             </div>
                             <div className="flex items-center gap-4 shrink-0">
                               {email.status === "SENT" && (
                                 <button
                                   onClick={() => handleToggleReplied(email.id)}
                                   className={cn(
-                                    "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border shadow-sm",
+                                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm",
                                     email.isReplied
-                                      ? "bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100"
-                                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700 hover:bg-gray-50"
+                                      ? "bg-brand text-white border-transparent shadow-brand/20"
+                                      : "bg-white text-gray-500 border-gray-200 hover:border-brand/30 hover:text-brand"
                                   )}
                                 >
                                   {email.isReplied ? "Replied" : "Mark Replied"}
                                 </button>
                               )}
-                              <div className="flex items-center gap-1.5 min-w-[60px] justify-end">
+                              <div className="flex items-center gap-2 min-w-[80px] justify-end">
                                 <div className={cn(
-                                  "h-1.5 w-1.5 rounded-full",
-                                  email.status === "SENT" ? "bg-emerald-500" :
+                                  "h-2 w-2 rounded-full",
+                                  email.status === "SENT" ? "bg-brand" :
                                   email.status === "FAILED" ? "bg-red-500" :
-                                  email.status === "SENDING" ? "bg-blue-500 animate-pulse" :
+                                  email.status === "SENDING" ? "bg-brand animate-pulse" :
                                   email.status === "PENDING" ? "bg-amber-500" : "bg-gray-400"
                                 )} />
                                 <span className={cn(
-                                  "text-[10px] font-bold uppercase tracking-wider",
-                                  email.status === "SENT" ? "text-emerald-600" :
+                                  "text-[10px] font-black uppercase tracking-widest",
+                                  email.status === "SENT" ? "text-brand" :
                                   email.status === "FAILED" ? "text-red-500" :
-                                  email.status === "SENDING" ? "text-blue-600" :
+                                  email.status === "SENDING" ? "text-brand" :
                                   email.status === "PENDING" ? "text-amber-600" : "text-gray-500"
                                 )}>
                                   {email.status}
@@ -440,7 +398,7 @@ export default function CampaignDetailPage() {
                       </div>
                     </div>
                   ) : activeTab === "sequence" ? (
-                    <div className="p-4">
+                    <div className="p-6">
                       <SequenceView campaignId={campaign.id} />
                     </div>
                   ) : (

@@ -25,48 +25,42 @@ const STATUS_CONFIG: Record<CampaignStatus, {
   text: string;
   icon: React.ElementType;
   animate?: boolean;
-  borderLeft?: string;
 }> = {
   SCHEDULED: { 
     label: "Scheduled", 
-    bg: "bg-[#FEF7E0]", 
-    text: "text-[#B06000]", 
+    bg: "bg-amber-50", 
+    text: "text-amber-700", 
     icon: Clock,
-    borderLeft: "border-l-[#F9AB00]",
   },
   SENDING: { 
     label: "Sending", 
-    bg: "bg-[#E8F0FE]", 
-    text: "text-[#1967D2]", 
+    bg: "bg-blue-50", 
+    text: "text-blue-700", 
     icon: Loader2,
     animate: true,
-    borderLeft: "border-l-[#4285F4]",
   },
   PAUSED: { 
     label: "Paused", 
-    bg: "bg-[#F1F3F4]", 
-    text: "text-[#5F6368]", 
+    bg: "bg-gray-100", 
+    text: "text-gray-600", 
     icon: Pause,
-    borderLeft: "border-l-[#9AA0A6]",
   },
   CANCELLED: { 
     label: "Cancelled", 
-    bg: "bg-[#FCE8E7]", 
-    text: "text-[#C5221F]", 
+    bg: "bg-red-50", 
+    text: "text-red-700", 
     icon: XCircle,
-    borderLeft: "border-l-[#EA4335]",
   },
   COMPLETED: { 
     label: "Completed", 
-    bg: "bg-[#E8F8ED]", 
-    text: "text-[#048C4A]", 
+    bg: "bg-brand-light", 
+    text: "text-brand", 
     icon: CheckCircle2,
-    borderLeft: "border-l-[#34A853]",
   },
 };
 
 const PAUSE_REASON_LABELS: Record<string, string> = {
-  ALL_SENDERS_EXHAUSTED: "All senders at limit",
+  ALL_SENDERS_EXHAUSTED: "Limit Reached",
 };
 
 export default function StatusBadge({ status, size = "sm", pauseReason }: StatusBadgeProps) {
@@ -81,19 +75,18 @@ export default function StatusBadge({ status, size = "sm", pauseReason }: Status
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded font-medium border-l-2",
+        "inline-flex items-center gap-1.5 rounded-full font-black uppercase tracking-tight border border-transparent",
         config.bg,
         config.text,
-        config.borderLeft,
-        size === "sm" && "px-2 py-0.5 text-xs",
-        size === "md" && "px-2.5 py-1 text-xs"
+        size === "sm" && "px-2 py-0.5 text-[9px]",
+        size === "md" && "px-2.5 py-1 text-[10px]"
       )}
       title={reasonLabel ?? undefined}
     >
       {config.animate ? (
-        <Icon className={cn("h-3 w-3 animate-spin", size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5")} />
+        <Icon className={cn("h-3 w-3 animate-spin", size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3")} />
       ) : (
-        <Icon className={size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5"} />
+        <Icon className={size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3"} />
       )}
       {config.label}
       {reasonLabel && (

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
 /**
- * Input - memorable, consistent styling.
+ * SharaSpot Input - professional, modern, accessible.
  */
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, ...props }, ref) => {
@@ -14,11 +14,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref ?? undefined}
         className={cn(
-          "w-full rounded-md border border-[#E8EAED] bg-white px-3 py-2 text-sm text-[#1A1D21]",
-          "transition-all duration-150",
-          "placeholder:text-[#9AA0A6]",
-          "focus:outline-none focus:border-[#00A63E] focus:ring-2 focus:ring-[#00A63E]/20",
-          "hover:border-[#DADCE0]",
+          "w-full rounded-xl border border-gray-100 bg-gray-50/50 px-4 py-3 text-sm text-gray-900 font-bold",
+          "transition-all duration-300",
+          "placeholder:text-gray-400 placeholder:font-medium",
+          "focus:outline-none focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10",
+          "hover:border-gray-200 hover:bg-white",
           className,
         )}
         {...props}

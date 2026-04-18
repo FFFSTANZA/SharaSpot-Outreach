@@ -45,18 +45,27 @@ function AnalyticsCard({
   trend?: string;
 }) {
   return (
-    <div className="bg-white rounded-lg border border-[#E8EAED] p-4 hover:shadow-sm transition-shadow duration-200">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-[#9AA0A6] uppercase tracking-wider">{label}</span>
-        <Icon className="h-4 w-4 text-[#9AA0A6]" />
-      </div>
-      <div className="text-2xl font-bold text-[#1A1D21] tracking-tight">{value}</div>
-      {subValue && (
-        <div className="text-xs text-[#5F6368] mt-1 flex items-center gap-1">
-          {subValue}
-          {trend && <span className="text-[#9AA0A6]">• {trend}</span>}
+    <div className="group bg-white rounded-2xl border-b-2 border-transparent hover:border-brand/30 p-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] transition-all duration-300">
+      <div className="flex items-center justify-between mb-4">
+        <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-brand-light transition-colors">
+          <Icon className="h-5 w-5 text-gray-400 group-hover:text-brand transition-colors" />
         </div>
-      )}
+        {trend && (
+          <span className="text-[10px] font-bold text-brand bg-brand-light px-2 py-1 rounded-full uppercase tracking-tight">
+            {trend}
+          </span>
+        )}
+      </div>
+      <div>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-1">{label}</p>
+        <h3 className="text-2xl font-black text-gray-900 tracking-tight">{value}</h3>
+        {subValue && (
+          <p className="text-xs text-gray-500 mt-2 font-medium flex items-center gap-1.5">
+            <span className="h-1 w-1 rounded-full bg-gray-300" />
+            {subValue}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -133,7 +142,7 @@ const Dashboard = () => {
     <AuthGuard>
       <ErrorBoundary>
         <SidebarProvider>
-          <div className="flex h-screen bg-[#FAFBFC]">
+          <div className="flex h-screen bg-gray-50/50">
             <Sidebar
               currentLabel={label}
               setLabel={setLabel}
@@ -219,13 +228,13 @@ const Dashboard = () => {
 
                   <div className="px-4 md:px-6 mt-2 mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-[#00A63E] animate-pulse" />
-                      <h2 className="text-base font-bold text-[#1A1D21] tracking-tight">Inbox</h2>
-                      <span className="text-xs text-[#5F6368]">({total} {total === 1 ? 'email' : 'emails'})</span>
+                      <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
+                      <h2 className="text-base font-bold text-gray-900 tracking-tight">Inbox</h2>
+                      <span className="text-xs text-gray-500 font-medium">({total} {total === 1 ? 'email' : 'emails'})</span>
                     </div>
                   </div>
 
-                  <div className="flex-1 mx-4 md:mx-6 mb-4 rounded-lg bg-white border border-[#E8EAED] overflow-hidden flex flex-col min-h-0">
+                  <div className="flex-1 mx-4 md:mx-6 mb-4 rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-0">
                     <EmailList
                       emails={emailItems}
                       onToggleStar={handleToggleStar}

@@ -65,19 +65,19 @@ export default function CampaignControls({
   };
 
   const btnClass = cn(
-    "inline-flex items-center gap-1.5 rounded-lg font-medium transition-all",
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+    "inline-flex items-center gap-1.5 rounded-xl font-black uppercase tracking-widest transition-all shadow-sm",
+    "focus:outline-none focus-visible:ring-4 focus-visible:ring-brand/10",
     "disabled:opacity-50 disabled:cursor-not-allowed",
-    size === "sm" && "px-2.5 py-1.5 text-[11px]",
-    size === "md" && "px-3.5 py-2 text-xs"
+    size === "sm" && "px-3 py-1.5 text-[9px]",
+    size === "md" && "px-4 py-2 text-[10px]"
   );
 
   return (
     <>
-      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         {showPause && (
           <button
-            className={cn(btnClass, "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+            className={cn(btnClass, "bg-white border border-gray-100 text-gray-500 hover:bg-gray-50 hover:text-gray-900")}
             onClick={() => handleAction("pause")}
             disabled={!!loading}
           >
@@ -92,7 +92,7 @@ export default function CampaignControls({
 
         {showResume && (
           <button
-            className={cn(btnClass, "bg-emerald-50 text-emerald-600 hover:bg-emerald-100")}
+            className={cn(btnClass, "bg-brand text-white hover:bg-brand-hover shadow-brand/20")}
             onClick={() => handleAction("resume")}
             disabled={!!loading}
           >
@@ -107,7 +107,7 @@ export default function CampaignControls({
 
         {showCancel && (
           <button
-            className={cn(btnClass, "bg-red-50 text-red-500 hover:bg-red-100")}
+            className={cn(btnClass, "bg-white border border-gray-100 text-red-400 hover:text-red-600 hover:bg-red-50 hover:border-red-100")}
             onClick={() => setCancelOpen(true)}
             disabled={!!loading}
           >

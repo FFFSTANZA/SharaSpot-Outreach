@@ -181,39 +181,48 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
       <div className="flex border-b border-gray-100">
         <button
           className={cn(
-            "flex-1 px-4 py-2.5 text-xs font-medium transition-colors",
+            "flex-1 px-4 py-2.5 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-widest uppercase",
             activeSection === "overview"
-              ? "text-teal-600 border-b-2 border-teal-600"
-              : "text-gray-500 hover:text-gray-600"
+              ? "text-brand"
+              : "text-gray-400 hover:text-gray-600"
           )}
           onClick={() => setActiveSection("overview")}
         >
           Overview
+          {activeSection === "overview" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand animate-[stretch_0.2s_ease-out]" />
+          )}
         </button>
         <button
           className={cn(
-            "flex-1 px-4 py-2.5 text-xs font-medium transition-colors",
+            "flex-1 px-4 py-2.5 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-widest uppercase",
             activeSection === "emails"
-              ? "text-teal-600 border-b-2 border-teal-600"
-              : "text-gray-500 hover:text-gray-600"
+              ? "text-brand"
+              : "text-gray-400 hover:text-gray-600"
           )}
           onClick={() => setActiveSection("emails")}
         >
-          <Mail className="h-3.5 w-3.5 inline mr-1.5" />
-          Per Email ({emails.length})
+          <Mail className="h-3.5 w-3.5" />
+          Per Email
+          {activeSection === "emails" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand animate-[stretch_0.2s_ease-out]" />
+          )}
         </button>
         {metrics.trackClicks && (
           <button
             className={cn(
-              "flex-1 px-4 py-2.5 text-xs font-medium transition-colors",
+              "flex-1 px-4 py-2.5 text-xs font-bold transition-all relative flex items-center justify-center gap-2 tracking-widest uppercase",
               activeSection === "links"
-                ? "text-teal-600 border-b-2 border-teal-600"
-                : "text-gray-500 hover:text-gray-600"
+                ? "text-brand"
+                : "text-gray-400 hover:text-gray-600"
             )}
             onClick={() => setActiveSection("links")}
           >
-            <Link2 className="h-3.5 w-3.5 inline mr-1.5" />
-            Links ({linkAnalytics.length})
+            <Link2 className="h-3.5 w-3.5" />
+            Links
+            {activeSection === "links" && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand animate-[stretch_0.2s_ease-out]" />
+            )}
           </button>
         )}
       </div>
@@ -245,9 +254,9 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
                 label="Opened"
                 value={metrics.uniqueOpens}
                 subtext={`${openPercent}% open rate`}
-                colorClass="text-emerald-600"
-                bgClass="bg-emerald-50 border-emerald-100"
-                iconColorClass="text-emerald-500"
+                colorClass="text-brand"
+                bgClass="bg-brand-light border-brand-muted"
+                iconColorClass="text-brand"
               />
               <MetricCard
                 icon={EyeOff}
@@ -263,7 +272,7 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
 
           {/* Engagement Section */}
           <div className="space-y-4">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
               <MousePointerClick className="h-4 w-4" /> Engagement
             </h3>
             
@@ -282,9 +291,9 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
                 label="Replies"
                 value={metrics.repliedCount ?? 0}
                 subtext={`${metrics.replyRate}% reply rate`}
-                colorClass="text-blue-600"
-                bgClass="bg-blue-50 border-blue-100"
-                iconColorClass="text-blue-500"
+                colorClass="text-brand"
+                bgClass="bg-brand-light border-brand-muted"
+                iconColorClass="text-brand"
               />
             </div>
           </div>
@@ -299,53 +308,53 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Opened</span>
-                <span className="font-semibold text-emerald-600">{metrics.uniqueOpens} ({openPercent}%)</span>
+                <span className="font-bold text-brand">{metrics.uniqueOpens} ({openPercent}%)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Not Opened</span>
-                <span className="font-semibold text-gray-500">{metrics.notOpened} ({notOpenPercent}%)</span>
+                <span className="font-medium text-gray-500">{metrics.notOpened} ({notOpenPercent}%)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Clicked Links</span>
-                <span className="font-semibold text-indigo-600">{metrics.uniqueClicks} ({metrics.clickRate}%)</span>
+                <span className="font-bold text-indigo-600">{metrics.uniqueClicks} ({metrics.clickRate}%)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Replied</span>
-                <span className="font-semibold text-blue-600">{metrics.repliedCount ?? 0} ({metrics.replyRate}%)</span>
+                <span className="font-bold text-brand">{metrics.repliedCount ?? 0} ({metrics.replyRate}%)</span>
               </div>
-            </div>
-          </div>
+              </div>
+              </div>
 
-          {/* Refresh button */}
-          <div className="flex justify-end">
-            <button
+              {/* Refresh button */}
+              <div className="flex justify-end">
+              <button
               onClick={fetchData}
-              className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 hover:text-gray-600 transition-colors"
-            >
-              <RefreshCw className="h-3 w-3" /> Refresh
-            </button>
-          </div>
-        </div>
-      )}
+              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand transition-colors"
+              >
+              <RefreshCw className="h-3 w-3" /> Refresh Data
+              </button>
+              </div>
+              </div>
+              )}
 
-      {/* Per-Email Section */}
-      {activeSection === "emails" && (
-        <div className="space-y-4">
-          {/* Summary row */}
-          <div className="flex flex-wrap gap-3 text-xs">
-            <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
+              {/* Per-Email Section */}
+              {activeSection === "emails" && (
+              <div className="space-y-4">
+              {/* Summary row */}
+              <div className="flex flex-wrap gap-3 text-[10px] font-bold uppercase tracking-widest">
+              <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-light text-brand border border-brand-muted">
               <CheckCircle2 className="h-3 w-3" />
               {emails.filter(e => e.openCount > 0).length} opened
-            </span>
-            <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-600 border border-gray-100">
+              </span>
+              <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-400 border border-gray-100">
               <XCircle className="h-3 w-3" />
               {emails.filter(e => e.openCount === 0).length} not opened
-            </span>
-            <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
+              </span>
+              <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
               <MousePointerClick className="h-3 w-3" />
               {emails.filter(e => e.clickCount > 0).length} clicked
-            </span>
-          </div>
+              </span>
+              </div>
 
           {/* Email table */}
           <div className="overflow-x-auto">
@@ -356,11 +365,11 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
                   className="rounded-xl border border-gray-100 p-3 space-y-2"
                 >
                   <p className="text-xs font-medium text-gray-900 truncate">{email.toEmail}</p>
-                  <div className="flex items-center gap-3 text-[11px]">
+                  <div className="flex items-center gap-3 text-[11px] font-bold">
                     {metrics.trackOpens && (
                       <span className={cn(
                         "flex items-center gap-1 px-2 py-0.5 rounded-full",
-                        email.openCount > 0 ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-500"
+                        email.openCount > 0 ? "bg-brand-light text-brand" : "bg-gray-50 text-gray-400"
                       )}>
                         <Eye className="h-3 w-3" /> {email.openCount} opens
                       </span>
@@ -368,7 +377,7 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
                     {metrics.trackClicks && (
                       <span className={cn(
                         "flex items-center gap-1 px-2 py-0.5 rounded-full",
-                        email.clickCount > 0 ? "bg-indigo-50 text-indigo-600" : "bg-gray-50 text-gray-500"
+                        email.clickCount > 0 ? "bg-indigo-50 text-indigo-600" : "bg-gray-50 text-gray-400"
                       )}>
                         <MousePointerClick className="h-3 w-3" /> {email.clickCount} clicks
                       </span>
@@ -380,45 +389,45 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
 
             <table className="hidden md:table w-full text-sm">
               <thead>
-                <tr className="text-[11px] text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                  <th className="text-left py-2 px-3 font-medium">Recipient</th>
+                <tr className="text-[10px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100">
+                  <th className="text-left py-3 px-3">Recipient</th>
                   {metrics.trackOpens && (
-                    <th className="text-center py-2 px-3 font-medium cursor-pointer hover:text-gray-600" onClick={() => toggleSort("openCount")}>
-                      <span className="inline-flex items-center gap-1">Opens <RefreshCw className="h-3 w-3" /></span>
+                    <th className="text-center py-3 px-3 cursor-pointer hover:text-brand" onClick={() => toggleSort("openCount")}>
+                      <span className="inline-flex items-center gap-1">Opens <RefreshCw className={cn("h-3 w-3", sortField === "openCount" && "text-brand")} /></span>
                     </th>
                   )}
                   {metrics.trackClicks && (
-                    <th className="text-center py-2 px-3 font-medium cursor-pointer hover:text-gray-600" onClick={() => toggleSort("clickCount")}>
-                      <span className="inline-flex items-center gap-1">Clicks <RefreshCw className="h-3 w-3" /></span>
+                    <th className="text-center py-3 px-3 cursor-pointer hover:text-brand" onClick={() => toggleSort("clickCount")}>
+                      <span className="inline-flex items-center gap-1">Clicks <RefreshCw className={cn("h-3 w-3", sortField === "clickCount" && "text-brand")} /></span>
                     </th>
                   )}
-                  <th className="text-right py-2 px-3 font-medium cursor-pointer hover:text-gray-600" onClick={() => toggleSort("lastOpenAt")}>
-                    <span className="inline-flex items-center gap-1">Last Open <RefreshCw className="h-3 w-3" /></span>
+                  <th className="text-right py-3 px-3 cursor-pointer hover:text-brand" onClick={() => toggleSort("lastOpenAt")}>
+                    <span className="inline-flex items-center gap-1">Last Open <RefreshCw className={cn("h-3 w-3", sortField === "lastOpenAt" && "text-brand")} /></span>
                   </th>
-                  <th className="text-right py-2 px-3 font-medium cursor-pointer hover:text-gray-600" onClick={() => toggleSort("lastClickAt")}>
-                    <span className="inline-flex items-center gap-1">Last Click <RefreshCw className="h-3 w-3" /></span>
+                  <th className="text-right py-3 px-3 cursor-pointer hover:text-brand" onClick={() => toggleSort("lastClickAt")}>
+                    <span className="inline-flex items-center gap-1">Last Click <RefreshCw className={cn("h-3 w-3", sortField === "lastClickAt" && "text-brand")} /></span>
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {sortedEmails.map((email) => (
                   <tr key={email.emailJobId} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-2.5 px-3 text-xs text-gray-900 truncate max-w-[200px]">{email.toEmail}</td>
+                    <td className="py-3 px-3 text-xs text-gray-900 font-medium truncate max-w-[200px]">{email.toEmail}</td>
                     {metrics.trackOpens && (
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-3 px-3 text-center">
                         <span className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                          email.openCount > 0 ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-500"
+                          "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold",
+                          email.openCount > 0 ? "bg-brand-light text-brand" : "bg-gray-50 text-gray-400"
                         )}>
                           {email.openCount}
                         </span>
                       </td>
                     )}
                     {metrics.trackClicks && (
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-3 px-3 text-center">
                         <span className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                          email.clickCount > 0 ? "bg-indigo-50 text-indigo-600" : "bg-gray-50 text-gray-500"
+                          "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold",
+                          email.clickCount > 0 ? "bg-indigo-50 text-indigo-600" : "bg-gray-50 text-gray-400"
                         )}>
                           {email.clickCount}
                         </span>
