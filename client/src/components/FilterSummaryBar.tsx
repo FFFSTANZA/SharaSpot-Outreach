@@ -40,11 +40,11 @@ export default function FilterSummaryBar({
 
   return (
     <div className="flex items-center gap-2 flex-wrap px-4 md:px-6 py-3 bg-gray-50/30 border-b border-gray-100">
-      <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 mr-1">Active Filters:</span>
+      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 mr-1">Active Filters:</span>
       {activeFilters.map(([key, value]) => (
         <span
           key={key}
-          className="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-tight text-gray-700 shadow-sm transition-all hover:border-brand/20"
+          className="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-100 px-3 py-1.5 text-[10px] font-bold uppercase tracking-tight text-gray-700 shadow-sm transition-all hover:border-brand/20"
         >
           <span className="text-brand opacity-60">{FILTER_LABELS[key] || key}</span>
           <span className="max-w-[150px] truncate text-gray-900">{resolveValue(key, value)}</span>
@@ -58,7 +58,7 @@ export default function FilterSummaryBar({
       ))}
       <button
         onClick={onClearAll}
-        className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-all px-3 py-1.5 hover:bg-red-50 rounded-lg ml-1"
+        className="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-700 transition-all px-3 py-1.5 hover:bg-red-50 rounded-lg ml-1"
       >
         Clear All
       </button>

@@ -16,7 +16,7 @@ const MAX_FOLLOW_UPS = 8;
 const CONDITION_OPTIONS: { value: SequenceConditionType; label: string; icon: typeof Eye; color: string; description: string }[] = [
   { value: "none", label: "After delay", icon: Clock, color: "gray", description: "Send after waiting" },
   { value: "opened", label: "If opened", icon: Eye, color: "brand", description: "Send if email was opened" },
-  { value: "clicked", label: "If clicked", icon: MousePointer2, color: "purple", description: "Send if link was clicked" },
+  { value: "clicked", label: "If clicked", icon: MousePointer2, color: "blue", description: "Send if link was clicked" },
   { value: "replied", label: "If replied", icon: MessageCircle, color: "brand", description: "Send if recipient replied" },
 ];
 
@@ -26,12 +26,12 @@ function ConditionBadge({ type }: { type: SequenceConditionType }) {
 
   const colorClasses: Record<string, string> = {
     brand: "bg-brand/10 text-brand",
-    purple: "bg-purple-50 text-purple-600",
+    blue: "bg-blue-50 text-blue-600",
   };
 
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold border border-transparent",
+      "inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-transparent",
       colorClasses[option.color]
     )}>
       <option.icon className="h-3 w-3" />
@@ -45,7 +45,7 @@ function TimelineConnector({ hasBranch = false }: { hasBranch?: boolean }) {
     <div className="flex items-center justify-center py-1">
       <div className={cn(
         "flex flex-col items-center",
-        hasBranch ? "text-purple-500" : "text-gray-100"
+        hasBranch ? "text-blue-500" : "text-gray-100"
       )}>
         <div className="h-8 w-1 bg-current rounded-full" />
         {hasBranch && <GitBranch className="h-4 w-4 my-1" />}
@@ -75,7 +75,7 @@ function TimelineNode({
 
   const nodeColors: Record<string, string> = {
     brand: "bg-brand",
-    purple: "bg-purple-600",
+    blue: "bg-blue-600",
     gray: "bg-gray-900",
   };
 
@@ -87,7 +87,7 @@ function TimelineNode({
       <div className={cn(
         "rounded-xl border transition-all duration-200 overflow-hidden bg-white",
         isExpanded 
-          ? "border-brand shadow-sm ring-2 ring-brand/5" 
+          ? "border-brand shadow-sm" 
           : "border-gray-100 shadow-sm hover:border-gray-200"
       )}>
         {/* Header */}
@@ -114,7 +114,7 @@ function TimelineNode({
                 <ConditionBadge type={step.condition.type} />
               )}
             </div>
-            <p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">
+            <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
               {isInitial
                 ? "Primary outreach message"
                 : step.subject
@@ -146,7 +146,7 @@ function TimelineNode({
           <div className="px-6 pb-6 pt-4 border-t border-gray-50 space-y-6">
             {/* Condition selector */}
             <div>
-              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">Trigger Condition</label>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-1">Trigger Condition</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {CONDITION_OPTIONS.map(opt => (
                   <button
@@ -168,7 +168,7 @@ function TimelineNode({
 
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Delay</label>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Delay</label>
                 <input
                   type="number"
                   min={1}
@@ -177,7 +177,7 @@ function TimelineNode({
                   onChange={(e) => onUpdate("waitDays", parseInt(e.target.value) || 1)}
                   className="h-8 w-14 rounded-lg border border-gray-200 bg-white text-center text-sm font-bold text-gray-900 outline-none focus:border-brand transition-all"
                 />
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Days</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Days</span>
               </div>
 
               {step.condition?.type && step.condition.type !== "none" && (
@@ -190,18 +190,18 @@ function TimelineNode({
 
             {/* Subject */}
             <div className="space-y-2">
-              <label className="px-1 block text-xs font-semibold text-gray-400 uppercase tracking-wider">Subject Line</label>
+              <label className="px-1 block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Subject Line</label>
               <input
                 value={step.subject}
                 onChange={(e) => onUpdate("subject", e.target.value)}
                 placeholder="Follow-up: regarding {{company}} opportunity"
-                className="w-full h-11 px-4 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-brand transition-all font-semibold text-gray-900"
+                className="w-full h-11 px-4 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-brand transition-all font-bold text-gray-900"
               />
             </div>
 
             {/* Body */}
             <div className="space-y-2">
-              <label className="px-1 block text-xs font-semibold text-gray-400 uppercase tracking-wider">Message Content</label>
+              <label className="px-1 block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Message Content</label>
               <div className="rounded-xl border border-gray-100 overflow-hidden shadow-sm">
                 <Editor
                   value={step.body}
@@ -256,7 +256,7 @@ export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProp
       <div className="flex items-center justify-between px-1">
         <div>
           <h2 className="text-lg font-bold text-gray-900 tracking-tight">Sequence Workflow</h2>
-          <p className="text-xs text-text-secondary mt-1 font-medium">
+          <p className="text-xs text-text-secondary mt-1 font-bold uppercase tracking-widest">
             Automate your outreach journey
           </p>
         </div>
@@ -285,7 +285,7 @@ export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProp
               <GitBranch className="h-6 w-6 text-gray-300" />
             </div>
             <p className="text-base font-bold text-gray-900 mb-2">No follow-ups defined</p>
-            <p className="text-sm text-text-secondary max-w-xs mx-auto leading-relaxed mb-8">
+            <p className="text-sm text-text-secondary max-w-xs mx-auto leading-relaxed mb-8 font-medium">
               Sequences significantly increase reply rates by staying top-of-mind.
             </p>
             <button

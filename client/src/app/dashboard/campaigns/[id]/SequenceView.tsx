@@ -90,7 +90,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
       <div className="flex flex-col items-center justify-center py-12 gap-3">
         <AlertCircle className="h-8 w-8 text-red-300" />
         <p className="text-sm text-gray-500">{error}</p>
-        <button onClick={fetchData} className="text-sm text-teal-600 hover:underline">Retry</button>
+        <button onClick={fetchData} className="text-sm text-brand font-semibold hover:underline">Retry</button>
       </div>
     );
   }
@@ -113,15 +113,15 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
     <div className="space-y-4">
       {/* Bulk controls */}
       <div className="flex items-center gap-2">
-        <Button variant="secondary" className="w-auto px-3 py-1.5 rounded-lg text-[11px] gap-1"
+        <Button variant="secondary" className="w-auto px-3 py-1.5 rounded-lg text-[11px] font-bold gap-1"
           onClick={() => handleBulkAction("pause")} disabled={!!actionLoading}>
           <Pause className="h-3 w-3" /> Pause All
         </Button>
-        <Button variant="secondary" className="w-auto px-3 py-1.5 rounded-lg text-[11px] gap-1"
+        <Button variant="secondary" className="w-auto px-3 py-1.5 rounded-lg text-[11px] font-bold gap-1"
           onClick={() => handleBulkAction("resume")} disabled={!!actionLoading}>
           <Play className="h-3 w-3" /> Resume All
         </Button>
-        <Button variant="secondary" className="w-auto px-3 py-1.5 rounded-lg text-[11px] gap-1"
+        <Button variant="secondary" className="w-auto px-3 py-1.5 rounded-lg text-[11px] font-bold gap-1"
           onClick={() => handleBulkAction("stop")} disabled={!!actionLoading}>
           <Square className="h-3 w-3" /> Stop All
         </Button>
@@ -133,8 +133,6 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
           {data.recipients.map((recipient, index) => (
             <div
               key={recipient.id}
-              className="opacity-0 animate-[fadeIn_0.2s_ease-out_forwards]"
-              style={{ animationDelay: `${index * 30}ms` }}
             >
               {/* Recipient row */}
               <div
@@ -142,13 +140,13 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
                 onClick={() => setExpandedRecipient(expandedRecipient === recipient.id ? null : recipient.id)}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 truncate">{recipient.recipientEmail}</p>
+                  <p className="text-sm text-gray-900 font-medium truncate">{recipient.recipientEmail}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] text-gray-400">
-                      Step {recipient.currentStep + 1} of {totalSteps}
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                      Step {recipient.currentStep + 1} / {totalSteps}
                     </span>
                     {recipient.paused && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-semibold text-gray-500">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-bold text-gray-500 uppercase tracking-widest">
                         <Pause className="h-2 w-2" /> Paused
                       </span>
                     )}
@@ -207,14 +205,14 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
                     const Icon = STEP_STATUS_ICONS[step.status] ?? Clock;
                     return (
                       <div key={step.stepNumber} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50/50">
-                        <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold", STEP_STATUS_STYLES[step.status])}>
+                        <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest", STEP_STATUS_STYLES[step.status])}>
                           <Icon className="h-2.5 w-2.5" />
                           {step.status}
                         </span>
-                        <span className="text-[11px] text-gray-500 flex-1">
+                        <span className="text-[11px] text-gray-500 font-medium flex-1">
                           Step {step.stepNumber + 1}
                         </span>
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-gray-400 font-medium">
                           {step.sentAt ? formatDate(step.sentAt) : "—"}
                         </span>
                         {step.error && (

@@ -295,7 +295,7 @@ export function ComposeForm({
   return (
     <div className="mx-auto max-w-[1280px] p-3 md:p-6 space-y-6">
       {submitError && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600 flex items-center gap-3 font-semibold animate-fadeIn">
+        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600 flex items-center gap-3 font-bold">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <p>{submitError}</p>
           <button onClick={() => setSubmitError(null)} className="ml-auto text-red-400 hover:text-red-600 transition-colors">
@@ -356,7 +356,7 @@ export function ComposeForm({
                 </button>
 
                 {isSenderDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-xl border border-gray-100 shadow-xl overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-xl border border-gray-100 shadow-xl overflow-hidden py-1">
                     {senders.length === 0 ? (
                       <div className="px-4 py-8 text-center">
                         <p className="text-xs text-gray-400">No senders found</p>
@@ -389,7 +389,7 @@ export function ComposeForm({
               {/* Multi-sender rotation status */}
               {data.selectedSenderIds.length > 1 && (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-brand-light/30 border border-brand/10">
-                  <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center shrink-0">
+                  <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center shrink-0 shadow-sm">
                     <RefreshCw className="h-4 w-4 text-white" />
                   </div>
                   <div className="min-w-0">
@@ -405,8 +405,8 @@ export function ComposeForm({
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col max-h-[600px]">
             <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-violet-50 flex items-center justify-center">
-                  <Users className="h-4 w-4 text-violet-500" />
+                <div className="h-8 w-8 rounded-lg bg-brand-light flex items-center justify-center">
+                  <Users className="h-4 w-4 text-brand" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 tracking-tight">Recipients</h3>
@@ -433,7 +433,7 @@ export function ComposeForm({
                     type="text"
                     placeholder="Enter email addresses..."
                     className={cn(
-                      "w-full h-10 pl-9 pr-4 rounded-xl border text-sm transition-all bg-white",
+                      "w-full h-10 pl-9 pr-4 rounded-xl border text-sm transition-all bg-white font-medium",
                       errors.to ? "border-red-200 focus:border-red-300 focus:ring-4 ring-red-50" : "border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5"
                     )}
                     onKeyDown={(e) => {
@@ -452,7 +452,7 @@ export function ComposeForm({
 
               {data.to.length > 0 && (
                 <div className="flex items-center justify-between text-[11px]">
-                  <button onClick={toggleSelectAll} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 font-semibold transition-colors">
+                  <button onClick={toggleSelectAll} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 font-bold transition-colors">
                     {data.selectedRecipients.size === data.to.length ? <CheckSquare className="h-3.5 w-3.5 text-brand" /> : <Square className="h-3.5 w-3.5" />}
                     {data.selectedRecipients.size === data.to.length ? "Deselect All" : "Select All"}
                   </button>
@@ -468,15 +468,15 @@ export function ComposeForm({
                     </button>
 
                     {isBulkMenuOpen && (
-                      <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-xl z-50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <button onClick={copyAllEmails} className="w-full px-4 py-2.5 text-left text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+                      <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-xl z-50 py-1 overflow-hidden">
+                        <button onClick={copyAllEmails} className="w-full px-4 py-2.5 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
                           <Copy className="h-4 w-4 text-gray-400" /> Copy selected
                         </button>
-                        <button onClick={exportSelectedToCsv} className="w-full px-4 py-2.5 text-left text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
+                        <button onClick={exportSelectedToCsv} className="w-full px-4 py-2.5 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
                           <FileText className="h-4 w-4 text-gray-400" /> Export to CSV
                         </button>
                         <div className="h-px bg-gray-100 my-1" />
-                        <button onClick={removeSelectedRecipients} className="w-full px-4 py-2.5 text-left text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors">
+                        <button onClick={removeSelectedRecipients} className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors">
                           <Trash2 className="h-4 w-4 text-red-500" /> Remove selected
                         </button>
                       </div>
@@ -492,8 +492,8 @@ export function ComposeForm({
                   <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-gray-100">
                     <Users className="h-6 w-6 text-gray-300" />
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">No recipients added</p>
-                  <p className="text-xs text-gray-500 mt-1">Import a CSV or enter emails manually to start your outreach.</p>
+                  <p className="text-sm font-bold text-gray-900">No recipients added</p>
+                  <p className="text-xs text-gray-500 mt-1 font-medium">Import a CSV or enter emails manually to start your outreach.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-50">
@@ -509,9 +509,9 @@ export function ComposeForm({
                         {data.selectedRecipients.has(email) ? <CheckSquare className="h-4 w-4 text-brand" /> : <Square className="h-4 w-4 text-gray-300 group-hover:text-gray-400" />}
                       </button>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-gray-700 truncate">{email}</p>
+                        <p className="text-xs font-bold text-gray-700 truncate">{email}</p>
                         {recipientColumnData[email.toLowerCase()] && (
-                          <p className="text-[10px] text-gray-400 truncate mt-0.5">
+                          <p className="text-[10px] text-gray-400 truncate mt-0.5 font-medium">
                             {Object.values(recipientColumnData[email.toLowerCase()]).filter(Boolean).join(" · ")}
                           </p>
                         )}
@@ -530,8 +530,8 @@ export function ComposeForm({
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
             <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                  <Settings2 className="h-4 w-4 text-amber-500" />
+                <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center">
+                  <Settings2 className="h-4 w-4 text-gray-500" />
                 </div>
                 <h3 className="text-sm font-bold text-gray-900 tracking-tight">Delivery Pace</h3>
               </div>
@@ -583,7 +583,7 @@ export function ComposeForm({
                   >
                     {trackOpens && <CheckSquare className="h-3.5 w-3.5" />}
                   </div>
-                  <span className="text-xs font-semibold text-gray-700">Track email opens</span>
+                  <span className="text-xs font-bold text-gray-700">Track email opens</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer group">
                   <div
@@ -595,7 +595,7 @@ export function ComposeForm({
                   >
                     {trackClicks && <CheckSquare className="h-3.5 w-3.5" />}
                   </div>
-                  <span className="text-xs font-semibold text-gray-700">Track link clicks</span>
+                  <span className="text-xs font-bold text-gray-700">Track link clicks</span>
                 </label>
               </div>
             </div>
@@ -652,12 +652,12 @@ export function ComposeForm({
                   </div>
 
                   {showCc && (
-                    <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div>
                       <div className="relative">
                         <input
                           type="text"
                           placeholder="Cc emails..."
-                          className="w-full h-10 pl-4 pr-4 rounded-xl border border-gray-200 text-sm bg-white focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all"
+                          className="w-full h-10 pl-4 pr-4 rounded-xl border border-gray-200 text-sm bg-white focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all font-medium"
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === ",") {
                               e.preventDefault();
@@ -672,7 +672,7 @@ export function ComposeForm({
                       </div>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {data.cc.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-gray-100 text-[11px] font-semibold text-gray-600">
+                          <span key={email} className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-gray-100 text-[11px] font-bold text-gray-600">
                             {email}
                             <button onClick={() => setData({ ...data, cc: data.cc.filter(e => e !== email) })}><X className="h-3 w-3 hover:text-red-500" /></button>
                           </span>
@@ -682,12 +682,12 @@ export function ComposeForm({
                   )}
 
                   {showBcc && (
-                    <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div>
                       <div className="relative">
                         <input
                           type="text"
                           placeholder="Bcc emails..."
-                          className="w-full h-10 pl-4 pr-4 rounded-xl border border-gray-200 text-sm bg-white focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all"
+                          className="w-full h-10 pl-4 pr-4 rounded-xl border border-gray-200 text-sm bg-white focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all font-medium"
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === ",") {
                               e.preventDefault();
@@ -702,7 +702,7 @@ export function ComposeForm({
                       </div>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {data.bcc.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-gray-100 text-[11px] font-semibold text-gray-600">
+                          <span key={email} className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-gray-100 text-[11px] font-bold text-gray-600">
                             {email}
                             <button onClick={() => setData({ ...data, bcc: data.bcc.filter(e => e !== email) })}><X className="h-3 w-3 hover:text-red-500" /></button>
                           </span>
@@ -727,7 +727,7 @@ export function ComposeForm({
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       onClick={() => setIsSignatureModalOpen(true)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-600 hover:border-brand/30 hover:text-brand transition-all"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-600 hover:border-brand/30 hover:text-brand transition-all shadow-sm"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       {selectedSignature ? `Signature: ${selectedSignature.name}` : "Add Signature"}
@@ -751,12 +751,12 @@ export function ComposeForm({
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-rose-50 flex items-center justify-center">
-                  <RefreshCw className="h-4 w-4 text-rose-500" />
+                <div className="h-8 w-8 rounded-lg bg-brand-light flex items-center justify-center">
+                  <RefreshCw className="h-4 w-4 text-brand" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 tracking-tight">Automated Follow-ups</h3>
-                  <p className="text-[10px] text-gray-400 font-medium">Pause automatically when someone replies</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pause automatically when someone replies</p>
                 </div>
               </div>
             </div>
@@ -801,7 +801,7 @@ export function ComposeForm({
                     <p className="text-sm font-bold text-gray-900 truncate">{sig.name}</p>
                     {sig.isDefault && <span className="text-[9px] font-black uppercase bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">Default</span>}
                   </div>
-                  <div className="text-[10px] text-gray-400 truncate opacity-60" dangerouslySetInnerHTML={{ __html: sig.content }} />
+                  <div className="text-[10px] text-gray-400 truncate opacity-60 font-medium" dangerouslySetInnerHTML={{ __html: sig.content }} />
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
@@ -846,7 +846,7 @@ export function ComposeForm({
                 value={editingSignature.name}
                 onChange={(e) => setEditingSignature({ ...editingSignature, name: e.target.value })}
                 placeholder="e.g. Sales, Professional, Simple"
-                className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all text-sm font-medium"
+                className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all text-sm font-bold"
               />
             </div>
             <div>
@@ -855,7 +855,7 @@ export function ComposeForm({
                 value={editingSignature.content}
                 onChange={(e) => setEditingSignature({ ...editingSignature, content: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all text-sm font-medium"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all text-sm font-bold"
               />
             </div>
             <label className="flex items-center gap-3 cursor-pointer group">
@@ -868,7 +868,7 @@ export function ComposeForm({
               >
                 {editingSignature.isDefault && <CheckCircle2 className="h-3.5 w-3.5" />}
               </div>
-              <span className="text-xs font-semibold text-gray-700">Set as default signature</span>
+              <span className="text-xs font-bold text-gray-700">Set as default signature</span>
             </label>
             <div className="flex gap-3 pt-4">
               <button
@@ -889,7 +889,7 @@ export function ComposeForm({
                   setEditingSignature(null);
                 }}
                 disabled={!editingSignature.name || !editingSignature.content}
-                className="flex-1 h-11 bg-brand text-white rounded-xl text-sm font-bold shadow-lg shadow-brand/20 disabled:opacity-40 transition-all"
+                className="flex-1 h-11 bg-brand text-white rounded-xl text-sm font-bold shadow-sm disabled:opacity-40 transition-all"
               >
                 Save Signature
               </button>
@@ -919,7 +919,7 @@ export function ComposeForm({
             </div>
             <div className="text-center">
               <h2 className="text-lg font-bold text-gray-900">Apply Template?</h2>
-              <p className="text-sm text-gray-500 mt-2 px-6">This will replace your current subject and body. This action cannot be undone.</p>
+              <p className="text-sm text-gray-500 mt-2 px-6 font-medium">This will replace your current subject and body. This action cannot be undone.</p>
             </div>
             <div className="flex gap-3">
               <button
@@ -934,7 +934,7 @@ export function ComposeForm({
                   setPendingTemplate(null);
                   addToast("success", `Template applied: ${pendingTemplate.name}`);
                 }}
-                className="flex-1 h-12 bg-brand text-white rounded-xl text-sm font-bold shadow-lg shadow-brand/20 transition-all"
+                className="flex-1 h-12 bg-brand text-white rounded-xl text-sm font-bold shadow-sm transition-all"
               >
                 Apply Template
               </button>

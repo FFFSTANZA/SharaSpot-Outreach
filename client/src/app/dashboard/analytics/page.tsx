@@ -27,7 +27,7 @@ function AreaChart({ data, height = 120, colors }: { data: { value: number }[]; 
     <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }}>
       <defs>
         <linearGradient id={`grad-${colors[0]}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={colors[0]} stopOpacity="0.2" />
+          <stop offset="0%" stopColor={colors[0]} stopOpacity="0.1" />
           <stop offset="100%" stopColor={colors[0]} stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -52,8 +52,8 @@ function MultiLineChart({ data, height = 120 }: { data: DailySeriesPoint[]; heig
   return (
     <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }}>
       <path d={makePath("opens")} fill="none" stroke="#00A63E" strokeWidth="2" strokeLinecap="round" />
-      <path d={makePath("clicks")} fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" />
-      <path d={makePath("replies")} fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" />
+      <path d={makePath("clicks")} fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
+      <path d={makePath("replies")} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -261,7 +261,7 @@ export default function AnalyticsPage() {
                   <h2 className="text-sm font-bold text-gray-900">Activity Trend</h2>
                   <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider text-text-muted">
                     <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-brand" /> Opens</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-teal-500" /> Clicks</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Clicks</span>
                     <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-blue-500" /> Replies</span>
                   </div>
                 </div>
@@ -324,7 +324,7 @@ export default function AnalyticsPage() {
                 <h2 className="text-sm font-bold text-gray-900 mb-6">Engagement Pipeline</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                   <EngagementBar label="Opened" count={overview.uniqueOpens} total={overview.totalSent} color="bg-brand" />
-                  <EngagementBar label="Clicked" count={overview.uniqueClicks} total={overview.totalSent} color="bg-teal-500" />
+                  <EngagementBar label="Clicked" count={overview.uniqueClicks} total={overview.totalSent} color="bg-emerald-500" />
                   <EngagementBar label="Replied" count={overview.totalReplied} total={overview.totalSent} color="bg-blue-500" />
                 </div>
               </div>
@@ -346,8 +346,8 @@ export default function AnalyticsPage() {
                 key={link.url}
                 className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-100 hover:border-brand/30 transition-all shadow-sm"
               >
-                <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                  <ExternalLink className="h-5 w-5 text-indigo-500" />
+                <div className="h-10 w-10 rounded-lg bg-brand-light flex items-center justify-center shrink-0">
+                  <ExternalLink className="h-5 w-5 text-brand" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-gray-900 truncate">{link.url}</p>
@@ -355,7 +355,7 @@ export default function AnalyticsPage() {
                     <p className="text-[11px] text-text-secondary font-medium">Last clicked: {formatTime(link.lastClicked)}</p>
                   )}
                 </div>
-                <span className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600">
+                <span className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-brand-light px-3 py-1.5 text-xs font-bold text-brand">
                   <MousePointerClick className="h-3.5 w-3.5" />
                   {link.count}
                 </span>

@@ -63,13 +63,13 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
     limit > 0 ? Math.min(Math.round((current / limit) * 100), 100) : 0;
 
   const getBarColor = (percent: number) => {
-    if (percent >= 90) return "bg-red-500 shadow-red-500/20";
-    if (percent >= 70) return "bg-amber-500 shadow-amber-500/20";
-    return "bg-brand shadow-brand/20";
+    if (percent >= 90) return "bg-red-500";
+    if (percent >= 70) return "bg-amber-500";
+    return "bg-brand";
   };
 
   return (
-    <div className="rounded-2xl bg-white border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] overflow-hidden transition-all duration-300">
+    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden transition-all duration-300">
       <div
         role="button"
         tabIndex={0}
@@ -78,11 +78,11 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
         className="w-full flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-600/20">
+          <div className="h-10 w-10 rounded-xl bg-brand text-white flex items-center justify-center shadow-sm">
             <Activity className="h-5 w-5" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-black text-gray-900 uppercase tracking-tight">Throttle Status</p>
+            <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">Throttle Status</p>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Live rate limits per sender</p>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
               <span className="text-xs font-bold uppercase tracking-tight">{error}</span>
             </div>
           ) : senders.length === 0 ? (
-            <p className="text-xs font-black uppercase tracking-widest text-gray-300 text-center py-8">No sender data available</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-300 text-center py-8">No sender data available</p>
           ) : (
             senders.map((sender) => {
               const hourlyPercent = getUsagePercent(sender.currentHourlyCount, sender.effectiveLimits.perHour);
@@ -133,7 +133,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
                   key={sender.senderId}
                   className={cn(
                     "rounded-2xl border p-5 space-y-4 transition-all duration-300",
-                    isCooldown ? "border-blue-200 bg-blue-50/20 shadow-lg shadow-blue-500/5" : "border-gray-100 bg-gray-50/30 hover:border-brand/20"
+                    isCooldown ? "border-blue-200 bg-blue-50/20" : "border-gray-100 bg-gray-50/30 hover:border-brand/20"
                   )}
                 >
                   {/* Sender header */}
@@ -147,7 +147,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
                     <div className="flex items-center gap-2">
                       {/* Warmup badge */}
                       <span className={cn(
-                        "inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-tight",
+                        "inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[9px] font-bold uppercase tracking-tight",
                         warmup.bg, warmup.text
                       )}>
                         {sender.warmupStatus === "active" && <Flame className="h-2.5 w-2.5" />}
@@ -155,7 +155,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
                       </span>
                       {/* Cooldown badge */}
                       {isCooldown && (
-                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-100 px-2 py-1 text-[9px] font-black uppercase tracking-tight text-blue-700">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-100 px-2 py-1 text-[9px] font-bold uppercase tracking-tight text-blue-700">
                           <Snowflake className="h-2.5 w-2.5" />
                           Cooldown
                         </span>
@@ -165,7 +165,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
 
                   {/* Hourly usage */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
                       <span className="text-gray-400">Hourly Speed</span>
                       <span className="text-gray-900">
                         {sender.currentHourlyCount} / {sender.effectiveLimits.perHour}
@@ -173,7 +173,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
                     </div>
                     <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50">
                       <div
-                        className={cn("h-full rounded-full transition-all duration-700 shadow-sm", getBarColor(hourlyPercent))}
+                        className={cn("h-full rounded-full transition-all duration-700", getBarColor(hourlyPercent))}
                         style={{ width: `${hourlyPercent}%` }}
                       />
                     </div>
@@ -181,7 +181,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
 
                   {/* Daily usage */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
                       <span className="text-gray-400">Daily Volume</span>
                       <span className="text-gray-900">
                         {sender.currentDailyCount} / {sender.effectiveLimits.perDay}
@@ -189,14 +189,14 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
                     </div>
                     <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50">
                       <div
-                        className={cn("h-full rounded-full transition-all duration-700 shadow-sm", getBarColor(dailyPercent))}
+                        className={cn("h-full rounded-full transition-all duration-700", getBarColor(dailyPercent))}
                         style={{ width: `${dailyPercent}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Per-minute limit info */}
-                  <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 pt-2 border-t border-gray-100/50">
+                  <div className="flex items-center gap-4 text-[9px] font-bold uppercase tracking-[0.15em] text-gray-300 pt-2 border-t border-gray-100/50">
                     <span className="flex items-center gap-1.5">
                       <Shield className="h-3 w-3" />
                       {sender.effectiveLimits.perMinute} / min limit
