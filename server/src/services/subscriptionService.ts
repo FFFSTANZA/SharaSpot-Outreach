@@ -174,9 +174,18 @@ export async function getSubscriptionStatus(
     where: { userId },
   });
 
-  const isPremium =
+  const now = new Date();
+
+  // Trial is active if trialEnd is in the future
+  const isTrialActive = subscription?.trialEnd && new Date(subscription.trialEnd) > now;
+
+  // Subscription is active if status is ACTIVE and currentPeriodEnd is in the future
+  const isSubscriptionActive =
     subscription?.status === SubscriptionStatus.ACTIVE &&
-    new Date(subscription.currentPeriodEnd) > new Date();
+    subscription?.currentPeriodEnd &&
+    new Date(subscription.currentPeriodEnd) > now;
+
+  const isPremium = !!(isTrialActive || isSubscriptionActive);
 
   return { isPremium, subscription };
 }

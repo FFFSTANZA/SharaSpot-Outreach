@@ -12,14 +12,6 @@ import type {
   CreateTemplatePayload,
   UpdateTemplatePayload,
   SequenceResponse,
-  Contact,
-  Tag,
-  ContactNote,
-  ContactActivity,
-  CreateContactPayload,
-  UpdateContactPayload,
-  CreateTagPayload,
-  CreateNotePayload,
 } from "@/types";
 
 // ─── Auth ───
@@ -303,6 +295,8 @@ export interface SubscriptionResponse {
     currentPeriodEnd: string;
     cancelAtPeriodEnd: boolean;
     trialEnd: string | null;
+    dodoCustomerId: string | null;
+    dodoSubscriptionId: string | null;
   } | null;
   pricing: {
     amount: number;
@@ -454,70 +448,4 @@ export const getPriorityStatus = async (campaignId: string): Promise<PriorityCam
   return res.data;
 };
 
-// ─── PRM ───
 
-export const getContacts = async (params: { search?: string; stage?: string; tag?: string } = {}): Promise<Contact[]> => {
-  const qs = new URLSearchParams(params as any).toString();
-  const res = await api.get(`/api/contacts${qs ? `?${qs}` : ""}`);
-  return res.data;
-};
-
-export const getContactById = async (id: string): Promise<Contact> => {
-  const res = await api.get(`/api/contacts/${id}`);
-  return res.data;
-};
-
-export const createContact = async (data: CreateContactPayload): Promise<Contact> => {
-  const res = await api.post("/api/contacts", data);
-  return res.data;
-};
-
-export const updateContact = async (id: string, data: UpdateContactPayload): Promise<Contact> => {
-  const res = await api.put(`/api/contacts/${id}`, data);
-  return res.data;
-};
-
-export const deleteContact = async (id: string): Promise<void> => {
-  await api.delete(`/api/contacts/${id}`);
-};
-
-export const bulkUpdateContacts = async (ids: string[], data: { stage?: string; tags?: string[] }): Promise<void> => {
-  await api.post("/api/contacts/bulk-update", { ids, data });
-};
-
-export const bulkDeleteContacts = async (ids: string[]): Promise<void> => {
-  await api.post("/api/contacts/bulk-delete", { ids });
-};
-
-export const getTags = async (): Promise<Tag[]> => {
-  const res = await api.get("/api/tags");
-  return res.data;
-};
-
-export const createTag = async (data: CreateTagPayload): Promise<Tag> => {
-  const res = await api.post("/api/tags", data);
-  return res.data;
-};
-
-export const updateTag = async (id: string, data: { name?: string; color?: string }): Promise<Tag> => {
-  const res = await api.put(`/api/tags/${id}`, data);
-  return res.data;
-};
-
-export const deleteTag = async (id: string): Promise<void> => {
-  await api.delete(`/api/tags/${id}`);
-};
-
-export const createNote = async (data: CreateNotePayload): Promise<ContactNote> => {
-  const res = await api.post("/api/contacts/notes", data);
-  return res.data;
-};
-
-export const updateNote = async (id: string, content: string): Promise<ContactNote> => {
-  const res = await api.put(`/api/contacts/notes/${id}`, { content });
-  return res.data;
-};
-
-export const deleteNote = async (id: string): Promise<void> => {
-  await api.delete(`/api/contacts/notes/${id}`);
-};

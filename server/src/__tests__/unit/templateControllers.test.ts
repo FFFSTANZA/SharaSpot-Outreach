@@ -38,7 +38,7 @@ describe("Template Controller — Unit Tests", () => {
   // --- createTemplate ---
 
   it("creates a template successfully", async () => {
-    const template = { id: "t1", userId: "user-123", name: "Intro", subject: "Hi", body: "<p>Hello</p>" };
+    const template = { id: "t1", userId: "user-123", name: "Intro", subject: "Hi", body: "<p>Hello</p>", isSystem: false };
     (prisma.emailTemplate.create as jest.Mock).mockResolvedValue(template);
 
     const { req, res } = mockReqRes({ name: "Intro", subject: "Hi", body: "<p>Hello</p>" });
@@ -86,8 +86,8 @@ describe("Template Controller — Unit Tests", () => {
 
   it("returns templates ordered by updatedAt desc", async () => {
     const templates = [
-      { id: "t2", name: "B", updatedAt: new Date("2026-02-01") },
-      { id: "t1", name: "A", updatedAt: new Date("2026-01-01") },
+      { id: "t2", name: "B", isSystem: false, updatedAt: new Date("2026-02-01") },
+      { id: "t1", name: "A", isSystem: false, updatedAt: new Date("2026-01-01") },
     ];
     (prisma.emailTemplate.findMany as jest.Mock).mockResolvedValue(templates);
 
@@ -105,7 +105,7 @@ describe("Template Controller — Unit Tests", () => {
   // --- updateTemplate ---
 
   it("updates a template successfully", async () => {
-    const existing = { id: "t1", userId: "user-123", name: "Old" };
+    const existing = { id: "t1", userId: "user-123", name: "Old", isSystem: false };
     const updated = { ...existing, name: "New" };
     (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue(existing);
     (prisma.emailTemplate.update as jest.Mock).mockResolvedValue(updated);

@@ -42,6 +42,10 @@ jest.mock("../../utils/dailyLimitTracker", () => ({
   getSentCountToday: jest.fn().mockResolvedValue(0),
 }));
 
+jest.mock("../../utils/premiumCheck", () => ({
+  requirePremium: jest.fn().mockResolvedValue({ allowed: true, message: "" }),
+}));
+
 import {
   createCampaign,
   getCampaignById,

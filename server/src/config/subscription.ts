@@ -1,5 +1,5 @@
-export const SUBSCRIPTION_PRICE_CENTS = 1900;
-export const SUBSCRIPTION_PRICE_USD = 19.00;
+export const SUBSCRIPTION_PRICE_CENTS = 2000;
+export const SUBSCRIPTION_PRICE_USD = 20.00;
 export const SUBSCRIPTION_INTERVAL = "month";
 
 export const PREMIUM_FEATURES = {
@@ -12,10 +12,6 @@ export const PREMIUM_FEATURES = {
   priorityMail: true,
 } as const;
 
-export const FREE_TIER_LIMITS = {
-  maxSenders: 2,
-  maxCampaigns: 3,
-} as const;
 
 export const DODO_PRODUCT_ID_MONTHLY = process.env.DODO_PRODUCT_ID_MONTHLY || "";
 

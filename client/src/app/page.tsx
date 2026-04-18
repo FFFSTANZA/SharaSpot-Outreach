@@ -148,7 +148,7 @@ export default function LandingPage() {
             operatingSystem: "Web",
             offers: {
               "@type": "Offer",
-              price: "0",
+              price: "20.00",
               priceCurrency: "USD",
             },
             author: {
@@ -244,7 +244,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Button className="w-full sm:w-auto px-8 py-3.5 text-sm rounded-full shadow-lg shadow-emerald-600/25" onClick={() => router.push("/login")}>
-                Start Free <ArrowRight className="ml-2 h-4 w-4 inline" />
+                Start 7-Day Free Trial <ArrowRight className="ml-2 h-4 w-4 inline" />
               </Button>
               <Button variant="ghost" className="w-full sm:w-auto px-8 py-3.5 text-sm text-gray-700" onClick={() => router.push("/guide")}>
                 Read the Guide
@@ -253,7 +253,7 @@ export default function LandingPage() {
             <div className="mt-8 flex flex-wrap items-center gap-4 justify-center lg:justify-start text-sm text-gray-600">
               <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-emerald-600" /> AES-256 encrypted</span>
               <span className="h-1 w-1 rounded-full bg-gray-400 hidden sm:block" />
-              <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-emerald-600" /> Free forever</span>
+              <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-emerald-600" /> $20/month</span>
               <span className="h-1 w-1 rounded-full bg-gray-400 hidden sm:block" />
               <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-emerald-600" /> 2 min setup</span>
             </div>
@@ -398,7 +398,7 @@ export default function LandingPage() {
               { value: 50000, suffix: "+", label: "Emails Sent" },
               { value: 42, suffix: "%", label: "Avg Open Rate" },
               { value: 99, suffix: "%", label: "Delivery Rate" },
-              { value: 0, suffix: "", label: "Monthly Cost", prefix: "$" },
+              { value: 20, suffix: "", label: "Monthly Cost", prefix: "$" },
             ].map((s, i) => (
               <div key={i} className={`text-center ${i > 0 ? "md:border-l md:border-white/10" : ""} py-2`}>
                 <div className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
@@ -417,18 +417,18 @@ export default function LandingPage() {
           <div className="text-center mb-12 md:mb-16">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-1.5 text-sm font-semibold text-emerald-700 mb-6">
               <Crown className="h-3.5 w-3.5" />
-              Premium Coming Soon
+              Premium Features
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-              Premium is about making you better,<br />
-              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">not making you pay more</span>
+              One simple plan for<br />
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">maximum results</span>
             </h2>
             <p className="mt-5 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Every feature you use today stays free forever. We are building premium because you told us what you need, not because we want to lock things behind a paywall. SharaSpot will always be powerful as a free tool. Premium just adds sharper edges for those who want them.
+              Every feature we build is designed to make your outreach smarter. Get full access for $20 per month after your 7-day free trial. No limits, no compromises.
             </p>
             <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-5 py-2">
               <Shield className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="text-xs font-semibold text-emerald-700">No feature removals. No limits reduced. No restrictions. Ever.</span>
+              <span className="text-xs font-semibold text-emerald-700">All premium features included. Unlimited campaigns. Unlimited senders.</span>
             </div>
           </div>
 
@@ -504,7 +504,7 @@ export default function LandingPage() {
             <div className="relative">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-sm font-semibold text-emerald-300 mb-6 border border-white/10">
                 <Rocket className="h-3.5 w-3.5" />
-                Free forever · No credit card required
+                7-day free trial · Cancel anytime
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight leading-tight">
                 Ready to start reaching<br />

@@ -324,7 +324,19 @@ export function ComposeForm({
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {/* Optional: Add a subtle status indicator or nothing here */}
+                <Button
+                  variant="primary"
+                  className="px-6 gap-2 h-10 font-bold shadow-lg shadow-blue-100"
+                  onClick={handleFormSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  {scheduledAt ? "Schedule" : "Send"}
+                </Button>
               </div>
             </div>
 
@@ -532,20 +544,6 @@ export function ComposeForm({
                   {/* Footer */}
                   <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="primary"
-                        className="px-6 gap-2 h-10 font-bold"
-                        onClick={handleFormSubmit}
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                        {scheduledAt ? "Schedule" : "Send Campaign"}
-                      </Button>
-
                       <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
                       <button
                         onClick={() => csvInputRef.current?.click()}
@@ -757,7 +755,7 @@ export function ComposeForm({
                             <div>
                               <p className={cn("text-sm font-bold", isPremium ? "text-gray-700" : "text-gray-500")}>Priority Sending</p>
                               {!isPremium ? (
-                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Requires Pro Plan</p>
+                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Requires Subscription</p>
                               ) : (
                                 <p className="text-[10px] text-gray-400">Skip the queue</p>
                               )}
@@ -775,11 +773,9 @@ export function ComposeForm({
                           )}
                         </label>
 
-                        {!isPremium && (
-                          <p className="text-xs text-gray-400 text-center pt-1">
-                            Upgrade to unlock premium features
-                          </p>
-                        )}
+                        <p className="text-xs text-gray-400 text-center pt-1">
+                          Subscribe to unlock premium features
+                        </p>
                       </div>
                     </div>
 

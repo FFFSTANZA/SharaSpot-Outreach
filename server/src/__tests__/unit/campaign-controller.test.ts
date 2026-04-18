@@ -28,6 +28,10 @@ jest.mock("../../queues/emailQueue", () => ({
   },
 }));
 
+jest.mock("../../utils/premiumCheck", () => ({
+  requirePremium: jest.fn().mockResolvedValue({ allowed: true, message: "" }),
+}));
+
 jest.mock("crypto", () => ({
   randomUUID: jest.fn(() => "mock-uuid-0001"),
 }));

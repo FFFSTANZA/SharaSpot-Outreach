@@ -23,11 +23,17 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     const user = await prisma.user.upsert({
       where: { email },
       update: { name, avatarUrl: picture },
-      create: { 
-        email, 
-        name, 
-        avatarUrl: picture, 
+      create: {
+        email,
+        name,
+        avatarUrl: picture,
         senders: { create: { email, name, appPassword: "" } },
+        subscription: {
+          create: {
+            trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            currentPeriodEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default to end of trial
+          }
+        },
         tags: {
           create: [
             { name: "Investor", color: "#ef4444" },
@@ -35,7 +41,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
             { name: "Recruiter", color: "#10b981" },
           ]
         }
-      },
+      } as any,
     });
 
     console.log("User upserted, generating tokens...");

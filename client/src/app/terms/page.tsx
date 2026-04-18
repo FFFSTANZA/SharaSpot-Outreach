@@ -28,6 +28,11 @@ export default function TermsPage() {
       content: "SharaSpot is provided as-is. We don't guarantee email deliverability, inbox placement, or response rates. Gmail's sending limits and policies are controlled by Google — we help you stay within them but can't override them.",
     },
     {
+      icon: Scale,
+      title: "Subscription and Billing",
+      content: "SharaSpot offers a 7-day free trial for new users. After the trial period, a mandatory subscription of $20/month is required to continue using the service. Subscriptions are billed monthly and can be cancelled at any time through the billing dashboard.",
+    },
+    {
       icon: RefreshCw,
       title: "Changes to Terms",
       content: "We may update these terms from time to time. Continued use of SharaSpot after changes constitutes acceptance. We'll note the last updated date at the top of this page.",

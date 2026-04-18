@@ -21,8 +21,17 @@ export default function VariablePreview({
   recipients,
 }: VariablePreviewProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(0);
 
-  // Extract all unique variable names from subject + body
+  const validRecipients = recipients.filter(r => 
+    r && recipientColumnData[r.toLowerCase()] && Object.keys(recipientColumnData[r.toLowerCase()]).length > 0
+  );
+
+  const currentRecipient = validRecipients[previewIndex] || recipients[0];
+  const firstColumnData = currentRecipient
+    ? recipientColumnData[currentRecipient.toLowerCase()] ?? {}
+    : {};
+
   const variables = useMemo(() => {
     const combined = `${subject} ${body}`;
     const vars = new Set<string>();
@@ -34,21 +43,14 @@ export default function VariablePreview({
     return Array.from(vars);
   }, [subject, body]);
 
-  // Get first recipient's column data for preview
-  const firstRecipient = recipients[0];
-  const firstColumnData = firstRecipient
-    ? recipientColumnData[firstRecipient.toLowerCase()] ?? {}
-    : {};
-
   const columnHeaders = Object.keys(firstColumnData);
   const { matched, unmatched } = useMemo(
     () => matchVariablesToColumns(variables, columnHeaders),
     [variables, columnHeaders]
   );
 
-  // Resolve preview content
   const resolveContent = (content: string): string => {
-    if (!firstRecipient || !Object.keys(firstColumnData).length) return content;
+    if (!currentRecipient || !Object.keys(firstColumnData).length) return content;
     const lowerMap: Record<string, string> = {};
     for (const key of Object.keys(firstColumnData)) {
       lowerMap[key.toLowerCase()] = firstColumnData[key];
@@ -61,11 +63,15 @@ export default function VariablePreview({
 
   const resolvedSubject = resolveContent(subject);
   const resolvedBody = resolveContent(body);
-  const hasRecipients = recipients.length > 0 && Object.keys(firstColumnData).length > 0;
+  const hasRecipients = recipients.length > 0;
+  const hasColumnData = Object.keys(firstColumnData).length > 0;
+  const totalWithData = validRecipients.length;
+
+  const goToPrev = () => setPreviewIndex(i => Math.max(0, i - 1));
+  const goToNext = () => setPreviewIndex(i => Math.min(recipients.length - 1, i + 1));
 
   return (
     <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-      {/* Toggle header */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -78,7 +84,7 @@ export default function VariablePreview({
           </span>
           {hasRecipients && (
             <span className="text-[10px] text-gray-300">
-              — showing for {firstRecipient}
+              {totalWithData > 0 ? `(${previewIndex + 1}/${recipients.length})` : `(${recipients.length} recipients)`}
             </span>
           )}
         </div>
@@ -90,15 +96,35 @@ export default function VariablePreview({
         />
       </button>
 
-      {/* Collapsible content */}
       <div
         className={cn(
           "overflow-hidden transition-all duration-200 ease-out",
-          isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+          isOpen ? "max-h-[700px] opacity-100" : "max-h-0 opacity-0"
         )}
       >
         <div className="px-4 md:px-5 pb-4 space-y-3">
-          {/* Variable status badges - only if variables exist */}
+          {hasRecipients && (
+            <div className="flex items-center justify-between bg-gray-50/50 rounded-lg px-3 py-2">
+              <button
+                onClick={goToPrev}
+                disabled={previewIndex === 0}
+                className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                ← Prev
+              </button>
+              <span className="text-xs font-medium text-gray-600">
+                {currentRecipient}
+              </span>
+              <button
+                onClick={goToNext}
+                disabled={previewIndex >= recipients.length - 1}
+                className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+
           {variables.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-1">
               {matched.map((v) => (
@@ -122,25 +148,23 @@ export default function VariablePreview({
             </div>
           )}
 
-          {!hasRecipients && variables.length > 0 && (
+          {!hasColumnData && variables.length > 0 && (
             <p className="text-[10px] text-gray-400 italic">
-              Import a CSV to see variable values.
+              Import a CSV with matching columns to see variable values.
             </p>
           )}
 
-          {/* Resolved subject preview */}
           <div>
             <p className="text-[10px] font-semibold text-gray-400 mb-1">Subject</p>
-            <p className="text-xs text-gray-700 bg-gray-50/80 rounded-lg px-3 py-2 border border-gray-100">
+            <p className="text-sm text-gray-900 bg-gray-50/80 rounded-lg px-4 py-3 border border-gray-100 font-medium">
               {resolvedSubject || <span className="text-gray-300 italic">No subject...</span>}
             </p>
           </div>
 
-          {/* Resolved body preview */}
           <div>
-            <p className="text-[10px] font-semibold text-gray-400 mb-1">Body Preview</p>
+            <p className="text-[10px] font-semibold text-gray-400 mb-1">Email Body</p>
             <div
-              className="text-xs text-gray-700 bg-gray-50/80 rounded-lg px-3 py-2 border border-gray-100 max-h-48 overflow-y-auto prose prose-sm prose-gray"
+              className="text-sm text-gray-800 bg-gray-50/80 rounded-lg px-4 py-3 border border-gray-100 max-h-64 overflow-y-auto leading-relaxed"
               dangerouslySetInnerHTML={{ __html: resolvedBody || "<span class='text-gray-300 italic'>No content yet...</span>" }}
             />
           </div>

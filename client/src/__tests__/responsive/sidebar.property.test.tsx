@@ -202,11 +202,11 @@ describe("SidebarItem active styling property tests", () => {
           const item = container.firstElementChild!;
 
           if (isActive) {
-            expect(item.className).toContain("bg-teal-50");
-            expect(item.className).toContain("text-teal-700");
+            expect(item.className).toContain("bg-[#E8F5E9]");
+            expect(item.className).toContain("text-[#037A31]");
           } else {
-            expect(item.className).not.toContain("bg-teal-50");
-            expect(item.className).not.toContain("text-teal-700");
+            expect(item.className).not.toContain("bg-[#E8F5E9]");
+            expect(item.className).not.toContain("text-[#037A31]");
           }
 
           unmount();

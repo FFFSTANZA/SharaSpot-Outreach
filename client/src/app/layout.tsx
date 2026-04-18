@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     default: "SharaSpot — Personal Outreach System That Gets Replies",
     template: "%s | SharaSpot",
   },
-  description: "SharaSpot sends emails like a human, not a bot. Multi-sender rotation, automatic warmup, human-like scheduling, reply detection, and real-time tracking. Send cold outreach at scale without landing in spam. Free forever.",
+  description: "SharaSpot sends emails like a human, not a bot. Multi-sender rotation, automatic warmup, human-like scheduling, reply detection, and real-time tracking. Send cold outreach at scale without landing in spam.",
   keywords: [
     "cold email outreach",
     "email automation",

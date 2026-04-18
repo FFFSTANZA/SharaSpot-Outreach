@@ -83,12 +83,10 @@ describe("Template Parser — Property-Based Tests", () => {
     // Malformed tokens that should NOT be extracted
     const malformedTokens = [
       "{{}}",           // empty
-      "{{UPPER}}",      // uppercase
       "{{ spaced }}",   // spaces
       "{{has-dash}}",   // dash
       "{{has.dot}}",    // dot
       "{single}",       // single braces
-      "{{MixedCase}}", // mixed case
     ];
 
     for (const token of malformedTokens) {

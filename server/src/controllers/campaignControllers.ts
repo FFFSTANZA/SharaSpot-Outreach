@@ -14,7 +14,7 @@ import { isInWarmup } from "../utils/warmupEvaluator";
 import { getAdaptiveState } from "../utils/adaptiveThrottle";
 import { getSentCountToday } from "../utils/dailyLimitTracker";
 import { requirePremium } from "../utils/premiumCheck";
-import { FREE_TIER_LIMITS } from "../config/subscription";
+import { SUBSCRIPTION_PRICE_USD } from "../config/subscription";
 
 /**
  * createCampaign — Creates an email campaign with full input validation,
@@ -196,25 +196,6 @@ export const createCampaign = async (
       }
     }
 
-    // --- Step 4c: Free tier limits ---
-    const { isPremium } = await import("../utils/premiumCheck").then(m => m.checkPremiumStatus(req.user!.id));
-    if (!isPremium) {
-      // Check campaign count limit (free tier: 3 active campaigns)
-      const activeCampaigns = await prisma.emailCampaign.count({
-        where: {
-          userId: req.user!.id,
-          status: { in: ["SCHEDULED", "SENDING"] },
-        },
-      });
-      if (activeCampaigns >= FREE_TIER_LIMITS.maxCampaigns) {
-        res.status(403).json({
-          message: `Free tier is limited to ${FREE_TIER_LIMITS.maxCampaigns} active campaigns. Upgrade to premium for unlimited campaigns.`,
-          upgradeRequired: true,
-        });
-        return;
-      }
-    }
-
     const scheduledAt = new Date(startTime);
 
     // Check if template variables exist in subject/body
@@ -378,7 +359,7 @@ export const createCampaign = async (
           company: recipient.columnData?.Company || recipient.columnData?.company || recipient.columnData?.Organization || recipient.columnData?.organization || recipient.columnData?.["Company Name"],
           jobTitle: recipient.columnData?.JobTitle || recipient.columnData?.jobTitle || recipient.columnData?.Role || recipient.columnData?.role || recipient.columnData?.["Job Title"],
         }, tx);
-        await logContactActivity(contact.id, "CAMPAIGN_ENROLLED", { 
+        await logContactActivity(contact.id, "CAMPAIGN_ENROLLED", {
           campaignId: campaign.id,
           subject: campaign.subject,
         }, tx);
@@ -487,7 +468,7 @@ export const createCampaign = async (
     // non-existent DB records if the transaction were to roll back.
     // WHY unique job IDs with UUID suffix: Prevents BullMQ jobId collision
     // when the same EmailJob is re-enqueued after rate limit rescheduling.
-    
+
     // Route to priority queue for Priority Mail campaigns
     if (isPriority === true) {
       for (const emailJob of emailJobs) {

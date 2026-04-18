@@ -19,9 +19,19 @@ export function EmailValidator({ emails, onRemoveEmail, onValidationComplete }: 
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState<"all" | "invalid" | "risky" | "valid">("all");
 
+  const openModal = () => {
+    setFilter("all");
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
   const handleValidate = async () => {
     if (emails.length === 0) return;
     setIsValidating(true);
+    setFilter("all");
 
     try {
       const result = await validateEmails(emails);
@@ -47,7 +57,7 @@ export function EmailValidator({ emails, onRemoveEmail, onValidationComplete }: 
 
   const handleRemoveInvalid = () => {
     invalidEmails.forEach(r => onRemoveEmail(r.email));
-    setShowModal(false);
+    closeModal();
   };
 
   return (
@@ -76,7 +86,7 @@ export function EmailValidator({ emails, onRemoveEmail, onValidationComplete }: 
         )}
       </button>
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+      <Modal isOpen={showModal} onClose={closeModal}>
         <div className="w-full max-w-2xl flex flex-col bg-white">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
@@ -86,7 +96,7 @@ export function EmailValidator({ emails, onRemoveEmail, onValidationComplete }: 
                 {validationResult?.total} recipients analyzed — {validationResult?.processingTimeMs}ms
               </p>
             </div>
-            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-50 rounded-xl transition-colors">
+            <button onClick={closeModal} className="p-2 hover:bg-gray-50 rounded-xl transition-colors">
               <X className="h-5 w-5 text-gray-400" />
             </button>
           </div>
@@ -186,7 +196,7 @@ export function EmailValidator({ emails, onRemoveEmail, onValidationComplete }: 
                       className="flex-1 bg-white border-gray-200 text-amber-600 hover:bg-amber-50 hover:border-amber-100 font-bold h-11"
                       onClick={() => {
                         riskyEmails.forEach(r => onRemoveEmail(r.email));
-                        setShowModal(false);
+                        closeModal();
                       }}
                     >
                       Remove {riskyEmails.length} risky

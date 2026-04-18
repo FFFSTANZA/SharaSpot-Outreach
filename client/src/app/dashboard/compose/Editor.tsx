@@ -14,13 +14,14 @@ import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import { useEffect, useCallback, useState } from "react";
+import { generateCalendlyLink } from "@/lib/apis";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, Quote, Code, Undo2, Redo2,
   Link as LinkIcon, Unlink, Highlighter, Minus, Type,
   Heading1, Heading2, Heading3, RemoveFormatting, Table as TableIcon,
-  ClipboardPaste,
+  ClipboardPaste, Calendar,
 } from "lucide-react";
 
 interface EditorProps {
@@ -199,6 +200,10 @@ export function Editor({ value = "", onChange }: EditorProps) {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
+  const [showCalendlyModal, setShowCalendlyModal] = useState(false);
+  const [calendlyUsername, setCalendlyUsername] = useState("");
+  const [calendlyEventType, setCalendlyEventType] = useState("");
+  const [isGeneratingCalendly, setIsGeneratingCalendly] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -279,6 +284,26 @@ export function Editor({ value = "", onChange }: EditorProps) {
     if (!editor) return;
     editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
   }, [editor]);
+
+  const handleInsertCalendly = useCallback(async () => {
+    if (!editor || !calendlyUsername.trim()) return;
+    setIsGeneratingCalendly(true);
+    try {
+      const result = await generateCalendlyLink({
+        username: calendlyUsername.trim(),
+        eventType: calendlyEventType.trim() || undefined,
+      });
+      const calendlyHtml = `<p><a href="${result.url}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #006BFF; color: white; text-decoration: none; border-radius: 4px; font-weight: 600;">${result.button.text || "Book a Meeting"}</a></p>`;
+      editor.chain().focus().insertContent(calendlyHtml).run();
+      setShowCalendlyModal(false);
+      setCalendlyUsername("");
+      setCalendlyEventType("");
+    } catch (err) {
+      console.error("Failed to generate Calendly link:", err);
+    } finally {
+      setIsGeneratingCalendly(false);
+    }
+  }, [editor, calendlyUsername, calendlyEventType]);
 
   const handlePaste = useCallback(async () => {
     try {
@@ -423,6 +448,14 @@ export function Editor({ value = "", onChange }: EditorProps) {
             <TableIcon className={iconSize} />
           </ToolbarButton>
 
+          {/* Calendly */}
+          <ToolbarButton
+            onClick={() => setShowCalendlyModal(true)}
+            title="Insert Calendly meeting"
+          >
+            <Calendar className={iconSize} />
+          </ToolbarButton>
+
           {/* Paste */}
           <ToolbarButton onClick={handlePaste} title="Paste from clipboard">
             <ClipboardPaste className={iconSize} />
@@ -504,6 +537,52 @@ export function Editor({ value = "", onChange }: EditorProps) {
           onSubmit={insertTable}
           onClose={() => setShowTableModal(false)}
         />
+      )}
+
+      {/* Calendly modal */}
+      {showCalendlyModal && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/30" onClick={() => setShowCalendlyModal(false)}>
+          <div className="bg-white rounded-t-2xl md:rounded-xl shadow-xl p-5 w-full max-w-sm md:mx-4 pb-8 md:pb-5" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Insert Calendly Meeting</h3>
+            <p className="text-xs text-gray-500 mb-4">Add a meeting booking button to your email.</p>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Your Calendly Username</label>
+                <input
+                  type="text"
+                  value={calendlyUsername}
+                  onChange={(e) => setCalendlyUsername(e.target.value)}
+                  placeholder="yourusername"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 mt-1"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">Just the username, not the full URL</p>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Event Type (optional)</label>
+                <input
+                  type="text"
+                  value={calendlyEventType}
+                  onChange={(e) => setCalendlyEventType(e.target.value)}
+                  placeholder="30-minute-call"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 mt-1"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-5">
+              <button type="button" onClick={() => setShowCalendlyModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleInsertCalendly}
+                disabled={!calendlyUsername.trim() || isGeneratingCalendly}
+                className="px-4 py-2 text-sm bg-[#006BFF] text-white rounded-lg hover:bg-[#0052CC] disabled:opacity-50"
+              >
+                {isGeneratingCalendly ? "Generating..." : "Insert"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

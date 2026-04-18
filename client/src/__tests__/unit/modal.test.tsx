@@ -39,7 +39,7 @@ describe("Modal component", () => {
     );
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveClass("max-w-[480px]");
-    expect(dialog).toHaveClass("rounded-xl");
+    expect(dialog).toHaveClass("rounded-2xl");
   });
 
   // --- Bottom-sheet variant ---

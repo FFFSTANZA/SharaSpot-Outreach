@@ -445,9 +445,9 @@ export async function processEmailJob(job: Job): Promise<void> {
     });
 
     // ---------------------------------------------------------------------------
-    // Download attachments from Cloudflare R2 (if any)
+    // Download attachments from Supabase Storage (if any)
     // ---------------------------------------------------------------------------
-    // WHY download at send time: Attachments are stored in R2, not locally.
+    // WHY download at send time: Attachments are stored in Supabase, not locally.
     // We download them into memory as Buffers and pass them to Nodemailer.
     // This keeps the worker stateless — no local file storage needed.
     // ---------------------------------------------------------------------------

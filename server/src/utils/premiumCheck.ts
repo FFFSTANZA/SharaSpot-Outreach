@@ -1,22 +1,12 @@
-import { prisma } from "../config/prisma";
-import { SubscriptionStatus } from "@prisma/client";
+import { getSubscriptionStatus } from "../services/subscriptionService";
 
 export interface PremiumCheckResult {
   isPremium: boolean;
-  subscription: { status: SubscriptionStatus; currentPeriodEnd: Date } | null;
+  subscription: any | null;
 }
 
 export async function checkPremiumStatus(userId: string): Promise<PremiumCheckResult> {
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId },
-  });
-
-  const isPremium =
-    subscription?.status === SubscriptionStatus.ACTIVE &&
-    subscription?.currentPeriodEnd &&
-    new Date(subscription.currentPeriodEnd) > new Date();
-
-  return { isPremium, subscription };
+  return await getSubscriptionStatus(userId);
 }
 
 export async function requirePremium(
@@ -29,8 +19,8 @@ export async function requirePremium(
     return {
       allowed: false,
       message: featureName
-        ? `${featureName} is a premium feature. Please upgrade to access.`
-        : "Premium subscription required. Please upgrade to access this feature.",
+        ? `${featureName} is a premium feature. Please subscribe to access.`
+        : "Premium subscription required. Please subscribe to access this feature.",
     };
   }
 

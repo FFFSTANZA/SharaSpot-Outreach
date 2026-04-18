@@ -74,6 +74,7 @@ jest.mock("../../utils/throttleEngine", () => ({
   canSend: jest.fn().mockResolvedValue({ allowed: true }),
   recordSendResult: jest.fn().mockResolvedValue(undefined),
   computeJitteredDelay: jest.fn((v: number) => v),
+  getEffectiveLimits: jest.fn().mockResolvedValue({ perMinute: 10, perHour: 100, perDay: 500, isThrottled: false, isWarmup: false, isCooldown: false }),
 }));
 
 import { processEmailJob } from "../../worker/emailWorker";
