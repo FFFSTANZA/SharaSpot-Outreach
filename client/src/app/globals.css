@@ -1,254 +1,92 @@
 @import "tailwindcss";
 
 @theme {
-  /* Custom breakpoints */
-  --breakpoint-sm: 380px;
+  /* Dynamic Breakpoints */
+  --breakpoint-xs: 380px;
+  --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
 
-  /* ═══════════════════════════════════════════════════════════════════════════════
-     SHARASPOT DESIGN SYSTEM - MEMORABLE IDENTITY
-     ═════════════════════════════════════════════════════════════════════════════ */
+  /* 
+     SHARASPOT CORE DESIGN SYSTEM 
+     Focus: High-contrast, tactile, and professional.
+  */
 
-  /* Brand accent - distinctive SharaSpot green (primary action color) */
+  /* Brand Colors - Deep Emerald & Clean Slate */
   --color-brand: #00A63E;
-  --color-brand-hover: #009134;
-  --color-brand-active: #007A2B;
   --color-brand-light: #E8F8ED;
-  --color-brand-muted: #D4F1DC;
+  --color-brand-muted: #B9E6C9;
 
-  /* Primary color palette -- SharaSpot elegant teal (secondary) */
-  --color-primary: #0F766E;
-  --color-primary-hover: #0D645F;
-  --color-primary-active: #0A4F47;
-  --color-primary-light: #F0FDF4;
-  --color-primary-disabled: #CCFBF1;
-
-  /* Neutral palette - warm grays for memorable feel */
-  --color-surface: #FFFFFF;
-  --color-background: #FAFBFC;
-  --color-border-light: #E8EAED;
-  --color-border-medium: #DADCE0;
-  --color-border-strong: #B8B9BC;
+  --color-background: #FFFFFF;
   --color-text-primary: #1A1D21;
   --color-text-secondary: #5F6368;
   --color-text-muted: #9AA0A6;
-  --color-text-disabled: #BDC1C6;
-  --color-divider: #F1F3F4;
 
-  /* Interactive states */
-  --color-interactive-hover: #F7F8F8;
-  --color-interactive-active: #ECEDEE;
-  --color-interactive-focus: rgba(0, 166, 56, 0.2);
+  --color-border-light: #E8EAED;
+  --color-border-medium: #DADCE0;
 
-  /* Semantic colors - memorable, distinctive */
-  --color-success-bg: #E8F8ED;
-  --color-success-text: #048C4A;
-  --color-success-border: #B8E4C1;
-  --color-success-icon: #34A853;
-  
-  --color-warning-bg: #FEF7E0;
-  --color-warning-text: #B06000;
-  --color-warning-border: #FAD987;
-  --color-warning-icon: #F9AB00;
-  
-  --color-error-bg: #FCE8E7;
-  --color-error-text: #C5221F;
-  --color-error-border: #F4B3AF;
-  --color-error-icon: #EA4335;
-  
-  --color-info-bg: #E8F0FE;
-  --color-info-text: #1967D2;
-  --color-info-border: #B3C4F6;
-  --color-info-icon: #4285F4;
+  --color-interactive-hover: #F1F3F4;
+  --color-interactive-active: #E8EAED;
 
-  /* Status indicator colors */
-  --color-status-sent: #34A853;
-  --color-status-sending: #4285F4;
-  --color-status-scheduled: #F9AB00;
-  --color-status-failed: #EA4335;
-  --color-status-pending: #9AA0A6;
+  --color-error-text: #D93025;
+  --color-error-bg: #FCE8E6;
+  --color-error-border: #FCA5A5;
 
-  /* Compose button accent - distinctive orange/coral for CTA */
-  --color-compose: #FF6D01;
-  --color-compose-hover: #E56200;
-  --color-compose-active: #CC5500;
-  --color-compose-light: #FFF4E6;
+  /* Shadows - Minimalist depth */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-brand-glow: 0 0 20px rgba(0, 166, 56, 0.15);
 
-  /* Sidebar */
-  --color-sidebar-hover: #F1F3F4;
-  --color-sidebar-active: #E8F5E9;
-  --color-sidebar-text-active: #037A31;
-
-  /* Font families */
-  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-
-  /* Font sizes - renamed to avoid theme mapping conflicts */
-  --app-text-xs: 0.75rem;
-  --app-text-sm: 0.875rem;
-  --app-text-base: 1rem;
-  --app-text-lg: 1.125rem;
-  --app-text-xl: 1.25rem;
-  --app-text-2xl: 1.5rem;
-  --app-text-3xl: 1.875rem;
-  --app-text-4xl: 2.25rem;
-
-  /* Spacing - consistent 4px grid */
-  --app-spacing-xs: 4px;
-  --app-spacing-sm: 8px;
-  --app-spacing-md: 16px;
-  --app-spacing-lg: 24px;
-  --app-spacing-xl: 32px;
-
-  /* Border Radius */
-  --app-radius-sm: 4px;
-  --app-radius-md: 8px;
-  --app-radius-lg: 12px;
-  --app-radius-xl: 16px;
-  --app-radius-full: 9999px;
-
-  /* Shadows - layered for depth */
-  --shadow-subtle: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-hover: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04);
-  --shadow-elevated: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
-  --shadow-modal: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-  
-  /* Brand glow - for primary actions */
-  --shadow-brand-glow: 0 0 20px rgba(0, 166, 56, 0.25);
-  --shadow-compose-glow: 0 0 24px rgba(255, 109, 1, 0.3);
-
-  /* Motion tokens */
-  --animate-duration-fast: 150ms;
-  --animate-duration-normal: 200ms;
-  --animate-duration-slow: 300ms;
-  --animate-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
-  --animate-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --animate-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Motion Tokens */
+  --animate-in: fade-in 0.4s ease-out forwards;
+  --animate-up: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
-   UI MOTION SYSTEM - Memorable, consistent interactions
-   ═══════════════════════════════════════════════════════════════════════════════ */
+/* 
+   REFINED MOTION SYSTEM 
+   Avoids 'animation slop' by using systemic transitions over ad-hoc keyframes.
+*/
 
-/* Page entrance - subtle and smooth */
-@keyframes pageEnter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+/* Accessibility & Utilities */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-border-medium);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Structural Classes */
+.shadow-elevated {
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+@layer base {
+  * {
+    @apply border-border-light;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  body {
+    @apply bg-background text-text-primary antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-/* Card hover lift - subtle depth */
-@keyframes cardHover {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-}
-
-/* Button press - tactile feedback */
-@keyframes buttonPress {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.96);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* Button hover - subtle grow */
-@keyframes buttonHover {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(1.02);
-  }
-}
-
-/* Row hover - gentle background shift */
-@keyframes rowHover {
-  from {
-    background-color: transparent;
-  }
-  to {
-    background-color: var(--color-sidebar-hover);
-  }
-}
-
-/* Stagger in - for lists */
-@keyframes fadeInStagger {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Star toggle - bounce effect */
-@keyframes starBounce {
-  0% {
-    transform: scale(1);
-  }
-  25% {
-    transform: scale(1.3);
-  }
-  50% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* Compose button pulse - subtle attention */
-@keyframes composePulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 109, 1, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(255, 109, 1, 0);
-  }
-}
-
-/* Status indicator pulse */
-@keyframes statusPulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* Skeleton shimmer - loading state */
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-
-/* ─── Landing page animations ─── */
-
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
@@ -258,463 +96,70 @@
   }
 }
 
-@keyframes fadeInUp {
+@keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(16px) scale(0.98);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-/* ─── Loader animations ─── */
-
-@keyframes breathe {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.08);
-    opacity: 0.85;
-  }
-}
-
-@keyframes progressBar {
-  0% {
-    width: 0%;
-  }
-
-  20% {
-    width: 30%;
-  }
-
-  50% {
-    width: 60%;
-  }
-
-  80% {
-    width: 85%;
-  }
-
-  100% {
-    width: 100%;
-  }
-}
-
-/* ─── Scroll-triggered visibility classes ─── */
-
-.fade-in-up {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.fade-in-up.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Staggered children animation delays */
-.fade-in-up.visible:nth-child(2) {
-  transition-delay: 0.1s;
-}
-
-.fade-in-up.visible:nth-child(3) {
-  transition-delay: 0.2s;
-}
-
-.fade-in-up.visible:nth-child(4) {
-  transition-delay: 0.3s;
-}
-
-/* ─── Global resets and base styles ─── */
-
+/* Base Styles */
 html {
   scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 body {
-  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-sans);
-  line-height: 1.2;
+/* Utility Animations */
+.animate-delay-100 {
+  animation-delay: 100ms;
 }
 
-p, li {
-  line-height: 1.6;
+.animate-delay-200 {
+  animation-delay: 200ms;
 }
 
-a {
-  text-decoration: none;
+.animate-delay-500 {
+  animation-delay: 500ms;
 }
 
-/* Touch device momentum scrolling */
-.scroll-touch {
-  -webkit-overflow-scrolling: touch;
-  overflow-y: auto;
-}
-
-/* Prevent horizontal overflow on mobile */
-@media (max-width: 1024px) {
-  html {
-    overflow-x: hidden;
-  }
-}
-
-/* Interactive element transition base */
-button,
-a,
-input,
-select,
-textarea {
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
-}
-
-/* ─── TipTap Editor Styles ─── */
-
+/* 
+   TIPTAP EDITOR REFINEMENT 
+*/
 .tiptap {
-  outline: none;
+  @apply outline-none min-h-[200px] text-text-primary leading-relaxed;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  float: left;
-  color: #9ca3af;
-  pointer-events: none;
-  height: 0;
+  @apply float-left text-text-muted pointer-events-none h-0 italic;
 }
 
-.tiptap h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.3;
-  margin: 0.75rem 0 0.5rem;
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.tiptap h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.35;
-  margin: 0.6rem 0 0.4rem;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.tiptap h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.4;
-  margin: 0.5rem 0 0.3rem;
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-medium);
+  border-radius: 10px;
 }
 
-.tiptap ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-}
-
-.tiptap ol {
-  list-style-type: decimal;
-  padding-left: 1.5rem;
-}
-
-.tiptap blockquote {
-  border-left: 3px solid #059669;
-  padding-left: 1rem;
-  color: #4b5563;
-  font-style: italic;
-  margin: 0.5rem 0;
-}
-
-.tiptap hr {
-  border: none;
-  border-top: 1px solid #e5e7eb;
-  margin: 1rem 0;
-}
-
-.tiptap code {
-  background-color: #f3f4f6;
-  padding: 0.15rem 0.35rem;
-  border-radius: 0.25rem;
-  font-size: 0.85em;
-  color: #db2777;
-}
-
-.tiptap pre {
-  background-color: #1f2937;
-  color: #e5e7eb;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.85em;
-  overflow-x: auto;
-  margin: 0.5rem 0;
-}
-
-.tiptap pre code {
-  background: none;
-  color: inherit;
-  padding: 0;
-}
-
-.tiptap a {
-  color: #2563eb;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.tiptap a:hover {
-  color: #1d4ed8;
-}
-
-.tiptap mark {
-  background-color: #fef08a;
-  padding: 0.1rem 0.2rem;
-  border-radius: 0.15rem;
-}
-
-/* Hide scrollbar for toolbar horizontal scroll on mobile */
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-
-/* ─── Toast notification animations ─── */
-
-@keyframes toastEnter {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) translateY(-12px);
-  }
-
-  70% {
-    opacity: 1;
-    transform: scale(1.02) translateY(0);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes toastBorderWipe {
-  0% {
-    transform: scaleY(0);
-    transform-origin: top;
-  }
-
-  100% {
-    transform: scaleY(1);
-    transform-origin: top;
-  }
-}
-
-@keyframes toastExit {
-  0% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-    filter: blur(0px);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(30px) scale(0.95);
-    filter: blur(4px);
-  }
-}
-
-@keyframes toastExitBlur {
-  0% {
-    filter: blur(0px);
-  }
-
-  100% {
-    filter: blur(4px);
-  }
-}
-
-@keyframes toastReflow {
-  0% {
-    transform: translateY(-12px);
-  }
-
-  60% {
-    transform: translateY(2px);
-  }
-
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes toastNudge {
-  0% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(2px);
-  }
-
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes toastIconPop {
-  0% {
-    transform: rotate(-15deg) scale(0);
-  }
-
-  70% {
-    transform: rotate(0deg) scale(1.2);
-  }
-
-  100% {
-    transform: rotate(0deg) scale(1);
-  }
-}
-
-@keyframes toastProgress {
-  0% {
-    width: 100%;
-  }
-
-  100% {
-    width: 0%;
-  }
-}
-
-@keyframes toastFadeIn {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes toastFadeOut {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Register toast animations in Tailwind theme */
-@theme {
-  --animate-toast-enter: toastEnter 450ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  --animate-toast-border-wipe: toastBorderWipe 400ms ease-out forwards;
-  --animate-toast-exit: toastExit 250ms cubic-bezier(0.4, 0, 1, 1) forwards;
-  --animate-toast-exit-blur: toastExitBlur 150ms ease-in forwards;
-  --animate-toast-reflow: toastReflow 300ms cubic-bezier(0.25, 1.5, 0.5, 1) forwards;
-  --animate-toast-nudge: toastNudge 200ms ease-out;
-  --animate-toast-icon-pop: toastIconPop 200ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms both;
-  --animate-toast-progress: toastProgress linear forwards;
-  --animate-toast-fade-in: toastFadeIn 150ms ease forwards;
-  --animate-toast-fade-out: toastFadeOut 150ms ease forwards;
-}
-
-/* Reduced motion: replace all complex toast animations with simple fades */
-@media (prefers-reduced-motion: reduce) {
-  .animate-toast-enter {
-    animation: toastFadeIn 150ms ease forwards !important;
-  }
-
-  .animate-toast-border-wipe {
-    animation: none !important;
-  }
-
-  .animate-toast-exit {
-    animation: toastFadeOut 150ms ease forwards !important;
-  }
-
-  .animate-toast-exit-blur {
-    animation: none !important;
-  }
-
-  .animate-toast-reflow {
-    animation: none !important;
-  }
-
-  .animate-toast-nudge {
-    animation: none !important;
-  }
-
-  .animate-toast-icon-pop {
-    animation: toastFadeIn 150ms ease forwards !important;
-  }
-
-  .animate-toast-progress {
-    animation: toastProgress linear forwards !important;
-  }
-}
-
-/* Toast hover lift effect */
-.toast-hover-lift {
-  transition: transform 150ms ease, box-shadow 150ms ease;
-}
-
-.toast-hover-lift:hover {
-  transform: scale(1.01) translateY(-1px);
-  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.05);
-}
-
-/* Progress bar glow effects */
-.toast-progress-glow-success {
-  box-shadow: 4px 0 8px rgba(34, 197, 94, 0.4);
-}
-
-.toast-progress-glow-error {
-  box-shadow: 4px 0 8px rgba(239, 68, 68, 0.4);
-}
-
-.toast-progress-glow-warning {
-  box-shadow: 4px 0 8px rgba(245, 158, 11, 0.4);
-}
-
-.toast-progress-glow-info {
-  box-shadow: 4px 0 8px rgba(59, 130, 246, 0.4);
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
 }

@@ -105,7 +105,7 @@ export default function CampaignsPage() {
               </div>
               <button 
                 onClick={() => router.push("/dashboard/compose")}
-                className="flex items-center gap-2 px-4 py-2 bg-teal-700 text-white rounded-md text-sm font-medium hover:bg-teal-800 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[#00A63E] text-white rounded-md text-sm font-medium hover:bg-[#009134] transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 New Campaign
@@ -118,7 +118,7 @@ export default function CampaignsPage() {
               <div className="flex-1 flex flex-col items-center justify-center gap-3">
                 <AlertCircle className="h-8 w-8 text-gray-300" />
                 <p className="text-sm text-gray-500">{error}</p>
-                <button onClick={refresh} className="text-sm text-teal-600 hover:underline">Retry</button>
+                <button onClick={refresh} className="text-sm text-[#00A63E] hover:underline">Retry</button>
               </div>
             ) : results.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
@@ -136,7 +136,7 @@ export default function CampaignsPage() {
                 {activeFilterCount === 0 && (
                   <button 
                     onClick={() => router.push("/dashboard/compose")}
-                    className="flex items-center gap-2 px-5 py-2 bg-teal-700 text-white rounded-md text-sm font-medium hover:bg-teal-800 transition-colors"
+                    className="flex items-center gap-2 px-5 py-2 bg-[#00A63E] text-white rounded-md text-sm font-medium hover:bg-[#009134] transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     Create Campaign
@@ -160,13 +160,13 @@ export default function CampaignsPage() {
                       {results.map((campaign: any) => (
                         <tr 
                           key={campaign.id}
-                          className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                          className="border-b border-gray-100 hover:bg-[#00A63E]/5 cursor-pointer transition-colors"
                           onClick={() => router.push(`/dashboard/campaigns/${campaign.id}`)}
                         >
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
-                              <div className="h-9 w-9 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                                <Megaphone className="h-4 w-4 text-teal-600" />
+                              <div className="h-9 w-9 rounded-full bg-[#00A63E]/10 flex items-center justify-center shrink-0">
+                                <Megaphone className="h-4 w-4 text-[#00A63E]" />
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">

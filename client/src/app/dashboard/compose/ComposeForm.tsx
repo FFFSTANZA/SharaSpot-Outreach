@@ -5,7 +5,7 @@ import { ComposeFormData, ComposeFormProps, SenderResponse } from "@/types";
 import { getSenders, BatchValidationResponse } from "@/lib/apis";
 import { SenderModal } from "./SenderModal";
 import { Editor } from "./Editor";
-import { X, CheckCircle2, AlertCircle, Plus, AlertTriangle, ChevronDown, Copy, Trash2, Send, Loader2, Settings2, Zap, Shield, MoreHorizontal, FileText, Eye, MousePointer2, ArrowLeft, CheckSquare, Square } from "lucide-react";
+import { X, CheckCircle2, AlertCircle, Plus, AlertTriangle, ChevronDown, Copy, Trash2, Send, Loader2, Settings2, Zap, MoreHorizontal, FileText, Eye, MousePointer2, ArrowLeft, CheckSquare, Square } from "lucide-react";
 import TemplateSelector from "./TemplateSelector";
 import type { EmailTemplate, SequenceStepInput } from "@/types";
 import Modal from "@/components/Modal";
@@ -15,7 +15,6 @@ import SequenceBuilder from "./SequenceBuilder";
 import { EmailValidator } from "./EmailValidator";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
-import { getSubscription } from "@/lib/apis";
 
 interface Signature {
   id: string;
@@ -45,7 +44,6 @@ export function ComposeForm({
 }) {
   const { addToast } = useToast();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
-  const [isPremium, setIsPremium] = useState(false);
   const [isSenderLoading, setIsSenderLoading] = useState(true);
   const [isSenderModalOpen, setIsSenderModalOpen] = useState(false);
   const [isSenderDropdownOpen, setIsSenderDropdownOpen] = useState(false);
@@ -120,20 +118,16 @@ export function ComposeForm({
 
   useEffect(() => {
     (async () => {
-      try {
-        const list = await getSenders();
-        setSenders(list);
-        const firstVerified = list.find(s => s.isVerified);
-        if (firstVerified) {
-          setData(prev => ({ ...prev, from: firstVerified.email, selectedSenderIds: [firstVerified.id] }));
-        } else if (list.length > 0) {
-          setData(prev => ({ ...prev, from: list[0].email, selectedSenderIds: [list[0].id] }));
-        }
-        try {
-          const sub = await getSubscription();
-          setIsPremium(sub.isPremium);
-        } catch { }
-      } catch { } finally { setIsSenderLoading(false); }
+try {
+          const list = await getSenders();
+          setSenders(list);
+          const firstVerified = list.find(s => s.isVerified);
+          if (firstVerified) {
+            setData(prev => ({ ...prev, from: firstVerified.email, selectedSenderIds: [firstVerified.id] }));
+          } else if (list.length > 0) {
+            setData(prev => ({ ...prev, from: list[0].email, selectedSenderIds: [list[0].id] }));
+          }
+        } catch { } finally { setIsSenderLoading(false); }
     })();
   }, []);
 
@@ -326,7 +320,7 @@ export function ComposeForm({
               <div className="flex items-center gap-3">
                 <Button
                   variant="primary"
-                  className="px-6 gap-2 h-10 font-bold shadow-lg shadow-blue-100"
+                  className="px-6 gap-2 h-10 font-bold"
                   onClick={handleFormSubmit}
                   disabled={isSubmitting}
                 >
@@ -375,7 +369,7 @@ export function ComposeForm({
                       </button>
 
                       {isSenderDropdownOpen && (
-                        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg border border-gray-200 overflow-hidden">
                           <div className="py-1 max-h-64 overflow-y-auto">
                             {senders.map(s => (
                               <label key={s.id} className={cn(
@@ -569,7 +563,7 @@ export function ComposeForm({
                           <ChevronDown className={cn("h-3 w-3 opacity-50 transition-transform", isBulkMenuOpen && "rotate-180")} />
                         </button>
                         {isBulkMenuOpen && (
-                          <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-xl shadow-xl py-2 min-w-[200px] z-50 animate-in fade-in zoom-in-95 slide-in-from-bottom-2">
+                          <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-xl shadow-sm py-2 min-w-[200px] z-50 animate-in fade-in zoom-in-95 slide-in-from-bottom-2">
                             <div className="px-3 py-1.5 border-b border-gray-50 mb-1">
                               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Selection</p>
                             </div>
@@ -697,8 +691,8 @@ export function ComposeForm({
                       <div className="space-y-3">
                         <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 transition-all group">
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                              <Eye className="h-4 w-4 text-emerald-600" />
+                            <div className="h-8 w-8 rounded-lg bg-[#00A63E]/50 flex items-center justify-center">
+                              <Eye className="h-4 w-4 text-[#00A63E]" />
                             </div>
                             <div>
                               <p className="text-sm font-bold text-gray-700">Track Opens</p>
@@ -732,50 +726,30 @@ export function ComposeForm({
                       </div>
                     </div>
 
-                    {/* Premium Features - Visible but Locked */}
+                    {/* Sending Options */}
                     <div className="px-4 py-3.5 border-b border-gray-100">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Premium</p>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Priority</p>
                       <div className="space-y-2">
 
-
                         {/* Priority Email Sending */}
-                        <label className={cn(
-                          "flex items-center justify-between p-3 rounded-xl transition-all border border-transparent group",
-                          isPremium
-                            ? "hover:bg-gray-50 cursor-pointer hover:border-gray-100"
-                            : "opacity-60 cursor-not-allowed bg-gray-50/30"
-                        )}>
+                        <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 group">
                           <div className="flex items-center gap-3">
-                            <div className={cn(
-                              "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
-                              isPremium ? "bg-amber-50" : "bg-gray-100"
-                            )}>
-                              <Zap className={cn("h-4 w-4", isPremium ? "text-amber-600" : "text-gray-400")} />
+                            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-[#00A63E]/10">
+                              <Zap className="h-4 w-4 text-[#00A63E]" />
                             </div>
                             <div>
-                              <p className={cn("text-sm font-bold", isPremium ? "text-gray-700" : "text-gray-500")}>Priority Sending</p>
-                              {!isPremium ? (
-                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Requires Subscription</p>
-                              ) : (
-                                <p className="text-[10px] text-gray-400">Skip the queue</p>
-                              )}
+                              <p className="text-sm font-bold text-gray-700">Priority Sending</p>
+                              <p className="text-[10px] text-gray-400">Skip the queue</p>
                             </div>
                           </div>
-                          {isPremium ? (
-                            <input
-                              type="checkbox"
-                              checked={priorityEnabled}
-                              onChange={(e) => setPriorityEnabled(e.target.checked)}
-                              className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500/20 transition-all"
-                            />
-                          ) : (
-                            <Shield className="h-4 w-4 text-gray-300" />
-                          )}
+                          <input
+                            type="checkbox"
+                            checked={priorityEnabled}
+                            onChange={(e) => setPriorityEnabled(e.target.checked)}
+                            className="h-5 w-5 rounded-md border-gray-300 text-[#00A63E] focus:ring-[#00A63E]/20 transition-all"
+                          />
                         </label>
 
-                        <p className="text-xs text-gray-400 text-center pt-1">
-                          Subscribe to unlock premium features
-                        </p>
                       </div>
                     </div>
 
@@ -863,7 +837,7 @@ export function ComposeForm({
 
       {/* Signature Modal */}
       <Modal isOpen={isSignatureModalOpen} onClose={() => setIsSignatureModalOpen(false)}>
-        <div className="p-0 max-w-lg w-full overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="p-0 max-w-lg w-full overflow-hidden rounded-xl bg-white border border-gray-200">
           <div className="bg-gray-50/80 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-gray-900">Email Signatures</h3>
@@ -902,7 +876,7 @@ export function ComposeForm({
                 </div>
                 <div className="flex gap-3 pt-2">
                   <Button variant="secondary" className="flex-1 h-11 font-bold" onClick={() => setEditingSignature(null)}>Cancel</Button>
-                  <Button variant="primary" className="flex-1 h-11 font-bold shadow-md shadow-emerald-100" onClick={() => handleSaveSignature(editingSignature!)}>Save Signature</Button>
+                  <Button variant="primary" className="flex-1 h-11 font-bold" onClick={() => handleSaveSignature(editingSignature!)}>Save Signature</Button>
                 </div>
               </div>
             ) : (
@@ -940,7 +914,7 @@ export function ComposeForm({
                               localStorage.setItem("email_signatures", JSON.stringify(updated));
                               addToast("info", "Default signature updated");
                             }}
-                            className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                            className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-[#00A63E] hover:bg-[#00A63E]/50 transition-colors"
                           >
                             Set Default
                           </button>

@@ -90,14 +90,14 @@ export default function Modal({
           // Bottom-sheet variant (mobile)
           variant === "bottom-sheet" && [
             "inset-x-0 bottom-0",
-            "rounded-t-2xl bg-white p-5 shadow-xl",
+            "rounded-t-xl bg-white p-5 border-t border-gray-200",
             "animate-[fadeInUp_0.3s_ease-out]",
             "max-h-[85vh] overflow-y-auto",
           ],
           // Center variant (desktop)
           variant === "center" && [
             "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-            "w-[90vw] sm:w-full max-w-[480px] rounded-2xl bg-white p-0 shadow-2xl border border-gray-100",
+            "w-[90vw] sm:w-full max-w-[480px] rounded-xl bg-white p-0 border border-gray-200",
             "animate-[fadeInUp_0.2s_ease-out]",
             "max-h-[90vh] overflow-y-auto",
           ],

@@ -31,7 +31,7 @@ export default function SenderStats({ senderStats }: SenderStatsProps) {
         className="w-full flex items-center justify-between px-5 md:px-6 py-4 hover:bg-gray-50/50 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shrink-0">
+          <div className="h-8 w-8 rounded-lg bg-[#00A63E] flex items-center justify-center text-white shrink-0">
             <Mail className="h-4 w-4" />
           </div>
           <div className="text-left">

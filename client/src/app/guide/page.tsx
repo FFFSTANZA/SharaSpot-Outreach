@@ -32,8 +32,8 @@ function Accordion({ title, children, icon: Icon }: { title: string; children: R
   return (
     <div className="border border-gray-100 rounded-xl overflow-hidden transition-all duration-200 hover:border-gray-200 bg-white group">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-3 px-5 py-4 text-left">
-        <div className="h-8 w-8 rounded-lg bg-teal-600/10 flex items-center justify-center shrink-0 group-hover:bg-teal-600/15 transition-colors">
-          <Icon className="h-4 w-4 text-teal-600" strokeWidth={1.8} />
+        <div className="h-8 w-8 rounded-lg bg-[#00A63E]/10 flex items-center justify-center shrink-0 group-hover:bg-[#00A63E]/15 transition-colors">
+          <Icon className="h-4 w-4 text-[#00A63E]" strokeWidth={1.8} />
         </div>
         <span className="flex-1 text-sm font-semibold text-gray-900">{title}</span>
         <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
@@ -46,11 +46,11 @@ function Accordion({ title, children, icon: Icon }: { title: string; children: R
 function StepCard({ step, title, desc, icon: Icon }: { step: string; title: string; desc: string; icon?: React.ElementType }) {
   return (
     <div className="flex gap-4 p-5 rounded-xl bg-gradient-to-b from-white to-gray-50/50 border border-gray-100 hover:border-gray-200 hover:shadow-md hover:shadow-gray-100/50 transition-all group">
-      <div className="h-8 w-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">
+      <div className="h-8 w-8 rounded-lg bg-[#00A63E] text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">
         {Icon ? <Icon className="h-4 w-4" /> : step}
       </div>
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 mb-1 group-hover:text-emerald-600 transition-colors">{title}</h3>
+        <h3 className="text-sm font-semibold text-gray-900 mb-1 group-hover:text-[#00A63E] transition-colors">{title}</h3>
         <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
       </div>
     </div>
@@ -120,7 +120,7 @@ export default function GuidePage() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-primary/5 to-transparent rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-teal-50/40 to-transparent rounded-full blur-3xl" />
         <div className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 border border-emerald-200 px-4 py-1.5 text-sm font-semibold text-emerald-700 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 border border-emerald-200 px-4 py-1.5 text-sm font-semibold text-[#007A2B] mb-6">
             <BookOpen className="h-3.5 w-3.5" strokeWidth={1.8} />
             Complete User Guide
           </div>
@@ -159,21 +159,21 @@ export default function GuidePage() {
             </div>
             <div className="space-y-3">
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
-                <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" strokeWidth={1.8} />
+                <CheckCircle2 className="h-4 w-4 text-[#00A63E] mt-0.5 shrink-0" strokeWidth={1.8} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Round-robin distribution</p>
                   <p className="text-xs text-gray-500 mt-0.5">Emails are evenly distributed across senders, respecting each sender&apos;s daily limit.</p>
                 </div>
               </div>
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
-                <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" strokeWidth={1.8} />
+                <CheckCircle2 className="h-4 w-4 text-[#00A63E] mt-0.5 shrink-0" strokeWidth={1.8} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Automatic failover</p>
                   <p className="text-xs text-gray-500 mt-0.5">If one sender hits its limit, emails are automatically reassigned to the next available sender.</p>
                 </div>
               </div>
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
-                <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" strokeWidth={1.8} />
+                <CheckCircle2 className="h-4 w-4 text-[#00A63E] mt-0.5 shrink-0" strokeWidth={1.8} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Auto-resume</p>
                   <p className="text-xs text-gray-500 mt-0.5">If all senders are exhausted, the campaign pauses and automatically resumes when capacity is available.</p>
@@ -259,7 +259,7 @@ export default function GuidePage() {
               </div>
               <div className="divide-y divide-gray-50">
                 {[
-                  { step: "Step 1", subject: "Initial outreach", wait: "Sent immediately", color: "bg-teal-600" },
+                  { step: "Step 1", subject: "Initial outreach", wait: "Sent immediately", color: "bg-[#00A63E]" },
                   { step: "Step 2", subject: "Gentle follow-up", wait: "3 days after Step 1", color: "bg-violet-500" },
                   { step: "Step 3", subject: "Final check-in", wait: "5 days after Step 2", color: "bg-purple-500" },
                 ].map((s) => (
@@ -325,9 +325,9 @@ export default function GuidePage() {
         <Section id="tracking">
           <SectionHeader icon={Target} title="Email Tracking" color="from-emerald-500 to-teal-600" />
           <div className="space-y-4">
-            <div className="rounded-xl bg-emerald-50/50 border border-emerald-100 p-5">
+            <div className="rounded-xl bg-emerald-50/50/50 border border-emerald-100 p-5">
               <h3 className="text-sm font-semibold text-emerald-900 mb-2">Know who opens and clicks</h3>
-              <p className="text-sm text-emerald-700 leading-relaxed">SharaSpot automatically tracks email opens (via a transparent pixel) and link clicks (via URL rewriting). View real-time metrics on the campaign detail page&apos;s Tracking tab.</p>
+              <p className="text-sm text-[#007A2B] leading-relaxed">SharaSpot automatically tracks email opens (via a transparent pixel) and link clicks (via URL rewriting). View real-time metrics on the campaign detail page&apos;s Tracking tab.</p>
             </div>
             <div className="space-y-3">
               <div className="flex gap-3 items-start p-4 rounded-xl border border-gray-100 bg-gradient-to-b from-white to-gray-50/30">
@@ -427,7 +427,7 @@ export default function GuidePage() {
                 <p>A clean list means fewer bounces and better deliverability:</p>
                 <ul className="space-y-1.5 mt-2">
                   {["Remove duplicate and invalid emails", "Remove addresses that bounced previously", "Only include relevant contacts", "Check for typos (gmial.com, yaho.com)"].map((item, i) => (
-                    <li key={i} className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-teal-600 mt-0.5 shrink-0" /><span>{item}</span></li>
+                    <li key={i} className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-[#00A63E] mt-0.5 shrink-0" /><span>{item}</span></li>
                   ))}
                 </ul>
               </div>
@@ -446,7 +446,7 @@ export default function GuidePage() {
               <div className="space-y-2 mt-2">
                 <ul className="space-y-1.5">
                   {["Enable 2-Factor Authentication on Google", "Use a unique App Password for SharaSpot only", "Revoke the App Password if you suspect compromise", "Never share your App Password"].map((item, i) => (
-                    <li key={i} className="flex items-start gap-2"><Shield className="h-3.5 w-3.5 text-teal-600 mt-0.5 shrink-0" /><span>{item}</span></li>
+                    <li key={i} className="flex items-start gap-2"><Shield className="h-3.5 w-3.5 text-[#00A63E] mt-0.5 shrink-0" /><span>{item}</span></li>
                   ))}
                 </ul>
               </div>
@@ -525,6 +525,7 @@ export default function GuidePage() {
           <Link href="/" aria-label="Go to homepage"><Logo size="sm" /></Link>
           <nav className="flex items-center gap-6">
             <Link href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</Link>
+            <Link href="/priority-mail" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Priority Mail</Link>
             <Link href="/faq" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Support</a>
             <Link href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>

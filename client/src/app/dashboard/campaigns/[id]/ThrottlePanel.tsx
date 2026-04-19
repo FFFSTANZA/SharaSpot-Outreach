@@ -78,7 +78,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
         className="w-full flex items-center justify-between px-5 md:px-6 py-4 hover:bg-gray-50/50 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-gray-600 flex items-center justify-center">
             <Activity className="h-4 w-4 text-white" />
           </div>
           <div className="text-left">
@@ -111,7 +111,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-24 bg-gray-50 rounded-xl animate-pulse" />
+                <div key={i} className="h-24 bg-gray-50 rounded-lg border border-gray-200" />
               ))}
             </div>
           ) : error ? (

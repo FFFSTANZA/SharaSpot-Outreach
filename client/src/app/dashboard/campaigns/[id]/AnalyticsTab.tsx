@@ -124,10 +124,10 @@ export default function AnalyticsTab({ campaignId }: AnalyticsTabProps) {
       <div className="p-6 space-y-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-gray-100 rounded-lg border border-gray-200" />
           ))}
         </div>
-        <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
+        <div className="h-48 bg-gray-50 rounded-lg border border-gray-200" />
       </div>
     );
   }

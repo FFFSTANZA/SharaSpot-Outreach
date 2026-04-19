@@ -5,7 +5,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getSubscription, createSubscription, cancelSubscription, reactivateSubscription } from "@/lib/apis";
 import type { SubscriptionResponse } from "@/lib/apis";
-import { CreditCard, Check, AlertTriangle, ArrowRight, Shield, Zap, Clock, Crown, X } from "lucide-react";
+import { CreditCard, Check, AlertTriangle, ArrowRight, Shield, Zap, Clock, X } from "lucide-react";
 import Button from "@/components/Button";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
@@ -106,15 +106,15 @@ export default function BillingPage() {
                         <div className="space-y-6">
                             {/* Status Banner */}
                             <div className={cn("rounded-xl border p-6 flex flex-col md:flex-row items-center gap-6",
-                                subData?.isPremium ? "bg-white border-[#E8EAED]" : "bg-amber-50 border-amber-100")}>
+                                subData?.subscription?.status === "ACTIVE" || isTrial ? "bg-white border-gray-200" : "bg-amber-50 border-amber-100")}>
                                 <div className={cn("h-16 w-16 rounded-2xl flex items-center justify-center shrink-0",
-                                    subData?.isPremium ? "bg-emerald-50" : "bg-amber-100")}>
-                                    <Crown className={cn("h-8 w-8", subData?.isPremium ? "text-emerald-600" : "text-amber-600")} />
+                                    subData?.subscription?.status === "ACTIVE" || isTrial ? "bg-[#00A63E]/10" : "bg-amber-100")}>
+                                    <Zap className={cn("h-8 w-8", subData?.subscription?.status === "ACTIVE" || isTrial ? "text-[#00A63E]" : "text-amber-600")} />
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
                                     <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1">
                                         <h2 className="text-lg font-bold text-gray-900">
-                                            {subData?.isPremium ? "Premium Full Access" : "Subscription Required"}
+                                            {(subData?.subscription?.status === "ACTIVE" || isTrial) ? "Active Subscription" : "Subscription Required"}
                                         </h2>
                                         <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border", statusConfig.color)}>
                                             <StatusIcon className="h-3 w-3" />
@@ -138,7 +138,7 @@ export default function BillingPage() {
                                 {!subData?.subscription?.dodoSubscriptionId && !isTrial && (
                                     <Button
                                         variant="primary"
-                                        className="w-full md:w-auto shadow-lg shadow-emerald-200"
+                                        className="w-full md:w-auto"
                                         onClick={handleSubscribe}
                                         disabled={isProcessing}
                                     >

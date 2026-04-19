@@ -51,9 +51,9 @@ function MultiLineChart({ data, height = 120 }: { data: DailySeriesPoint[]; heig
 
   return (
     <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }}>
-      <path d={makePath("opens")} fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
-      <path d={makePath("clicks")} fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" />
-      <path d={makePath("replies")} fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" />
+      <path d={makePath("opens")} fill="none" stroke="#00A63E" strokeWidth="2" strokeLinecap="round" />
+      <path d={makePath("clicks")} fill="none" stroke="#009134" strokeWidth="2" strokeLinecap="round" />
+      <path d={makePath("replies")} fill="none" stroke="#007A2B" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -70,7 +70,7 @@ function HourlyHeatmap({ data }: { data: HourlySeriesPoint[] }) {
             className="flex-1 rounded-sm transition-all hover:opacity-80"
             style={{
               height: 48,
-              backgroundColor: d.opens > 0 ? `rgba(5, 150, 105, ${Math.max(d.opens / max, 0.15)})` : "#f3f4f6",
+              backgroundColor: d.opens > 0 ? `rgba(0, 166, 62, ${Math.max(d.opens / max, 0.15)})` : "#f3f4f6",
             }}
             title={`${d.hour}:00 — ${d.opens} opens, ${d.clicks} clicks`}
           />
@@ -124,10 +124,10 @@ export default function AnalyticsPage() {
     return (
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 bg-gray-100 rounded-2xl animate-pulse" />)}
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 bg-gray-100 rounded-lg border border-gray-200" />)}
         </div>
-        <div className="h-48 bg-gray-100 rounded-2xl animate-pulse" />
-        <div className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
+        <div className="h-48 bg-gray-100 rounded-lg border border-gray-200" />
+        <div className="h-64 bg-gray-100 rounded-lg border border-gray-200" />
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function AnalyticsPage() {
       <div className="flex flex-col items-center justify-center py-16 gap-3">
         <AlertTriangle className="h-8 w-8 text-red-300" />
         <p className="text-sm text-gray-500">{error}</p>
-        <button onClick={fetchData} className="text-sm text-teal-600 hover:underline">Retry</button>
+        <button onClick={fetchData} className="text-sm text-[#00A63E] hover:underline">Retry</button>
       </div>
     );
   }
@@ -184,7 +184,7 @@ export default function AnalyticsPage() {
         <button
           className={cn(
             "px-4 py-2.5 text-xs font-medium transition-colors border-b-2",
-            activeTab === "overview" ? "text-teal-600 border-teal-600" : "text-gray-500 border-transparent hover:text-gray-600"
+            activeTab === "overview" ? "text-[#00A63E] border-[#00A63E]" : "text-gray-500 border-transparent hover:text-gray-600"
           )}
           onClick={() => setActiveTab("overview")}
         >
@@ -194,7 +194,7 @@ export default function AnalyticsPage() {
         <button
           className={cn(
             "px-4 py-2.5 text-xs font-medium transition-colors border-b-2",
-            activeTab === "links" ? "text-teal-600 border-teal-600" : "text-gray-500 border-transparent hover:text-gray-600"
+            activeTab === "links" ? "text-[#00A63E] border-[#00A63E]" : "text-gray-500 border-transparent hover:text-gray-600"
           )}
           onClick={() => setActiveTab("links")}
         >
@@ -224,14 +224,12 @@ export default function AnalyticsPage() {
                   label="Total Sent"
                   value={formatNumber(overview.totalSent)}
                   sub={`${overview.totalCampaigns} campaigns`}
-                  color="from-gray-600 to-gray-700"
                 />
                 <StatCard
                   icon={Eye}
                   label="Open Rate"
                   value={`${overview.openRate}%`}
                   sub={`${overview.uniqueOpens} unique opens`}
-                  color="from-emerald-500 to-teal-600"
                   trend={overview.totalOpens > 0 ? `${overview.totalOpens} total opens` : undefined}
                 />
                 <StatCard
@@ -239,7 +237,6 @@ export default function AnalyticsPage() {
                   label="Click Rate"
                   value={`${overview.clickRate}%`}
                   sub={`${overview.uniqueClicks} unique clicks`}
-                  color="from-teal-500 to-cyan-600"
                   trend={overview.totalClicks > 0 ? `${overview.totalClicks} total clicks` : undefined}
                 />
                 <StatCard
@@ -247,7 +244,6 @@ export default function AnalyticsPage() {
                   label="Reply Rate"
                   value={`${overview.replyRate}%`}
                   sub={`${overview.totalReplied} replies`}
-                  color="from-blue-500 to-indigo-600"
                 />
               </div>
 
@@ -368,15 +364,15 @@ export default function AnalyticsPage() {
 // ─── Sub-components ───
 
 function StatCard({
-  icon: Icon, label, value, sub, color, trend,
+  icon: Icon, label, value, sub, trend,
 }: {
-  icon: any; label: string; value: string; sub: string; color: string; trend?: string;
+  icon: any; label: string; value: string; sub: string; trend?: string;
 }) {
   return (
-    <div className="group rounded-2xl bg-white border border-gray-100 p-4 transition-all hover:shadow-md">
+    <div className="group rounded-xl bg-white border border-gray-200 p-4 transition-all hover:shadow-md">
       <div className="flex items-center gap-2.5 mb-3">
-        <div className={cn("h-8 w-8 rounded-lg bg-gradient-to-br flex items-center justify-center", color)}>
-          <Icon className="h-4 w-4 text-white" />
+        <div className="h-8 w-8 rounded-lg bg-[#00A63E]/10 flex items-center justify-center">
+          <Icon className="h-4 w-4 text-[#00A63E]" />
         </div>
         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</span>
       </div>

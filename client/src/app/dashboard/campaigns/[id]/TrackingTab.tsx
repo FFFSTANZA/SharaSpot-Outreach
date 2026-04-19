@@ -106,12 +106,12 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
     return (
       <div className="p-6 space-y-4">
         <div className="flex justify-center gap-8">
-          {[1, 2].map((i) => <div key={i} className="h-28 w-28 rounded-full bg-gray-100 animate-pulse" />)}
+          {[1, 2].map((i) => <div key={i} className="h-28 w-28 rounded-full bg-gray-100 border border-gray-200" />)}
         </div>
         <div className="grid grid-cols-3 gap-3">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-50 rounded-xl animate-pulse" />)}
+          {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-50 rounded-lg border border-gray-200" />)}
         </div>
-        <div className="h-48 bg-gray-50 rounded-xl animate-pulse" />
+        <div className="h-48 bg-gray-50 rounded-lg border border-gray-200" />
       </div>
     );
   }
@@ -121,7 +121,7 @@ export default function TrackingTab({ campaignId }: TrackingTabProps) {
       <div className="flex flex-col items-center justify-center py-12 gap-3">
         <AlertTriangle className="h-8 w-8 text-red-300" />
         <p className="text-sm text-gray-500">{error}</p>
-        <button onClick={fetchData} className="text-sm text-teal-600 hover:underline">Retry</button>
+        <button onClick={fetchData} className="text-sm text-[#00A63E] hover:underline">Retry</button>
       </div>
     );
   }

@@ -23,14 +23,14 @@ function FAQAccordion({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boole
   return (
     <div className={cn(
       "border rounded-xl overflow-hidden transition-all duration-200",
-      isOpen ? "border-teal-600/20 bg-teal-600/[0.02] shadow-sm" : "border-gray-100 hover:border-gray-200"
+      isOpen ? "border-[#00A63E]/20 bg-[#00A63E]/[0.02] shadow-sm" : "border-gray-100 hover:border-gray-200"
     )}>
       <button onClick={onToggle} className="w-full flex items-center gap-3 px-5 py-4 text-left">
         <div className={cn(
           "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-          isOpen ? "bg-teal-600/10" : "bg-gray-50"
+          isOpen ? "bg-[#00A63E]/10" : "bg-gray-50"
         )}>
-          <item.icon className={cn("h-4 w-4", isOpen ? "text-teal-600" : "text-gray-400")} />
+          <item.icon className={cn("h-4 w-4", isOpen ? "text-[#00A63E]" : "text-gray-400")} />
         </div>
         <span className={cn(
           "flex-1 text-sm font-semibold transition-colors",
@@ -38,7 +38,7 @@ function FAQAccordion({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boole
         )}>{item.question}</span>
         <ChevronDown className={cn(
           "h-4 w-4 text-gray-400 transition-transform duration-200",
-          isOpen && "rotate-180 text-teal-600"
+          isOpen && "rotate-180 text-[#00A63E]"
         )} />
       </button>
       <div className={cn(
@@ -209,7 +209,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>Google App Passwords are 16-character codes that let third-party apps access your Gmail via SMTP without using your main password. Google requires them since they disabled "Less Secure App" access in 2022.</p>
-        <p>To generate one: go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">myaccount.google.com/apppasswords</a> (requires 2-Step Verification enabled). Create one specifically for SharaSpot and paste it when adding a sender.</p>
+        <p>To generate one: go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-[#00A63E] hover:underline">myaccount.google.com/apppasswords</a> (requires 2-Step Verification enabled). Create one specifically for SharaSpot and paste it when adding a sender.</p>
       </div>
     ),
   },
@@ -314,6 +314,7 @@ export default function FAQPage() {
           <Link href="/" aria-label="Go to homepage"><Logo size="md" /></Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-500">
             <a href="/guide" className="hover:text-gray-900 transition-colors">Guide</a>
+            <a href="/priority-mail" className="hover:text-gray-900 transition-colors">Priority Mail</a>
             <a href="/faq" className="text-gray-900">FAQ</a>
           </div>
           <Button className="hidden md:block w-auto px-5 py-2 rounded-full text-sm" onClick={() => router.push("/login")}>
@@ -444,7 +445,8 @@ export default function FAQPage() {
           <a href="/" aria-label="Go to homepage"><Logo size="sm" /></a>
           <nav className="flex items-center gap-6">
             <a href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</a>
-            <a href="/faq" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">FAQ</a>
+            <a href="/priority-mail" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Priority Mail</a>
+            <a href="/faq" className="text-xs font-medium text-gray-900 transition-colors">FAQ</a>
             <a href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</a>
             <a href="/terms" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</a>
           </nav>

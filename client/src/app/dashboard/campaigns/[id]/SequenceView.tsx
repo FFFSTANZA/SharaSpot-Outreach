@@ -76,7 +76,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
     return (
       <div className="space-y-2">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="rounded-xl bg-white border border-gray-100 p-4 animate-pulse">
+          <div key={i} className="rounded-lg bg-white border border-gray-100 p-4">
             <div className="h-4 w-1/3 bg-gray-100 rounded mb-2" />
             <div className="h-3 w-1/4 bg-gray-50 rounded" />
           </div>

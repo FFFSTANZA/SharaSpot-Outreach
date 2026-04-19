@@ -288,7 +288,7 @@ export function ComposeHeader({
                 <div
                   className={cn(
                     "h-full rounded-full transition-all duration-500",
-                    usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-teal-600"
+                    usagePercent >= 90 ? "bg-red-500" : usagePercent >= 70 ? "bg-amber-500" : "bg-[#00A63E]"
                   )}
                   style={{ width: `${usagePercent}%` }}
                 />

@@ -160,7 +160,7 @@ export default function TemplatesPage() {
                   {[...Array(6)].map((_, i) => (
                     <div
                       key={i}
-                      className="rounded-xl bg-white border border-gray-100 p-5 animate-pulse"
+                      className="rounded-xl bg-white border border-gray-100 p-5"
                     >
                       <div className="h-4 w-2/3 bg-gray-100 rounded mb-3" />
                       <div className="h-3 w-full bg-gray-50 rounded mb-2" />
@@ -175,7 +175,7 @@ export default function TemplatesPage() {
                 <p className="text-sm text-gray-500">{error}</p>
                 <button
                   onClick={fetchTemplates}
-                  className="text-sm text-teal-600 hover:underline"
+                  className="text-sm text-[#00A63E] hover:underline"
                 >
                   Retry
                 </button>
@@ -242,7 +242,7 @@ export default function TemplatesPage() {
                           <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
                             <button
                               onClick={() => handleEdit(template)}
-                              className="p-1.5 rounded-lg text-gray-500 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+                              className="p-1.5 rounded-lg text-gray-500 hover:text-[#00A63E] hover:bg-[#E8F8ED] transition-colors"
                               aria-label={`Edit ${template.name}`}
                             >
                               <Pencil className="h-3.5 w-3.5" />

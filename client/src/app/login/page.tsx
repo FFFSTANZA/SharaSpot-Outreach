@@ -91,17 +91,17 @@ const LoginPage = () => {
   }, [router, addToast, sdkLoaded]);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-gray-50 to-emerald-50/20">
+    <div className="flex min-h-screen bg-gradient-to-b from-gray-50 to-[#E8F8ED]">
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
         onLoad={() => setSdkLoaded(true)}
       />
       {/* Left panel — branding (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950 flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-gray-900 to-[#0A2F1A] flex-col justify-between p-12">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-emerald-600/15 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-teal-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#00A63E]/20 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#00A63E]/10 rounded-full blur-3xl" />
         <div className="absolute top-20 right-20 w-24 h-24 border border-white/5 rounded-2xl rotate-12" />
         <div className="absolute bottom-32 left-16 w-16 h-16 border border-white/5 rounded-full" />
 
@@ -114,7 +114,7 @@ const LoginPage = () => {
         <div className="relative">
           <h2 className="text-4xl font-extrabold text-white leading-tight tracking-tighter mb-4">
             Reach the right people<br />
-            <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">with smart outreach</span>
+            <span className="text-[#00A63E]">with smart outreach</span>
           </h2>
           <p className="text-base text-gray-300 max-w-sm leading-relaxed">
             Send personalized emails at scale with intelligent scheduling, reply detection, and real-time analytics.
@@ -128,7 +128,7 @@ const LoginPage = () => {
               { icon: Send, text: "Smart sequencing" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5">
-                <Icon className="h-3.5 w-3.5 text-emerald-400" />
+                <Icon className="h-3.5 w-3.5 text-[#00A63E]" />
                 <span className="text-xs font-medium text-gray-200">{text}</span>
               </div>
             ))}
@@ -142,7 +142,7 @@ const LoginPage = () => {
               &ldquo;SharaSpot helped me land 3 investor meetings in my first week. The reply detection is a game changer.&rdquo;
             </p>
             <div className="flex items-center gap-3 mt-4">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-[#00A63E] flex items-center justify-center">
                 <span className="text-xs font-bold text-white">A</span>
               </div>
               <div>
