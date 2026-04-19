@@ -380,7 +380,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
               </div>
             </ToolbarButton>
             {showColorPicker && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 flex gap-1.5">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white rounded-lg border border-gray-200 p-2 z-50 flex gap-1.5">
                 {FONT_COLORS.map((c) => (
                   <button key={c.label} type="button" title={c.label}
                     onClick={() => {

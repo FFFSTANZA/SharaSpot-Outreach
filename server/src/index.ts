@@ -2,14 +2,13 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import cookieParser from "cookie-parser";
-import bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import corsOptions from "./utils/corsOptions";
 import { authMiddleware } from "./middlewares/authMiddleware";
 
-/* ROUTE IMPORT */
+/* ROUTE IMPORTS */
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import senderRoutes from "./routes/senderRoutes";
@@ -28,42 +27,47 @@ import premiumRoutes from "./routes/premiumRoutes";
 import contactRoutes from "./routes/contactRoutes";
 import tagRoutes from "./routes/tagRoutes";
 
-/* CONFIGURATIONS */
 const app = express();
-app.use(express.json());
-app.use(cookieParser());
+
+/* CORE MIDDLEWARE */
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(express.json()); // Handles both json and urlencoded in most cases
+app.use(express.urlencoded({ extended: false }));
 
-/* ROUTES */
-app.get("/", (req, res) => {
-  res.send("This is the home route");
-});
-app.use("/track", trackingRoutes); // Public — no auth (email clients load these)
+/* PUBLIC ROUTES */
+app.get("/health", (req, res) => res.status(200).json({ status: "optimal" }));
+app.use("/track", trackingRoutes);
 app.use("/auth", authRoutes);
-app.use("/users", authMiddleware, userRoutes);
-app.use("/senders", authMiddleware, senderRoutes);
-app.use("/campaigns", authMiddleware, campaignRoutes);
-app.use("/emails", authMiddleware, emailRoutes);
-app.use("/attachments", authMiddleware, attachmentRoutes);
-app.use("/templates", authMiddleware, templateRoutes);
-app.use("/campaigns/:id/sequence", authMiddleware, sequenceRoutes);
-app.use("/api/tracking", authMiddleware, trackingMetricsRoutes);
-app.use("/api/replies", authMiddleware, replyRoutes);
-app.use("/api/analytics", authMiddleware, analyticsRoutes);
-app.use("/api/subscription", authMiddleware, subscriptionRoutes);
-app.use("/api/subscription/webhook", webhookRouter);
-app.use("/api", authMiddleware, validationRoutes);
-app.use("/api/premium", authMiddleware, premiumRoutes);
-app.use("/api/contacts", authMiddleware, contactRoutes);
-app.use("/api/tags", authMiddleware, tagRoutes);
+app.use("/api/subscription/webhook", webhookRouter); // Special public route for Stripe
 
-/* SERVER */
+/* PROTECTED API ROUTES - Unified Prefix */
+const api = express.Router();
+api.use(authMiddleware);
+
+api.use("/users", userRoutes);
+api.use("/senders", senderRoutes);
+api.use("/campaigns", campaignRoutes);
+api.use("/emails", emailRoutes);
+api.use("/attachments", attachmentRoutes);
+api.use("/templates", templateRoutes);
+api.use("/sequences", sequenceRoutes);
+api.use("/tracking", trackingMetricsRoutes);
+api.use("/replies", replyRoutes);
+api.use("/analytics", analyticsRoutes);
+api.use("/subscription", subscriptionRoutes);
+api.use("/validation", validationRoutes);
+api.use("/premium", premiumRoutes);
+api.use("/contacts", contactRoutes);
+api.use("/tags", tagRoutes);
+
+app.use("/api", api);
+
+/* SERVER INITIALIZATION */
 const port = Number(process.env.PORT) || 8000;
 app.listen(port, "0.0.0.0", () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`[SHARASPOT] Gateway initialized on port ${port}`);
 });

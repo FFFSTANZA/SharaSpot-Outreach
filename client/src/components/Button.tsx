@@ -8,72 +8,65 @@ type ButtonVariant =
   | "secondary"
   | "danger"
   | "outline"
-  | "ghost";
+  | "ghost"
+  | "minimal";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: "sm" | "md" | "lg";
+  isLoading?: boolean;
 }
 
 /**
- * SharaSpot Button - modern, consistent, professional.
+ * SharaSpot Button - tactile and purposeful.
  */
 export default function Button({
   children,
   variant = "primary",
   size = "md",
   className,
+  isLoading,
+  disabled,
   ...props
 }: ButtonProps) {
   const sizeClasses = {
-    sm: "h-9 px-4 text-xs font-semibold",
-    md: "h-11 px-6 text-sm font-semibold",
-    lg: "h-14 px-8 text-base font-semibold",
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-4 py-2 text-sm",
+    lg: "px-6 py-3 text-base",
+  };
+
+  const variantClasses = {
+    primary: "bg-brand text-white hover:bg-brand-hover active:bg-brand-active shadow-card hover:shadow-brand-glow",
+    secondary: "bg-brand-light text-success-text hover:bg-brand-muted active:bg-brand",
+    danger: "bg-error-bg text-error-text border border-error-border hover:bg-error-text hover:text-white",
+    outline: "border border-border-medium bg-surface text-text-primary hover:bg-background hover:border-border-strong",
+    ghost: "bg-transparent text-text-secondary hover:bg-interactive-hover hover:text-text-primary",
+    minimal: "bg-transparent text-text-muted hover:bg-transparent hover:text-brand p-0",
   };
 
   return (
     <button
       {...props}
+      disabled={disabled || isLoading}
       className={cn(
-        "inline-flex items-center justify-center rounded-xl transition-all duration-200 ease-in-out",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/20",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "inline-flex items-center justify-center rounded-lg font-semibold tracking-tight",
+        "transition-all duration-200 ease-out select-none",
+        "focus:outline-none focus:ring-2 focus:ring-brand/30",
+        "active:scale-[0.97]",
+        "disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100",
         sizeClasses[size],
-        
-        /* Primary - brand green */
-        variant === "primary" && [
-          "bg-brand text-white shadow-sm",
-          "hover:bg-brand-hover",
-        ],
-        
-        /* Secondary - refined gray */
-        variant === "secondary" && [
-          "bg-white border border-gray-100 text-gray-900 shadow-sm",
-          "hover:bg-gray-50 hover:border-gray-200",
-        ],
-        
-        /* Danger - high contrast red */
-        variant === "danger" && [
-          "bg-red-600 text-white shadow-sm",
-          "hover:bg-red-700",
-        ],
-        
-        /* Outline */
-        variant === "outline" && [
-          "border border-gray-200 bg-white text-gray-700",
-          "hover:bg-gray-50 hover:border-gray-300",
-        ],
-        
-        /* Ghost - minimal */
-        variant === "ghost" && [
-          "bg-transparent text-gray-500",
-          "hover:bg-gray-50 hover:text-gray-900",
-        ],
-        
-        className,
+        variantClasses[variant],
+        className
       )}
     >
-      {children}
+      {isLoading ? (
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <span>Please wait...</span>
+        </div>
+      ) : (
+        children
+      )}
     </button>
   );
 }

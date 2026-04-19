@@ -25,9 +25,9 @@ interface ThrottlePanelProps {
 }
 
 const WARMUP_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  active: { bg: "bg-amber-50", text: "text-amber-700", label: "Warming Up" },
+  active: { bg: "bg-amber-50", text: "text-amber-600", label: "Warming Up" },
   "opted-out": { bg: "bg-gray-100", text: "text-gray-500", label: "Skipped" },
-  inactive: { bg: "bg-brand-light", text: "text-brand", label: "Optimized" },
+  inactive: { bg: "bg-emerald-50", text: "text-emerald-600", label: "Complete" },
 };
 
 export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelProps) {
@@ -65,62 +65,62 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
   const getBarColor = (percent: number) => {
     if (percent >= 90) return "bg-red-500";
     if (percent >= 70) return "bg-amber-500";
-    return "bg-brand";
+    return "bg-emerald-500";
   };
 
   return (
-    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden transition-all duration-300">
+    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
       <div
         role="button"
         tabIndex={0}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIsOpen(!isOpen); } }}
-        className="w-full flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors cursor-pointer"
+        className="w-full flex items-center justify-between px-5 md:px-6 py-4 hover:bg-gray-50/50 transition-colors cursor-pointer"
       >
-        <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-brand text-white flex items-center justify-center shadow-sm">
-            <Activity className="h-5 w-5" />
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-gray-600 flex items-center justify-center">
+            <Activity className="h-4 w-4 text-white" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">Throttle Status</p>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Live rate limits per sender</p>
+            <p className="text-sm font-semibold text-gray-900">Throttle Status</p>
+            <p className="text-[11px] text-gray-400">Live rate limits per sender</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {isOpen && !isLoading && (
             <button
               onClick={(e) => { e.stopPropagation(); fetchThrottle(); }}
-              className="p-2 rounded-xl text-gray-400 hover:text-brand hover:bg-brand-light transition-all"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
               aria-label="Refresh"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-3.5 w-3.5" />
             </button>
           )}
           <ChevronDown className={cn(
-            "h-5 w-5 text-gray-300 transition-transform duration-300",
-            isOpen && "rotate-180 text-brand"
+            "h-4 w-4 text-gray-300 transition-transform duration-200",
+            isOpen && "rotate-180"
           )} />
         </div>
       </div>
 
       <div className={cn(
-        "overflow-hidden transition-all duration-500 ease-in-out",
-        isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+        "overflow-hidden transition-all duration-300 ease-out",
+        isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
       )}>
-        <div className="px-6 pb-6 space-y-4 border-t border-gray-50 pt-6">
+        <div className="px-5 md:px-6 pb-5 md:pb-6 space-y-4 border-t border-gray-50 pt-4">
           {isLoading ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-32 bg-gray-50 rounded-2xl animate-pulse" />
+                <div key={i} className="h-24 bg-gray-50 rounded-lg border border-gray-200" />
               ))}
             </div>
           ) : error ? (
-            <div className="flex items-center gap-3 px-4 py-3 bg-red-50 text-red-700 rounded-xl border border-red-100">
+            <div className="flex items-center gap-2 text-sm text-red-500">
               <AlertTriangle className="h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-tight">{error}</span>
+              <span>{error}</span>
             </div>
           ) : senders.length === 0 ? (
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-300 text-center py-8">No sender data available</p>
+            <p className="text-sm text-gray-400 text-center py-4">No sender data available</p>
           ) : (
             senders.map((sender) => {
               const hourlyPercent = getUsagePercent(sender.currentHourlyCount, sender.effectiveLimits.perHour);
@@ -132,22 +132,20 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
                 <div
                   key={sender.senderId}
                   className={cn(
-                    "rounded-2xl border p-5 space-y-4 transition-all duration-300",
-                    isCooldown ? "border-blue-200 bg-blue-50/20" : "border-gray-100 bg-gray-50/30 hover:border-brand/20"
+                    "rounded-xl border p-4 space-y-3 transition-all duration-200",
+                    isCooldown ? "border-blue-200 bg-blue-50/30" : "border-gray-100 bg-gray-50/50"
                   )}
                 >
                   {/* Sender header */}
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-8 w-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center shadow-sm">
-                        <Gauge className="h-4 w-4 text-gray-400" />
-                      </div>
-                      <span className="text-sm font-bold text-gray-900 truncate tracking-tight">{sender.email}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Gauge className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                      <span className="text-sm font-medium text-gray-900 truncate">{sender.email}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       {/* Warmup badge */}
                       <span className={cn(
-                        "inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[9px] font-bold uppercase tracking-tight",
+                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
                         warmup.bg, warmup.text
                       )}>
                         {sender.warmupStatus === "active" && <Flame className="h-2.5 w-2.5" />}
@@ -155,7 +153,7 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
                       </span>
                       {/* Cooldown badge */}
                       {isCooldown && (
-                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-100 px-2 py-1 text-[9px] font-bold uppercase tracking-tight text-blue-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
                           <Snowflake className="h-2.5 w-2.5" />
                           Cooldown
                         </span>
@@ -164,47 +162,47 @@ export default function ThrottlePanel({ campaignId, isActive }: ThrottlePanelPro
                   </div>
 
                   {/* Hourly usage */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
-                      <span className="text-gray-400">Hourly Speed</span>
-                      <span className="text-gray-900">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] text-gray-500">Hourly</span>
+                      <span className="text-[11px] font-semibold text-gray-700">
                         {sender.currentHourlyCount} / {sender.effectiveLimits.perHour}
                       </span>
                     </div>
-                    <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50">
+                    <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className={cn("h-full rounded-full transition-all duration-700", getBarColor(hourlyPercent))}
+                        className={cn("h-full rounded-full transition-all duration-500", getBarColor(hourlyPercent))}
                         style={{ width: `${hourlyPercent}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Daily usage */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
-                      <span className="text-gray-400">Daily Volume</span>
-                      <span className="text-gray-900">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] text-gray-500">Daily</span>
+                      <span className="text-[11px] font-semibold text-gray-700">
                         {sender.currentDailyCount} / {sender.effectiveLimits.perDay}
                       </span>
                     </div>
-                    <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50">
+                    <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className={cn("h-full rounded-full transition-all duration-700", getBarColor(dailyPercent))}
+                        className={cn("h-full rounded-full transition-all duration-500", getBarColor(dailyPercent))}
                         style={{ width: `${dailyPercent}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Per-minute limit info */}
-                  <div className="flex items-center gap-4 text-[9px] font-bold uppercase tracking-[0.15em] text-gray-300 pt-2 border-t border-gray-100/50">
-                    <span className="flex items-center gap-1.5">
-                      <Shield className="h-3 w-3" />
-                      {sender.effectiveLimits.perMinute} / min limit
+                  <div className="flex items-center gap-3 text-[10px] text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <Shield className="h-2.5 w-2.5" />
+                      {sender.effectiveLimits.perMinute}/min
                     </span>
                     {isCooldown && sender.cooldownState.expiresAt && (
-                      <span className="flex items-center gap-1.5 text-blue-400">
-                        <Snowflake className="h-3 w-3" />
-                        Ends {new Date(sender.cooldownState.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <span className="flex items-center gap-1">
+                        <Snowflake className="h-2.5 w-2.5" />
+                        Expires {new Date(sender.cooldownState.expiresAt).toLocaleTimeString()}
                       </span>
                     )}
                   </div>

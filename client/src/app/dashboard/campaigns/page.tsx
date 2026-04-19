@@ -54,9 +54,14 @@ export default function CampaignsPage() {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <div className="flex h-screen bg-background">
+        <div className="flex h-screen bg-[#FAFAFA]">
           <Sidebar
             setLabel={setLabel}
+            profile={{
+              name: user?.name ?? "",
+              email: user?.email ?? "",
+              avatarUrl: user?.avatarUrl ?? "",
+            }}
             items={[
               { label: "All", icon: <Inbox className="h-4 w-4" /> },
               { label: "Scheduled", icon: <Clock className="h-4 w-4" /> },
@@ -93,14 +98,14 @@ export default function CampaignsPage() {
               senders={senders}
             />
 
-            <div className="px-4 md:px-6 py-6 flex items-center justify-between">
+            <div className="px-4 md:px-6 py-3 flex items-center justify-between border-b border-gray-100 bg-white">
               <div>
-                <h1 className="text-xl font-bold text-gray-900 leading-none">Campaigns</h1>
-                <p className="text-xs text-text-secondary mt-1">{total} campaign{total !== 1 ? "s" : ""} total</p>
+                <h1 className="text-lg font-semibold text-gray-900">Campaigns</h1>
+                <p className="text-xs text-gray-500">{total} campaign{total !== 1 ? "s" : ""}</p>
               </div>
               <button 
                 onClick={() => router.push("/dashboard/compose")}
-                className="flex items-center gap-2 px-6 h-10 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-hover shadow-sm transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-[#00A63E] text-white rounded-md text-sm font-medium hover:bg-[#009134] transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 New Campaign
@@ -112,26 +117,26 @@ export default function CampaignsPage() {
             ) : error ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3">
                 <AlertCircle className="h-8 w-8 text-gray-300" />
-                <p className="text-sm text-text-secondary">{error}</p>
-                <button onClick={refresh} className="text-sm text-brand font-semibold hover:underline">Retry</button>
+                <p className="text-sm text-gray-500">{error}</p>
+                <button onClick={refresh} className="text-sm text-[#00A63E] hover:underline">Retry</button>
               </div>
             ) : results.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-                <div className="h-20 w-20 rounded-xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100 shadow-sm">
-                  <Megaphone className="h-8 w-8 text-gray-300" />
+                <div className="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                  <Megaphone className="h-6 w-6 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">
                   {activeFilterCount > 0 ? "No matching campaigns" : "No campaigns yet"}
                 </h3>
-                <p className="text-sm text-text-secondary max-w-xs mb-8 font-medium">
+                <p className="text-xs text-gray-500 max-w-xs mb-4">
                   {activeFilterCount > 0
                     ? "Try adjusting your filters or search query."
-                    : "Create your first campaign to start sending outreach emails."}
+                    : "Create your first campaign to start sending cold outreach emails."}
                 </p>
                 {activeFilterCount === 0 && (
                   <button 
                     onClick={() => router.push("/dashboard/compose")}
-                    className="flex items-center gap-2 px-8 h-12 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-hover shadow-sm"
+                    className="flex items-center gap-2 px-5 py-2 bg-[#00A63E] text-white rounded-md text-sm font-medium hover:bg-[#009134] transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     Create Campaign
@@ -139,56 +144,56 @@ export default function CampaignsPage() {
                 )}
               </div>
             ) : (
-              <div className="flex-1 px-4 md:px-6 pb-6 overflow-y-auto">
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-gray-50/50">
-                        <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Campaign</th>
-                        <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Status</th>
-                        <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Recipients</th>
-                        <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Created</th>
-                        <th className="text-right text-xs font-semibold text-text-muted uppercase tracking-wider px-6 py-4">Actions</th>
+                      <tr className="border-b border-gray-100 bg-gray-50/50">
+                        <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Campaign</th>
+                        <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Status</th>
+                        <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Recipients</th>
+                        <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Created</th>
+                        <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody>
                       {results.map((campaign: any) => (
                         <tr 
                           key={campaign.id}
-                          className="group hover:bg-gray-50/50 cursor-pointer transition-colors"
+                          className="border-b border-gray-100 hover:bg-[#00A63E]/5 cursor-pointer transition-colors"
                           onClick={() => router.push(`/dashboard/campaigns/${campaign.id}`)}
                         >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-4">
-                              <div className="h-10 w-10 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100 group-hover:bg-brand-light transition-colors">
-                                <Megaphone className="h-5 w-5 text-gray-400 group-hover:text-brand" />
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className="h-9 w-9 rounded-full bg-[#00A63E]/10 flex items-center justify-center shrink-0">
+                                <Megaphone className="h-4 w-4 text-[#00A63E]" />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 truncate max-w-[240px]">
+                                <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
                                   <MatchHighlighter text={campaign.subject} query={filters.q} />
                                 </p>
-                                <p className="text-xs text-text-muted truncate max-w-[240px]">
+                                <p className="text-xs text-gray-500 truncate max-w-[200px]">
                                   {campaign.sender?.email}
                                 </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3">
                             <StatusBadge status={campaign.status} pauseReason={campaign.pauseReason} />
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-1.5 text-xs text-gray-600 font-semibold">
-                              <Users className="h-3.5 w-3.5 text-gray-400" />
-                              {campaign.totalRecipients}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <Users className="h-3 w-3" />
+                              {campaign.totalRecipients} recipient{campaign.totalRecipients !== 1 ? "s" : ""}
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-1.5 text-xs text-text-muted font-medium">
-                              <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <Calendar className="h-3 w-3" />
                               {formatDate(campaign.createdAt)}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                          <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                             <CampaignControls
                               campaignId={campaign.id}
                               status={campaign.status}

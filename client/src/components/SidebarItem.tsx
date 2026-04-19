@@ -1,3 +1,7 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+
 interface SidebarItemProps {
   label: string;
   count?: number;
@@ -7,7 +11,7 @@ interface SidebarItemProps {
 }
 
 /**
- * SidebarItem - Professional navigation item.
+ * SidebarItem - High-contrast navigation item.
  */
 export function SidebarItem({
   label,
@@ -17,33 +21,31 @@ export function SidebarItem({
   onClick,
 }: SidebarItemProps) {
   return (
-    <div
-      className={`
-        group flex items-center gap-3 px-4 py-2.5 rounded-xl 
-        text-sm font-medium cursor-pointer transition-all duration-200
-        ${isActive
-          ? "bg-brand-light text-brand"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-        }
-      `}
+    <button
       onClick={onClick}
+      className={cn(
+        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all group",
+        isActive
+          ? "bg-brand/10 text-brand"
+          : "text-text-secondary hover:bg-interactive-hover hover:text-text-primary"
+      )}
     >
-      <span className={`
-        transition-colors duration-200
-        ${isActive ? "text-brand" : "text-gray-400 group-hover:text-gray-600"}
-      `}>
+      <span className={cn(
+        "transition-colors",
+        isActive ? "text-brand" : "text-text-muted group-hover:text-text-secondary"
+      )}>
         {icon}
       </span>
-      <span>{label}</span>
+      <span className="flex-1 text-left">{label}</span>
 
       {count !== undefined && (
-        <span className={`
-          ml-auto text-[11px] font-semibold px-2 py-0.5 rounded-full
-          ${isActive ? "bg-brand/10 text-brand" : "bg-gray-100 text-gray-500"}
-        `}>
+        <span className={cn(
+          "text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors",
+          isActive ? "bg-brand text-white" : "bg-border-light text-text-muted"
+        )}>
           {count}
         </span>
       )}
-    </div>
+    </button>
   );
 }

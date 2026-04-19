@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Menu, RefreshCw, Search, Bell, X } from "lucide-react";
 import { useSidebar } from "@/hooks/useSidebar";
+import { cn } from "@/lib/utils";
 
 interface TopBarProps {
   placeholder?: string;
@@ -54,85 +55,73 @@ export function TopBar({
   }, [searchValue, onSearch]);
 
   return (
-    <header className="flex items-center gap-3 px-4 md:px-6 py-4 bg-white border-b border-gray-100">
-      {/* Hamburger — mobile sidebar toggle */}
+    <header className="flex items-center gap-4 px-6 py-4 bg-white border-b border-border-light relative z-10">
       <button
         onClick={toggle}
-        className="lg:hidden h-10 w-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-all"
-        aria-label="Toggle sidebar"
+        className="lg:hidden p-2 rounded-lg text-text-secondary hover:bg-interactive-hover transition-colors"
       >
-        <Menu className="h-5 w-5" />
+        <Menu size={20} />
       </button>
 
-      {/* Search — Professional pill search */}
-      <div className="relative flex-1 lg:max-w-2xl mx-auto">
-        <div className="flex items-center bg-gray-50 rounded-xl border border-transparent focus-within:border-brand/20 focus-within:bg-white transition-all duration-200">
-          <div className="pl-4">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
+      <div className="flex-1 max-w-2xl relative">
+        <div className="flex items-center bg-background rounded-full border border-border-light focus-within:border-brand focus-within:bg-white focus-within:shadow-sm transition-all px-4 group">
+          <Search size={16} className="text-text-muted group-focus-within:text-brand transition-colors" />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder={placeholder}
-            className="flex-1 min-h-[40px] bg-transparent py-2 px-3 text-sm text-gray-900 outline-none placeholder:text-gray-400 font-medium"
+            className="flex-1 h-10 bg-transparent py-2.5 px-3 text-sm text-text-primary outline-none placeholder:text-text-muted font-medium"
           />
           {searchValue && (
             <button
               onClick={() => { setSearchValue(""); onSearch?.(""); }}
-              className="pr-4 text-gray-400 hover:text-gray-600"
-              aria-label="Clear search"
+              className="p-1 text-text-muted hover:text-text-primary transition-colors"
             >
-              <X className="h-4 w-4" />
+              <X size={16} />
             </button>
           )}
         </div>
       </div>
 
-      {/* Action buttons */}
       <div className="flex items-center gap-2">
-        {/* Filter slot */}
         {filterSlot}
 
-        {/* Refresh button */}
         <button
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="h-10 w-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-brand hover:bg-brand-light transition-all duration-200 disabled:opacity-50"
-          aria-label="Refresh"
+          className="p-2.5 rounded-full text-text-secondary hover:bg-interactive-hover disabled:opacity-50 transition-colors"
         >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          <RefreshCw size={18} className={cn(isRefreshing && "animate-spin text-brand")} />
         </button>
 
-        {/* Notifications dropdown */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative h-10 w-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-brand hover:bg-brand-light transition-all duration-200"
-            aria-label="Notifications"
+            className="p-2.5 rounded-full text-text-secondary hover:bg-interactive-hover transition-colors relative"
           >
-            <Bell className="h-4 w-4" />
+            <Bell size={18} />
             <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-brand ring-2 ring-white" />
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] max-w-80 rounded-xl bg-white border border-gray-100 shadow-xl overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50">
-                <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider">Notifications</p>
+            <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-2xl bg-white border border-border-light shadow-elevated animate-up">
+              <div className="px-5 py-4 border-b border-border-light">
+                <p className="text-xs font-black uppercase tracking-widest text-text-muted">System Events</p>
               </div>
               <div className="px-5 py-10 text-center">
-                <div className="h-12 w-12 rounded-xl bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-gray-100">
-                  <Bell className="h-5 w-5 text-gray-300" />
+                <div className="h-10 w-10 bg-background rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Bell size={20} className="text-text-muted" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900">No new notifications</p>
-                <p className="text-xs text-gray-500 mt-1">Campaign updates will appear here</p>
+                <p className="text-sm font-bold text-text-primary">All clear</p>
+                <p className="text-xs text-text-muted mt-1">No pending infrastucture alerts.</p>
               </div>
             </div>
           )}
         </div>
-      </div>
 
-      {rightActions}
+        {rightActions}
+      </div>
     </header>
   );
 }

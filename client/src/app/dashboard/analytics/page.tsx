@@ -27,7 +27,7 @@ function AreaChart({ data, height = 120, colors }: { data: { value: number }[]; 
     <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }}>
       <defs>
         <linearGradient id={`grad-${colors[0]}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={colors[0]} stopOpacity="0.1" />
+          <stop offset="0%" stopColor={colors[0]} stopOpacity="0.3" />
           <stop offset="100%" stopColor={colors[0]} stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -52,8 +52,8 @@ function MultiLineChart({ data, height = 120 }: { data: DailySeriesPoint[]; heig
   return (
     <svg viewBox={`0 0 ${w} ${height}`} className="w-full" style={{ height }}>
       <path d={makePath("opens")} fill="none" stroke="#00A63E" strokeWidth="2" strokeLinecap="round" />
-      <path d={makePath("clicks")} fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" />
-      <path d={makePath("replies")} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
+      <path d={makePath("clicks")} fill="none" stroke="#009134" strokeWidth="2" strokeLinecap="round" />
+      <path d={makePath("replies")} fill="none" stroke="#007A2B" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -76,7 +76,7 @@ function HourlyHeatmap({ data }: { data: HourlySeriesPoint[] }) {
           />
         ))}
       </div>
-      <div className="flex justify-between text-[10px] text-gray-400 font-medium">
+      <div className="flex justify-between text-[9px] text-gray-400">
         <span>00:00</span>
         <span>06:00</span>
         <span>12:00</span>
@@ -124,10 +124,10 @@ export default function AnalyticsPage() {
     return (
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 bg-gray-100 rounded-xl animate-pulse" />)}
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 bg-gray-100 rounded-lg border border-gray-200" />)}
         </div>
-        <div className="h-48 bg-gray-100 rounded-xl animate-pulse" />
-        <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="h-48 bg-gray-100 rounded-lg border border-gray-200" />
+        <div className="h-64 bg-gray-100 rounded-lg border border-gray-200" />
       </div>
     );
   }
@@ -136,8 +136,8 @@ export default function AnalyticsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3">
         <AlertTriangle className="h-8 w-8 text-red-300" />
-        <p className="text-sm text-text-secondary">{error}</p>
-        <button onClick={fetchData} className="text-sm text-brand font-semibold hover:underline">Retry</button>
+        <p className="text-sm text-gray-500">{error}</p>
+        <button onClick={fetchData} className="text-sm text-[#00A63E] hover:underline">Retry</button>
       </div>
     );
   }
@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-xs text-text-secondary mt-0.5">Performance across all campaigns</p>
+          <p className="text-xs text-gray-500 mt-0.5">Cross-campaign email performance</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Time range selector */}
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
                 key={d}
                 onClick={() => setTimeRange(d)}
                 className={cn(
-                  "px-3 py-1 text-[11px] font-semibold rounded-md transition-all",
+                  "px-3 py-1 text-[11px] font-medium rounded-md transition-all",
                   timeRange === d ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
                 )}
               >
@@ -172,7 +172,7 @@ export default function AnalyticsPage() {
           </div>
           <button
             onClick={fetchData}
-            className="flex items-center gap-1.5 text-[11px] font-semibold text-text-muted hover:text-gray-600 transition-colors ml-2"
+            className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 hover:text-gray-600 transition-colors"
           >
             <RefreshCw className="h-3 w-3" /> Refresh
           </button>
@@ -183,8 +183,8 @@ export default function AnalyticsPage() {
       <div className="flex border-b border-gray-100">
         <button
           className={cn(
-            "px-4 py-2.5 text-xs font-bold transition-colors border-b-2",
-            activeTab === "overview" ? "text-brand border-brand" : "text-gray-500 border-transparent hover:text-gray-600"
+            "px-4 py-2.5 text-xs font-medium transition-colors border-b-2",
+            activeTab === "overview" ? "text-[#00A63E] border-[#00A63E]" : "text-gray-500 border-transparent hover:text-gray-600"
           )}
           onClick={() => setActiveTab("overview")}
         >
@@ -193,8 +193,8 @@ export default function AnalyticsPage() {
         </button>
         <button
           className={cn(
-            "px-4 py-2.5 text-xs font-bold transition-colors border-b-2",
-            activeTab === "links" ? "text-brand border-brand" : "text-gray-500 border-transparent hover:text-gray-600"
+            "px-4 py-2.5 text-xs font-medium transition-colors border-b-2",
+            activeTab === "links" ? "text-[#00A63E] border-[#00A63E]" : "text-gray-500 border-transparent hover:text-gray-600"
           )}
           onClick={() => setActiveTab("links")}
         >
@@ -207,12 +207,12 @@ export default function AnalyticsPage() {
         <>
           {!hasData ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <div className="h-14 w-14 rounded-xl bg-gray-50 flex items-center justify-center">
+              <div className="h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center">
                 <BarChart3 className="h-6 w-6 text-gray-400" />
               </div>
               <h3 className="text-sm font-semibold text-gray-900">No analytics data yet</h3>
-              <p className="text-xs text-text-secondary max-w-xs text-center">
-                Send campaigns with tracking enabled to see performance data.
+              <p className="text-xs text-gray-500 max-w-xs text-center">
+                Send some campaigns with tracking enabled to see analytics here.
               </p>
             </div>
           ) : (
@@ -224,16 +224,12 @@ export default function AnalyticsPage() {
                   label="Total Sent"
                   value={formatNumber(overview.totalSent)}
                   sub={`${overview.totalCampaigns} campaigns`}
-                  bg="bg-gray-50"
-                  iconColor="text-gray-600"
                 />
                 <StatCard
                   icon={Eye}
                   label="Open Rate"
                   value={`${overview.openRate}%`}
                   sub={`${overview.uniqueOpens} unique opens`}
-                  bg="bg-brand-light"
-                  iconColor="text-brand"
                   trend={overview.totalOpens > 0 ? `${overview.totalOpens} total opens` : undefined}
                 />
                 <StatCard
@@ -241,8 +237,6 @@ export default function AnalyticsPage() {
                   label="Click Rate"
                   value={`${overview.clickRate}%`}
                   sub={`${overview.uniqueClicks} unique clicks`}
-                  bg="bg-emerald-50"
-                  iconColor="text-emerald-600"
                   trend={overview.totalClicks > 0 ? `${overview.totalClicks} total clicks` : undefined}
                 />
                 <StatCard
@@ -250,19 +244,17 @@ export default function AnalyticsPage() {
                   label="Reply Rate"
                   value={`${overview.replyRate}%`}
                   sub={`${overview.totalReplied} replies`}
-                  bg="bg-blue-50"
-                  iconColor="text-blue-600"
                 />
               </div>
 
               {/* Trend chart */}
-              <div className="rounded-xl bg-white border border-gray-100 p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-sm font-bold text-gray-900">Activity Trend</h2>
-                  <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider text-text-muted">
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-brand" /> Opens</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Clicks</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-blue-500" /> Replies</span>
+              <div className="rounded-2xl bg-white border border-gray-100 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold text-gray-900">Activity Trend</h2>
+                  <div className="flex items-center gap-3 text-[10px] text-gray-500">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Opens</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-500" /> Clicks</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Replies</span>
                   </div>
                 </div>
                 <MultiLineChart data={overview.dailySeries} height={160} />
@@ -271,46 +263,46 @@ export default function AnalyticsPage() {
               {/* Two-column: Hourly heatmap + Top campaigns */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Hourly activity */}
-                <div className="rounded-xl bg-white border border-gray-100 p-5 shadow-sm">
+                <div className="rounded-2xl bg-white border border-gray-100 p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <h2 className="text-sm font-bold text-gray-900">Hourly Activity (UTC)</h2>
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <h2 className="text-sm font-semibold text-gray-900">Hourly Activity (UTC)</h2>
                   </div>
                   <HourlyHeatmap data={overview.hourlySeries} />
-                  <p className="text-[10px] text-text-muted mt-3 font-medium italic">Peak times when recipients interact with your emails</p>
+                  <p className="text-[10px] text-gray-400 mt-2">Shows when recipients open and click your emails</p>
                 </div>
 
                 {/* Top campaigns */}
-                <div className="rounded-xl bg-white border border-gray-100 p-5 shadow-sm">
+                <div className="rounded-2xl bg-white border border-gray-100 p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <Trophy className="h-4 w-4 text-amber-500" />
-                    <h2 className="text-sm font-bold text-gray-900">Top Performing Campaigns</h2>
+                    <h2 className="text-sm font-semibold text-gray-900">Top Campaigns by Open Rate</h2>
                   </div>
                   <div className="space-y-2">
                     {overview.topCampaigns.length === 0 ? (
-                      <p className="text-xs text-text-secondary text-center py-4">No campaign data yet</p>
+                      <p className="text-xs text-gray-400 text-center py-4">No campaign data yet</p>
                     ) : (
                       overview.topCampaigns.map((c, i) => (
                         <div
                           key={c.id}
-                          className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                          className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                         >
                           <span className={cn(
-                            "h-6 w-6 rounded-lg flex items-center justify-center text-[10px] font-bold shadow-sm",
+                            "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold",
                             i === 0 ? "bg-amber-100 text-amber-700" :
                             i === 1 ? "bg-gray-200 text-gray-600" :
                             i === 2 ? "bg-orange-100 text-orange-700" :
-                            "bg-white text-gray-500"
+                            "bg-gray-100 text-gray-500"
                           )}>
                             {i + 1}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-semibold text-gray-900 truncate">{c.subject}</p>
-                            <p className="text-[10px] text-text-secondary font-medium">{c.sent} sent · {c.replied} replied</p>
+                            <p className="text-xs font-medium text-gray-900 truncate">{c.subject}</p>
+                            <p className="text-[10px] text-gray-500">{c.sent} sent · {c.replied} replied</p>
                           </div>
                           <div className="text-right shrink-0">
-                            <p className="text-sm font-bold text-brand">{c.openRate}%</p>
-                            <p className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Open</p>
+                            <p className="text-sm font-bold text-emerald-600">{c.openRate}%</p>
+                            <p className="text-[10px] text-gray-400">open rate</p>
                           </div>
                         </div>
                       ))
@@ -320,11 +312,11 @@ export default function AnalyticsPage() {
               </div>
 
               {/* Engagement breakdown */}
-              <div className="rounded-xl bg-white border border-gray-100 p-5 shadow-sm">
-                <h2 className="text-sm font-bold text-gray-900 mb-6">Engagement Pipeline</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                  <EngagementBar label="Opened" count={overview.uniqueOpens} total={overview.totalSent} color="bg-brand" />
-                  <EngagementBar label="Clicked" count={overview.uniqueClicks} total={overview.totalSent} color="bg-emerald-500" />
+              <div className="rounded-2xl bg-white border border-gray-100 p-5">
+                <h2 className="text-sm font-semibold text-gray-900 mb-4">Engagement Breakdown</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <EngagementBar label="Opened" count={overview.uniqueOpens} total={overview.totalSent} color="bg-emerald-500" />
+                  <EngagementBar label="Clicked" count={overview.uniqueClicks} total={overview.totalSent} color="bg-teal-500" />
                   <EngagementBar label="Replied" count={overview.totalReplied} total={overview.totalSent} color="bg-blue-500" />
                 </div>
               </div>
@@ -336,27 +328,28 @@ export default function AnalyticsPage() {
       {activeTab === "links" && (
         <div className="space-y-2">
           {links.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-3 bg-white rounded-xl border border-gray-100">
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Link2 className="h-8 w-8 text-gray-200" />
-              <p className="text-sm text-text-secondary">No link clicks recorded yet</p>
+              <p className="text-sm text-gray-500">No link clicks recorded across any campaigns</p>
             </div>
           ) : (
-            links.map((link) => (
+            links.map((link, i) => (
               <div
                 key={link.url}
-                className="flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-100 hover:border-brand/30 transition-all shadow-sm"
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-all"
+                style={{ animationDelay: `${i * 30}ms` }}
               >
-                <div className="h-10 w-10 rounded-lg bg-brand-light flex items-center justify-center shrink-0">
-                  <ExternalLink className="h-5 w-5 text-brand" />
+                <div className="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                  <ExternalLink className="h-4 w-4 text-indigo-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{link.url}</p>
+                  <p className="text-xs text-gray-900 truncate">{link.url}</p>
                   {link.lastClicked && (
-                    <p className="text-[11px] text-text-secondary font-medium">Last clicked: {formatTime(link.lastClicked)}</p>
+                    <p className="text-[10px] text-gray-400">Last clicked: {formatTime(link.lastClicked)}</p>
                   )}
                 </div>
-                <span className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-brand-light px-3 py-1.5 text-xs font-bold text-brand">
-                  <MousePointerClick className="h-3.5 w-3.5" />
+                <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-600">
+                  <MousePointerClick className="h-3 w-3" />
                   {link.count}
                 </span>
               </div>
@@ -371,22 +364,22 @@ export default function AnalyticsPage() {
 // ─── Sub-components ───
 
 function StatCard({
-  icon: Icon, label, value, sub, bg, iconColor, trend,
+  icon: Icon, label, value, sub, trend,
 }: {
-  icon: any; label: string; value: string; sub: string; bg: string; iconColor: string; trend?: string;
+  icon: any; label: string; value: string; sub: string; trend?: string;
 }) {
   return (
-    <div className="group rounded-xl bg-white border border-gray-100 p-5 transition-all shadow-sm hover:border-brand/20">
-      <div className="flex items-center gap-3 mb-4">
-        <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center", bg)}>
-          <Icon className={cn("h-5 w-5", iconColor)} />
+    <div className="group rounded-xl bg-white border border-gray-200 p-4 transition-all hover:shadow-md">
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className="h-8 w-8 rounded-lg bg-[#00A63E]/10 flex items-center justify-center">
+          <Icon className="h-4 w-4 text-[#00A63E]" />
         </div>
-        <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider">{label}</span>
+        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</span>
       </div>
       <p className="text-2xl font-bold text-gray-900 tabular-nums">{value}</p>
-      <p className="text-[11px] text-text-secondary mt-1 font-medium">{sub}</p>
+      <p className="text-[10px] text-gray-500 mt-0.5">{sub}</p>
       {trend && (
-        <p className="text-[10px] text-brand mt-2 flex items-center gap-1.5 font-bold">
+        <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
           <TrendingUp className="h-3 w-3" /> {trend}
         </p>
       )}
@@ -398,9 +391,9 @@ function EngagementBar({ label, count, total, color }: { label: string; count: n
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">{label}</span>
-        <span className="text-xs font-bold text-gray-900 tabular-nums">{count} <span className="font-normal text-text-muted">({pct}%)</span></span>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs font-medium text-gray-700">{label}</span>
+        <span className="text-xs font-bold text-gray-900 tabular-nums">{count} ({pct}%)</span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
         <div

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import { AuthGuard } from "@/components/AuthGuard";
@@ -8,7 +8,7 @@ import { ComposeForm } from "./ComposeForm";
 import { createCampaign, uploadAttachments, deleteAttachment } from "@/lib/apis";
 import type { CreateCampaignPayload, UploadedAttachment } from "@/types";
 
-export default function ComposePage() {
+function ComposeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
@@ -86,5 +86,13 @@ export default function ComposePage() {
         />
       </div>
     </AuthGuard>
+  );
+}
+
+export default function ComposePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-500">Loading...</div></div>}>
+      <ComposeContent />
+    </Suspense>
   );
 }

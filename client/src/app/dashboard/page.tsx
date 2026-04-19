@@ -29,36 +29,35 @@ import {
 const EMAIL_STATUS_OPTIONS = ["PENDING", "SENDING", "SENT", "FAILED", "CANCELLED"];
 
 /**
- * AnalyticsCard - Professional dashboard stat display.
+ * AnalyticsCard - Professional metric display.
  */
 function AnalyticsCard({
   icon: Icon,
   label,
   value,
   subValue,
+  color = "brand",
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | number;
   subValue?: string;
+  color?: string;
 }) {
   return (
-    <div className="group bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:border-brand/20 transition-all duration-200">
+    <div className="bg-white rounded-xl border border-border-light p-5 shadow-card hover:border-brand/20 transition-all">
       <div className="flex items-center justify-between mb-4">
-        <div className="h-10 w-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-brand-light transition-colors">
-          <Icon className="h-5 w-5 text-gray-400 group-hover:text-brand transition-colors" />
+        <div className="p-2 rounded-lg bg-background group">
+          <Icon className={`h-5 w-5 text-${color}`} />
         </div>
+        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{label}</span>
       </div>
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
-        <h3 className="text-2xl font-bold text-gray-900 tracking-tight">{value}</h3>
-        {subValue && (
-          <p className="text-xs text-text-secondary mt-2 font-medium flex items-center gap-1.5">
-            <span className="h-1 w-1 rounded-full bg-gray-300" />
-            {subValue}
-          </p>
-        )}
-      </div>
+      <div className="text-3xl font-black text-text-primary tracking-tighter">{value}</div>
+      {subValue && (
+        <div className="text-xs font-semibold text-text-muted mt-2 border-t border-border-light pt-2">
+          {subValue}
+        </div>
+      )}
     </div>
   );
 }
@@ -66,7 +65,6 @@ function AnalyticsCard({
 const Dashboard = () => {
   const { user } = useAuth();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
-  const [label, setLabel] = useState<string>("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const {
@@ -78,6 +76,18 @@ const Dashboard = () => {
   useEffect(() => {
     getSenders().then(setSenders).catch(() => { });
   }, []);
+
+  // Sync label with filters using useEffect instead of direct render update
+  const [currentLabel, setCurrentLabel] = useState("All");
+
+  useEffect(() => {
+    const nextLabel = filters.starred === "true" ? "Starred"
+      : filters.status === "PENDING" ? "Scheduled"
+        : filters.status === "SENT" ? "Sent"
+          : !filters.status && !filters.starred ? "All"
+            : "Custom";
+    setCurrentLabel(nextLabel);
+  }, [filters.status, filters.starred]);
 
   const handleSidebarItemClick = useCallback((itemLabel: string) => {
     if (itemLabel === "Starred") {
@@ -92,11 +102,11 @@ const Dashboard = () => {
     }
   }, [setFilters]);
 
-  const emailItems = (results as any[]).map((r: any) => ({
+  const emailItems = useMemo(() => (results as any[]).map((r: any) => ({
     email: r,
     campaign: r.campaign,
     searchQuery: filters.q,
-  }));
+  })), [results, filters.q]);
 
   const handleToggleStar = useCallback(async (emailId: string) => {
     try {
@@ -105,21 +115,13 @@ const Dashboard = () => {
     } catch { }
   }, [refresh]);
 
-  const newLabel = filters.starred === "true" ? "Starred"
-    : filters.status === "PENDING" ? "Scheduled"
-    : filters.status === "SENT" ? "Sent"
-    : !filters.status && !filters.starred ? "All"
-    : "Custom";
-  
-  if (newLabel !== label) {
-    setLabel(newLabel);
-  }
-
   const stats = useMemo(() => {
-    const sent = results.filter((r: Record<string, unknown>) => r.status === "SENT").length;
-    const failed = results.filter((r: Record<string, unknown>) => r.status === "FAILED").length;
-    const pending = results.filter((r: Record<string, unknown>) => r.status === "PENDING").length;
-    const replied = results.filter((r: Record<string, unknown>) => r.isReplied).length;
+    // Note: These are client-side stats based on visible results.
+    // In a production app, the backend should return aggregated stats for the user context.
+    const sent = results.filter((r: any) => r.status === "SENT").length;
+    const failed = results.filter((r: any) => r.status === "FAILED").length;
+    const pending = results.filter((r: any) => r.status === "PENDING").length;
+    const replied = results.filter((r: any) => r.isReplied).length;
 
     const totalAttempted = sent + failed;
     const efficiency = totalAttempted > 0 ? Math.round((sent / totalAttempted) * 100) : 100;
@@ -132,100 +134,118 @@ const Dashboard = () => {
     <AuthGuard>
       <ErrorBoundary>
         <SidebarProvider>
-          <div className="flex h-screen bg-background">
+          <div className="flex h-screen bg-background font-sans">
             <Sidebar
-              currentLabel={label}
-              setLabel={setLabel}
+              currentLabel={currentLabel}
+              setLabel={setCurrentLabel}
               onItemClick={handleSidebarItemClick}
+              profile={{
+                name: user?.name ?? "Outreach Pro",
+                email: user?.email ?? "",
+                avatarUrl: user?.avatarUrl ?? "",
+              }}
               items={[
-                { label: "All", count: total, icon: <Inbox className="h-4 w-4" /> },
-                { label: "Starred", icon: <Star className="h-4 w-4" /> },
-                { label: "Scheduled", icon: <Clock className="h-4 w-4" /> },
-                { label: "Sent", icon: <Send className="h-4 w-4" /> },
+                { label: "All", count: total, icon: <Inbox size={18} /> },
+                { label: "Starred", icon: <Star size={18} /> },
+                { label: "Scheduled", icon: <Clock size={18} /> },
+                { label: "Sent", icon: <Send size={18} /> },
               ]}
             />
 
-            <main className="flex flex-1 flex-col min-w-0 overflow-hidden">
-              <TopBar
-                initialValue={filters.q}
-                onSearch={setQuery}
-                onRefresh={refresh}
-                isRefreshing={isLoading}
-                filterSlot={
-                  <FilterPanel
-                    isOpen={isFilterOpen}
-                    onToggle={() => setIsFilterOpen(!isFilterOpen)}
-                    onClose={() => setIsFilterOpen(false)}
-                    filters={filters}
-                    onFilterChange={(key, value) => setFilter(key as keyof import("@/hooks/useSearchFilters").SearchFilters, value)}
-                    onClearAll={clearAllFilters}
-                    activeFilterCount={activeFilterCount}
-                    senders={senders}
-                    statusOptions={EMAIL_STATUS_OPTIONS}
-                    showDateField
-                  />
-                }
-              />
+            <main className="flex-1 flex flex-col min-w-0 overflow-hidden pt-4 px-4 bg-background">
+              <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col grow overflow-hidden">
+                <TopBar
+                  initialValue={filters.q}
+                  onSearch={setQuery}
+                  onRefresh={refresh}
+                  isRefreshing={isLoading}
+                  filterSlot={
+                    <FilterPanel
+                      isOpen={isFilterOpen}
+                      onToggle={() => setIsFilterOpen(!isFilterOpen)}
+                      onClose={() => setIsFilterOpen(false)}
+                      filters={filters}
+                      onFilterChange={(key, value) => setFilter(key as any, value)}
+                      onClearAll={clearAllFilters}
+                      activeFilterCount={activeFilterCount}
+                      senders={senders}
+                      statusOptions={EMAIL_STATUS_OPTIONS}
+                      showDateField
+                    />
+                  }
+                />
 
-              <FilterSummaryBar
-                filters={filters}
-                onRemoveFilter={(key) => clearFilter(key)}
-                onClearAll={clearAllFilters}
-                senders={senders}
-              />
+                <FilterSummaryBar
+                  filters={filters}
+                  onRemoveFilter={(key) => clearFilter(key)}
+                  onClearAll={clearAllFilters}
+                  senders={senders}
+                />
 
-              {isLoading && results.length === 0 ? (
-                <InlineLoader message="Loading your emails..." />
-              ) : error ? (
-                <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                  <AlertCircle className="h-8 w-8 text-gray-300" />
-                  <p className="text-sm text-text-secondary">{error}</p>
-                  <button onClick={refresh} className="text-sm text-brand hover:underline">Retry</button>
-                </div>
-              ) : (
-                <>
-                  <div className="px-4 md:px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <AnalyticsCard
-                      icon={Mail}
-                      label="Total Emails"
-                      value={total}
-                      subValue={`${stats.pending} pending`}
-                    />
-                    <AnalyticsCard
-                      icon={CheckCircle}
-                      label="Emails Sent"
-                      value={stats.sent}
-                      subValue={`${stats.failed} failed`}
-                    />
-                    <AnalyticsCard
-                      icon={TrendingUp}
-                      label="Delivery Rate"
-                      value={`${stats.efficiency}%`}
-                      subValue="Overall success"
-                    />
-                    <AnalyticsCard
-                      icon={BarChart3}
-                      label="Reply Rate"
-                      value={`${stats.replyRate}%`}
-                      subValue={`${stats.replied} replies`}
-                    />
-                  </div>
-
-                  <div className="px-4 md:px-6 mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-bold text-gray-900 tracking-tight">Inbox</h2>
-                      <span className="text-xs text-text-secondary font-medium">({total} {total === 1 ? 'email' : 'emails'})</span>
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  {isLoading && results.length === 0 ? (
+                    <InlineLoader message="Synchronizing your campaigns..." />
+                  ) : error ? (
+                    <div className="flex-1 flex flex-col items-center justify-center gap-4">
+                      <div className="p-4 bg-error-bg rounded-full">
+                        <AlertCircle className="h-8 w-8 text-error-text" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-text-primary">{error}</p>
+                        <button onClick={refresh} className="text-sm text-brand hover:underline mt-1 font-bold">Try Protocol Refresh</button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      {/* Integrated Analytics Strip */}
+                      <div className="px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-4 bg-background/30 border-b border-border-light">
+                        <AnalyticsCard
+                          icon={Mail}
+                          label="Visible Batch"
+                          value={total}
+                          subValue={`${stats.pending} in queue`}
+                        />
+                        <AnalyticsCard
+                          icon={CheckCircle}
+                          label="Delivery Success"
+                          value={stats.sent}
+                          subValue={`${stats.failed} blocked`}
+                          color="brand"
+                        />
+                        <AnalyticsCard
+                          icon={TrendingUp}
+                          label="Efficiency Index"
+                          value={`${stats.efficiency}%`}
+                          subValue="Reputation rating"
+                        />
+                        <AnalyticsCard
+                          icon={BarChart3}
+                          label="Engagement"
+                          value={`${stats.replyRate}%`}
+                          subValue={`${stats.replied} detected replies`}
+                        />
+                      </div>
 
-                  <div className="flex-1 mx-4 md:mx-6 mb-6 rounded-xl bg-white border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-0">
-                    <EmailList
-                      emails={emailItems}
-                      onToggleStar={handleToggleStar}
-                    />
-                  </div>
-                </>
-              )}
+                      <div className="flex-1 flex flex-col min-h-0 bg-white">
+                        <div className="px-6 py-4 flex items-center justify-between border-b border-border-light">
+                          <div className="flex items-center gap-3">
+                            <h2 className="text-lg font-black tracking-tighter text-text-primary">{currentLabel}</h2>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-light text-brand uppercase">{total} Objects</span>
+                          </div>
+                          {total > 0 && <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Active Monitoring</div>}
+                        </div>
+
+                        <div className="flex-1 overflow-hidden">
+                          <EmailList
+                            emails={emailItems}
+                            onToggleStar={handleToggleStar}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </main>
           </div>
         </SidebarProvider>

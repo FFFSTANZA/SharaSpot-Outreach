@@ -5,7 +5,8 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getSubscription, createSubscription, cancelSubscription, reactivateSubscription } from "@/lib/apis";
 import type { SubscriptionResponse } from "@/lib/apis";
-import { CreditCard, Check, AlertTriangle, Shield, Zap, Crown, X } from "lucide-react";
+import { CreditCard, Check, AlertTriangle, ArrowRight, Shield, Zap, Clock, X } from "lucide-react";
+import Button from "@/components/Button";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 
@@ -71,20 +72,20 @@ export default function BillingPage() {
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand border-t-transparent" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
             </div>
         );
     }
 
     const statusMap: Record<string, { label: string; color: string; icon: any }> = {
-        ACTIVE: { label: "Active", color: "text-brand bg-brand-light border-brand/10", icon: Check },
+        ACTIVE: { label: "Active", color: "text-emerald-700 bg-emerald-50 border-emerald-100", icon: Check },
         PAST_DUE: { label: "Past Due", color: "text-amber-700 bg-amber-50 border-amber-100", icon: AlertTriangle },
-        CANCELLED: { label: "Cancelled", color: "text-gray-500 bg-gray-50 border-gray-100", icon: X },
+        CANCELLED: { label: "Cancelled", color: "text-gray-700 bg-gray-50 border-gray-100", icon: X },
         EXPIRED: { label: "Expired", color: "text-red-700 bg-red-50 border-red-100", icon: AlertTriangle },
     };
 
     const status = subData?.subscription?.status || "INACTIVE";
-    const statusConfig = statusMap[status] || { label: status, color: "text-gray-500 bg-gray-50 border-gray-100", icon: AlertTriangle };
+    const statusConfig = statusMap[status] || { label: status, color: "text-gray-700 bg-gray-50 border-gray-100", icon: AlertTriangle };
     const StatusIcon = statusConfig.icon;
 
     const isTrial = subData?.subscription?.trialEnd && new Date(subData.subscription.trialEnd) > new Date();
@@ -93,88 +94,87 @@ export default function BillingPage() {
     return (
         <AuthGuard>
             <ErrorBoundary>
-                <div className="min-h-screen bg-background">
-                    <div className="max-w-4xl mx-auto px-4 md:px-6 py-12">
-                        <div className="mb-10 text-center md:text-left">
-                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Billing & Access</h1>
-                            <p className="text-sm text-text-secondary mt-2">
-                                Manage your professional outreach plan
+                <div className="min-h-screen bg-[#FAFBFC]">
+                    <div className="max-w-3xl mx-auto px-4 py-8">
+                        <div className="mb-8">
+                            <h1 className="text-2xl font-bold text-[#1A1D21]">Billing & Subscription</h1>
+                            <p className="text-sm text-[#5F6368] mt-1">
+                                Manage your payment method and subscription plan
                             </p>
                         </div>
 
-                        <div className="space-y-8">
-                            {/* Status Card */}
-                            <div className="bg-white rounded-xl border border-gray-100 p-8 shadow-sm flex flex-col md:flex-row items-center gap-8">
-                                <div className={cn("h-20 w-20 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
-                                    subData?.isPremium ? "bg-brand text-white" : "bg-gray-100 text-gray-400")}>
-                                    <Crown className="h-10 w-10" />
+                        <div className="space-y-6">
+                            {/* Status Banner */}
+                            <div className={cn("rounded-xl border p-6 flex flex-col md:flex-row items-center gap-6",
+                                subData?.subscription?.status === "ACTIVE" || isTrial ? "bg-white border-gray-200" : "bg-amber-50 border-amber-100")}>
+                                <div className={cn("h-16 w-16 rounded-2xl flex items-center justify-center shrink-0",
+                                    subData?.subscription?.status === "ACTIVE" || isTrial ? "bg-[#00A63E]/10" : "bg-amber-100")}>
+                                    <Zap className={cn("h-8 w-8", subData?.subscription?.status === "ACTIVE" || isTrial ? "text-[#00A63E]" : "text-amber-600")} />
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
-                                    <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                                        <h2 className="text-xl font-bold text-gray-900">
-                                            {subData?.isPremium ? "Professional Plan" : "7-Day Free Trial"}
+                                    <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1">
+                                        <h2 className="text-lg font-bold text-gray-900">
+                                            {(subData?.subscription?.status === "ACTIVE" || isTrial) ? "Active Subscription" : "Subscription Required"}
                                         </h2>
-                                        <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-semibold border uppercase tracking-wider", statusConfig.color)}>
+                                        <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border", statusConfig.color)}>
                                             <StatusIcon className="h-3 w-3" />
                                             {statusConfig.label}
                                         </div>
                                     </div>
                                     {isTrial ? (
-                                        <p className="text-sm text-text-secondary">
-                                            Your 7-day trial is active. You have <span className="font-semibold text-brand">{trialDaysLeft} days</span> remaining.
+                                        <p className="text-sm text-gray-600">
+                                            Your 7-day free trial is active. You have <span className="font-bold text-emerald-600">{trialDaysLeft} days</span> left.
                                         </p>
                                     ) : subData?.isPremium ? (
-                                        <p className="text-sm text-text-secondary">
-                                            Next billing date: <span className="font-semibold text-gray-900">{new Date(subData.subscription!.currentPeriodEnd).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                                        <p className="text-sm text-gray-600">
+                                            Next billing date: <span className="font-bold text-gray-900">{new Date(subData.subscription!.currentPeriodEnd).toLocaleDateString()}</span>
                                         </p>
                                     ) : (
-                                        <p className="text-sm text-text-secondary">
-                                            Your trial has ended. Upgrade to the Professional plan to continue.
+                                        <p className="text-sm text-amber-700">
+                                            Your trial has expired. Subscribe to continue using SharaSpot.
                                         </p>
                                     )}
                                 </div>
                                 {!subData?.subscription?.dodoSubscriptionId && !isTrial && (
-                                    <button
-                                        className="w-full md:w-auto h-12 px-8 bg-brand text-white rounded-xl font-semibold shadow-sm hover:bg-brand-hover transition-all"
+                                    <Button
+                                        variant="primary"
+                                        className="w-full md:w-auto"
                                         onClick={handleSubscribe}
                                         disabled={isProcessing}
                                     >
-                                        {isProcessing ? "Processing..." : "Upgrade to Pro — $20/mo"}
-                                    </button>
+                                        {isProcessing ? "Processing..." : "Subscribe Now — $20/mo"}
+                                    </Button>
                                 )}
                             </div>
 
                             {/* Plan Details */}
-                            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                                <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
-                                            <Zap className="h-5 w-5 text-brand" />
+                            <div className="bg-white rounded-xl border border-[#E8EAED] overflow-hidden">
+                                <div className="px-6 py-4 border-b border-[#E8EAED] bg-[#FAFBFC] flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-emerald-50 rounded-lg">
+                                            <Zap className="h-5 w-5 text-emerald-600" />
                                         </div>
                                         <div>
-                                            <h2 className="text-lg font-bold text-gray-900">Professional Suite</h2>
-                                            <p className="text-xs text-text-secondary">Full access to all features</p>
+                                            <h2 className="text-base font-semibold text-[#1A1D21]">Plan Details</h2>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xl font-bold text-gray-900">$20.00 <span className="text-xs text-text-secondary font-normal">/ month</span></p>
+                                        <p className="text-sm font-bold text-gray-900">$20.00 / month</p>
                                     </div>
                                 </div>
-                                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {[
                                         "Unlimited Sender Accounts",
-                                        "Unlimited Outreach Campaigns",
-                                        "Advanced Reply Detection",
-                                        "Multi-step Follow-up Sequences",
-                                        "Live Delivery Analytics",
-                                        "Priority Sending Queue",
-                                        "Dynamic Template Variables",
-                                        "Adaptive Safe Warmup"
+                                        "Unlimited Campaigns",
+                                        "Reply Detection & Management",
+                                        "Follow-up Sequences",
+                                        "Real-time Analytics",
+                                        "Priority Email Delivery",
+                                        "Template Personalization",
+                                        "Safe Sending Warmup"
                                     ].map((feature, i) => (
-                                        <div key={i} className="flex items-center gap-3 text-sm text-gray-700 font-medium">
-                                            <div className="h-5 w-5 rounded-md bg-brand-light flex items-center justify-center shrink-0">
-                                                <Check className="h-3.5 w-3.5 text-brand" />
-                                            </div>
+                                        <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                                            <Check className="h-4 w-4 text-emerald-500 shrink-0" />
                                             {feature}
                                         </div>
                                     ))}
@@ -183,42 +183,43 @@ export default function BillingPage() {
 
                             {/* Subscription Management */}
                             {subData?.subscription?.dodoSubscriptionId && (
-                                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                                    <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                                        <h2 className="text-lg font-bold text-gray-900">Manage Subscription</h2>
-                                        <CreditCard className="h-5 w-5 text-gray-400" />
+                                <div className="bg-white rounded-xl border border-[#E8EAED] overflow-hidden">
+                                    <div className="px-6 py-4 border-b border-[#E8EAED] bg-[#FAFBFC]">
+                                        <h2 className="text-base font-semibold text-[#1A1D21]">Subscription Actions</h2>
                                     </div>
-                                    <div className="p-8 flex flex-col sm:flex-row gap-4">
+                                    <div className="p-6 flex flex-col sm:flex-row gap-3">
                                         {subData.subscription.cancelAtPeriodEnd ? (
-                                            <button
-                                                className="flex-1 h-11 bg-brand text-white rounded-xl font-semibold shadow-sm transition-all hover:bg-brand-hover"
+                                            <Button
+                                                variant="secondary"
+                                                className="flex-1"
                                                 onClick={handleReactivate}
                                                 disabled={isProcessing}
                                             >
                                                 Reactivate Subscription
-                                            </button>
+                                            </Button>
                                         ) : (
-                                            <button
-                                                className="flex-1 h-11 bg-white text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl font-semibold transition-all border border-gray-200 hover:border-red-100"
+                                            <Button
+                                                variant="ghost"
+                                                className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium"
                                                 onClick={handleCancel}
                                                 disabled={isProcessing}
                                             >
                                                 Cancel Subscription
-                                            </button>
+                                            </Button>
                                         )}
                                     </div>
                                 </div>
                             )}
 
                             {/* Support */}
-                            <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div className="flex items-center gap-3 text-xs text-gray-400 font-medium">
-                                    <Shield className="h-5 w-5 text-gray-300" />
-                                    <span>Secure processing by Dodo Payments</span>
+                            <div className="p-6 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
+                                <div className="flex items-center gap-3 text-sm text-gray-600">
+                                    <Shield className="h-4 w-4" />
+                                    <span>Secure payments by Dodo Payment</span>
                                 </div>
                                 <a
                                     href="mailto:support@sharaspot.com"
-                                    className="h-10 px-5 flex items-center justify-center bg-gray-50 text-gray-900 hover:bg-gray-100 rounded-xl text-xs font-semibold transition-all border border-gray-200"
+                                    className="text-sm font-bold text-emerald-600 hover:underline"
                                 >
                                     Contact Support
                                 </a>

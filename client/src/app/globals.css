@@ -1,229 +1,165 @@
 @import "tailwindcss";
 
 @theme {
-  /* Custom breakpoints */
-  --breakpoint-sm: 380px;
+  /* Dynamic Breakpoints */
+  --breakpoint-xs: 380px;
+  --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
 
-  /* ═══════════════════════════════════════════════════════════════════════════════
-     SHARASPOT DESIGN SYSTEM - PROFESSIONAL & CLEAN
-     ═════════════════════════════════════════════════════════════════════════════ */
+  /* 
+     SHARASPOT CORE DESIGN SYSTEM 
+     Focus: High-contrast, tactile, and professional.
+  */
 
-  /* Brand accent - distinctive SharaSpot green (primary action color) */
+  /* Brand Colors - Deep Emerald & Clean Slate */
   --color-brand: #00A63E;
-  --color-brand-hover: #009134;
-  --color-brand-active: #007A2B;
   --color-brand-light: #E8F8ED;
-  --color-brand-muted: #D4F1DC;
+  --color-brand-muted: #B9E6C9;
 
-  /* Neutral palette */
-  --color-surface: #FFFFFF;
-  --color-background: #F9FAFB;
-  --color-border-light: #E5E7EB;
-  --color-border-medium: #D1D5DB;
-  --color-border-strong: #9CA3AF;
-  --color-text-primary: #111827;
-  --color-text-secondary: #4B5563;
-  --color-text-muted: #6B7280;
-  --color-text-disabled: #9CA3AF;
-  --color-divider: #F3F4F6;
+  --color-background: #FFFFFF;
+  --color-text-primary: #1A1D21;
+  --color-text-secondary: #5F6368;
+  --color-text-muted: #9AA0A6;
 
-  /* Interactive states */
-  --color-interactive-hover: #F9FAFB;
-  --color-interactive-active: #F3F4F6;
-  --color-interactive-focus: rgba(0, 166, 56, 0.2);
+  --color-border-light: #E8EAED;
+  --color-border-medium: #DADCE0;
 
-  /* Semantic colors */
-  --color-success-bg: #E8F8ED;
-  --color-success-text: #048C4A;
-  --color-success-border: #B8E4C1;
-  --color-success-icon: #34A853;
-  
-  --color-warning-bg: #FEF7E0;
-  --color-warning-text: #B06000;
-  --color-warning-border: #FAD987;
-  --color-warning-icon: #F9AB00;
-  
-  --color-error-bg: #FCE8E7;
-  --color-error-text: #C5221F;
-  --color-error-border: #F4B3AF;
-  --color-error-icon: #EA4335;
-  
-  --color-info-bg: #E8F0FE;
-  --color-info-text: #1967D2;
-  --color-info-border: #B3C4F6;
-  --color-info-icon: #4285F4;
+  --color-interactive-hover: #F1F3F4;
+  --color-interactive-active: #E8EAED;
 
-  /* Status indicator colors */
-  --color-status-sent: #00A63E;
-  --color-status-sending: #4285F4;
-  --color-status-scheduled: #F9AB00;
-  --color-status-failed: #EA4335;
-  --color-status-pending: #9AA0A6;
+  --color-error-text: #D93025;
+  --color-error-bg: #FCE8E6;
+  --color-error-border: #FCA5A5;
 
-  /* Sidebar */
-  --color-sidebar-hover: #F1F3F4;
-  --color-sidebar-active: #E8F5E9;
-  --color-sidebar-text-active: #00A63E;
+  /* Shadows - Minimalist depth */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-brand-glow: 0 0 20px rgba(0, 166, 56, 0.15);
 
-  /* Font families */
-  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-
-  /* Font sizes */
-  --app-text-xs: 0.75rem;
-  --app-text-sm: 0.875rem;
-  --app-text-base: 1rem;
-  --app-text-lg: 1.125rem;
-  --app-text-xl: 1.25rem;
-  --app-text-2xl: 1.5rem;
-  --app-text-3xl: 1.875rem;
-  --app-text-4xl: 2.25rem;
-
-  /* Spacing */
-  --app-spacing-xs: 4px;
-  --app-spacing-sm: 8px;
-  --app-spacing-md: 16px;
-  --app-spacing-lg: 24px;
-  --app-spacing-xl: 32px;
-
-  /* Border Radius */
-  --app-radius-sm: 4px;
-  --app-radius-md: 8px;
-  --app-radius-lg: 12px;
-  --app-radius-xl: 16px;
-  --app-radius-full: 9999px;
-
-  /* Shadows - subtle and professional */
-  --shadow-subtle: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-hover: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04);
-  --shadow-elevated: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
-  --shadow-modal: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-
-  /* Motion tokens */
-  --animate-duration-fast: 150ms;
-  --animate-duration-normal: 200ms;
-  --animate-duration-slow: 300ms;
-  --animate-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
-  --animate-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Motion Tokens */
+  --animate-in: fade-in 0.4s ease-out forwards;
+  --animate-up: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
-   UI MOTION SYSTEM - Clean and subtle
-   ═══════════════════════════════════════════════════════════════════════════════ */
+/* 
+   REFINED MOTION SYSTEM 
+   Avoids 'animation slop' by using systemic transitions over ad-hoc keyframes.
+*/
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Accessibility & Utilities */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-@keyframes fadeInUp {
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-border-medium);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Structural Classes */
+.shadow-elevated {
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+@layer base {
+  * {
+    @apply border-border-light;
+  }
+
+  body {
+    @apply bg-background text-text-primary antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
+
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-@keyframes shimmer {
-  0% { background-position: -200px 0; }
-  100% { background-position: calc(200px + 100%) 0; }
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-/* ─── Global resets and base styles ─── */
-
+/* Base Styles */
 html {
   scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 body {
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
   background-color: var(--color-background);
   color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-sans);
-  line-height: 1.2;
+/* Utility Animations */
+.animate-delay-100 {
+  animation-delay: 100ms;
 }
 
-p, li {
-  line-height: 1.6;
+.animate-delay-200 {
+  animation-delay: 200ms;
 }
 
-a {
-  text-decoration: none;
+.animate-delay-500 {
+  animation-delay: 500ms;
 }
 
-/* Touch device momentum scrolling */
-.scroll-touch {
-  -webkit-overflow-scrolling: touch;
-  overflow-y: auto;
-}
-
-/* Interactive element transition base */
-button,
-a,
-input,
-select,
-textarea {
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
-}
-
-/* ─── TipTap Editor Styles ─── */
-
+/* 
+   TIPTAP EDITOR REFINEMENT 
+*/
 .tiptap {
-  outline: none;
+  @apply outline-none min-h-[200px] text-text-primary leading-relaxed;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  float: left;
-  color: #9ca3af;
-  pointer-events: none;
-  height: 0;
+  @apply float-left text-text-muted pointer-events-none h-0 italic;
 }
 
-/* ─── Toast notification animations ─── */
-
-@keyframes toastEnter {
-  0% { opacity: 0; transform: translateY(-12px); }
-  100% { opacity: 1; transform: translateY(0); }
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-@keyframes toastExit {
-  0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(0.95); }
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-@keyframes toastProgress {
-  0% { width: 100%; }
-  100% { width: 0%; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-medium);
+  border-radius: 10px;
 }
 
-/* Register toast animations in Tailwind theme */
-@theme {
-  --animate-toast-enter: toastEnter 300ms ease-out forwards;
-  --animate-toast-exit: toastExit 200ms ease-in forwards;
-  --animate-toast-progress: toastProgress linear forwards;
-}
-
-/* Hide scrollbar for toolbar horizontal scroll on mobile */
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
 }

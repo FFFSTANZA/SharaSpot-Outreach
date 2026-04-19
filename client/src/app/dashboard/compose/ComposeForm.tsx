@@ -5,7 +5,7 @@ import { ComposeFormData, ComposeFormProps, SenderResponse } from "@/types";
 import { getSenders, BatchValidationResponse } from "@/lib/apis";
 import { SenderModal } from "./SenderModal";
 import { Editor } from "./Editor";
-import { X, CheckCircle2, AlertCircle, Plus, AlertTriangle, ChevronDown, Copy, Trash2, Send, Loader2, Settings2, Zap, Shield, MoreHorizontal, FileText, Eye, MousePointer2, ArrowLeft, CheckSquare, Square } from "lucide-react";
+import { X, CheckCircle2, AlertCircle, Plus, AlertTriangle, ChevronDown, Copy, Trash2, Send, Loader2, Settings2, Zap, MoreHorizontal, FileText, Eye, MousePointer2, ArrowLeft, CheckSquare, Square } from "lucide-react";
 import TemplateSelector from "./TemplateSelector";
 import type { EmailTemplate, SequenceStepInput } from "@/types";
 import Modal from "@/components/Modal";
@@ -15,7 +15,6 @@ import SequenceBuilder from "./SequenceBuilder";
 import { EmailValidator } from "./EmailValidator";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
-import { getSubscription } from "@/lib/apis";
 
 interface Signature {
   id: string;
@@ -45,7 +44,6 @@ export function ComposeForm({
 }) {
   const { addToast } = useToast();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
-  const [isPremium, setIsPremium] = useState(false);
   const [isSenderLoading, setIsSenderLoading] = useState(true);
   const [isSenderModalOpen, setIsSenderModalOpen] = useState(false);
   const [isSenderDropdownOpen, setIsSenderDropdownOpen] = useState(false);
@@ -120,20 +118,16 @@ export function ComposeForm({
 
   useEffect(() => {
     (async () => {
-      try {
-        const list = await getSenders();
-        setSenders(list);
-        const firstVerified = list.find(s => s.isVerified);
-        if (firstVerified) {
-          setData(prev => ({ ...prev, from: firstVerified.email, selectedSenderIds: [firstVerified.id] }));
-        } else if (list.length > 0) {
-          setData(prev => ({ ...prev, from: list[0].email, selectedSenderIds: [list[0].id] }));
-        }
-        try {
-          const sub = await getSubscription();
-          setIsPremium(sub.isPremium);
-        } catch { }
-      } catch { } finally { setIsSenderLoading(false); }
+try {
+          const list = await getSenders();
+          setSenders(list);
+          const firstVerified = list.find(s => s.isVerified);
+          if (firstVerified) {
+            setData(prev => ({ ...prev, from: firstVerified.email, selectedSenderIds: [firstVerified.id] }));
+          } else if (list.length > 0) {
+            setData(prev => ({ ...prev, from: list[0].email, selectedSenderIds: [list[0].id] }));
+          }
+        } catch { } finally { setIsSenderLoading(false); }
     })();
   }, []);
 
@@ -197,751 +191,758 @@ export function ComposeForm({
     setIsBulkMenuOpen(false);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setCsvMessage(null); setCsvError(null);
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-      if (lines.length === 0) return;
-      const firstLine = lines[0].toLowerCase();
-      const isCsv = firstLine.includes(",") || file.name.endsWith(".csv");
-      let newEmails: string[] = [];
-      let newColumnData: Record<string, Record<string, string>> = { ...recipientColumnData };
-      if (isCsv) {
-        const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
-        const emailIdx = headers.indexOf("email");
-        if (emailIdx === -1) {
-          setCsvError("CSV must have an 'email' column");
-          return;
-        }
+    reader.onload = () => {
+      try {
+        const lines = (reader.result as string).split(/\r?\n/).filter(l => l.trim());
+        if (lines.length < 2) { setCsvError("CSV needs header + data"); addToast("error", "Invalid CSV"); return; }
+
+        const headers = lines[0].split(",").map(h => h.trim());
+        const emails: string[] = [];
+        const colData: Record<string, Record<string, string>> = {};
+
         for (let i = 1; i < lines.length; i++) {
-          const row = lines[i].split(",").map(r => r.trim());
-          const email = row[emailIdx];
-          if (email && email.includes("@")) {
-            newEmails.push(email);
-            const data: Record<string, string> = {};
-            headers.forEach((h, idx) => { if (idx !== emailIdx) data[h] = row[idx] || ""; });
-            newColumnData[email.toLowerCase()] = data;
+          const cols = lines[i].split(",").map(c => c.trim());
+          const email = cols[0];
+          if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) continue;
+          emails.push(email);
+          const row: Record<string, string> = {};
+          for (let j = 1; j < headers.length; j++) {
+            if (headers[j] && cols[j] !== undefined) row[headers[j]] = cols[j];
           }
+          colData[email.toLowerCase()] = row;
         }
-      } else {
-        newEmails = lines.map(l => l.trim()).filter(l => l.includes("@"));
-      }
-      if (newEmails.length > 0) {
-        setData(prev => ({ ...prev, to: Array.from(new Set([...prev.to, ...newEmails])) }));
-        setRecipientColumnData(newColumnData);
-        setCsvMessage(`Imported ${newEmails.length} recipients`);
-        setCsvError(null);
-        addToast("success", `Imported ${newEmails.length} recipients`);
-      }
+
+        if (!emails.length) { setCsvError("No valid emails"); addToast("error", "No valid emails in CSV"); return; }
+        setData(prev => ({ ...prev, to: Array.from(new Set([...prev.to, ...emails])) }));
+        setRecipientColumnData(prev => ({ ...prev, ...colData }));
+        setCsvMessage(`${emails.length} imported`);
+        addToast("success", `${emails.length} contacts imported`);
+        setTimeout(() => setCsvMessage(null), 3000);
+      } catch { setCsvError("Invalid CSV format"); addToast("error", "Invalid CSV"); }
     };
-    reader.readAsText(file);
-    e.target.value = "";
+    reader.readAsText(file); e.target.value = "";
   };
 
-  const handleFormSubmit = () => {
-    const newErrors: Record<string, string> = {};
-    if (!data.from) newErrors.from = "Select a sender";
-    if (data.to.length === 0) newErrors.to = "Add recipients";
-    if (!data.subject.trim()) newErrors.subject = "Subject required";
-    if (!data.body.trim()) newErrors.body = "Body required";
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+  const applyTemplate = (template: EmailTemplate) => {
+    setData(prev => ({ ...prev, subject: template.subject, body: template.body }));
+    setPendingTemplate(null);
+  };
+
+  const handleTemplateSelect = (template: EmailTemplate) => {
+    const isDirty = data.subject.trim() !== "" || (data.body.trim() !== "" && data.body !== "<p></p>");
+    if (isDirty) setPendingTemplate(template);
+    else applyTemplate(template);
+  };
+
+  const handleSaveSignature = (sig: Signature) => {
+    const updated = signatures.map(s => s.id === sig.id ? sig : s);
+    setSignatures(updated);
+    localStorage.setItem("email_signatures", JSON.stringify(updated));
+    if (sig.isDefault) setSelectedSignature(sig);
+    setEditingSignature(null);
+    addToast("success", "Signature saved");
+  };
+
+  const handleFormSubmit = async () => {
+    const e: Record<string, string> = {};
+    if (!data.selectedSenderIds.length) e.from = "Select a sender";
+    const hasUnverified = selectedSenders.some(s => !s.isVerified);
+    if (hasUnverified) e.from = "Sender not verified";
+    if (!data.to.length) e.to = "Add at least one recipient";
+    if (!data.subject.trim()) e.subject = "Add a subject";
+    setErrors(e);
+    if (Object.keys(e).length) {
       addToast("warning", "Please fill required fields");
       return;
     }
-    setErrors({});
-    const finalBody = selectedSignature ? `${data.body}<br><br>${selectedSignature.content}` : data.body;
-    onSubmit({
-      ...data,
-      body: finalBody,
-      sequenceSteps,
-      trackOpens,
-      trackClicks,
-      scheduledAt: scheduledAt || null,
-    });
+    try {
+      setSubmitError(null);
+      await onSubmit({
+        senderIds: data.selectedSenderIds,
+        subject: data.subject,
+        body: data.body + (selectedSignature?.content ? `<p>${selectedSignature.content}</p>` : ""),
+        startTime: scheduledAt?.toISOString() || new Date().toISOString(),
+        delaySeconds: data.delayBetweenEmails,
+        hourlyLimit: data.hourlyLimit,
+        emails: data.to.map(email => {
+          const colData = recipientColumnData[email.toLowerCase()];
+          return colData && Object.keys(colData).length > 0 ? { email, columnData: colData } : email;
+        }),
+        ccEmails: data.cc.length > 0 ? data.cc : undefined,
+        bccEmails: data.bcc.length > 0 ? data.bcc : undefined,
+        attachments: uploadedAttachments.length ? uploadedAttachments : undefined,
+        steps: sequenceSteps.length > 0 ? sequenceSteps : undefined,
+        trackOpens,
+        trackClicks,
+        isPriority: priorityEnabled,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to create campaign";
+      setSubmitError(message);
+    }
   };
 
-  const toggleRecipientSelection = (email: string) => {
-    setData(prev => {
-      const next = new Set(prev.selectedRecipients);
-      if (next.has(email)) next.delete(email);
-      else next.add(email);
-      return { ...prev, selectedRecipients: next };
-    });
-  };
-
-  const toggleSelectAll = () => {
-    setData(prev => {
-      if (prev.selectedRecipients.size === prev.to.length) return { ...prev, selectedRecipients: new Set() };
-      return { ...prev, selectedRecipients: new Set(prev.to) };
-    });
-  };
-
-  const removeRecipient = (email: string) => {
-    setData(prev => ({
-      ...prev,
-      to: prev.to.filter(e => e !== email),
-      selectedRecipients: (() => {
-        const next = new Set(prev.selectedRecipients);
-        next.delete(email);
-        return next;
-      })(),
-    }));
+  const handleSenderUpdated = (s: SenderResponse) => {
+    setSenders(prev => prev.find(x => x.id === s.id) ? prev.map(x => x.id === s.id ? s : x) : [...prev, s]);
+    if (s.isVerified) {
+      setData(prev => ({
+        ...prev,
+        selectedSenderIds: prev.selectedSenderIds.includes(s.id) ? prev.selectedSenderIds : [...prev.selectedSenderIds, s.id],
+        from: prev.from || s.email,
+      }));
+    }
   };
 
   return (
-    <div className="mx-auto max-w-[1280px] p-3 md:p-6 space-y-6">
-      {submitError && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600 flex items-center gap-3 font-bold">
-          <AlertCircle className="h-5 w-5 shrink-0" />
-          <p>{submitError}</p>
-          <button onClick={() => setSubmitError(null)} className="ml-auto text-red-400 hover:text-red-600 transition-colors">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left column: Campaign config */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Senders section */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-visible">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-brand-light flex items-center justify-center">
-                  <Shield className="h-4 w-4 text-brand" />
+    <>
+      <div className="h-full bg-gray-50/50 overflow-y-auto">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 min-h-full">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => window.history.back()}
+                  className="group p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-white rounded-xl transition-all border border-transparent hover:border-gray-200 hover:shadow-sm"
+                  title="Go back"
+                >
+                  <ArrowLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
+                </button>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900 leading-none">Compose Campaign</h1>
+                  <p className="text-xs text-gray-500 mt-1">Create and schedule your email outreach</p>
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 tracking-tight">Sender Accounts</h3>
               </div>
-              <button
-                onClick={() => setIsSenderModalOpen(true)}
-                className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-brand hover:bg-brand-light transition-all"
-                title="Add Sender"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="primary"
+                  className="px-6 gap-2 h-10 font-bold"
+                  onClick={handleFormSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  {scheduledAt ? "Schedule" : "Send"}
+                </Button>
+              </div>
             </div>
 
-            <div className="p-5 space-y-4">
-              <div className="relative" ref={senderDropdownRef}>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Primary Sender</label>
-                <button
-                  type="button"
-                  onClick={() => setIsSenderDropdownOpen(!isSenderDropdownOpen)}
-                  className={cn(
-                    "w-full flex items-center justify-between px-4 h-11 rounded-xl border transition-all text-sm",
-                    errors.from ? "border-red-200 bg-red-50/30" : "border-gray-100 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200",
-                    isSenderDropdownOpen && "border-brand/30 ring-4 ring-brand/5 bg-white"
-                  )}
-                >
-                  {isSenderLoading ? (
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading senders...</span>
-                    </div>
-                  ) : selectedSender ? (
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="h-6 w-6 rounded-full bg-brand flex items-center justify-center shrink-0">
-                        <span className="text-[10px] font-bold text-white">{selectedSender.name[0].toUpperCase()}</span>
-                      </div>
-                      <span className="font-semibold text-gray-700 truncate">{selectedSender.email}</span>
-                    </div>
-                  ) : (
-                    <span className="text-gray-400">Select a sender</span>
-                  )}
-                  <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform", isSenderDropdownOpen && "rotate-180")} />
-                </button>
+            {submitError && (
+              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <p className="font-medium">{submitError}</p>
+              </div>
+            )}
 
-                {isSenderDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white rounded-xl border border-gray-100 shadow-xl overflow-hidden py-1">
-                    {senders.length === 0 ? (
-                      <div className="px-4 py-8 text-center">
-                        <p className="text-xs text-gray-400">No senders found</p>
-                        <button onClick={() => setIsSenderModalOpen(true)} className="mt-2 text-xs text-brand font-bold hover:underline">Add your first sender</button>
-                      </div>
-                    ) : (
-                      <div className="max-h-60 overflow-y-auto">
-                        {senders.map(s => (
-                          <button
-                            key={s.id}
-                            onClick={() => { toggleSender(s.id); setIsSenderDropdownOpen(false); }}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Main Compose Area */}
+              <div className="lg:col-span-8 space-y-4">
+                {/* Email Card */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  {/* From */}
+                  <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3">
+                    <span className="text-xs font-medium text-gray-500 w-16 shrink-0">From</span>
+                    <div className="relative flex-1 min-w-0" ref={senderDropdownRef}>
+                      <button
+                        type="button"
+                        className="w-full text-left flex items-center justify-between py-1 text-sm text-gray-900"
+                        onClick={() => !isSenderLoading && setIsSenderDropdownOpen(prev => !prev)}
+                        disabled={isSenderLoading}
+                      >
+                        <span className="truncate pr-2">
+                          {isSenderLoading
+                            ? "Loading..."
+                            : data.selectedSenderIds.length === 0
+                              ? "Select sender"
+                              : data.selectedSenderIds.length === 1
+                                ? selectedSender?.email || ""
+                                : `${data.selectedSenderIds.length} senders`}
+                        </span>
+                        <ChevronDown className={cn("h-4 w-4 text-gray-400 shrink-0 transition-transform", isSenderDropdownOpen && "rotate-180")} />
+                      </button>
+
+                      {isSenderDropdownOpen && (
+                        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg border border-gray-200 overflow-hidden">
+                          <div className="py-1 max-h-64 overflow-y-auto">
+                            {senders.map(s => (
+                              <label key={s.id} className={cn(
+                                "flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50",
+                                data.selectedSenderIds.includes(s.id) && "bg-blue-50/50"
+                              )}>
+                                <input
+                                  type="checkbox"
+                                  checked={data.selectedSenderIds.includes(s.id)}
+                                  onChange={() => toggleSender(s.id)}
+                                  className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm text-gray-900 truncate">{s.email}</p>
+                                  {s.name && <p className="text-xs text-gray-400 truncate">{s.name}</p>}
+                                </div>
+                                {s.isVerified ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                                ) : (
+                                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                                )}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setIsSenderModalOpen(true)}
+                      className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-colors shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {/* To */}
+                  <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3">
+                    <span className="text-xs font-medium text-gray-500 w-16 shrink-0">To</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap gap-1.5 min-h-[28px] cursor-text" onClick={() => inputRef.current?.focus()}>
+                        {data.to.map(email => (
+                          <span
+                            key={email}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const newSelected = new Set(data.selectedRecipients);
+                              if (newSelected.has(email)) newSelected.delete(email);
+                              else newSelected.add(email);
+                              setData({ ...data, selectedRecipients: newSelected });
+                            }}
                             className={cn(
-                              "w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors",
-                              data.selectedSenderIds.includes(s.id) ? "bg-brand-light/50" : "hover:bg-gray-50"
+                              "inline-flex items-center gap-1 rounded-md text-xs font-medium px-2 py-1 cursor-pointer transition-colors",
+                              data.selectedRecipients.has(email)
+                                ? "bg-blue-600 text-white shadow-sm"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             )}
                           >
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-gray-800 truncate">{s.email}</p>
-                              <p className="text-[10px] text-gray-400">{s.name} · {s.dailyLimit} daily</p>
-                            </div>
-                            {data.selectedSenderIds.includes(s.id) && <CheckCircle2 className="h-4 w-4 text-brand shrink-0" />}
-                          </button>
+                            <span className="truncate max-w-[150px]">{email}</span>
+                            <button
+                              type="button"
+                              className={cn("ml-0.5 hover:scale-110 transition-transform", data.selectedRecipients.has(email) ? "text-blue-100" : "text-gray-400")}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setData({ ...data, to: data.to.filter(e => e !== email) });
+                              }}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
                         ))}
+                        <input
+                          ref={inputRef}
+                          placeholder={data.to.length === 0 ? "recipient@example.com" : ""}
+                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === ",") {
+                              const v = (e.target as HTMLInputElement).value.trim().replace(/,/g, "");
+                              if (v && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+                                if (!data.to.includes(v)) setData({ ...data, to: [...data.to, v] });
+                                (e.target as HTMLInputElement).value = "";
+                              }
+                            }
+                            if (e.key === "Backspace" && !(e.target as HTMLInputElement).value && data.to.length)
+                              setData({ ...data, to: data.to.slice(0, -1) });
+                          }}
+                        />
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Multi-sender rotation status */}
-              {data.selectedSenderIds.length > 1 && (
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-brand-light/30 border border-brand/10">
-                  <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center shrink-0 shadow-sm">
-                    <RefreshCw className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-brand uppercase tracking-wider">Multi-Account Rotation</p>
-                    <p className="text-[10px] text-brand/70 font-medium">Outreach will be distributed across {data.selectedSenderIds.length} accounts</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Recipients section */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col max-h-[600px]">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-brand-light flex items-center justify-center">
-                  <Users className="h-4 w-4 text-brand" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 tracking-tight">Recipients</h3>
-                  <p className="text-[10px] text-gray-400 font-medium">{data.to.length} total</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => csvInputRef.current?.click()}
-                  className="h-8 px-3 flex items-center gap-2 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-all"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  Import
-                </button>
-              </div>
-            </div>
-
-            <div className="p-4 space-y-4 shrink-0 bg-gray-50/30">
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Enter email addresses..."
-                    className={cn(
-                      "w-full h-10 pl-9 pr-4 rounded-xl border text-sm transition-all bg-white font-medium",
-                      errors.to ? "border-red-200 focus:border-red-300 focus:ring-4 ring-red-50" : "border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5"
-                    )}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === ",") {
-                        e.preventDefault();
-                        const val = e.currentTarget.value.trim().replace(",", "");
-                        if (val && val.includes("@")) {
-                          setData(prev => ({ ...prev, to: Array.from(new Set([...prev.to, val])) }));
-                          e.currentTarget.value = "";
-                        }
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-
-              {data.to.length > 0 && (
-                <div className="flex items-center justify-between text-[11px]">
-                  <button onClick={toggleSelectAll} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 font-bold transition-colors">
-                    {data.selectedRecipients.size === data.to.length ? <CheckSquare className="h-3.5 w-3.5 text-brand" /> : <Square className="h-3.5 w-3.5" />}
-                    {data.selectedRecipients.size === data.to.length ? "Deselect All" : "Select All"}
-                  </button>
-
-                  <div className="relative" ref={bulkMenuRef}>
-                    <button
-                      onClick={() => setIsBulkMenuOpen(!isBulkMenuOpen)}
-                      disabled={data.selectedRecipients.size === 0}
-                      className="flex items-center gap-1.5 text-brand hover:text-brand-hover font-bold disabled:opacity-30 transition-colors"
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5" />
-                      <span>Actions ({data.selectedRecipients.size})</span>
-                    </button>
-
-                    {isBulkMenuOpen && (
-                      <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-xl z-50 py-1 overflow-hidden">
-                        <button onClick={copyAllEmails} className="w-full px-4 py-2.5 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
-                          <Copy className="h-4 w-4 text-gray-400" /> Copy selected
-                        </button>
-                        <button onClick={exportSelectedToCsv} className="w-full px-4 py-2.5 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors">
-                          <FileText className="h-4 w-4 text-gray-400" /> Export to CSV
-                        </button>
-                        <div className="h-px bg-gray-100 my-1" />
-                        <button onClick={removeSelectedRecipients} className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors">
-                          <Trash2 className="h-4 w-4 text-red-500" /> Remove selected
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 overflow-y-auto">
-              {data.to.length === 0 ? (
-                <div className="py-12 px-6 text-center">
-                  <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-gray-100">
-                    <Users className="h-6 w-6 text-gray-300" />
-                  </div>
-                  <p className="text-sm font-bold text-gray-900">No recipients added</p>
-                  <p className="text-xs text-gray-500 mt-1 font-medium">Import a CSV or enter emails manually to start your outreach.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-50">
-                  {data.to.map((email, i) => (
-                    <div
-                      key={email}
-                      className={cn(
-                        "group flex items-center gap-3 px-4 py-3 transition-colors",
-                        data.selectedRecipients.has(email) ? "bg-brand-light/20" : "hover:bg-gray-50"
+                      {errors.to && <p className="text-xs text-red-500 mt-1">{errors.to}</p>}
+                      {csvMessage && <p className="text-xs text-green-600 mt-1">{csvMessage}</p>}
+                      {csvError && <p className="text-xs text-red-500 mt-1">{csvError}</p>}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {data.to.length > 0 && (
+                        <EmailValidator
+                          emails={data.to}
+                          onRemoveEmail={(email) => setData(prev => ({ ...prev, to: prev.to.filter(e => e !== email) }))}
+                          onValidationComplete={() => { }}
+                        />
                       )}
-                    >
-                      <button onClick={() => toggleRecipientSelection(email)} className="shrink-0">
-                        {data.selectedRecipients.has(email) ? <CheckSquare className="h-4 w-4 text-brand" /> : <Square className="h-4 w-4 text-gray-300 group-hover:text-gray-400" />}
+                      <button
+                        onClick={() => setShowCc(!showCc)}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showCc ? "bg-blue-50 text-blue-600" : "text-gray-400 hover:bg-gray-50")}
+                      >
+                        CC
                       </button>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-gray-700 truncate">{email}</p>
-                        {recipientColumnData[email.toLowerCase()] && (
-                          <p className="text-[10px] text-gray-400 truncate mt-0.5 font-medium">
-                            {Object.values(recipientColumnData[email.toLowerCase()]).filter(Boolean).join(" · ")}
-                          </p>
-                        )}
-                      </div>
-                      <button onClick={() => removeRecipient(email)} className="h-8 w-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all border border-transparent hover:border-red-100">
-                        <Trash2 className="h-3.5 w-3.5" />
+                      <button
+                        onClick={() => setShowBcc(!showBcc)}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showBcc ? "bg-blue-50 text-blue-600" : "text-gray-400 hover:bg-gray-50")}
+                      >
+                        BCC
                       </button>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Delivery settings */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center">
-                  <Settings2 className="h-4 w-4 text-gray-500" />
-                </div>
-                <h3 className="text-sm font-bold text-gray-900 tracking-tight">Delivery Pace</h3>
-              </div>
-            </div>
-            <div className="p-5 space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Delay between emails</label>
-                    <span className="text-xs font-bold text-brand">{data.delayBetweenEmails} seconds</span>
                   </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="300"
-                    step="5"
-                    value={data.delayBetweenEmails}
-                    onChange={(e) => setData({ ...data, delayBetweenEmails: parseInt(e.target.value) })}
-                    className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-brand"
-                  />
-                  <p className="text-[10px] text-gray-400 mt-2 italic font-medium">Adds human-like variance to every send</p>
-                </div>
 
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Hourly limit per sender</label>
-                    <span className="text-xs font-bold text-brand">{data.hourlyLimit} emails/hr</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={data.hourlyLimit}
-                    onChange={(e) => setData({ ...data, hourlyLimit: parseInt(e.target.value) })}
-                    className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-brand"
-                  />
-                  <p className="text-[10px] text-gray-400 mt-2 italic font-medium">Stops immediately if provider limits are detected</p>
-                </div>
-              </div>
+                  {/* CC */}
+                  {showCc && (
+                    <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
+                      <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Cc</span>
+                      <div className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                        {data.cc.map(email => (
+                          <span key={email} className="inline-flex items-center gap-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 px-2 py-1">
+                            <span className="truncate max-w-[150px]">{email}</span>
+                            <button type="button" className="text-gray-400 hover:text-gray-600" onClick={() => setData({ ...data, cc: data.cc.filter(e => e !== email) })}>
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              <div className="pt-4 border-t border-gray-50 space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div
-                    onClick={() => setTrackOpens(!trackOpens)}
-                    className={cn(
-                      "h-5 w-5 rounded-md border flex items-center justify-center transition-all",
-                      trackOpens ? "bg-brand border-brand text-white" : "bg-white border-gray-200 group-hover:border-brand/40"
-                    )}
-                  >
-                    {trackOpens && <CheckSquare className="h-3.5 w-3.5" />}
-                  </div>
-                  <span className="text-xs font-bold text-gray-700">Track email opens</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div
-                    onClick={() => setTrackClicks(!trackClicks)}
-                    className={cn(
-                      "h-5 w-5 rounded-md border flex items-center justify-center transition-all",
-                      trackClicks ? "bg-brand border-brand text-white" : "bg-white border-gray-200 group-hover:border-brand/40"
-                    )}
-                  >
-                    {trackClicks && <CheckSquare className="h-3.5 w-3.5" />}
-                  </div>
-                  <span className="text-xs font-bold text-gray-700">Track link clicks</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+                  {/* BCC */}
+                  {showBcc && (
+                    <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
+                      <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Bcc</span>
+                      <div className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                        {data.bcc.map(email => (
+                          <span key={email} className="inline-flex items-center gap-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 px-2 py-1">
+                            <span className="truncate max-w-[150px]">{email}</span>
+                            <button type="button" className="text-gray-400 hover:text-gray-600" onClick={() => setData({ ...data, bcc: data.bcc.filter(e => e !== email) })}>
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-        {/* Right column: Content editor */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-[700px]">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-brand-light flex items-center justify-center">
-                  <Send className="h-4 w-4 text-brand" />
-                </div>
-                <h3 className="text-sm font-bold text-gray-900 tracking-tight">Campaign Content</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <TemplateSelector onSelect={(template) => setPendingTemplate(template)} />
-              </div>
-            </div>
-
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-5 py-4 space-y-4 shrink-0 bg-gray-50/30">
-                <div className="space-y-4">
-                  <div>
+                  {/* Subject */}
+                  <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3">
+                    <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Subject</span>
                     <input
                       type="text"
-                      placeholder="Subject Line"
+                      placeholder="Add a subject"
                       value={data.subject}
                       onChange={(e) => { setData({ ...data, subject: e.target.value }); setErrors(p => ({ ...p, subject: "" })); }}
-                      className={cn(
-                        "w-full h-11 px-4 rounded-xl border text-base font-bold transition-all bg-white",
-                        errors.subject ? "border-red-200 focus:border-red-300 focus:ring-4 ring-red-50" : "border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5"
-                      )}
+                      className="flex-1 text-sm text-gray-900 outline-none placeholder:text-gray-400"
                     />
-                    {errors.subject && <p className="text-[10px] text-red-500 mt-1.5 font-bold uppercase tracking-wider">{errors.subject}</p>}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => setShowCc(!showCc)}
-                      className={cn("px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all", showCc ? "bg-brand text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200")}
-                    >
-                      Cc
-                    </button>
-                    <button
-                      onClick={() => setShowBcc(!showBcc)}
-                      className={cn("px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all", showBcc ? "bg-brand text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200")}
-                    >
-                      Bcc
-                    </button>
-                    <div className="h-4 w-px bg-gray-200 mx-1" />
-                    <VariablePreview body={data.body} columnData={Object.values(recipientColumnData)[0] || {}} />
+                  {/* Body */}
+                  <div className="min-h-[350px]">
+                    <Editor value={data.body} onChange={(html) => setData({ ...data, body: html })} />
                   </div>
 
-                  {showCc && (
-                    <div>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Cc emails..."
-                          className="w-full h-10 pl-4 pr-4 rounded-xl border border-gray-200 text-sm bg-white focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all font-medium"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === ",") {
-                              e.preventDefault();
-                              const val = e.currentTarget.value.trim().replace(",", "");
-                              if (val && val.includes("@")) {
-                                setData(prev => ({ ...prev, cc: Array.from(new Set([...prev.cc, val])) }));
-                                e.currentTarget.value = "";
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {data.cc.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-gray-100 text-[11px] font-bold text-gray-600">
-                            {email}
-                            <button onClick={() => setData({ ...data, cc: data.cc.filter(e => e !== email) })}><X className="h-3 w-3 hover:text-red-500" /></button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {/* Footer */}
+                  <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
+                      <button
+                        onClick={() => csvInputRef.current?.click()}
+                        className="h-10 px-4 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      >
+                        <FileText className="h-4 w-4 text-gray-400" />
+                        Import CSV
+                      </button>
 
-                  {showBcc && (
-                    <div>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Bcc emails..."
-                          className="w-full h-10 pl-4 pr-4 rounded-xl border border-gray-200 text-sm bg-white focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all font-medium"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === ",") {
-                              e.preventDefault();
-                              const val = e.currentTarget.value.trim().replace(",", "");
-                              if (val && val.includes("@")) {
-                                setData(prev => ({ ...prev, bcc: Array.from(new Set([...prev.bcc, val])) }));
-                                e.currentTarget.value = "";
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {data.bcc.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg bg-gray-100 text-[11px] font-bold text-gray-600">
-                            {email}
-                            <button onClick={() => setData({ ...data, bcc: data.bcc.filter(e => e !== email) })}><X className="h-3 w-3 hover:text-red-500" /></button>
-                          </span>
-                        ))}
+                      {/* Bulk actions dropdown */}
+                      <div className="relative" ref={bulkMenuRef}>
+                        <button
+                          onClick={() => setIsBulkMenuOpen(!isBulkMenuOpen)}
+                          className={cn(
+                            "h-10 px-4 rounded-xl border text-sm font-semibold flex items-center gap-2 transition-all",
+                            data.selectedRecipients.size > 0
+                              ? "border-blue-200 bg-blue-50 text-blue-700"
+                              : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                          )}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          {data.selectedRecipients.size > 0 ? `${data.selectedRecipients.size} selected` : "Bulk Actions"}
+                          <ChevronDown className={cn("h-3 w-3 opacity-50 transition-transform", isBulkMenuOpen && "rotate-180")} />
+                        </button>
+                        {isBulkMenuOpen && (
+                          <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-xl shadow-sm py-2 min-w-[200px] z-50 animate-in fade-in zoom-in-95 slide-in-from-bottom-2">
+                            <div className="px-3 py-1.5 border-b border-gray-50 mb-1">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Selection</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setData(prev => ({ ...prev, selectedRecipients: new Set(prev.to) }));
+                                setIsBulkMenuOpen(false);
+                              }}
+                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3"
+                            >
+                              <CheckSquare className="h-4 w-4 text-gray-400" /> Select all ({data.to.length})
+                            </button>
+                            <button
+                              onClick={() => {
+                                setData(prev => ({ ...prev, selectedRecipients: new Set() }));
+                                setIsBulkMenuOpen(false);
+                              }}
+                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3"
+                            >
+                              <Square className="h-4 w-4 text-gray-400" /> Deselect all
+                            </button>
+
+                            <div className="px-3 py-1.5 border-b border-gray-50 my-1 mt-2">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Actions</p>
+                            </div>
+                            <button
+                              onClick={copyAllEmails}
+                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3"
+                            >
+                              <Copy className="h-4 w-4 text-gray-400" /> Copy all emails
+                            </button>
+                            <button
+                              onClick={exportSelectedToCsv}
+                              disabled={data.selectedRecipients.size === 0}
+                              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <FileText className="h-4 w-4 text-gray-400" /> Export selected
+                            </button>
+                            <div className="border-t border-gray-100 my-1" />
+                            <button
+                              onClick={removeSelectedRecipients}
+                              disabled={data.selectedRecipients.size === 0}
+                              className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" /> Remove selected
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  )}
+                    <button
+                      onClick={() => window.history.back()}
+                      className="h-10 w-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      title="Discard draft"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
+
+                {/* Sequence Builder */}
+                <SequenceBuilder steps={sequenceSteps} onChange={setSequenceSteps} />
               </div>
 
-              <div className="flex-1 min-h-[400px] relative overflow-hidden flex flex-col">
-                <Editor
-                  content={data.body}
-                  onChange={(val) => { setData({ ...data, body: val }); setErrors(p => ({ ...p, body: "" })); }}
-                  placeholder="Start writing your professional outreach email here..."
-                  error={errors.body}
+              {/* Right Sidebar */}
+              <div className="lg:col-span-4 space-y-4">
+                {/* Settings Toggle */}
+                <button
+                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                  className="w-full flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <span className="flex items-center gap-2">
+                    <Settings2 className="h-4 w-4 text-gray-400" />
+                    Settings
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform", isSettingsOpen && "rotate-180")} />
+                </button>
+
+                {isSettingsOpen && (
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    {/* Sending Rate */}
+                    <div className="p-4 border-b border-gray-100">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Zap className="h-4 w-4 text-amber-500" />
+                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Sending Strategy</p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                          <label className="text-xs font-bold text-gray-600 mb-1.5 block">Minimum Delay</label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={data.delayBetweenEmails}
+                              onChange={(e) => setData({ ...data, delayBetweenEmails: Number(e.target.value) })}
+                              className="w-full bg-white px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                              min={5}
+                              max={300}
+                            />
+                            <span className="text-xs text-gray-400 font-bold whitespace-nowrap">sec / email</span>
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                          <label className="text-xs font-bold text-gray-600 mb-1.5 block">Hourly Limit</label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={data.hourlyLimit}
+                              onChange={(e) => setData({ ...data, hourlyLimit: Number(e.target.value) })}
+                              className="w-full bg-white px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                              min={1}
+                              max={500}
+                            />
+                            <span className="text-xs text-gray-400 font-bold whitespace-nowrap">emails / hr</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tracking */}
+                    <div className="p-4 border-b border-gray-100">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Eye className="h-4 w-4 text-blue-500" />
+                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Engagement Tracking</p>
+                      </div>
+                      <div className="space-y-3">
+                        <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 transition-all group">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-[#00A63E]/50 flex items-center justify-center">
+                              <Eye className="h-4 w-4 text-[#00A63E]" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-700">Track Opens</p>
+                              <p className="text-[10px] text-gray-400">Know when recipients open</p>
+                            </div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={trackOpens}
+                            onChange={(e) => setTrackOpens(e.target.checked)}
+                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500/20 transition-all"
+                          />
+                        </label>
+                        <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 transition-all group">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                              <MousePointer2 className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-700">Track Clicks</p>
+                              <p className="text-[10px] text-gray-400">Monitor link interactions</p>
+                            </div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={trackClicks}
+                            onChange={(e) => setTrackClicks(e.target.checked)}
+                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500/20 transition-all"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Sending Options */}
+                    <div className="px-4 py-3.5 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Priority</p>
+                      <div className="space-y-2">
+
+                        {/* Priority Email Sending */}
+                        <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 group">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-[#00A63E]/10">
+                              <Zap className="h-4 w-4 text-[#00A63E]" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-700">Priority Sending</p>
+                              <p className="text-[10px] text-gray-400">Skip the queue</p>
+                            </div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={priorityEnabled}
+                            onChange={(e) => setPriorityEnabled(e.target.checked)}
+                            className="h-5 w-5 rounded-md border-gray-300 text-[#00A63E] focus:ring-[#00A63E]/20 transition-all"
+                          />
+                        </label>
+
+                      </div>
+                    </div>
+
+                    {/* Signature */}
+                    <div className="px-4 py-3.5">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Signature</p>
+                        <button
+                          onClick={() => setIsSignatureModalOpen(true)}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          Manage
+                        </button>
+                      </div>
+                      <select
+                        value={selectedSignature?.id || ""}
+                        onChange={(e) => {
+                          const sig = signatures.find(s => s.id === e.target.value);
+                          if (sig) setSelectedSignature(sig);
+                        }}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                      >
+                        <option value="">No signature</option>
+                        {signatures.map(s => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                      {selectedSignature?.content && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded-lg text-xs text-gray-600 border border-gray-100">
+                          <div dangerouslySetInnerHTML={{ __html: selectedSignature.content }} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Templates */}
+                <div className="bg-white rounded-xl border border-gray-200 relative z-30">
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Templates</p>
+                    <span className="text-[10px] text-gray-300 font-bold">Select to Apply</span>
+                  </div>
+                  <div className="p-4">
+                    <TemplateSelector onSelect={handleTemplateSelect} />
+                  </div>
+                </div>
+
+                <VariablePreview
+                  subject={data.subject}
+                  body={data.body}
+                  recipientColumnData={recipientColumnData}
+                  recipients={data.to}
                 />
               </div>
-
-              <div className="shrink-0 p-5 bg-gray-50/50 border-t border-gray-50 space-y-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      onClick={() => setIsSignatureModalOpen(true)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-bold text-gray-600 hover:border-brand/30 hover:text-brand transition-all shadow-sm"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      {selectedSignature ? `Signature: ${selectedSignature.name}` : "Add Signature"}
-                    </button>
-                    {selectedSignature && (
-                      <button
-                        onClick={() => setSelectedSignature(null)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
-                        title="Remove signature"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Follow-up sequences */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-brand-light flex items-center justify-center">
-                  <RefreshCw className="h-4 w-4 text-brand" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 tracking-tight">Automated Follow-ups</h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pause automatically when someone replies</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-5">
-              <SequenceBuilder
-                steps={sequenceSteps}
-                onChange={setSequenceSteps}
-              />
             </div>
           </div>
         </div>
       </div>
 
-      <input ref={csvInputRef} type="file" accept=".csv,.txt" onChange={handleFileUpload} className="hidden" />
+      {/* Modals outside main layout */}
+      {selectedSender && (
+        <SenderModal
+          isOpen={isSenderModalOpen}
+          onClose={() => setIsSenderModalOpen(false)}
+          onSuccess={handleSenderUpdated}
+          existingSender={!selectedSender.isVerified ? selectedSender : null}
+        />
+      )}
+
+      {/* Template confirmation */}
+      {pendingTemplate && (
+        <Modal isOpen onClose={() => setPendingTemplate(null)}>
+          <div className="p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-2">Use this template?</h3>
+            <p className="text-sm text-gray-500 mb-5">
+              This will replace your current subject and body.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="secondary" className="flex-1" onClick={() => setPendingTemplate(null)}>Cancel</Button>
+              <Button className="flex-1" onClick={() => applyTemplate(pendingTemplate!)}>Apply</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Signature Modal */}
-      <Modal isOpen={isSignatureModalOpen} onClose={() => setIsSignatureModalOpen(false)} title="Manage Signatures">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-gray-900">Signatures</h2>
-            <Button
-              size="sm"
-              onClick={() => { setEditingSignature({ id: Math.random().toString(36).substr(2, 9), name: "", content: "", isDefault: false }); }}
+      <Modal isOpen={isSignatureModalOpen} onClose={() => setIsSignatureModalOpen(false)}>
+        <div className="p-0 max-w-lg w-full overflow-hidden rounded-xl bg-white border border-gray-200">
+          <div className="bg-gray-50/80 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-gray-900">Email Signatures</h3>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Manage your professional sign-offs</p>
+            </div>
+            <button
+              onClick={() => setIsSignatureModalOpen(false)}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-400"
             >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              New Signature
-            </Button>
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
-          <div className="space-y-3">
-            {signatures.map(sig => (
-              <div
-                key={sig.id}
-                className={cn(
-                  "flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer",
-                  selectedSignature?.id === sig.id ? "border-brand bg-brand-light/20 ring-4 ring-brand/5" : "border-gray-100 hover:border-gray-200"
-                )}
-                onClick={() => setSelectedSignature(sig)}
-              >
-                <div className="flex-1 min-w-0 pr-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-bold text-gray-900 truncate">{sig.name}</p>
-                    {sig.isDefault && <span className="text-[9px] font-black uppercase bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">Default</span>}
-                  </div>
-                  <div className="text-[10px] text-gray-400 truncate opacity-60 font-medium" dangerouslySetInnerHTML={{ __html: sig.content }} />
+          <div className="p-6">
+            {editingSignature ? (
+              <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Signature Name</label>
+                  <input
+                    type="text"
+                    value={editingSignature.name}
+                    onChange={(e) => setEditingSignature({ ...editingSignature!, name: e.target.value })}
+                    placeholder="e.g. Professional, Informal, Sales"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                  />
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setEditingSignature(sig); }}
-                    className="p-2 text-gray-400 hover:text-brand hover:bg-brand-light rounded-lg transition-all"
-                  >
-                    <Settings2 className="h-4 w-4" />
-                  </button>
-                  {signatures.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const next = signatures.filter(s => s.id !== sig.id);
-                        setSignatures(next);
-                        localStorage.setItem("email_signatures", JSON.stringify(next));
-                        if (selectedSignature?.id === sig.id) setSelectedSignature(next[0]);
-                      }}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Content (HTML supported)</label>
+                  <textarea
+                    value={editingSignature.content}
+                    onChange={(e) => setEditingSignature({ ...editingSignature!, content: e.target.value })}
+                    placeholder="Best regards,&#10;John Doe"
+                    rows={6}
+                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium resize-none leading-relaxed"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <Button variant="secondary" className="flex-1 h-11 font-bold" onClick={() => setEditingSignature(null)}>Cancel</Button>
+                  <Button variant="primary" className="flex-1 h-11 font-bold" onClick={() => handleSaveSignature(editingSignature!)}>Save Signature</Button>
                 </div>
               </div>
-            ))}
-          </div>
+            ) : (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="grid grid-cols-1 gap-3">
+                  {signatures.map(sig => (
+                    <div
+                      key={sig.id}
+                      className={cn(
+                        "group flex items-start justify-between p-4 rounded-2xl border transition-all cursor-default",
+                        sig.isDefault ? "bg-blue-50/30 border-blue-100 shadow-sm" : "bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
+                      )}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-bold text-gray-900 truncate">{sig.name}</p>
+                          {sig.isDefault && (
+                            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-tighter">Default</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 line-clamp-1 italic">{sig.content || "No content"}</p>
+                      </div>
+                      <div className="flex items-center gap-1 ml-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => setEditingSignature({ ...sig, content: sig.content || "" })}
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        {!sig.isDefault && (
+                          <button
+                            onClick={() => {
+                              const updated = signatures.map(s => ({ ...s, isDefault: s.id === sig.id }));
+                              setSignatures(updated);
+                              localStorage.setItem("email_signatures", JSON.stringify(updated));
+                              addToast("info", "Default signature updated");
+                            }}
+                            className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-[#00A63E] hover:bg-[#00A63E]/50 transition-colors"
+                          >
+                            Set Default
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end">
-            <Button onClick={() => setIsSignatureModalOpen(false)}>Done</Button>
+                  {signatures.length === 0 && (
+                    <div className="text-center py-8 border-2 border-dashed border-gray-100 rounded-2xl">
+                      <p className="text-sm text-gray-400 font-medium">No signatures created yet</p>
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  variant="secondary"
+                  className="w-full h-12 border-2 border-dashed border-gray-200 hover:border-blue-400 hover:bg-blue-50/30 font-bold transition-all text-gray-500 hover:text-blue-600 rounded-2xl"
+                  onClick={() => setEditingSignature({ id: Date.now().toString(), name: "", content: "", isDefault: false })}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Brand New Signature
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </Modal>
-
-      {/* Edit Signature Modal */}
-      {editingSignature && (
-        <Modal isOpen={true} onClose={() => setEditingSignature(null)} title="Edit Signature">
-          <div className="space-y-5">
-            <div>
-              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Signature Name</label>
-              <input
-                type="text"
-                value={editingSignature.name}
-                onChange={(e) => setEditingSignature({ ...editingSignature, name: e.target.value })}
-                placeholder="e.g. Sales, Professional, Simple"
-                className="w-full h-11 px-4 rounded-xl border border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all text-sm font-bold"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Content (HTML supported)</label>
-              <textarea
-                value={editingSignature.content}
-                onChange={(e) => setEditingSignature({ ...editingSignature, content: e.target.value })}
-                rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-brand/40 focus:ring-4 ring-brand/5 outline-none transition-all text-sm font-bold"
-              />
-            </div>
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div
-                onClick={() => setEditingSignature({ ...editingSignature, isDefault: !editingSignature.isDefault })}
-                className={cn(
-                  "h-5 w-5 rounded-md border flex items-center justify-center transition-all",
-                  editingSignature.isDefault ? "bg-brand border-brand text-white" : "bg-white border-gray-200 group-hover:border-brand/40"
-                )}
-              >
-                {editingSignature.isDefault && <CheckCircle2 className="h-3.5 w-3.5" />}
-              </div>
-              <span className="text-xs font-bold text-gray-700">Set as default signature</span>
-            </label>
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={() => setEditingSignature(null)}
-                className="flex-1 h-11 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  const exists = signatures.find(s => s.id === editingSignature.id);
-                  let next;
-                  if (exists) next = signatures.map(s => s.id === editingSignature.id ? editingSignature : s);
-                  else next = [...signatures, editingSignature];
-                  if (editingSignature.isDefault) next = next.map(s => s.id === editingSignature.id ? s : { ...s, isDefault: false });
-                  setSignatures(next);
-                  localStorage.setItem("email_signatures", JSON.stringify(next));
-                  setEditingSignature(null);
-                }}
-                disabled={!editingSignature.name || !editingSignature.content}
-                className="flex-1 h-11 bg-brand text-white rounded-xl text-sm font-bold shadow-sm disabled:opacity-40 transition-all"
-              >
-                Save Signature
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {/* Sender Modal */}
-      <SenderModal
-        isOpen={isSenderModalOpen}
-        onClose={() => setIsSenderModalOpen(false)}
-        onSuccess={async () => {
-          const list = await getSenders();
-          setSenders(list);
-          setIsSenderModalOpen(false);
-          addToast("success", "Sender added successfully");
-        }}
-      />
-
-      {/* Template Confirmation Modal */}
-      {pendingTemplate && (
-        <Modal isOpen={true} onClose={() => setPendingTemplate(null)} title="Apply Template?">
-          <div className="space-y-6">
-            <div className="h-16 w-16 rounded-3xl bg-brand-light flex items-center justify-center mx-auto border border-brand/10">
-              <Zap className="h-8 w-8 text-brand" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-lg font-bold text-gray-900">Apply Template?</h2>
-              <p className="text-sm text-gray-500 mt-2 px-6 font-medium">This will replace your current subject and body. This action cannot be undone.</p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setPendingTemplate(null)}
-                className="flex-1 h-12 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all"
-              >
-                Keep Current
-              </button>
-              <button
-                onClick={() => {
-                  setData({ ...data, subject: pendingTemplate.subject, body: pendingTemplate.body });
-                  setPendingTemplate(null);
-                  addToast("success", `Template applied: ${pendingTemplate.name}`);
-                }}
-                className="flex-1 h-12 bg-brand text-white rounded-xl text-sm font-bold shadow-sm transition-all"
-              >
-                Apply Template
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
+    </>
   );
 }
