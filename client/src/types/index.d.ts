@@ -559,4 +559,50 @@ export interface AnalyticsLinksResponse {
   links: AnalyticsLink[];
 }
 
+// ─── PRM / Contact Types ───
+
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface Note {
+  id: string;
+  contactId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContactActivity {
+  id: string;
+  contactId: string;
+  type: string;
+  metadata: any;
+  createdAt: string;
+}
+
+export interface Contact {
+  id: string;
+  userId: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  company: string | null;
+  jobTitle: string | null;
+  stage: string;
+  createdAt: string;
+  updatedAt: string;
+  notes?: Note[];
+  activities?: ContactActivity[];
+  tags?: Tag[];
+  _count?: {
+    emailsSent: number;
+    emailsOpened: number;
+    emailsClicked: number;
+    emailsReplied: number;
+  };
+}
+
 

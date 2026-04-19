@@ -6,7 +6,7 @@ import { SidebarProps } from "@/types";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { X, Megaphone, LogOut, FileText, Plus, Settings, CreditCard } from "lucide-react";
+import { X, Megaphone, LogOut, FileText, Plus, Settings, CreditCard, Users } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { logout } from "@/lib/apis";
 import { cn } from "@/lib/utils";
@@ -67,6 +67,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
       title: "Outreach",
       links: [
         { label: "Campaigns", href: "/dashboard/campaigns", icon: <Megaphone size={18} /> },
+        { label: "Contacts", href: "/dashboard/prm", icon: <Users size={18} /> },
         { label: "Templates", href: "/dashboard/templates", icon: <FileText size={18} /> },
       ]
     },
