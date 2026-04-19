@@ -93,6 +93,7 @@ export default function GuidePage() {
             {navItems.slice(0, 4).map((item) => (
               <a key={item.href} href={item.href} className="hover:text-gray-900 transition-colors">{item.label}</a>
             ))}
+            <Link href="/priority" className="hover:text-gray-900 transition-colors">Priority</Link>
             <Link href="/faq" className="hover:text-gray-900 transition-colors">FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">Support</a>
           </div>
@@ -525,7 +526,7 @@ export default function GuidePage() {
           <Link href="/" aria-label="Go to homepage"><Logo size="sm" /></Link>
           <nav className="flex items-center gap-6">
             <Link href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</Link>
-            <Link href="/priority-mail" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Priority Mail</Link>
+            <Link href="/priority" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Priority</Link>
             <Link href="/faq" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">FAQ</Link>
             <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Support</a>
             <Link href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>

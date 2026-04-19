@@ -313,9 +313,9 @@ export default function FAQPage() {
         <div className="mx-auto max-w-6xl flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
           <Link href="/" aria-label="Go to homepage"><Logo size="md" /></Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-500">
-            <a href="/guide" className="hover:text-gray-900 transition-colors">Guide</a>
-            <a href="/priority-mail" className="hover:text-gray-900 transition-colors">Priority Mail</a>
-            <a href="/faq" className="text-gray-900">FAQ</a>
+            <Link href="/guide" className="hover:text-gray-900 transition-colors">Guide</Link>
+            <Link href="/priority" className="hover:text-gray-900 transition-colors">Priority</Link>
+            <Link href="/faq" className="text-gray-900">FAQ</Link>
           </div>
           <Button className="hidden md:block w-auto px-5 py-2 rounded-full text-sm" onClick={() => router.push("/login")}>
             Get Started
@@ -326,8 +326,9 @@ export default function FAQPage() {
         </div>
         {mobileNav && (
           <div className="md:hidden border-t border-gray-100 px-6 py-4 space-y-1 bg-white">
-            <a href="/guide" className="block text-sm text-gray-600 py-3">Guide</a>
-            <a href="/faq" className="block text-sm text-gray-900 font-medium py-3">FAQ</a>
+            <Link href="/guide" className="block text-sm text-gray-600 py-3">Guide</Link>
+            <Link href="/priority" className="block text-sm text-gray-600 py-3">Priority</Link>
+            <Link href="/faq" className="block text-sm text-gray-900 font-medium py-3">FAQ</Link>
             <Button className="w-full rounded-full mt-2" onClick={() => router.push("/login")}>Get Started</Button>
           </div>
         )}
@@ -444,11 +445,11 @@ export default function FAQPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col items-center gap-5 md:flex-row md:justify-between">
           <a href="/" aria-label="Go to homepage"><Logo size="sm" /></a>
           <nav className="flex items-center gap-6">
-            <a href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</a>
-            <a href="/priority-mail" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Priority Mail</a>
-            <a href="/faq" className="text-xs font-medium text-gray-900 transition-colors">FAQ</a>
-            <a href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</a>
-            <a href="/terms" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</a>
+            <Link href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</Link>
+            <Link href="/priority" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Priority</Link>
+            <Link href="/faq" className="text-xs font-medium text-gray-900 transition-colors">FAQ</Link>
+            <Link href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>
           </nav>
           <span className="text-xs text-gray-500">© 2026 SharaSpot</span>
         </div>

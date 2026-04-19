@@ -66,10 +66,10 @@ export default function PriorityFeature() {
 
                         <div className="mt-10">
                             <button
-                                onClick={() => router.push("/login")}
+                                onClick={() => router.push("/priority")}
                                 className="text-sm font-semibold text-brand border-b border-brand pb-0.5 hover:opacity-70 transition-opacity"
                             >
-                                Get started with Priority sending
+                                Learn more about Priority sending
                             </button>
                         </div>
                     </div>

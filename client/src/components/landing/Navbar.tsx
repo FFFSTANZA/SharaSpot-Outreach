@@ -20,12 +20,12 @@ export default function Navbar() {
     }, []);
 
     const navLinks = [
-        { label: "Infrastructure", href: "#features" },
-        { label: "Priority", href: "#priority" },
-        { label: "Workflow", href: "#how-it-works" },
-        { label: "Trust", href: "#stats" },
+        { label: "Infrastructure", href: "/#features" },
+        { label: "Priority", href: "/priority" },
+        { label: "Workflow", href: "/#how-it-works" },
+        { label: "Trust", href: "/#stats" },
         { label: "Guide", href: "/guide" },
-        { label: "Research", href: "/priority-mail" },
+        { label: "FAQ", href: "/faq" },
     ];
 
     return (
