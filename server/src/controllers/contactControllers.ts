@@ -43,31 +43,45 @@ export const getContacts = async (req: Request, res: Response) => {
       },
     });
 
-    const contactsWithStats = await Promise.all(
-      contacts.map(async (contact: any) => {
-        const jobs = await prisma.emailJob.findMany({
-          where: { toEmail: contact.email, campaign: { userId } },
-          include: {
-            trackingEvents: true,
-          },
-        });
+    const contactEmails = contacts.map((c: any) => c.email);
+    const jobs = await prisma.emailJob.findMany({
+      where: {
+        toEmail: { in: contactEmails },
+        campaign: { userId }
+      },
+      include: {
+        trackingEvents: true,
+      },
+    });
 
-        const sent = jobs.filter((j: any) => j.status === 'SENT').length;
-        const opened = jobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'OPEN')).length;
-        const clicked = jobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'CLICK')).length;
-        const replied = jobs.filter((j: any) => j.isReplied).length;
+    const jobsByEmail: Record<string, any[]> = {};
+    jobs.forEach(job => {
+      if (!jobsByEmail[job.toEmail]) jobsByEmail[job.toEmail] = [];
+      jobsByEmail[job.toEmail].push(job);
+    });
 
-        return {
-          ...contact,
-          _count: {
-            emailsSent: sent,
-            emailsOpened: opened,
-            emailsClicked: clicked,
-            emailsReplied: replied,
-          }
-        };
-      })
-    );
+    const contactsWithStats = contacts.map((contact: any) => {
+      const contactJobs = jobsByEmail[contact.email] || [];
+
+      const sent = contactJobs.filter((j: any) => j.status === 'SENT').length;
+      const opened = contactJobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'OPEN')).length;
+      const clicked = contactJobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'CLICK')).length;
+      const replied = contactJobs.filter((j: any) => j.isReplied).length;
+
+      // Score = (Sent * 1) + (Opened * 5) + (Clicked * 10) + (Replied * 20)
+      const engagementScore = (sent * 1) + (opened * 5) + (clicked * 10) + (replied * 20);
+
+      return {
+        ...contact,
+        engagementScore,
+        _count: {
+          emailsSent: sent,
+          emailsOpened: opened,
+          emailsClicked: clicked,
+          emailsReplied: replied,
+        }
+      };
+    });
 
     res.json(contactsWithStats);
   } catch (error: any) {
@@ -109,8 +123,12 @@ export const getContactById = async (req: Request, res: Response) => {
     const clicked = jobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'CLICK')).length;
     const replied = jobs.filter((j: any) => j.isReplied).length;
 
+    // Score = (Sent * 1) + (Opened * 5) + (Clicked * 10) + (Replied * 20)
+    const engagementScore = (sent * 1) + (opened * 5) + (clicked * 10) + (replied * 20);
+
     const contactWithStats = {
       ...contact,
+      engagementScore,
       _count: {
         emailsSent: sent,
         emailsOpened: opened,

@@ -86,7 +86,7 @@ export function ContactList({
             </th>
             <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Contact</th>
             <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Company</th>
-            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Stage</th>
+            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Engagement</th>
             <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Stats</th>
             <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right"></th>
           </tr>
@@ -104,7 +104,7 @@ export function ContactList({
               <td className="px-6 py-4">
                 <input
                   type="checkbox"
-                  className="rounded border-border-light text-brand focus:ring-brand"
+                  className="rounded-md border-border-light text-brand focus:ring-brand w-4 h-4"
                   checked={selectedIds.has(contact.id)}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => {
@@ -117,15 +117,14 @@ export function ContactList({
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand font-bold shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-black shrink-0 border border-brand/5">
                     {contact.firstName?.[0] || contact.email[0].toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-bold text-text-primary truncate">
+                    <div className="text-sm font-black text-text-primary truncate">
                       {contact.firstName ? `${contact.firstName} ${contact.lastName || ''}` : contact.email.split('@')[0]}
                     </div>
-                    <div className="text-xs text-text-muted truncate flex items-center gap-1">
-                      <Mail size={12} />
+                    <div className="text-xs text-text-muted font-bold truncate flex items-center gap-1">
                       {contact.email}
                     </div>
                   </div>
@@ -133,46 +132,60 @@ export function ContactList({
               </td>
               <td className="px-6 py-4">
                 <div className="flex flex-col">
-                  <div className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
-                    <Building2 size={14} className="text-text-muted" />
+                  <div className="text-sm font-black text-text-primary flex items-center gap-1.5">
                     {contact.company || "—"}
                   </div>
                   {contact.jobTitle && (
-                    <div className="text-xs text-text-muted flex items-center gap-1.5 mt-0.5">
-                      <Briefcase size={12} />
+                    <div className="text-xs text-text-muted font-bold flex items-center gap-1.5 mt-0.5">
                       {contact.jobTitle}
                     </div>
                   )}
                 </div>
               </td>
               <td className="px-6 py-4">
-                <span className={cn(
-                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
-                  contact.stage === "COLD" ? "bg-gray-100 text-gray-700" :
-                  contact.stage === "WARM" ? "bg-blue-100 text-blue-700" :
-                  contact.stage === "HOT" ? "bg-orange-100 text-orange-700" :
-                  contact.stage === "REPLIED" ? "bg-green-100 text-green-700" :
-                  "bg-brand/10 text-brand"
-                )}>
-                  {contact.stage}
-                </span>
+                <div className="flex flex-col items-center gap-1">
+                   <div className="flex items-center gap-1.5">
+                     <div className="h-1.5 w-24 bg-background rounded-full overflow-hidden border border-border-light">
+                        <div 
+                          className={cn(
+                            "h-full transition-all duration-500",
+                            (contact.engagementScore || 0) > 50 ? "bg-green-500" :
+                            (contact.engagementScore || 0) > 20 ? "bg-orange-500" :
+                            "bg-gray-400"
+                          )}
+                          style={{ width: `${Math.min(100, (contact.engagementScore || 0))}%` }}
+                        />
+                     </div>
+                     <span className="text-[10px] font-black text-text-primary">{(contact.engagementScore || 0)}</span>
+                   </div>
+                   <span className={cn(
+                    "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md",
+                    contact.stage === "COLD" ? "bg-gray-100 text-gray-500" :
+                    contact.stage === "WARM" ? "bg-blue-100 text-blue-600" :
+                    contact.stage === "HOT" ? "bg-orange-100 text-orange-600" :
+                    contact.stage === "REPLIED" ? "bg-green-100 text-green-600" :
+                    "bg-brand/10 text-brand"
+                  )}>
+                    {contact.stage}
+                  </span>
+                </div>
               </td>
               <td className="px-6 py-4">
-                <div className="flex items-center justify-center gap-4">
+                <div className="flex items-center justify-center gap-3">
                   <div className="flex flex-col items-center" title="Sent">
-                    <span className="text-xs font-bold text-text-primary">{contact._count?.emailsSent || 0}</span>
+                    <span className="text-[10px] font-black text-text-primary">{(contact as any)._count?.emailsSent || 0}</span>
                     <Mail size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Opened">
-                    <span className="text-xs font-bold text-text-primary">{contact._count?.emailsOpened || 0}</span>
+                    <span className="text-[10px] font-black text-text-primary">{(contact as any)._count?.emailsOpened || 0}</span>
                     <Eye size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Clicked">
-                    <span className="text-xs font-bold text-text-primary">{contact._count?.emailsClicked || 0}</span>
+                    <span className="text-[10px] font-black text-text-primary">{(contact as any)._count?.emailsClicked || 0}</span>
                     <MousePointer2 size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Replied">
-                    <span className="text-xs font-bold text-text-primary">{contact._count?.emailsReplied || 0}</span>
+                    <span className="text-[10px] font-black text-text-primary">{(contact as any)._count?.emailsReplied || 0}</span>
                     <MessageSquare size={12} className="text-text-muted" />
                   </div>
                 </div>

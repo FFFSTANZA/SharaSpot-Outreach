@@ -38,18 +38,22 @@ export default function PRMPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | undefined>(undefined);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [currentStageFilter, setCurrentStageFilter] = useState<string>("ALL");
 
   const fetchContacts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getContacts({ search: searchQuery });
+      const data = await getContacts({ 
+        search: searchQuery,
+        stage: currentStageFilter === "ALL" ? undefined : currentStageFilter
+      });
       setContacts(data);
     } catch (error) {
       addToast("error", "Failed to fetch contacts");
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, addToast]);
+  }, [searchQuery, currentStageFilter, addToast]);
 
   const fetchTags = useCallback(async () => {
     try {
@@ -60,8 +64,13 @@ export default function PRMPage() {
 
   useEffect(() => {
     fetchContacts();
+  }, [fetchContacts]);
+
+  useEffect(() => {
     fetchTags();
-  }, [fetchContacts, fetchTags]);
+  }, [fetchTags]);
+
+  const STAGES = ["ALL", "COLD", "WARM", "HOT", "REPLIED", "CONVERTED", "BOUNCED"];
 
   const handleCreateContact = () => {
     setEditingContact(undefined);
@@ -97,6 +106,17 @@ export default function PRMPage() {
     }
   };
 
+  const handleBulkStageUpdate = async (stage: string) => {
+    try {
+      await (await import("@/lib/apis")).bulkUpdateContacts(Array.from(selectedIds), { stage });
+      addToast("success", `Updated ${selectedIds.size} contacts to ${stage}`);
+      setSelectedIds(new Set());
+      fetchContacts();
+    } catch (error) {
+      addToast("error", "Failed to update contacts");
+    }
+  };
+
   const selectedContact = useMemo(() => 
     contacts.find(c => c.id === selectedContactId), 
     [contacts, selectedContactId]
@@ -106,10 +126,14 @@ export default function PRMPage() {
     <AuthGuard>
       <ErrorBoundary>
         <SidebarProvider>
-          <div className="flex h-screen bg-background font-sans">
+          <div className="flex h-screen bg-[#F8FAFC] font-sans">
             <Sidebar
-              currentLabel="Contacts"
-              setLabel={() => {}}
+              currentLabel={currentStageFilter === "ALL" ? "All Contacts" : `${currentStageFilter} Stage`}
+              setLabel={(label) => {
+                const stage = STAGES.find(s => s === label.split(' ')[0].toUpperCase());
+                if (stage) setCurrentStageFilter(stage);
+                else if (label === "All Contacts") setCurrentStageFilter("ALL");
+              }}
               profile={{
                 name: user?.name ?? "Outreach Pro",
                 email: user?.email ?? "",
@@ -117,40 +141,93 @@ export default function PRMPage() {
               }}
               items={[
                 { label: "All Contacts", count: contacts.length, icon: <Users size={18} /> },
+                ...STAGES.filter(s => s !== "ALL").map(s => ({
+                   label: `${s.charAt(0) + s.slice(1).toLowerCase()} Stage`,
+                   icon: <div className={cn(
+                     "w-2 h-2 rounded-full",
+                     s === "COLD" ? "bg-gray-400" :
+                     s === "WARM" ? "bg-blue-400" :
+                     s === "HOT" ? "bg-orange-400" :
+                     s === "REPLIED" ? "bg-green-400" :
+                     "bg-brand"
+                   )} />
+                }))
               ]}
             />
 
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden pt-4 px-4 bg-background">
+            <main className="flex-1 flex flex-col min-w-0 overflow-hidden pt-4 px-4">
               <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col grow overflow-hidden">
-                <TopBar
-                  initialValue={searchQuery}
-                  onSearch={setSearchQuery}
-                  onRefresh={fetchContacts}
-                  isRefreshing={isLoading}
-                  filterSlot={
+                <div className="px-6 py-4 border-b border-border-light bg-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h1 className="text-2xl font-black text-text-primary tracking-tight">PRM</h1>
+                      <p className="text-sm text-text-muted font-medium">Manage your professional relationships</p>
+                    </div>
                     <div className="flex items-center gap-2">
                       {selectedIds.size > 0 && (
-                        <button
-                          onClick={handleBulkDelete}
-                          className="flex items-center gap-2 px-3 py-1.5 bg-error-bg text-error-text rounded-lg text-sm font-bold hover:opacity-80 transition-all"
-                        >
-                          <Trash2 size={16} />
-                          <span>Delete ({selectedIds.size})</span>
-                        </button>
+                        <div className="flex items-center gap-2 mr-4 pr-4 border-r border-border-light">
+                          <span className="text-xs font-black text-text-muted uppercase tracking-widest mr-2">{selectedIds.size} Selected</span>
+                          <select 
+                             onChange={(e) => handleBulkStageUpdate(e.target.value)}
+                             className="text-xs font-black uppercase tracking-wider bg-background border border-border-light rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand/20"
+                             value=""
+                          >
+                             <option value="" disabled>Move to Stage...</option>
+                             {STAGES.filter(s => s !== "ALL").map(s => (
+                               <option key={s} value={s}>{s}</option>
+                             ))}
+                          </select>
+                          <button
+                            onClick={handleBulkDelete}
+                            className="p-2 text-error-text hover:bg-error-bg rounded-lg transition-all"
+                            title="Delete Selected"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       )}
                       <button
                         onClick={handleCreateContact}
-                        className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg text-sm font-bold hover:bg-brand-dark transition-all shadow-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-dark transition-all shadow-lg shadow-brand/20"
                       >
                         <UserPlus size={16} />
                         <span>Add Contact</span>
                       </button>
                     </div>
-                  }
-                />
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+                      <input
+                        type="text"
+                        placeholder="Search by name, company, or email..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-background border border-border-light rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center bg-background p-1 rounded-xl border border-border-light">
+                      {STAGES.map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setCurrentStageFilter(s)}
+                          className={cn(
+                            "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                            currentStageFilter === s 
+                              ? "bg-white text-brand shadow-sm border border-border-light" 
+                              : "text-text-muted hover:text-text-secondary"
+                          )}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
                 <div className="flex-1 flex overflow-hidden">
-                  <div className={`flex-1 flex flex-col min-w-0 ${selectedContactId ? 'hidden md:flex' : 'flex'}`}>
+                  <div className={`flex-1 flex flex-col min-w-0 ${selectedContactId ? 'hidden lg:flex' : 'flex'}`}>
                     {isLoading && contacts.length === 0 ? (
                       <InlineLoader message="Loading your relationships..." />
                     ) : (
@@ -167,7 +244,7 @@ export default function PRMPage() {
                   </div>
 
                   {selectedContactId && (
-                    <div className="w-full md:w-[450px] lg:w-[550px] border-l border-border-light bg-white flex flex-col animate-in slide-in-from-right duration-300">
+                    <div className="w-full lg:w-[500px] border-l border-border-light bg-white flex flex-col animate-in slide-in-from-right duration-300">
                       <ContactDetails
                         contactId={selectedContactId}
                         onClose={() => setSelectedContactId(null)}
