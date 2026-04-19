@@ -594,6 +594,7 @@ export interface Contact {
   stage: string;
   createdAt: string;
   updatedAt: string;
+  engagementScore?: number;
   notes?: Note[];
   activities?: ContactActivity[];
   tags?: Tag[];
