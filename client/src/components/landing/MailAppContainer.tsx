@@ -12,11 +12,11 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const navLinks = [
-        { label: "For Founders", href: "#founders" },
-        { label: "For Sales", href: "#sales" },
-        { label: "For HR", href: "#hr" },
-        { label: "How It Works", href: "#how-it-works" },
-        { label: "FAQ", href: "#faq" },
+        { label: "For Founders", href: "/#founders" },
+        { label: "Priority", href: "/priority" },
+        { label: "How It Works", href: "/#how-it-works" },
+        { label: "Guide", href: "/guide" },
+        { label: "FAQ", href: "/faq" },
     ];
 
     return (

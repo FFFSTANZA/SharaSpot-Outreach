@@ -4,10 +4,10 @@ export const metadata: Metadata = {
   title: "Priority Mail Benchmark - SharaSpot Research",
   description: "Independent benchmark testing comparing standard email delivery vs SharaSpot Priority Mail. See delivery speed, inbox rates, and performance data.",
   alternates: {
-    canonical: "/priority-mail",
+    canonical: "/priority",
   },
 };
 
-export default function PriorityMailLayout({ children }: { children: React.ReactNode }) {
+export default function PriorityLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
