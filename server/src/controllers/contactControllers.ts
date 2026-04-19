@@ -43,7 +43,33 @@ export const getContacts = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(contacts);
+    const contactsWithStats = await Promise.all(
+      contacts.map(async (contact: any) => {
+        const jobs = await prisma.emailJob.findMany({
+          where: { toEmail: contact.email, campaign: { userId } },
+          include: {
+            trackingEvents: true,
+          },
+        });
+
+        const sent = jobs.filter((j: any) => j.status === 'SENT').length;
+        const opened = jobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'OPEN')).length;
+        const clicked = jobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'CLICK')).length;
+        const replied = jobs.filter((j: any) => j.isReplied).length;
+
+        return {
+          ...contact,
+          _count: {
+            emailsSent: sent,
+            emailsOpened: opened,
+            emailsClicked: clicked,
+            emailsReplied: replied,
+          }
+        };
+      })
+    );
+
+    res.json(contactsWithStats);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -71,7 +97,29 @@ export const getContactById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Contact not found" });
     }
 
-    res.json(contact);
+    const jobs = await prisma.emailJob.findMany({
+      where: { toEmail: (contact as any).email, campaign: { userId } },
+      include: {
+        trackingEvents: true,
+      },
+    });
+
+    const sent = jobs.filter((j: any) => j.status === 'SENT').length;
+    const opened = jobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'OPEN')).length;
+    const clicked = jobs.filter((j: any) => j.trackingEvents.some((e: any) => e.eventType === 'CLICK')).length;
+    const replied = jobs.filter((j: any) => j.isReplied).length;
+
+    const contactWithStats = {
+      ...contact,
+      _count: {
+        emailsSent: sent,
+        emailsOpened: opened,
+        emailsClicked: clicked,
+        emailsReplied: replied,
+      }
+    };
+
+    res.json(contactWithStats);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

@@ -215,7 +215,22 @@ export const toggleReplied = async (emailId: string): Promise<EmailJob> => {
 
 // ─── Tracking ───
 
-import type { TrackingMetrics, TrackingEmailDetail, TrackingLinkDetail, LinkAnalyticsDetail, ReplyMetrics, RepliedEmailDetail, UnrepliedEmailDetail, AnalyticsOverview, AnalyticsLinksResponse, PriorityQuota, PriorityCampaignStatus } from "@/types";
+import type {
+  TrackingMetrics,
+  TrackingEmailDetail,
+  TrackingLinkDetail,
+  LinkAnalyticsDetail,
+  ReplyMetrics,
+  RepliedEmailDetail,
+  UnrepliedEmailDetail,
+  AnalyticsOverview,
+  AnalyticsLinksResponse,
+  PriorityQuota,
+  PriorityCampaignStatus,
+  Contact,
+  Note,
+  Tag,
+} from "@/types";
 
 export const getTrackingMetrics = async (campaignId: string): Promise<TrackingMetrics> => {
   const res = await api.get(`/api/tracking/campaigns/${campaignId}`);
@@ -445,6 +460,69 @@ export const getPriorityQuota = async (): Promise<PriorityQuota> => {
 
 export const getPriorityStatus = async (campaignId: string): Promise<PriorityCampaignStatus> => {
   const res = await api.get(`/api/premium/priority/status/${campaignId}`);
+  return res.data;
+};
+
+// ─── PRM / Contacts ───
+
+export const getContacts = async (params: { search?: string; stage?: string; tag?: string } = {}): Promise<Contact[]> => {
+  const qs = new URLSearchParams(params as any).toString();
+  const res = await api.get(`/api/contacts?${qs}`);
+  return res.data;
+};
+
+export const getContactById = async (id: string): Promise<Contact> => {
+  const res = await api.get(`/api/contacts/${id}`);
+  return res.data;
+};
+
+export const createContact = async (data: Partial<Contact>): Promise<Contact> => {
+  const res = await api.post("/api/contacts", data);
+  return res.data;
+};
+
+export const updateContact = async (id: string, data: Partial<Contact>): Promise<Contact> => {
+  const res = await api.put(`/api/contacts/${id}`, data);
+  return res.data;
+};
+
+export const deleteContact = async (id: string): Promise<void> => {
+  await api.delete(`/api/contacts/${id}`);
+};
+
+export const bulkUpdateContacts = async (ids: string[], data: { stage?: string; tags?: string[] }): Promise<void> => {
+  await api.post("/api/contacts/bulk-update", { ids, data });
+};
+
+export const bulkDeleteContacts = async (ids: string[]): Promise<void> => {
+  await api.post("/api/contacts/bulk-delete", { ids });
+};
+
+// ─── Notes ───
+
+export const createNote = async (contactId: string, content: string): Promise<Note> => {
+  const res = await api.post("/api/contacts/notes", { contactId, content });
+  return res.data;
+};
+
+export const updateNote = async (id: string, content: string): Promise<Note> => {
+  const res = await api.put(`/api/contacts/notes/${id}`, { content });
+  return res.data;
+};
+
+export const deleteNote = async (id: string): Promise<void> => {
+  await api.delete(`/api/contacts/notes/${id}`);
+};
+
+// ─── Tags ───
+
+export const getTags = async (): Promise<Tag[]> => {
+  const res = await api.get("/api/tags");
+  return res.data;
+};
+
+export const createTag = async (name: string, color: string): Promise<Tag> => {
+  const res = await api.post("/api/tags", { name, color });
   return res.data;
 };
 
