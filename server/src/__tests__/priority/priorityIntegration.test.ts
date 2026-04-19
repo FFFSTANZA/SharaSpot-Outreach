@@ -200,6 +200,7 @@ describe("Priority Mail Integration Tests", () => {
         priorityScore: 500,
         congestionScore: 0,
         retryCount: 0,
+        scheduledAt: new Date(),
       };
 
       (prisma.priorityQueueJob.create as jest.Mock).mockResolvedValue(priorityJobData);
@@ -221,6 +222,7 @@ describe("Priority Mail Integration Tests", () => {
         userId,
         status: "PRIORITY_PENDING" as const,
         priorityScore: 500,
+        scheduledAt: new Date(),
       }));
 
       let createdCount = 0;
@@ -473,9 +475,15 @@ describe("Priority Mail Integration Tests", () => {
           emailJobId: jobId,
           userId,
           status: "PRIORITY_PENDING",
+          scheduledAt: new Date(),
         });
         await prisma.priorityQueueJob.create({
-          data: { emailJobId: jobId, userId, status: "PRIORITY_PENDING" },
+          data: { 
+            emailJobId: jobId, 
+            userId, 
+            status: "PRIORITY_PENDING",
+            scheduledAt: new Date()
+          },
         });
 
         // 4. Add to BullMQ

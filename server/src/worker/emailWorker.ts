@@ -12,6 +12,7 @@ import { resolveForRecipient } from "../utils/variableResolver";
 import { isWithinBusinessHours, getDelayUntilBusinessHours } from "../utils/businessHours";
 import { buildThreadingHeaders, extractDomain } from "../utils/emailThreading";
 import { logContactActivityByEmail, updateContactStageByEmail } from "../utils/contactService";
+import { quickSpamScore } from "../utils/spamDetector";
 
 // ---------------------------------------------------------------------------
 // Helper: Truncate a Date to the start of its hour
@@ -498,7 +499,6 @@ export async function processEmailJob(job: Job): Promise<void> {
     // This is a warning only - we don't block sending (that would be too aggressive)
     // ---------------------------------------------------------------------------
     try {
-      const { quickSpamScore } = await import("../utils/spamDetector");
       const spamScore = quickSpamScore(emailSubject, emailBody.replace(/<[^>]*>?/gm, ''));
       
       // Log warning for scores >= 40

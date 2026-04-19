@@ -56,3 +56,10 @@ export function analyzeSpamScore(subject: string, body: string): SpamAnalysisRes
     },
   };
 }
+
+/**
+ * Simplified spam score — returns only the numeric score.
+ */
+export function quickSpamScore(subject: string, body: string): number {
+  return analyzeSpamScore(subject, body).score;
+}
