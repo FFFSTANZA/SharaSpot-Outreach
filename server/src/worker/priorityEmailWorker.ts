@@ -113,7 +113,7 @@ export async function processPriorityJob(job: Job): Promise<void> {
           where: { emailJobId },
           data: {
             retryCount,
-            statusMessage: `Retrying in ${Math.round(delayMs/60000)} minutes...`,
+            statusMessage: `${decision.statusMessage} - Retrying in ${Math.round(delayMs/60000)} minutes`,
           },
         });
 
@@ -147,18 +147,38 @@ export async function processPriorityJob(job: Job): Promise<void> {
     // Send the email (call existing email worker logic)
     await processEmailJob({ data: { emailJobId } } as any);
 
-    // Success - update quota
-    await incrementPriorityQuota(userId);
-    await incrementDomainRate(recipientDomain);
-
-    // Update priority record
-    await prisma.priorityQueueJob.update({
-      where: { emailJobId },
-      data: { status: "SENT", statusMessage: "Sent successfully" },
+    // Fetch the email job to verify final status
+    const finalEmailJob = await prisma.emailJob.findUnique({
+      where: { id: emailJobId },
     });
 
-    console.log(`[PRIORITY] Email ${emailJobId} sent successfully`);
+    if (finalEmailJob?.status === "SENT") {
+      // Success - update quota
+      await incrementPriorityQuota(userId);
+      await incrementDomainRate(recipientDomain);
 
+      // Update priority record
+      await prisma.priorityQueueJob.update({
+        where: { emailJobId },
+        data: { status: "SENT", statusMessage: "Sent successfully" },
+      });
+
+      console.log(`[PRIORITY] Email ${emailJobId} sent successfully`);
+    } else if (finalEmailJob?.status === "FAILED") {
+      // Permanent failure in email worker
+      await prisma.priorityQueueJob.update({
+        where: { emailJobId },
+        data: { 
+          status: "FAILED", 
+          statusMessage: finalEmailJob.error || "Email delivery failed" 
+        },
+      });
+      console.error(`[PRIORITY] Email ${emailJobId} failed: ${finalEmailJob.error}`);
+    } else {
+      // Status might be PENDING or SENDING (if it was throttled or something else)
+      // We'll treat this as a failure for the priority queue attempt and let the catch block handle retry
+      throw new Error(`Email delivery not completed (status: ${finalEmailJob?.status || "unknown"})`);
+    }
   } catch (error: any) {
     console.error(`[PRIORITY] Error processing ${emailJobId}:`, error);
     
