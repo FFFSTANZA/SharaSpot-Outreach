@@ -28,6 +28,7 @@ import contactRoutes from "./routes/contactRoutes";
 import tagRoutes from "./routes/tagRoutes";
 
 const app = express();
+export { app };
 
 /* CORE MIDDLEWARE */
 app.use(helmet());

@@ -57,7 +57,7 @@ export function bufferTrackingEvent(event: BufferedTrackingEvent): void {
   });
 }
 
-async function flushTrackingBuffer(): Promise<void> {
+export async function flushTrackingBuffer(): Promise<void> {
   try {
     const events: BufferedTrackingEvent[] = [];
 
