@@ -118,16 +118,16 @@ export function ComposeForm({
 
   useEffect(() => {
     (async () => {
-try {
-          const list = await getSenders();
-          setSenders(list);
-          const firstVerified = list.find(s => s.isVerified);
-          if (firstVerified) {
-            setData(prev => ({ ...prev, from: firstVerified.email, selectedSenderIds: [firstVerified.id] }));
-          } else if (list.length > 0) {
-            setData(prev => ({ ...prev, from: list[0].email, selectedSenderIds: [list[0].id] }));
-          }
-        } catch { } finally { setIsSenderLoading(false); }
+      try {
+        const list = await getSenders();
+        setSenders(list);
+        const firstVerified = list.find(s => s.isVerified);
+        if (firstVerified) {
+          setData(prev => ({ ...prev, from: firstVerified.email, selectedSenderIds: [firstVerified.id] }));
+        } else if (list.length > 0) {
+          setData(prev => ({ ...prev, from: list[0].email, selectedSenderIds: [list[0].id] }));
+        }
+      } catch { } finally { setIsSenderLoading(false); }
     })();
   }, []);
 
@@ -750,6 +750,22 @@ try {
                           />
                         </label>
 
+                        <div className="p-3 bg-brand-light/30 rounded-xl border border-brand-light border-dashed">
+                          <p className="text-[10px] font-bold text-[#00A63E] uppercase tracking-wider mb-2">Priority Rules</p>
+                          <ul className="space-y-1.5">
+                            {[
+                              "Limit: 50 priority emails / day",
+                              "Gap: 30s minimum between sends",
+                              "Gmail rate: 100/hr, Others: 300/hr",
+                              "Requires 20+ normal emails warmup"
+                            ].map((text, i) => (
+                              <li key={i} className="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                                <div className="h-1 w-1 rounded-full bg-[#00A63E]" />
+                                {text}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
                     </div>
 

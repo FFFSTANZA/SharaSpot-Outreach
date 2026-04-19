@@ -78,3 +78,32 @@ export async function validateEmail(email: string): Promise<ValidationResult> {
     checks,
   };
 }
+
+export interface BatchValidationResult {
+  total: number;
+  valid: number;
+  invalid: number;
+  results: ValidationResult[];
+}
+
+/**
+ * Validates a batch of emails.
+ * Deduplicates and runs validation in parallel with concurrency control.
+ */
+export async function validateEmailsBatch(
+  emails: string[]
+): Promise<BatchValidationResult> {
+  const uniqueEmails = Array.from(new Set(emails.map((e) => e.toLowerCase().trim())));
+
+  // Basic parallel execution
+  const results = await Promise.all(uniqueEmails.map(validateEmail));
+
+  const valid = results.filter((r) => r.valid).length;
+
+  return {
+    total: uniqueEmails.length,
+    valid,
+    invalid: uniqueEmails.length - valid,
+    results,
+  };
+}

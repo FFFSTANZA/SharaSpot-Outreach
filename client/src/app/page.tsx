@@ -8,83 +8,57 @@ import UseCases from "@/components/landing/UseCases";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Stats from "@/components/landing/Stats";
 import FAQ from "@/components/landing/FAQ";
-import Button from "@/components/Button";
 import { BRAND_CONFIG } from "@/lib/config";
-import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-/**
- * Landing Page - Refactored as an Email/Inbox experience.
- * Direct visceral addressing of outreach pain points.
- */
 export default function LandingPage() {
   const router = useRouter();
 
   return (
     <MailAppContainer>
-      <main className="space-y-32">
-        {/* Entrance Hero */}
-        <section id="hero">
-          <Hero />
-        </section>
+      <main>
+        <Hero />
+        <UseCases />
+        <Features />
+        <PriorityFeature />
+        <HowItWorks />
+        <Stats />
+        <FAQ />
 
-        {/* The X-Factor */}
-        <section id="priority">
-          <PriorityFeature />
-        </section>
+        {/* Final CTA */}
+        <section className="py-20 lg:py-28 bg-white relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-border-light to-transparent" />
+            <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-brand/[0.03] blur-3xl" />
+          </div>
 
-        {/* Core Differentiation */}
-        <section id="features">
-          <Features />
-        </section>
-
-        {/* Applied Context */}
-        <section id="use-cases">
-          <UseCases />
-        </section>
-
-        {/* Implementation Logic */}
-        <section id="how-it-works">
-          <HowItWorks />
-        </section>
-
-        {/* Infrastructure Stats */}
-        <section id="stats">
-          <Stats />
-        </section>
-
-        {/* Support Context */}
-        <section id="faq">
-          <FAQ />
-        </section>
-
-        {/* Purposeful CTA */}
-        <section className="py-24">
-          <div className="bg-background border border-border-medium rounded-3xl p-12 lg:p-20 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-brand" />
-
-            <div className="mb-8 inline-flex px-4 py-2 rounded-full bg-brand-light text-brand text-[10px] font-black tracking-widest uppercase">
-              Limited Phase: All features inclusive · ${BRAND_CONFIG.pricing.monthly}/mo
-            </div>
-
-            <h2 className="text-4xl lg:text-7xl font-black text-text-primary tracking-tighter mb-8 leading-tight">
-              Scale your outreach <br />
-              <span className="text-brand">without burning out.</span>
-            </h2>
-
-            <p className="text-lg text-text-secondary mb-12 max-w-2xl mx-auto leading-relaxed">
-              Stop fighting the blacklists. Join the infrastructure layer designed for professional outreach.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="px-10 h-16 text-lg font-black" onClick={() => router.push("/login")}>
-                Get Your Priority Seat
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="mt-8 text-[10px] font-mono text-text-muted uppercase tracking-tighter">
-              Deployment in &lt; 2 minutes · No lock-in contracts
+          <div className="max-w-6xl mx-auto px-6 relative">
+            <div className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20">
+              <div className="lg:pt-3">
+                <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest">
+                  Early access
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-brand mb-3">
+                  ${BRAND_CONFIG.pricing.monthly}/month, all features included
+                </p>
+                <h2 className="text-3xl lg:text-4xl font-bold text-text-primary tracking-tight leading-tight mb-6">
+                  The person you need to reach is checking their inbox right now
+                </h2>
+                <p className="text-base text-text-secondary leading-relaxed mb-10 max-w-xl">
+                  Every day without this is another investor who never saw your pitch, another candidate who joined someone else, another deal that went to whoever followed up. Start today.
+                </p>
+                <div className="flex items-center gap-6">
+                  <button
+                    onClick={() => router.push("/login")}
+                    className="bg-brand text-white text-sm font-semibold px-6 py-3 rounded-lg hover:bg-brand/90 transition-colors"
+                  >
+                    Start for free
+                  </button>
+                  <p className="text-xs text-text-muted">7-day free trial. No credit card required.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>

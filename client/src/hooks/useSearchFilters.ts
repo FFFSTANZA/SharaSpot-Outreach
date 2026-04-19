@@ -27,7 +27,7 @@ export function useSearchFilters({ endpoint, defaultDateField = "createdAt" }: U
   const [filters, setFilters] = useState<SearchFilters>(() => {
     if (typeof window === "undefined") return { ...DEFAULT_FILTERS, dateField: defaultDateField };
     const params = new URLSearchParams(window.location.search);
-    
+
     const rawStatus = params.get("status") || "";
     const rawStarred = params.get("starred") || "";
 
@@ -105,7 +105,7 @@ export function useSearchFilters({ endpoint, defaultDateField = "createdAt" }: U
       if (f.dateField) params.set("dateField", f.dateField);
       if (f.starred) params.set("starred", f.starred);
 
-      const url = endpoint === "emails" ? "/emails/search" : "/campaigns/search";
+      const url = endpoint === "emails" ? "/api/emails/search" : "/api/campaigns/search";
       const res = await api.get(`${url}?${params.toString()}`, { signal: controller.signal });
       setResults(res.data.results);
       setTotal(res.data.total);

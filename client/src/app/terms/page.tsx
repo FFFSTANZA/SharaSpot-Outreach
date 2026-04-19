@@ -10,7 +10,7 @@ export default function TermsPage() {
     {
       icon: FileText,
       title: "Acceptance of Terms",
-      content: "By using SharaSpot, you agree to these terms. SharaSpot is a tool for professional cold outreach — specifically designed for job seekers reaching out to recruiters and hiring managers. You are responsible for how you use it.",
+      content: "By using SharaSpot, you agree to these terms. SharaSpot is a tool for professional cold outreach - specifically designed for job seekers reaching out to recruiters and hiring managers. You are responsible for how you use it.",
     },
     {
       icon: Scale,
@@ -25,7 +25,7 @@ export default function TermsPage() {
     {
       icon: AlertTriangle,
       title: "Disclaimer",
-      content: "SharaSpot is provided as-is. We don't guarantee email deliverability, inbox placement, or response rates. Gmail's sending limits and policies are controlled by Google — we help you stay within them but can't override them.",
+      content: "SharaSpot is provided as-is. We don't guarantee email deliverability, inbox placement, or response rates. Gmail's sending limits and policies are controlled by Google - we help you stay within them but can't override them.",
     },
     {
       icon: Scale,

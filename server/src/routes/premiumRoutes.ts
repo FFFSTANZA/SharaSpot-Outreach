@@ -33,8 +33,7 @@ router.post(
 
       const result = analyzeSpamScore(
         subject || "",
-        body || "",
-        html
+        body || ""
       );
 
       res.json(result);
@@ -77,9 +76,9 @@ router.post(
 
       const button = prefill
         ? {
-            html: `<a href="${url}" style="display:inline-block;padding:12px 24px;background-color:#00A63E;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Book a Time</a>`,
-            text: `Book a time: ${url}`,
-          }
+          html: `<a href="${url}" style="display:inline-block;padding:12px 24px;background-color:#00A63E;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Book a Time</a>`,
+          text: `Book a time: ${url}`,
+        }
         : { html: "", text: "" };
 
       res.json({ url, button });
@@ -186,15 +185,15 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
-      
+
       // Check premium
       const premiumCheck = await requirePremium(userId, "Priority Mail");
       if (!premiumCheck.allowed) {
         return res.status(403).json({ error: premiumCheck.message });
       }
-      
+
       const quota = await getPriorityQuotaStatus(userId);
-      
+
       res.json(quota);
     } catch (error) {
       console.error("[PRIORITY QUOTA ERROR]", error);
@@ -214,32 +213,32 @@ router.get(
     try {
       const { campaignId } = req.params;
       const userId = req.user!.id;
-      
+
       // Check premium
       const premiumCheck = await requirePremium(userId, "Priority Mail");
       if (!premiumCheck.allowed) {
         return res.status(403).json({ error: premiumCheck.message });
       }
-      
+
       // Get campaign (ensure it's a string)
       const campaignIdStr = String(campaignId);
-      
+
       const campaign = await prisma.emailCampaign.findUnique({
         where: { id: campaignIdStr },
       });
-      
+
       if (!campaign || campaign.userId !== userId) {
         return res.status(404).json({ error: "Campaign not found" });
       }
-      
+
       // Get email job IDs for this campaign first
       const emailJobs = await prisma.emailJob.findMany({
         where: { campaignId: campaignIdStr },
         select: { id: true },
       });
-      
+
       const emailJobIds = emailJobs.map(j => j.id);
-      
+
       // Get priority jobs for these email jobs
       const priorityJobs = await prisma.priorityQueueJob.findMany({
         where: {
@@ -247,29 +246,29 @@ router.get(
         },
         orderBy: { createdAt: "desc" },
       });
-      
+
       // Fetch email job details separately
       const emailJobMap = new Map(emailJobs.map(j => [j.id, j]));
       const emailJobDetails = await prisma.emailJob.findMany({
         where: { id: { in: emailJobIds } },
         select: { id: true, toEmail: true, status: true, scheduledAt: true, sentAt: true },
       });
-      
+
       const emailJobDetailMap = new Map(emailJobDetails.map(j => [j.id, j]));
-      
+
       // Combine priority jobs with email job details
       const priorityJobsWithEmail = priorityJobs.map(pj => ({
         ...pj,
         emailJob: emailJobDetailMap.get(pj.emailJobId),
       }));
-      
+
       const statusCounts = {
         pending: priorityJobs.filter(j => j.status === "PRIORITY_PENDING").length,
         sending: priorityJobs.filter(j => j.status === "PRIORITY_SENDING").length,
         sent: priorityJobs.filter(j => j.status === "SENT").length,
         failed: priorityJobs.filter(j => j.status === "FAILED").length,
       };
-      
+
       res.json({
         campaignId: campaignIdStr,
         isPriority: campaign.isPriority,

@@ -158,6 +158,11 @@ export default function CampaignDetailPage() {
               { label: "Scheduled", icon: <Clock className="h-4 w-4" /> },
               { label: "Sent", icon: <Send className="h-4 w-4" /> },
             ]}
+            profile={{
+              name: "User",
+              email: "user@example.com",
+              avatarUrl: ""
+            }}
           />
 
           <main className="flex flex-1 flex-col min-w-0 overflow-y-auto">

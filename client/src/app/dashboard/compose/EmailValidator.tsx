@@ -93,12 +93,9 @@ export function EmailValidator({ emails, onRemoveEmail, onValidationComplete }: 
             <div>
               <h3 className="text-lg font-bold text-gray-900 tracking-tight">Email Validation</h3>
               <p className="text-xs text-gray-400 font-medium">
-                {validationResult?.total} recipients analyzed — {validationResult?.processingTimeMs}ms
+                {validationResult?.total} recipients analyzed - {validationResult?.processingTimeMs}ms
               </p>
             </div>
-            <button onClick={closeModal} className="p-2 hover:bg-gray-50 rounded-xl transition-colors">
-              <X className="h-5 w-5 text-gray-400" />
-            </button>
           </div>
 
           {validationResult && (

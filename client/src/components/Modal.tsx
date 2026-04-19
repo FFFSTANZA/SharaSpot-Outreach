@@ -50,7 +50,7 @@ export default function Modal({
 
   if (!isOpen) return null;
 
-  // Dropdown variant — no backdrop, positioned relative to parent
+  // Dropdown variant - no backdrop, positioned relative to parent
   if (variant === "dropdown") {
     return (
       <div

@@ -13,30 +13,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sharaspot.com";
+const siteUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sharaspot.in";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "SharaSpot — Personal Outreach System That Gets Replies",
+    default: "SharaSpot — Cold Outreach That Gets Replies",
     template: "%s | SharaSpot",
   },
-  description: "SharaSpot sends emails like a human, not a bot. Multi-sender rotation, automatic warmup, human-like scheduling, reply detection, and real-time tracking. Send cold outreach at scale without landing in spam.",
+  description: "SharaSpot helps founders reach investors, sales teams close more deals, and recruiters hire top talent — by making sure your cold emails land in the inbox, not spam. Set up in minutes, no technical knowledge needed.",
   keywords: [
-    "cold email outreach",
-    "email automation",
-    "multi-sender email",
-    "email warmup",
-    "reply tracking",
-    "personal outreach",
-    "cold email tool",
-    "email sequencing",
-    "deliverability optimization",
-    "sales outreach",
-    "job seeker email tool",
-    "founder outreach",
-    "recruiter email tool",
+    "cold email for founders",
+    "investor outreach tool",
+    "cold email that lands in inbox",
+    "outreach for sales teams",
+    "recruiting cold email tool",
+    "cold email reply rate",
+    "email outreach for startups",
+    "how to reach investors by email",
+    "cold email not going to spam",
+    "personal outreach tool",
     "SharaSpot",
+    "Folonite",
   ],
   authors: [{ name: "Folonite", url: siteUrl }],
   creator: "Folonite",
@@ -50,21 +48,21 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "SharaSpot",
-    title: "SharaSpot — Personal Outreach System That Gets Replies",
-    description: "SharaSpot sends emails like a human, not a bot. Multi-sender rotation, automatic warmup, human-like scheduling, reply detection, and real-time tracking.",
+    title: "SharaSpot — Cold Outreach That Gets Replies",
+    description: "SharaSpot helps founders, sales teams, and recruiters reach the right people by email — and actually get replied to.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SharaSpot — Personal Outreach System",
+        alt: "SharaSpot - Personal Outreach System",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SharaSpot — Personal Outreach System That Gets Replies",
-    description: "SharaSpot sends emails like a human, not a bot. Multi-sender rotation, automatic warmup, human-like scheduling, reply detection, and real-time tracking.",
+    title: "SharaSpot — Cold Outreach That Gets Replies",
+    description: "SharaSpot helps founders, sales teams, and recruiters reach the right people by email — and actually get replied to.",
     images: ["/og-image.png"],
   },
   robots: {

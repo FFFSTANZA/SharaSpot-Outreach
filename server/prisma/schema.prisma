@@ -18,6 +18,8 @@ model User {
   refreshTokens RefreshToken[]
   senders       Sender[]
   subscription  Subscription?
+  tags          Tag[]
+  contacts      Contact[]
 }
 
 model Subscription {
@@ -83,6 +85,7 @@ model EmailCampaign {
   timezone                String                   @default("UTC")
   businessStartHour       Int?
   businessEndHour         Int?
+  isPriority              Boolean                  @default(false)
   createdAt               DateTime                 @default(now())
   attachments             Attachment[]
   campaignSenders         CampaignSender[]
@@ -294,4 +297,125 @@ enum TrackingEventType {
   OPEN
   CLICK
   REPLY
+}
+
+model PriorityQueueJob {
+  emailJobId      String         @id
+  userId          String
+  status          PriorityStatus @default(PRIORITY_PENDING)
+  statusMessage   String?
+  retryCount      Int            @default(0)
+  priorityScore   Int            @default(500)
+  congestionScore Int            @default(0)
+  scheduledAt     DateTime
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model SmtpSignalLog {
+  id              String   @id @default(cuid())
+  senderId        String
+  recipientDomain String
+  tcpConnectMs    Float
+  greetingDelayMs Float
+  tlsHandshakeMs  Float
+  mailFromMs      Float
+  rcptToMs        Float
+  dataMs          Float
+  congestionScore Int
+  recordedAt      DateTime @default(now())
+
+  @@index([senderId])
+  @@index([recipientDomain])
+  @@index([recordedAt])
+}
+
+enum PriorityStatus {
+  PRIORITY_PENDING
+  PRIORITY_SENDING
+  SENT
+  FAILED
+}
+
+model PriorityUserQuota {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  dailyCount   Int      @default(0)
+  dailyLimit   Int      @default(50)
+  dailyResetAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model DomainRateLimit {
+  id          String   @id @default(cuid())
+  domain      String   @unique
+  hourlyCount Int      @default(0)
+  windowStart DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([domain])
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  color     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts  Contact[] @relation("ContactToTag")
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Contact {
+  id         String            @id @default(cuid())
+  userId     String
+  email      String
+  firstName  String?
+  lastName   String?
+  company    String?
+  jobTitle   String?
+  stage      String            @default("COLD")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activities ContactActivity[]
+  notes      Note[]
+  tags       Tag[]             @relation("ContactToTag")
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@index([email])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  contactId String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
+}
+
+model ContactActivity {
+  id        String   @id @default(cuid())
+  contactId String
+  type      String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
 }

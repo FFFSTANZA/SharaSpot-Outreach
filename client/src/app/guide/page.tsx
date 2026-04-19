@@ -143,7 +143,7 @@ export default function GuidePage() {
           <div className="space-y-4">
             <StepCard step="1" title="Sign in with Google" desc="Click 'Continue with Google' on the login page. A placeholder sender is auto-created with your Gmail address." icon={Mail} />
             <StepCard step="2" title="Add & verify a sender" desc="In Compose, click '+' next to the sender dropdown. Enter your Gmail and a Google App Password (from myaccount.google.com/apppasswords). SharaSpot verifies SMTP connectivity before saving." icon={Shield} />
-            <StepCard step="3" title="Configure sending settings" desc="Set your hourly limit (how many emails per hour) and minimum delay between emails. SharaSpot automatically adds random spacing to make your sending pattern look natural — not robotic." icon={Gauge} />
+            <StepCard step="3" title="Configure sending settings" desc="Set your hourly limit (how many emails per hour) and minimum delay between emails. SharaSpot automatically adds random spacing to make your sending pattern look natural - not robotic." icon={Gauge} />
             <StepCard step="4" title="Add recipients" desc="Type emails manually or import a CSV. CSV columns beyond the first become template variables (e.g., name, company) for personalization." icon={Users} />
             <StepCard step="5" title="Send or schedule" desc="Write your email, optionally add follow-up steps and attachments, then send immediately or schedule for later. Monitor progress from the dashboard." icon={Send} />
           </div>
@@ -360,7 +360,7 @@ export default function GuidePage() {
           <SectionHeader icon={Paperclip} title="Attachments" color="from-pink-500 to-rose-600" />
           <div className="space-y-3">
             <p className="text-sm text-gray-500 leading-relaxed">
-              Attach files to your campaigns — resumes, portfolios, or any supporting documents.
+              Attach files to your campaigns - resumes, portfolios, or any supporting documents.
             </p>
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -408,7 +408,7 @@ export default function GuidePage() {
                     <ul className="text-xs text-green-600 space-y-1">
                       <li>Quick question about the SWE role</li>
                       <li>Following up on our conversation</li>
-                      <li>Software Engineer — Excited to Connect</li>
+                      <li>Software Engineer - Excited to Connect</li>
                     </ul>
                   </div>
                   <div className="rounded-lg bg-red-50 border border-red-100 p-3">
@@ -464,7 +464,7 @@ export default function GuidePage() {
                 <ul className="space-y-1.5 list-disc list-inside">
                   <li>Add more senders to the campaign</li>
                   <li>Wait for the daily limit to reset (midnight UTC)</li>
-                  <li>Manually resume — emails will be rescheduled</li>
+                  <li>Manually resume - emails will be rescheduled</li>
                 </ul>
               </div>
             </Accordion>

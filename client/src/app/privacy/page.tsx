@@ -15,7 +15,7 @@ export default function PrivacyPage() {
     {
       icon: Lock,
       title: "How We Protect Your Data",
-      content: "All SMTP credentials (Google App Passwords) are encrypted at rest using AES-256-CBC with a unique initialization vector per encryption. We never store your Google account password — only the App Password you generate specifically for SharaSpot.",
+      content: "All SMTP credentials (Google App Passwords) are encrypted at rest using AES-256-CBC with a unique initialization vector per encryption. We never store your Google account password - only the App Password you generate specifically for SharaSpot.",
     },
     {
       icon: Eye,

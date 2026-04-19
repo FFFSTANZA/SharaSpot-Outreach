@@ -1,62 +1,91 @@
 "use client";
 
-import { Mail, Layers, TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const steps = [
     {
-        num: "01",
-        title: "Link Infrastructure",
-        desc: "Connect your SMTP/IMAP accounts. SharaSpot immediately begins the 14-day safety warmup.",
-        icon: Mail,
+        step: "Connect your sending accounts",
+        desc: "Add one or more Gmail or Outlook accounts. SharaSpot runs a 14-day warmup automatically, gradually increasing volume through each account until it has a clean sending history. You can skip warmup for accounts you have already been using for outreach.",
+        note: "Takes about 3 minutes. No developer setup or IT involvement needed.",
     },
     {
-        num: "02",
-        title: "Define Sequences",
-        desc: "Draft your emails and set up multi-step follow-ups. Upload your CSV and map custom variables.",
-        icon: Layers,
+        step: "Write your message and upload your list",
+        desc: "Paste a CSV with your contacts. Write your email in a plain editor, add follow-up steps, and use variables to personalize by name, company, or any column in your spreadsheet. There is a template library for investor, sales, and recruiting outreach if you want a starting point.",
+        note: "Your words, your message. SharaSpot handles everything after you hit send.",
     },
     {
-        num: "03",
-        title: "Execute & Monitor",
-        desc: "Launch with adaptive throttling. Watch opens, clicks, and real-time reply detection from the dashboard.",
-        icon: TrendingUp,
+        step: "Watch the replies come in",
+        desc: "SharaSpot handles timing, rotation across your accounts, and follow-up scheduling. When anyone on your list replies, their sequence stops immediately. You come in to have the conversation. Everything else runs without you.",
+        note: "Real-time dashboard shows opens, clicks, and replies as they happen.",
     },
 ];
 
 export default function HowItWorks() {
+    const router = useRouter();
+
     return (
-        <section id="how-it-works" className="py-24 bg-white">
-            <div className="max-w-7xl mx-auto">
-                <div className="mb-20 animate-up">
-                    <h2 className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-4">Deployment Pipeline</h2>
-                    <h3 className="text-4xl md:text-5xl font-black text-text-primary tracking-tighter leading-tight">
-                        From zero to <span className="text-brand">active outreach</span> <br />
-                        in three cycles.
-                    </h3>
+        <section id="how-it-works" className="py-20 lg:py-28 bg-white relative overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-border-light to-transparent" />
+                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-border-light to-transparent" />
+                <div className="absolute top-1/4 right-0 w-[600px] h-[600px] rounded-full bg-[#00A63E]/[0.015] blur-3xl" />
+                <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] rounded-full bg-brand/[0.01] blur-3xl" />
+                <svg className="absolute top-20 left-[10%] w-24 h-24 text-border-light opacity-30" viewBox="0 0 100 100" fill="currentColor">
+                    <circle cx="50" cy="50" r="45" />
+                </svg>
+                <svg className="absolute bottom-32 right-[15%] w-16 h-16 text-border-light opacity-20" viewBox="0 0 100 100" fill="currentColor">
+                    <rect x="15" y="15" width="70" height="70" rx="8" />
+                </svg>
+            </div>
+
+            <div className="max-w-6xl mx-auto px-6 relative">
+
+                <div className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20 mb-16">
+                    <div>
+                        <h2 className="text-3xl lg:text-4xl font-bold text-text-primary tracking-tight leading-tight">
+                            How it works
+                        </h2>
+                    </div>
+                    <div className="lg:pt-2">
+                        <p className="text-text-secondary text-lg leading-relaxed max-w-xl">
+                            You do not need to understand email infrastructure. You need to know who you are reaching out to and what you want to say.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="space-y-4">
-                    {steps.map((step, i) => (
-                        <div key={step.num} className={`flex items-start gap-8 p-8 border border-border-light rounded-2xl hover:bg-[#f8f9fa] transition-all animate-up animate-delay-${(i + 1) * 150} group`}>
-                            <div className="shrink-0 w-16 h-16 rounded-2xl bg-brand-light flex flex-col items-center justify-center text-brand font-black">
-                                <div className="text-[10px] opacity-40 uppercase tracking-tighter mb-1">Cycle</div>
-                                <div className="text-xl">{step.num}</div>
-                            </div>
-                            <div className="flex-1 pt-2">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <h4 className="text-xl font-bold text-text-primary uppercase tracking-tight">{step.title}</h4>
-                                    <div className="px-2 py-0.5 rounded bg-brand text-white text-[8px] font-black uppercase tracking-widest leading-none">Status: Ready</div>
+                <div className="border-t border-border-light">
+                    {steps.map((s, i) => (
+                        <div
+                            key={s.step}
+                            className="grid lg:grid-cols-[280px_1fr] gap-8 lg:gap-20 py-10 border-b border-border-light"
+                        >
+                            <div className="flex items-start gap-4 lg:block">
+                                <div className="w-8 h-8 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shrink-0 lg:mb-4">
+                                    {i + 1}
                                 </div>
-                                <p className="text-sm text-text-secondary leading-relaxed max-w-2xl font-medium">
-                                    {step.desc}
-                                </p>
+                                <p className="text-sm font-bold text-text-primary lg:mt-0 mt-1.5">{s.step}</p>
                             </div>
-                            <div className="hidden lg:block shrink-0 pt-4">
-                                <step.icon className="text-text-muted group-hover:text-brand transition-colors" size={32} />
+                            <div>
+                                <p className="text-sm text-text-secondary leading-[1.85] mb-4">{s.desc}</p>
+                                <p className="text-xs text-brand font-medium">{s.note}</p>
                             </div>
                         </div>
                     ))}
                 </div>
+
+                <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-10 border-t border-border-light">
+                    <div>
+                        <p className="text-base font-semibold text-text-primary mb-1">Ready to try it?</p>
+                        <p className="text-sm text-text-secondary">Free for 7 days. No credit card required.</p>
+                    </div>
+                    <button
+                        onClick={() => router.push("/login")}
+                        className="bg-brand text-white text-sm font-semibold px-6 py-3 rounded-lg hover:bg-brand/90 transition-colors whitespace-nowrap"
+                    >
+                        Get started free
+                    </button>
+                </div>
+
             </div>
         </section>
     );

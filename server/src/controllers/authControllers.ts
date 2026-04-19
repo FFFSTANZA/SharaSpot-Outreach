@@ -41,7 +41,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
             { name: "Recruiter", color: "#10b981" },
           ]
         }
-      } as any,
+      }
     });
 
     console.log("User upserted, generating tokens...");

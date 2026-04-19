@@ -13,7 +13,7 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder — no backend endpoint for contact form yet
+    // Placeholder - no backend endpoint for contact form yet
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 4000);
     setName("");

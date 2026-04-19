@@ -60,3 +60,9 @@ export const redisConnection: RedisOptions = {
  * Uses the same parsed config as redisConnection for consistency.
  */
 export const redis = new IORedis(redisConnection);
+redis.on("error", (err) => {
+  console.error("[redis] Connection error:", err.message);
+});
+redis.on("connect", () => {
+  console.log("[redis] Connected successfully");
+});

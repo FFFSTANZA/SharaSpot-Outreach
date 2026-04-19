@@ -70,7 +70,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
   };
 
   const formatDate = (iso: string | null) =>
-    iso ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(iso)) : "—";
+    iso ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(iso)) : "-";
 
   if (isLoading) {
     return (
@@ -213,7 +213,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
                           Step {step.stepNumber + 1}
                         </span>
                         <span className="text-[10px] text-gray-400 font-medium">
-                          {step.sentAt ? formatDate(step.sentAt) : "—"}
+                          {step.sentAt ? formatDate(step.sentAt) : "-"}
                         </span>
                         {step.error && (
                           <span className="text-[10px] text-red-400 truncate max-w-[150px]">{step.error}</span>

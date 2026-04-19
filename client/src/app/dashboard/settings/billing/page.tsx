@@ -1,233 +1,128 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { getSubscription, createSubscription, cancelSubscription, reactivateSubscription } from "@/lib/apis";
-import type { SubscriptionResponse } from "@/lib/apis";
-import { CreditCard, Check, AlertTriangle, ArrowRight, Shield, Zap, Clock, X } from "lucide-react";
-import Button from "@/components/Button";
-import { useToast } from "@/context/ToastContext";
+import { SidebarProvider } from "@/context/SidebarContext";
+import { Sidebar } from "../../Sidebar";
+import { TopBar } from "../../Topbar";
+import {
+    Zap, Check, CreditCard, ArrowLeft, Inbox, Star, Clock, Send
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export default function BillingPage() {
-    const { addToast } = useToast();
-    const [subData, setSubData] = useState<SubscriptionResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isProcessing, setIsProcessing] = useState(false);
-
-    const fetchSubscription = async () => {
-        try {
-            const data = await getSubscription();
-            setSubData(data);
-        } catch (err) {
-            console.error("Failed to fetch subscription", err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchSubscription();
-    }, []);
-
-    const handleSubscribe = async () => {
-        setIsProcessing(true);
-        try {
-            const { checkoutUrl } = await createSubscription();
-            window.location.href = checkoutUrl;
-        } catch (err) {
-            addToast("error", "Failed to start checkout. Please try again.");
-            setIsProcessing(false);
-        }
-    };
-
-    const handleCancel = async () => {
-        if (!confirm("Are you sure you want to cancel? You will keep your access until the end of the period.")) return;
-        setIsProcessing(true);
-        try {
-            await cancelSubscription();
-            addToast("success", "Subscription cancelled. It will remain active until the period ends.");
-            await fetchSubscription();
-        } catch (err) {
-            addToast("error", "Failed to cancel subscription.");
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    const handleReactivate = async () => {
-        setIsProcessing(true);
-        try {
-            await reactivateSubscription();
-            addToast("success", "Subscription reactivated!");
-            await fetchSubscription();
-        } catch (err) {
-            addToast("error", "Failed to reactivate subscription.");
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    if (isLoading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-            </div>
-        );
-    }
-
-    const statusMap: Record<string, { label: string; color: string; icon: any }> = {
-        ACTIVE: { label: "Active", color: "text-emerald-700 bg-emerald-50 border-emerald-100", icon: Check },
-        PAST_DUE: { label: "Past Due", color: "text-amber-700 bg-amber-50 border-amber-100", icon: AlertTriangle },
-        CANCELLED: { label: "Cancelled", color: "text-gray-700 bg-gray-50 border-gray-100", icon: X },
-        EXPIRED: { label: "Expired", color: "text-red-700 bg-red-50 border-red-100", icon: AlertTriangle },
-    };
-
-    const status = subData?.subscription?.status || "INACTIVE";
-    const statusConfig = statusMap[status] || { label: status, color: "text-gray-700 bg-gray-50 border-gray-100", icon: AlertTriangle };
-    const StatusIcon = statusConfig.icon;
-
-    const isTrial = subData?.subscription?.trialEnd && new Date(subData.subscription.trialEnd) > new Date();
-    const trialDaysLeft = isTrial ? Math.ceil((new Date(subData!.subscription!.trialEnd!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+    const { user } = useAuth();
+    const router = useRouter();
 
     return (
         <AuthGuard>
-            <ErrorBoundary>
-                <div className="min-h-screen bg-[#FAFBFC]">
-                    <div className="max-w-3xl mx-auto px-4 py-8">
-                        <div className="mb-8">
-                            <h1 className="text-2xl font-bold text-[#1A1D21]">Billing & Subscription</h1>
-                            <p className="text-sm text-[#5F6368] mt-1">
-                                Manage your payment method and subscription plan
-                            </p>
-                        </div>
+            <SidebarProvider>
+                <div className="flex h-screen bg-background font-sans">
+                    <Sidebar
+                        currentLabel="Billing"
+                        setLabel={() => { }}
+                        items={[
+                            { label: "All", icon: <Inbox size={18} /> },
+                            { label: "Starred", icon: <Star size={18} /> },
+                            { label: "Scheduled", icon: <Clock size={18} /> },
+                            { label: "Sent", icon: <Send size={18} /> },
+                        ]}
+                        profile={{
+                            name: user?.name ?? "User",
+                            email: user?.email ?? "",
+                            avatarUrl: user?.avatarUrl ?? "",
+                        }}
+                    />
 
-                        <div className="space-y-6">
-                            {/* Status Banner */}
-                            <div className={cn("rounded-xl border p-6 flex flex-col md:flex-row items-center gap-6",
-                                subData?.subscription?.status === "ACTIVE" || isTrial ? "bg-white border-gray-200" : "bg-amber-50 border-amber-100")}>
-                                <div className={cn("h-16 w-16 rounded-2xl flex items-center justify-center shrink-0",
-                                    subData?.subscription?.status === "ACTIVE" || isTrial ? "bg-[#00A63E]/10" : "bg-amber-100")}>
-                                    <Zap className={cn("h-8 w-8", subData?.subscription?.status === "ACTIVE" || isTrial ? "text-[#00A63E]" : "text-amber-600")} />
-                                </div>
-                                <div className="flex-1 text-center md:text-left">
-                                    <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1">
-                                        <h2 className="text-lg font-bold text-gray-900">
-                                            {(subData?.subscription?.status === "ACTIVE" || isTrial) ? "Active Subscription" : "Subscription Required"}
-                                        </h2>
-                                        <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border", statusConfig.color)}>
-                                            <StatusIcon className="h-3 w-3" />
-                                            {statusConfig.label}
-                                        </div>
-                                    </div>
-                                    {isTrial ? (
-                                        <p className="text-sm text-gray-600">
-                                            Your 7-day free trial is active. You have <span className="font-bold text-emerald-600">{trialDaysLeft} days</span> left.
-                                        </p>
-                                    ) : subData?.isPremium ? (
-                                        <p className="text-sm text-gray-600">
-                                            Next billing date: <span className="font-bold text-gray-900">{new Date(subData.subscription!.currentPeriodEnd).toLocaleDateString()}</span>
-                                        </p>
-                                    ) : (
-                                        <p className="text-sm text-amber-700">
-                                            Your trial has expired. Subscribe to continue using SharaSpot.
-                                        </p>
-                                    )}
-                                </div>
-                                {!subData?.subscription?.dodoSubscriptionId && !isTrial && (
-                                    <Button
-                                        variant="primary"
-                                        className="w-full md:w-auto"
-                                        onClick={handleSubscribe}
-                                        disabled={isProcessing}
-                                    >
-                                        {isProcessing ? "Processing..." : "Subscribe Now — $20/mo"}
-                                    </Button>
-                                )}
-                            </div>
+                    <main className="flex-1 flex flex-col min-w-0 overflow-hidden pt-4 px-4 bg-background">
+                        <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col grow overflow-hidden">
+                            <TopBar onRefresh={() => { }} />
 
-                            {/* Plan Details */}
-                            <div className="bg-white rounded-xl border border-[#E8EAED] overflow-hidden">
-                                <div className="px-6 py-4 border-b border-[#E8EAED] bg-[#FAFBFC] flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-emerald-50 rounded-lg">
-                                            <Zap className="h-5 w-5 text-emerald-600" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-base font-semibold text-[#1A1D21]">Plan Details</h2>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-gray-900">$20.00 / month</p>
-                                    </div>
-                                </div>
-                                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {[
-                                        "Unlimited Sender Accounts",
-                                        "Unlimited Campaigns",
-                                        "Reply Detection & Management",
-                                        "Follow-up Sequences",
-                                        "Real-time Analytics",
-                                        "Priority Email Delivery",
-                                        "Template Personalization",
-                                        "Safe Sending Warmup"
-                                    ].map((feature, i) => (
-                                        <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                                            {feature}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Subscription Management */}
-                            {subData?.subscription?.dodoSubscriptionId && (
-                                <div className="bg-white rounded-xl border border-[#E8EAED] overflow-hidden">
-                                    <div className="px-6 py-4 border-b border-[#E8EAED] bg-[#FAFBFC]">
-                                        <h2 className="text-base font-semibold text-[#1A1D21]">Subscription Actions</h2>
-                                    </div>
-                                    <div className="p-6 flex flex-col sm:flex-row gap-3">
-                                        {subData.subscription.cancelAtPeriodEnd ? (
-                                            <Button
-                                                variant="secondary"
-                                                className="flex-1"
-                                                onClick={handleReactivate}
-                                                disabled={isProcessing}
-                                            >
-                                                Reactivate Subscription
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                variant="ghost"
-                                                className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium"
-                                                onClick={handleCancel}
-                                                disabled={isProcessing}
-                                            >
-                                                Cancel Subscription
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Support */}
-                            <div className="p-6 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between">
-                                <div className="flex items-center gap-3 text-sm text-gray-600">
-                                    <Shield className="h-4 w-4" />
-                                    <span>Secure payments by Dodo Payment</span>
-                                </div>
-                                <a
-                                    href="mailto:support@sharaspot.com"
-                                    className="text-sm font-bold text-emerald-600 hover:underline"
+                            <div className="flex-1 overflow-y-auto p-8 max-w-5xl mx-auto w-full">
+                                <button
+                                    onClick={() => router.push("/dashboard/settings")}
+                                    className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-gray-900 transition-all mb-8"
                                 >
-                                    Contact Support
-                                </a>
+                                    <ArrowLeft size={16} />
+                                    Back to Settings
+                                </button>
+
+                                <div className="mb-12">
+                                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Billing & Plans</h1>
+                                    <p className="text-sm text-gray-500 mt-1">Simple pricing for high-deliverability outreach</p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Current Plan */}
+                                    <div className="rounded-3xl bg-gray-50 border border-gray-100 p-8 relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 p-8 transform translate-x-4 -translate-y-4 opacity-5 group-hover:opacity-10 transition-all">
+                                            <Zap size={160} className="text-brand" />
+                                        </div>
+
+                                        <div className="relative z-10">
+                                            <span className="px-4 py-1.5 bg-brand/10 text-brand text-[10px] font-black uppercase tracking-widest rounded-full">Active Plan</span>
+                                            <h2 className="text-4xl font-black text-gray-900 mt-6">$0<span className="text-lg text-gray-400 font-bold">/mo</span></h2>
+                                            <p className="text-xl font-bold text-gray-700 mt-2">Free Starter</p>
+
+                                            <div className="mt-8 space-y-4">
+                                                <FeatureItem text="50 emails per day" />
+                                                <FeatureItem text="Basic tracking" />
+                                                <FeatureItem text="1 connected sender" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Premium Plan */}
+                                    <div className="rounded-3xl bg-white border-2 border-brand p-8 relative overflow-hidden shadow-2xl shadow-brand/10">
+                                        <div className="absolute top-0 right-0 p-4">
+                                            <div className="bg-brand text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-brand/20">Recommended</div>
+                                        </div>
+
+                                        <div className="relative z-10">
+                                            <h2 className="text-4xl font-black text-gray-900 mt-6">$19<span className="text-lg text-gray-400 font-bold">/mo</span></h2>
+                                            <p className="text-xl font-bold text-gray-700 mt-2">Pro Outreach</p>
+
+                                            <div className="mt-8 space-y-4">
+                                                <FeatureItem text="Unlimited priority emails" isPro />
+                                                <FeatureItem text="Advanced link & open tracking" isPro />
+                                                <FeatureItem text="Unlimited sender accounts" isPro />
+                                                <FeatureItem text="Custom tracking domains" isPro />
+                                            </div>
+
+                                            <button className="w-full mt-10 bg-brand text-white font-black py-4 rounded-2xl shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                                                <CreditCard size={20} />
+                                                Upgrade to Pro
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Footer Info */}
+                                <div className="mt-16 p-8 rounded-3xl bg-gray-50/50 border border-gray-100 text-center">
+                                    <p className="text-xs text-gray-400 font-medium">
+                                        Need a custom enterprise plan for 1M+ emails? <span className="text-brand font-bold cursor-pointer hover:underline">Contact Sales</span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </main>
                 </div>
-            </ErrorBoundary>
+            </SidebarProvider>
         </AuthGuard>
+    );
+}
+
+function FeatureItem({ text, isPro }: { text: string; isPro?: boolean }) {
+    return (
+        <div className="flex items-center gap-3">
+            <div className={cn(
+                "h-5 w-5 rounded-full flex items-center justify-center shrink-0",
+                isPro ? "bg-brand text-white" : "bg-gray-200 text-gray-400"
+            )}>
+                <Check size={12} strokeWidth={4} />
+            </div>
+            <span className={cn("text-sm font-bold", isPro ? "text-gray-800" : "text-gray-400")}>{text}</span>
+        </div>
     );
 }

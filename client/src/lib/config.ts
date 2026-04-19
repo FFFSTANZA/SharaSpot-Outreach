@@ -8,7 +8,7 @@ export const BRAND_CONFIG = {
     company: "Folonite",
     tagline: "Outreach that feels human, not robotic.",
     description: "Personal outreach system that sends emails like a human. Multi-sender rotation, automatic warmup, and real-time tracking.",
-    url: "https://sharaspot.com",
+    url: "https://sharaspot.in",
     supportUrl: "https://tally.so/r/aQee69",
     pricing: {
         monthly: 20,

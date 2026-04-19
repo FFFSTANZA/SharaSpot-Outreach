@@ -33,14 +33,14 @@ export const logout = async (): Promise<void> => {
 // ─── Users ───
 
 export const getUser = async (): Promise<User> => {
-  const res = await api.get("/users");
+  const res = await api.get("/api/users");
   return res.data;
 };
 
 // ─── Senders ───
 
 export const getSenders = async (): Promise<SenderResponse[]> => {
-  const res = await api.get("/senders");
+  const res = await api.get("/api/senders");
   return res.data;
 };
 
@@ -48,7 +48,7 @@ export const getSenders = async (): Promise<SenderResponse[]> => {
 export const createSender = async (
   data: CreateSenderPayload
 ): Promise<SenderResponse> => {
-  const res = await api.post("/senders", data);
+  const res = await api.post("/api/senders", data);
   return res.data;
 };
 
@@ -57,7 +57,7 @@ export const verifySender = async (
   senderId: string,
   data: { name?: string; appPassword: string; skipWarmup?: boolean }
 ): Promise<SenderResponse> => {
-  const res = await api.patch(`/senders/${senderId}/verify`, data);
+  const res = await api.patch(`/api/senders/${senderId}/verify`, data);
   return res.data;
 };
 
@@ -69,7 +69,7 @@ export const getSenderById = async (senderId: string): Promise<SenderResponse & 
   warmupStatus: string;
   cooldownState: { status: string; expiresAt: string | null };
 }> => {
-  const res = await api.get(`/senders/${senderId}`);
+  const res = await api.get(`/api/senders/${senderId}`);
   return res.data;
 };
 
@@ -78,14 +78,14 @@ export const getSenderById = async (senderId: string): Promise<SenderResponse & 
 export const createCampaign = async (
   data: CreateCampaignPayload
 ): Promise<{ campaignId: string; message: string }> => {
-  const res = await api.post("/campaigns", data);
+  const res = await api.post("/api/campaigns", data);
   return res.data;
 };
 
 // ─── Emails ───
 
 export const toggleEmailStar = async (emailId: string): Promise<EmailJob> => {
-  const res = await api.patch(`/emails/${emailId}/star`);
+  const res = await api.patch(`/api/emails/${emailId}/star`);
   return res.data;
 };
 
@@ -99,26 +99,26 @@ export const uploadAttachments = async (
 ): Promise<UploadedAttachment[]> => {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
-  const res = await api.post("/attachments/upload", formData);
+  const res = await api.post("/api/attachments/upload", formData);
   return res.data;
 };
 
 export const deleteAttachment = async (url: string): Promise<void> => {
-  await api.delete("/attachments/delete", { data: { url } });
+  await api.delete("/api/attachments/delete", { data: { url } });
 };
 
 
 // ─── Templates ───
 
 export const getTemplates = async (): Promise<EmailTemplate[]> => {
-  const res = await api.get("/templates");
+  const res = await api.get("/api/templates");
   return res.data;
 };
 
 export const createTemplate = async (
   data: CreateTemplatePayload
 ): Promise<EmailTemplate> => {
-  const res = await api.post("/templates", data);
+  const res = await api.post("/api/templates", data);
   return res.data;
 };
 
@@ -126,34 +126,34 @@ export const updateTemplate = async (
   id: string,
   data: UpdateTemplatePayload
 ): Promise<EmailTemplate> => {
-  const res = await api.put(`/templates/${id}`, data);
+  const res = await api.put(`/api/templates/${id}`, data);
   return res.data;
 };
 
 export const deleteTemplate = async (id: string): Promise<void> => {
-  await api.delete(`/templates/${id}`);
+  await api.delete(`/api/templates/${id}`);
 };
 
 
 // ─── Campaign Controls ───
 
 export const getCampaignById = async (id: string): Promise<CampaignDetail> => {
-  const res = await api.get(`/campaigns/${id}`);
+  const res = await api.get(`/api/campaigns/${id}`);
   return res.data;
 };
 
 export const pauseCampaign = async (id: string): Promise<Campaign> => {
-  const res = await api.patch(`/campaigns/${id}/pause`);
+  const res = await api.patch(`/api/campaigns/${id}/pause`);
   return res.data;
 };
 
 export const resumeCampaign = async (id: string): Promise<Campaign> => {
-  const res = await api.patch(`/campaigns/${id}/resume`);
+  const res = await api.patch(`/api/campaigns/${id}/resume`);
   return res.data;
 };
 
 export const cancelCampaign = async (id: string): Promise<Campaign> => {
-  const res = await api.patch(`/campaigns/${id}/cancel`);
+  const res = await api.patch(`/api/campaigns/${id}/cancel`);
   return res.data;
 };
 
@@ -171,7 +171,7 @@ export const getCampaignThrottleStatus = async (id: string): Promise<{
     cooldownState: { status: string; expiresAt: string | null };
   }[];
 }> => {
-  const res = await api.get(`/campaigns/${id}/throttle-status`);
+  const res = await api.get(`/api/campaigns/${id}/throttle-status`);
   return res.data;
 };
 
@@ -179,36 +179,36 @@ export const getCampaignThrottleStatus = async (id: string): Promise<{
 // ─── Sequences ───
 
 export const getSequence = async (campaignId: string): Promise<SequenceResponse> => {
-  const res = await api.get(`/campaigns/${campaignId}/sequence`);
+  const res = await api.get(`/api/campaigns/${campaignId}/sequence`);
   return res.data;
 };
 
 export const pauseRecipientSequence = async (campaignId: string, recipientId: string): Promise<void> => {
-  await api.patch(`/campaigns/${campaignId}/sequence/recipients/${recipientId}/pause`);
+  await api.patch(`/api/campaigns/${campaignId}/sequence/recipients/${recipientId}/pause`);
 };
 
 export const resumeRecipientSequence = async (campaignId: string, recipientId: string): Promise<void> => {
-  await api.patch(`/campaigns/${campaignId}/sequence/recipients/${recipientId}/resume`);
+  await api.patch(`/api/campaigns/${campaignId}/sequence/recipients/${recipientId}/resume`);
 };
 
 export const stopRecipientSequence = async (campaignId: string, recipientId: string): Promise<void> => {
-  await api.patch(`/campaigns/${campaignId}/sequence/recipients/${recipientId}/stop`);
+  await api.patch(`/api/campaigns/${campaignId}/sequence/recipients/${recipientId}/stop`);
 };
 
 export const pauseAllSequence = async (campaignId: string): Promise<void> => {
-  await api.patch(`/campaigns/${campaignId}/sequence/pause`);
+  await api.patch(`/api/campaigns/${campaignId}/sequence/pause`);
 };
 
 export const resumeAllSequence = async (campaignId: string): Promise<void> => {
-  await api.patch(`/campaigns/${campaignId}/sequence/resume`);
+  await api.patch(`/api/campaigns/${campaignId}/sequence/resume`);
 };
 
 export const stopAllSequence = async (campaignId: string): Promise<void> => {
-  await api.patch(`/campaigns/${campaignId}/sequence/stop`);
+  await api.patch(`/api/campaigns/${campaignId}/sequence/stop`);
 };
 
 export const toggleReplied = async (emailId: string): Promise<EmailJob> => {
-  const res = await api.patch(`/emails/${emailId}/replied`);
+  const res = await api.patch(`/api/emails/${emailId}/replied`);
   return res.data;
 };
 
@@ -260,13 +260,13 @@ export const getUnrepliedEmails = async (campaignId: string): Promise<{ emails: 
 
 export const searchEmails = async (params: Record<string, string>): Promise<{ results: any[]; total: number; filters: Record<string, string> }> => {
   const qs = new URLSearchParams(params).toString();
-  const res = await api.get(`/emails/search?${qs}`);
+  const res = await api.get(`/api/emails/search?${qs}`);
   return res.data;
 };
 
 export const searchCampaigns = async (params: Record<string, string>): Promise<{ results: any[]; total: number; filters: Record<string, string> }> => {
   const qs = new URLSearchParams(params).toString();
-  const res = await api.get(`/campaigns/search?${qs}`);
+  const res = await api.get(`/api/campaigns/search?${qs}`);
   return res.data;
 };
 
@@ -376,7 +376,7 @@ export interface BatchValidationResponse {
 }
 
 export const validateEmails = async (emails: string[]): Promise<BatchValidationResponse> => {
-  const res = await api.post("/api/validate-emails", { emails });
+  const res = await api.post("/api/validation/validate-emails", { emails });
   return res.data;
 };
 

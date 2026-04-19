@@ -55,7 +55,7 @@ describe("EmailStatusBadge property tests", () => {
     );
   });
 
-  itSkip("Property 11: mapping is exhaustive — no status produces missing color", () => {
+  itSkip("Property 11: mapping is exhaustive - no status produces missing color", () => {
     const allStatuses = ["PENDING", "SENT", "FAILED"];
 
     allStatuses.forEach((status) => {
@@ -75,7 +75,7 @@ describe("EmailStatusBadge property tests", () => {
 
       const badge = container.querySelector("[data-testid='email-status-badge']");
       expect(badge).toBeTruthy();
-      // Should not have default/fallback — should have one of the defined colors
+      // Should not have default/fallback - should have one of the defined colors
       const hasColor = Object.values(statusColorMap).some(
         (c) => badge!.className.includes(c.bg) && badge!.className.includes(c.text),
       );

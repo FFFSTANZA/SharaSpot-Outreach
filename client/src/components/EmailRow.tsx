@@ -124,7 +124,7 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
         )}>
           <MatchHighlighter text={resolvedSubject} query={searchQuery} />
         </span>
-        <span className="text-xs text-gray-400 truncate font-normal">— {plainPreview}</span>
+        <span className="text-xs text-gray-400 truncate font-normal">- {plainPreview}</span>
       </div>
 
       {/* Status Badge */}
@@ -134,7 +134,7 @@ export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: Em
 
       {/* Date */}
       <div className="shrink-0 text-[11px] text-gray-400 font-medium whitespace-nowrap w-20 text-right">
-        {timeValue ? formatTime(timeValue) : "—"}
+        {timeValue ? formatTime(timeValue) : "-"}
       </div>
     </div>
   );

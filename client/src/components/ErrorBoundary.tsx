@@ -14,11 +14,11 @@ interface State {
 }
 
 /**
- * ErrorBoundary — catches rendering errors in child components and shows
+ * ErrorBoundary - catches rendering errors in child components and shows
  * a fallback UI instead of crashing the entire page.
  *
  * WHY class component: React error boundaries can only be implemented as
- * class components — there's no hook equivalent for componentDidCatch.
+ * class components - there's no hook equivalent for componentDidCatch.
  */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {

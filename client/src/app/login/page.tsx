@@ -97,7 +97,7 @@ const LoginPage = () => {
         strategy="afterInteractive"
         onLoad={() => setSdkLoaded(true)}
       />
-      {/* Left panel — branding (hidden on mobile) */}
+      {/* Left panel - branding (hidden on mobile) */}
       <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-gray-900 to-[#0A2F1A] flex-col justify-between p-12">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#00A63E]/20 to-transparent rounded-full blur-3xl" />
@@ -154,7 +154,7 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {/* Right panel — login form */}
+      {/* Right panel - login form */}
       <div className="flex-1 flex items-center justify-center px-4 md:px-8 relative">
         {/* Back button */}
         <button

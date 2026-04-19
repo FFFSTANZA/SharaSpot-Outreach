@@ -62,7 +62,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>When you add a new sender, SharaSpot automatically starts a 14-day warmup period that gradually increases your daily sending limit from 20 to 500 emails/day. This builds your sender reputation with email providers and prevents your account from being flagged.</p>
-        <p>You can skip warmup by checking &ldquo;Skip warmup period&rdquo; when adding a sender — but only do this if the account already has established sending history. Skipping warmup on a brand-new account risks triggering Gmail&apos;s spam filters.</p>
+        <p>You can skip warmup by checking &ldquo;Skip warmup period&rdquo; when adding a sender - but only do this if the account already has established sending history. Skipping warmup on a brand-new account risks triggering Gmail&apos;s spam filters.</p>
       </div>
     ),
   },
@@ -72,7 +72,7 @@ const faqItems: FAQItem[] = [
     question: "What happens when I hit my sending limit?",
     answer: (
       <div className="space-y-2">
-        <p>SharaSpot enforces three layers of rate limiting: per-minute, per-hour, and per-day. When any limit is reached, pending emails are automatically rescheduled with a small random delay — they&apos;re not lost.</p>
+        <p>SharaSpot enforces three layers of rate limiting: per-minute, per-hour, and per-day. When any limit is reached, pending emails are automatically rescheduled with a small random delay - they&apos;re not lost.</p>
         <p>If you&apos;re using multiple senders, SharaSpot will automatically rotate to the next available sender. If all senders are exhausted, the campaign pauses and auto-resumes when capacity is available (checked every hour).</p>
       </div>
     ),
@@ -103,7 +103,7 @@ const faqItems: FAQItem[] = [
     question: "How does multi-sender rotation work?",
     answer: (
       <div className="space-y-2">
-        <p>When you select multiple senders for a campaign, SharaSpot distributes emails across them using round-robin — each sender gets roughly equal volume, respecting their individual daily limits.</p>
+        <p>When you select multiple senders for a campaign, SharaSpot distributes emails across them using round-robin - each sender gets roughly equal volume, respecting their individual daily limits.</p>
         <p>During sending, if one sender hits its limit, emails are automatically reassigned to the next available sender. This lets you send higher volumes without exceeding any single account&apos;s limits.</p>
       </div>
     ),
@@ -150,7 +150,7 @@ const faqItems: FAQItem[] = [
     question: "What&apos;s the difference between templates and template variables?",
     answer: (
       <div className="space-y-2">
-        <p>Templates are saved subject/body pairs you can reuse across campaigns — like a &ldquo;cold outreach&rdquo; template or a &ldquo;follow-up&rdquo; template. You create them in the Templates page.</p>
+        <p>Templates are saved subject/body pairs you can reuse across campaigns - like a &ldquo;cold outreach&rdquo; template or a &ldquo;follow-up&rdquo; template. You create them in the Templates page.</p>
         <p>Template variables (<code className="bg-gray-100 px-1 rounded text-xs">{"{{variable}}"}</code>) are placeholders that get replaced with per-recipient data from your CSV. They work inside any email, whether you started from a template or wrote it from scratch.</p>
       </div>
     ),
@@ -163,7 +163,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>10 MB per file, 25 MB total per campaign, up to 10 files. Supported formats: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, PNG, JPG, GIF.</p>
-        <p>The 25 MB limit matches Gmail&apos;s attachment limit — exceeding it would cause emails to bounce. Files are stored in Supabase Storage and downloaded by the worker at send time.</p>
+        <p>The 25 MB limit matches Gmail&apos;s attachment limit - exceeding it would cause emails to bounce. Files are stored in Supabase Storage and downloaded by the worker at send time.</p>
       </div>
     ),
   },
@@ -182,7 +182,7 @@ const faqItems: FAQItem[] = [
     category: "Campaign Controls",
     icon: Shield,
     question: "What happens when I cancel a campaign?",
-    answer: <p>All pending emails are immediately marked as cancelled and won&apos;t be sent. Emails already sent are not affected. Cancellation is permanent — you can&apos;t resume a cancelled campaign.</p>,
+    answer: <p>All pending emails are immediately marked as cancelled and won&apos;t be sent. Emails already sent are not affected. Cancellation is permanent - you can&apos;t resume a cancelled campaign.</p>,
   },
   {
     category: "Campaign Controls",
@@ -241,7 +241,7 @@ const faqItems: FAQItem[] = [
     category: "Tracking",
     icon: Mail,
     question: "Why is my open rate higher than expected?",
-    answer: <p>Apple Mail Privacy Protection (introduced in iOS 15 / macOS Monterey) pre-fetches all email images through a proxy, which triggers the tracking pixel even if the recipient never actually reads the email. This inflates open rates. There&apos;s no reliable way to filter these out — it&apos;s an industry-wide issue affecting all email tracking platforms.</p>,
+    answer: <p>Apple Mail Privacy Protection (introduced in iOS 15 / macOS Monterey) pre-fetches all email images through a proxy, which triggers the tracking pixel even if the recipient never actually reads the email. This inflates open rates. There&apos;s no reliable way to filter these out - it&apos;s an industry-wide issue affecting all email tracking platforms.</p>,
   },
   // ─── General ───
   {
@@ -250,8 +250,8 @@ const faqItems: FAQItem[] = [
     question: "How does smart scheduling work?",
     answer: (
       <div className="space-y-2">
-        <p>Instead of sending emails at rigid fixed intervals (which looks robotic to email providers), SharaSpot uses your hourly limit to compute an average gap, then randomizes each gap by ±40%. For example, with an hourly limit of 40, the average gap is 90 seconds — but actual gaps range from ~54s to ~126s randomly.</p>
-        <p>Your "Min delay" setting acts as a floor — no two emails will ever be closer than this value. The result is a natural-looking send pattern that averages out to your hourly limit over time.</p>
+        <p>Instead of sending emails at rigid fixed intervals (which looks robotic to email providers), SharaSpot uses your hourly limit to compute an average gap, then randomizes each gap by +/-40%. For example, with an hourly limit of 40, the average gap is 90 seconds - but actual gaps range from ~54s to ~126s randomly.</p>
+        <p>Your "Min delay" setting acts as a floor - no two emails will ever be closer than this value. The result is a natural-looking send pattern that averages out to your hourly limit over time.</p>
       </div>
     ),
   },
@@ -265,7 +265,7 @@ const faqItems: FAQItem[] = [
     category: "General",
     icon: HelpCircle,
     question: "Can I use SharaSpot with non-Gmail providers?",
-    answer: <p>Yes. While the default SMTP settings are configured for Gmail, the system supports any SMTP provider. The throttle engine uses provider profiles to set appropriate rate limits — Gmail, Outlook, and a default profile for custom SMTP hosts.</p>,
+    answer: <p>Yes. While the default SMTP settings are configured for Gmail, the system supports any SMTP provider. The throttle engine uses provider profiles to set appropriate rate limits - Gmail, Outlook, and a default profile for custom SMTP hosts.</p>,
   },
 ];
 

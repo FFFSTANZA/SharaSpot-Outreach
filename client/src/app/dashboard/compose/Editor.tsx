@@ -21,7 +21,7 @@ import {
   List, ListOrdered, Quote, Code, Undo2, Redo2,
   Link as LinkIcon, Unlink, Highlighter, Minus, Type,
   Heading1, Heading2, Heading3, RemoveFormatting, Table as TableIcon,
-  ClipboardPaste, Calendar,
+  ClipboardPaste, Calendar, Trash2,
 } from "lucide-react";
 
 interface EditorProps {
@@ -320,7 +320,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
 
   return (
     <div className="relative">
-      {/* Toolbar — horizontally scrollable on mobile, wraps on desktop */}
+      {/* Toolbar - horizontally scrollable on mobile, wraps on desktop */}
       <div className="overflow-x-auto md:overflow-x-visible scrollbar-none">
         <div className="flex items-center gap-0.5 px-2 md:px-3 py-2 border-b border-gray-100 bg-gray-50 md:flex-wrap min-w-max md:min-w-0">
           {/* Undo / Redo */}
@@ -333,7 +333,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
 
           <ToolbarDivider />
 
-          {/* Text type — hidden on mobile, shown on desktop */}
+          {/* Text type - hidden on mobile, shown on desktop */}
           <div className="hidden md:flex items-center gap-0.5">
             <ToolbarButton onClick={() => editor.chain().focus().setParagraph().run()}
               isActive={editor.isActive("paragraph") && !editor.isActive("heading")} title="Normal text">
@@ -491,7 +491,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
         </div>
       </div>
 
-      {/* Mobile heading row — only visible on small screens */}
+      {/* Mobile heading row - only visible on small screens */}
       <div className="flex md:hidden items-center gap-0.5 px-2 py-1.5 border-b border-gray-50 bg-gray-50/30">
         <ToolbarButton onClick={() => editor.chain().focus().setParagraph().run()}
           isActive={editor.isActive("paragraph") && !editor.isActive("heading")} title="Normal text">
@@ -522,7 +522,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
       {/* Editor content */}
       <EditorContent editor={editor} />
 
-      {/* Link modal — slides up from bottom on mobile */}
+      {/* Link modal - slides up from bottom on mobile */}
       {showLinkModal && (
         <LinkModal
           initialUrl={editor.getAttributes("link").href || ""}

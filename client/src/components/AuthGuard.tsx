@@ -7,7 +7,7 @@ import { useToast } from "@/context/ToastContext";
 import { PageLoader } from "@/components/PageLoader";
 
 /**
- * AuthGuard — Protects routes from unauthenticated access.
+ * AuthGuard - Protects routes from unauthenticated access.
  *
  * WHY branded loader: Instead of a generic spinner, we show the SharaSpot logo
  * with a breathing animation. This reinforces the brand during the brief

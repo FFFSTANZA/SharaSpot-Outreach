@@ -181,7 +181,7 @@ export function ComposeHeader({
             <h1 className="text-sm font-semibold text-gray-900 md:hidden">New Campaign</h1>
           </div>
 
-          {/* Center — desktop title + schedule badge */}
+          {/* Center - desktop title + schedule badge */}
           <div className="hidden md:flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
             <h1 className="text-sm font-semibold text-gray-900">New Campaign</h1>
             {scheduledAt && <ScheduleBadge date={scheduledAt} onClear={() => setScheduledAt(null)} />}

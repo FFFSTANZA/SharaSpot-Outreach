@@ -11,9 +11,9 @@ function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <g transform="translate(16, 16)">
-        <path d="M-9,-8 L10,0 L-9,8 L-5.5,0 Z" fill="white" fillOpacity="0.95"/>
-        <path d="M-5.5,0 L10,0" stroke="rgba(255,255,255,0.35)" strokeWidth="0.8"/>
-        <path d="M-9,8 L-5.5,0 L10,0 Z" fill="black" fillOpacity="0.06"/>
+        <path d="M-9,-8 L10,0 L-9,8 L-5.5,0 Z" fill="white" fillOpacity="0.95" />
+        <path d="M-5.5,0 L10,0" stroke="rgba(255,255,255,0.35)" strokeWidth="0.8" />
+        <path d="M-9,8 L-5.5,0 L10,0 Z" fill="black" fillOpacity="0.06" />
       </g>
     </svg>
   );
@@ -58,7 +58,7 @@ export function LogoIcon({ className, size = "md" }: { className?: string; size?
     md: "h-10 w-10 rounded-lg",
     lg: "h-12 w-12 rounded-lg",
   };
-  
+
   return (
     <div className={cn(
       sizeClasses[size],

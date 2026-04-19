@@ -23,7 +23,7 @@ export default function VariablePreview({
   const [isOpen, setIsOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
 
-  const validRecipients = recipients.filter(r => 
+  const validRecipients = recipients.filter(r =>
     r && recipientColumnData[r.toLowerCase()] && Object.keys(recipientColumnData[r.toLowerCase()]).length > 0
   );
 
@@ -164,7 +164,7 @@ export default function VariablePreview({
           <div>
             <p className="text-[10px] font-semibold text-gray-400 mb-1">Email Body</p>
             <div
-              className="text-sm text-gray-800 bg-gray-50/80 rounded-lg px-4 py-3 border border-gray-100 max-h-64 overflow-y-auto leading-relaxed"
+              className="text-sm text-gray-800 bg-gray-50/80 rounded-lg px-4 py-3 border border-gray-100 max-h-64 overflow-y-auto leading-relaxed prose prose-sm max-w-none prose-p:my-1"
               dangerouslySetInnerHTML={{ __html: resolvedBody || "<span class='text-gray-300 italic'>No content yet...</span>" }}
             />
           </div>

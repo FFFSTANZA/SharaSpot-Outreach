@@ -11,7 +11,7 @@ import { useToast } from "@/context/ToastContext";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 /**
- * SenderModal — Add a new sender or verify an existing unverified sender.
+ * SenderModal - Add a new sender or verify an existing unverified sender.
  *
  * Two modes:
  * 1. "Add" mode (default): All fields editable, calls createSender.
@@ -118,7 +118,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
       onClose={handleClose}
       variant={isMobile ? "bottom-sheet" : "center"}
     >
-      <div className="space-y-5">
+      <div className="p-8 space-y-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
             {isVerifyMode ? "Verify Sender" : "Add Sender Account"}
