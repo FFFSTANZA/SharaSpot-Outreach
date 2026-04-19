@@ -69,6 +69,8 @@ app.use("/api", api);
 
 /* SERVER INITIALIZATION */
 const port = Number(process.env.PORT) || 8000;
-app.listen(port, "0.0.0.0", () => {
-  console.log(`[SHARASPOT] Gateway initialized on port ${port}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`[SHARASPOT] Gateway initialized on port ${port}`);
+  });
+}

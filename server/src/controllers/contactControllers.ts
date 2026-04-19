@@ -205,9 +205,13 @@ export const deleteContact = async (req: Request, res: Response) => {
     const userId = (req as any).user.id;
     const id = req.params.id as string;
 
-    await (prisma as any).contact.delete({
+    const result = await (prisma as any).contact.deleteMany({
       where: { id, userId },
     });
+
+    if (result.count === 0) {
+      return res.status(404).json({ message: "Contact not found" });
+    }
 
     res.json({ message: "Contact deleted successfully" });
   } catch (error: any) {
@@ -226,9 +230,24 @@ export const bulkUpdateContacts = async (req: Request, res: Response) => {
 
     const { stage, tags } = data;
 
-    const result = await (prisma as any).contact.updateMany({
+    // Verify ownership and get valid IDs
+    const validContacts = await (prisma as any).contact.findMany({
       where: {
         id: { in: ids },
+        userId,
+      },
+      select: { id: true, stage: true },
+    });
+
+    const validIds = validContacts.map((c: any) => c.id);
+
+    if (validIds.length === 0) {
+      return res.status(404).json({ message: "No valid contacts found to update" });
+    }
+
+    const result = await (prisma as any).contact.updateMany({
+      where: {
+        id: { in: validIds },
         userId,
       },
       data: {
@@ -237,12 +256,9 @@ export const bulkUpdateContacts = async (req: Request, res: Response) => {
     });
 
     if (tags && Array.isArray(tags)) {
-      // updateMany doesn't support many-to-many relations in Prisma
-      // We have to do it individually or use a different approach.
-      // For simplicity and since it's a small number usually:
-      for (const id of ids) {
+      for (const id of validIds) {
         await (prisma as any).contact.update({
-          where: { id, userId },
+          where: { id },
           data: {
             tags: {
               set: tags.map((tagId: string) => ({ id: tagId })),
@@ -253,8 +269,13 @@ export const bulkUpdateContacts = async (req: Request, res: Response) => {
     }
 
     if (stage) {
-      for (const id of ids) {
-        await logContactActivity(id, "STAGE_CHANGED" as any, { to: stage });
+      for (const contact of validContacts) {
+        if (contact.stage !== stage) {
+          await logContactActivity(contact.id, "STAGE_CHANGED" as any, { 
+            from: contact.stage, 
+            to: stage 
+          });
+        }
       }
     }
 
