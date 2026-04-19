@@ -240,6 +240,16 @@ export function ContactDetails({ contactId, onClose, onUpdate }: ContactDetailsP
                         <div className="text-xs text-text-muted mt-0.5 bg-background p-2 rounded-lg border border-border-light/50">
                           {activity.type === "STAGE_CHANGED" ? (
                             <span>Stage changed from <span className="font-bold text-text-secondary">{activity.metadata.from}</span> to <span className="font-bold text-brand">{activity.metadata.to}</span></span>
+                          ) : activity.type === "EMAIL_SENT" ? (
+                            <span>Sent email: <span className="font-bold text-text-secondary">{activity.metadata.subject}</span></span>
+                          ) : activity.type === "EMAIL_OPENED" ? (
+                            <span>Opened email: <span className="font-bold text-text-secondary">{activity.metadata.subject || "Unknown subject"}</span></span>
+                          ) : activity.type === "EMAIL_CLICKED" ? (
+                            <span>Clicked link in: <span className="font-bold text-text-secondary">{activity.metadata.subject || "Unknown subject"}</span></span>
+                          ) : activity.type === "EMAIL_REPLIED" ? (
+                            <span>Replied to: <span className="font-bold text-text-secondary">{activity.metadata.subject || "Unknown subject"}</span></span>
+                          ) : activity.type === "NOTE_ADDED" ? (
+                            <span className="italic">"{activity.metadata.content}"</span>
                           ) : (
                             JSON.stringify(activity.metadata)
                           )}

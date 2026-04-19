@@ -18,7 +18,7 @@ export const createNote = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Contact not found" });
     }
 
-    const note = await (prisma as any).contactNote.create({
+    const note = await (prisma as any).note.create({
       data: {
         contactId,
         content,
@@ -39,7 +39,7 @@ export const updateNote = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const { content } = req.body;
 
-    const note = await (prisma as any).contactNote.findUnique({
+    const note = await (prisma as any).note.findUnique({
       where: { id },
       include: { contact: true },
     });
@@ -48,7 +48,7 @@ export const updateNote = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Note not found" });
     }
 
-    const updatedNote = await (prisma as any).contactNote.update({
+    const updatedNote = await (prisma as any).note.update({
       where: { id },
       data: { content },
     });
@@ -64,7 +64,7 @@ export const deleteNote = async (req: Request, res: Response) => {
     const userId = (req as any).user.id;
     const id = req.params.id as string;
 
-    const note = await (prisma as any).contactNote.findUnique({
+    const note = await (prisma as any).note.findUnique({
       where: { id },
       include: { contact: true },
     });
@@ -73,7 +73,7 @@ export const deleteNote = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Note not found" });
     }
 
-    await (prisma as any).contactNote.delete({
+    await (prisma as any).note.delete({
       where: { id },
     });
 
