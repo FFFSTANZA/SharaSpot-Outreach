@@ -20,6 +20,7 @@ model User {
   subscription  Subscription?
   tags          Tag[]
   contacts      Contact[]
+  contactLists  ContactList[]
 }
 
 model Subscription {
@@ -392,6 +393,7 @@ model Contact {
   activities ContactActivity[]
   notes      Note[]
   tags       Tag[]             @relation("ContactToTag")
+  lists      ContactList[]     @relation("ContactToContactList")
 
   @@unique([userId, email])
   @@index([userId])
@@ -418,4 +420,17 @@ model ContactActivity {
   contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
 
   @@index([contactId])
+}
+
+model ContactList {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts  Contact[] @relation("ContactToContactList")
+
+  @@unique([userId, name])
+  @@index([userId])
 }

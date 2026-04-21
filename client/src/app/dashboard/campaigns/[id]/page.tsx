@@ -33,6 +33,7 @@ import {
   Layout,
   BarChart3,
   TrendingUp,
+  Star,
 } from "lucide-react";
 
 type CampaignStatus = "SCHEDULED" | "SENDING" | "PAUSED" | "CANCELLED" | "COMPLETED";
@@ -154,9 +155,10 @@ export default function CampaignDetailPage() {
           <Sidebar
             setLabel={setLabel}
             items={[
-              { label: "All", icon: <Inbox className="h-4 w-4" /> },
-              { label: "Scheduled", icon: <Clock className="h-4 w-4" /> },
-              { label: "Sent", icon: <Send className="h-4 w-4" /> },
+              { label: "All", icon: <Inbox size={18} /> },
+              { label: "Starred", icon: <Star size={18} /> },
+              { label: "Scheduled", icon: <Clock size={18} /> },
+              { label: "Sent", icon: <Send size={18} /> },
             ]}
             profile={{
               name: "User",
@@ -370,16 +372,16 @@ export default function CampaignDetailPage() {
                                   <div className={cn(
                                     "h-2 w-2 rounded-full",
                                     email.status === "SENT" ? "bg-brand" :
-                                    email.status === "FAILED" ? "bg-red-500" :
-                                    email.status === "SENDING" ? "bg-brand animate-pulse" :
-                                    email.status === "PENDING" ? "bg-amber-500" : "bg-gray-400"
+                                      email.status === "FAILED" ? "bg-red-500" :
+                                        email.status === "SENDING" ? "bg-brand animate-pulse" :
+                                          email.status === "PENDING" ? "bg-amber-500" : "bg-gray-400"
                                   )} />
                                   <span className={cn(
                                     "text-[10px] font-bold uppercase tracking-wider",
                                     email.status === "SENT" ? "text-brand" :
-                                    email.status === "FAILED" ? "text-red-500" :
-                                    email.status === "SENDING" ? "text-brand" :
-                                    email.status === "PENDING" ? "text-amber-600" : "text-gray-500"
+                                      email.status === "FAILED" ? "text-red-500" :
+                                        email.status === "SENDING" ? "text-brand" :
+                                          email.status === "PENDING" ? "text-amber-600" : "text-gray-500"
                                   )}>
                                     {email.status}
                                   </span>

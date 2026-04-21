@@ -523,8 +523,6 @@ export const createCampaign = async (
       senderPool,
     });
   } catch (error: unknown) {
-    // --- Step 7: Error handling ---
-    // WHY: Generic message prevents leaking internal details to the client.
     res.status(500).json({
       message: "Error creating campaign",
     });

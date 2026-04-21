@@ -9,17 +9,17 @@ process.env.TRACKING_BASE_URL = "http://localhost:8000";
 // Mock ioredis before anything else
 const redisList: string[] = [];
 jest.mock("ioredis", () => {
-    return jest.fn().mockImplementation(() => ({
-        lpush: jest.fn().mockImplementation((key, val) => {
-            redisList.push(val);
-            return Promise.resolve(redisList.length);
-        }),
-        rpop: jest.fn().mockImplementation((key) => {
-            return Promise.resolve(redisList.shift() || null);
-        }),
-        quit: jest.fn().mockResolvedValue(undefined),
-        on: jest.fn(),
-    }));
+  return jest.fn().mockImplementation(() => ({
+    lpush: jest.fn().mockImplementation((key, val) => {
+      redisList.push(val);
+      return Promise.resolve(redisList.length);
+    }),
+    rpop: jest.fn().mockImplementation((key) => {
+      return Promise.resolve(redisList.shift() || null);
+    }),
+    quit: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+  }));
 });
 
 import request from "supertest";
@@ -49,14 +49,14 @@ jest.mock("bullmq", () => {
 
 // Mock individual queues
 jest.mock("../../queues/emailQueue", () => ({
-    emailQueue: {
-        add: jest.fn().mockResolvedValue({ id: "mock-job-id" }),
-    }
+  emailQueue: {
+    add: jest.fn().mockResolvedValue({ id: "mock-job-id" }),
+  }
 }));
 jest.mock("../../queues/priorityQueue", () => ({
-    priorityQueue: {
-        add: jest.fn().mockResolvedValue({ id: "mock-job-id" }),
-    }
+  priorityQueue: {
+    add: jest.fn().mockResolvedValue({ id: "mock-job-id" }),
+  }
 }));
 
 describe("Email Delivery and Tracking End-to-End Flow", () => {
@@ -65,12 +65,24 @@ describe("Email Delivery and Tracking End-to-End Flow", () => {
   let senderId: string;
 
   beforeAll(async () => {
-    // Clean up
+    // Clean up in correct order
     await prisma.trackingEvent.deleteMany();
-    await prisma.contactActivity.deleteMany();
+    await prisma.priorityQueueJob.deleteMany();
+    await prisma.priorityUserQuota.deleteMany();
+    await prisma.domainRateLimit.deleteMany();
     await prisma.emailJob.deleteMany();
+    await prisma.campaignSender.deleteMany();
+    await prisma.attachment.deleteMany();
+    await prisma.sequenceStep.deleteMany();
+    await prisma.recipientSequenceState.deleteMany();
     await prisma.emailCampaign.deleteMany();
+    await prisma.tag.deleteMany();
+    await prisma.emailTemplate.deleteMany();
+    await prisma.refreshToken.deleteMany();
+    await prisma.senderCooldown.deleteMany();
+    await prisma.warmupSchedule.deleteMany();
     await prisma.sender.deleteMany();
+    await prisma.subscription.deleteMany();
     await prisma.user.deleteMany();
 
     // Create user
@@ -102,13 +114,25 @@ describe("Email Delivery and Tracking End-to-End Flow", () => {
   afterAll(async () => {
     // Final cleanup
     try {
-        await prisma.trackingEvent.deleteMany();
-        await prisma.contactActivity.deleteMany();
-        await prisma.emailJob.deleteMany();
-        await prisma.emailCampaign.deleteMany();
-        await prisma.sender.deleteMany();
-        await prisma.user.deleteMany();
-    } catch (e) {}
+      await prisma.trackingEvent.deleteMany();
+      await prisma.priorityQueueJob.deleteMany();
+      await prisma.priorityUserQuota.deleteMany();
+      await prisma.domainRateLimit.deleteMany();
+      await prisma.emailJob.deleteMany();
+      await prisma.campaignSender.deleteMany();
+      await prisma.attachment.deleteMany();
+      await prisma.sequenceStep.deleteMany();
+      await prisma.recipientSequenceState.deleteMany();
+      await prisma.emailCampaign.deleteMany();
+      await prisma.tag.deleteMany();
+      await prisma.emailTemplate.deleteMany();
+      await prisma.refreshToken.deleteMany();
+      await prisma.senderCooldown.deleteMany();
+      await prisma.warmupSchedule.deleteMany();
+      await prisma.sender.deleteMany();
+      await prisma.subscription.deleteMany();
+      await prisma.user.deleteMany();
+    } catch (e) { }
 
     await prisma.$disconnect();
   });
@@ -169,7 +193,7 @@ describe("Email Delivery and Tracking End-to-End Flow", () => {
     await flushTrackingBuffer();
 
     const openEvent = await prisma.trackingEvent.findFirst({
-        where: { emailJobId: emailJob!.id, eventType: "OPEN" }
+      where: { emailJobId: emailJob!.id, eventType: "OPEN" }
     });
     expect(openEvent).toBeDefined();
 
@@ -178,7 +202,7 @@ describe("Email Delivery and Tracking End-to-End Flow", () => {
     await flushTrackingBuffer();
 
     const clickEvent = await prisma.trackingEvent.findFirst({
-        where: { emailJobId: emailJob!.id, eventType: "CLICK" }
+      where: { emailJobId: emailJob!.id, eventType: "CLICK" }
     });
     expect(clickEvent).toBeDefined();
 

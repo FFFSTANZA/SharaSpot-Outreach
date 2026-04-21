@@ -12,7 +12,7 @@ import { logout } from "@/lib/apis";
 import { cn } from "@/lib/utils";
 import Button from "@/components/Button";
 
-export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarProps) {
+export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], groups }: SidebarProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { isOpen, close } = useSidebar();
   const router = useRouter();
@@ -20,8 +20,21 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
   const touchStartX = useRef(0);
 
   const handleNavClick = useCallback(
-    (item: (typeof items)[number]) => {
-      if (pathname !== "/dashboard") {
+    (item: any) => {
+      if (item.onClick) {
+        item.onClick();
+        close();
+        return;
+      }
+
+      if (item.href) {
+        router.push(item.href);
+        close();
+        return;
+      }
+
+      // Default dashboard filtering behavior
+      if (pathname !== "/dashboard" && !pathname.startsWith("/dashboard?")) {
         const queryParams = new URLSearchParams();
         if (item.label === "Scheduled") queryParams.set("status", "PENDING");
         if (item.label === "Sent") queryParams.set("status", "SENT");
@@ -54,7 +67,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
     router.push("/login");
   };
 
-  const menuGroups = [
+  const menuGroups = groups || [
     {
       title: "Navigation",
       links: items.map(item => ({
@@ -66,7 +79,6 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
     {
       title: "Outreach",
       links: [
-        { label: "Campaigns", href: "/dashboard/campaigns", icon: <Megaphone size={18} /> },
         { label: "Contacts", href: "/dashboard/prm", icon: <Users size={18} /> },
         { label: "Templates", href: "/dashboard/templates", icon: <FileText size={18} /> },
       ]
@@ -101,7 +113,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
       <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
         {menuGroups.map((group) => (
           <div key={group.title}>
-            <h3 className="px-3 mb-3 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
+            <h3 className="px-3 mb-3 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
               {group.title}
             </h3>
             <div className="space-y-1">

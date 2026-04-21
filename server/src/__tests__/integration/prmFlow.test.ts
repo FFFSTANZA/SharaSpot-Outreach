@@ -9,17 +9,17 @@ process.env.TRACKING_BASE_URL = "http://localhost:8000";
 // Mock ioredis before anything else
 const redisList: string[] = [];
 jest.mock("ioredis", () => {
-    return jest.fn().mockImplementation(() => ({
-        lpush: jest.fn().mockImplementation((key, val) => {
-            redisList.push(val);
-            return Promise.resolve(redisList.length);
-        }),
-        rpop: jest.fn().mockImplementation((key) => {
-            return Promise.resolve(redisList.shift() || null);
-        }),
-        quit: jest.fn().mockResolvedValue(undefined),
-        on: jest.fn(),
-    }));
+  return jest.fn().mockImplementation(() => ({
+    lpush: jest.fn().mockImplementation((key, val) => {
+      redisList.push(val);
+      return Promise.resolve(redisList.length);
+    }),
+    rpop: jest.fn().mockImplementation((key) => {
+      return Promise.resolve(redisList.shift() || null);
+    }),
+    quit: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+  }));
 });
 
 import request from "supertest";
@@ -49,15 +49,25 @@ describe("PRM Lifecycle End-to-End Flow", () => {
   let senderId: string;
 
   beforeAll(async () => {
-    // Clean up
+    // Clean up in correct order
     await prisma.trackingEvent.deleteMany();
     await prisma.contactActivity.deleteMany();
     await prisma.note.deleteMany();
     await prisma.contact.deleteMany();
     await prisma.emailJob.deleteMany();
+    await prisma.campaignSender.deleteMany();
+    await prisma.attachment.deleteMany();
+    await prisma.sequenceStep.deleteMany();
+    await prisma.recipientSequenceState.deleteMany();
     await prisma.emailCampaign.deleteMany();
     await prisma.tag.deleteMany();
+    await prisma.contactList.deleteMany();
+    await prisma.emailTemplate.deleteMany();
+    await prisma.refreshToken.deleteMany();
+    await prisma.senderCooldown.deleteMany();
+    await prisma.warmupSchedule.deleteMany();
     await prisma.sender.deleteMany();
+    await prisma.subscription.deleteMany();
     await prisma.user.deleteMany();
 
     // Create user
@@ -138,7 +148,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
     const getContactRes = await request(app)
       .get(`/api/contacts/${contactId}`)
       .set("Authorization", `Bearer ${token}`);
-    
+
     expect(getContactRes.body.notes).toHaveLength(1);
     expect(getContactRes.body.notes[0].content).toBe(notePayload.content);
 
@@ -146,7 +156,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
     await request(app)
       .delete(`/api/contacts/notes/${noteId}`)
       .set("Authorization", `Bearer ${token}`);
-    
+
     const noteInDb = await prisma.note.findUnique({ where: { id: noteId } });
     expect(noteInDb).toBeNull();
 
@@ -208,8 +218,8 @@ describe("PRM Lifecycle End-to-End Flow", () => {
 
     // Mock worker's activity log and stage update
     await logContactActivityByEmail(userId, "contact@example.com", "EMAIL_SENT", {
-        emailJobId: emailJob!.id,
-        campaignId: campaignId,
+      emailJobId: emailJob!.id,
+      campaignId: campaignId,
     });
     await updateContactStageByEmail(userId, "contact@example.com", "CONTACTED");
 
@@ -221,7 +231,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
     await request(app).get(`/track/open/${emailJob!.id}`);
     // Simulate CLICK
     await request(app).get(`/track/click/${emailJob!.id}?url=https%3A%2F%2Fexample.com`);
-    
+
     await flushTrackingBuffer();
 
     // Verify activities
@@ -236,12 +246,12 @@ describe("PRM Lifecycle End-to-End Flow", () => {
     expect(clickActivity).toBeDefined();
 
     // Verify engagement score
-    // Sent: 1, Opened: 5, Clicked: 10 => 16
+    // Sent: 1, Opened: 1, Clicked: 1 => (1*20) + (1*40) + (1*60) = 120
     const getStatsRes = await request(app)
       .get(`/api/contacts/${contactId}`)
       .set("Authorization", `Bearer ${token}`);
-    
-    expect(getStatsRes.body.engagementScore).toBe(16);
+
+    expect(getStatsRes.body.engagementScore).toBe(120);
 
     // 6. Bulk Operations
     // Create another contact
@@ -263,7 +273,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
       });
 
     expect(bulkUpdateRes.status).toBe(200);
-    
+
     const updatedContact1 = await prisma.contact.findUnique({ where: { id: contactId } });
     const updatedContact2 = await prisma.contact.findUnique({ where: { id: contact2.id } });
     expect(updatedContact1?.stage).toBe("REPLIED");
@@ -278,7 +288,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
       });
 
     expect(bulkDeleteRes.status).toBe(200);
-    
+
     const deletedContact1 = await prisma.contact.findUnique({ where: { id: contactId } });
     const deletedContact2 = await prisma.contact.findUnique({ where: { id: contact2.id } });
     expect(deletedContact1).toBeNull();

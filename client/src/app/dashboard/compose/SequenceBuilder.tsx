@@ -16,7 +16,7 @@ const MAX_FOLLOW_UPS = 8;
 const CONDITION_OPTIONS: { value: SequenceConditionType; label: string; icon: typeof Eye; color: string; description: string }[] = [
   { value: "none", label: "After delay", icon: Clock, color: "gray", description: "Send after waiting" },
   { value: "opened", label: "If opened", icon: Eye, color: "brand", description: "Send if email was opened" },
-  { value: "clicked", label: "If clicked", icon: MousePointer2, color: "blue", description: "Send if link was clicked" },
+  { value: "clicked", label: "If clicked", icon: MousePointer2, color: "brand", description: "Send if link was clicked" },
   { value: "replied", label: "If replied", icon: MessageCircle, color: "brand", description: "Send if recipient replied" },
 ];
 
@@ -26,7 +26,6 @@ function ConditionBadge({ type }: { type: SequenceConditionType }) {
 
   const colorClasses: Record<string, string> = {
     brand: "bg-brand/10 text-brand",
-    blue: "bg-blue-50 text-blue-600",
   };
 
   return (
@@ -45,7 +44,7 @@ function TimelineConnector({ hasBranch = false }: { hasBranch?: boolean }) {
     <div className="flex items-center justify-center py-1">
       <div className={cn(
         "flex flex-col items-center",
-        hasBranch ? "text-blue-500" : "text-gray-100"
+        hasBranch ? "text-green-500" : "text-gray-100"
       )}>
         <div className="h-8 w-1 bg-current rounded-full" />
         {hasBranch && <GitBranch className="h-4 w-4 my-1" />}
@@ -75,7 +74,6 @@ function TimelineNode({
 
   const nodeColors: Record<string, string> = {
     brand: "bg-brand",
-    blue: "bg-blue-600",
     gray: "bg-gray-900",
   };
 
@@ -86,8 +84,8 @@ function TimelineNode({
 
       <div className={cn(
         "rounded-xl border transition-all duration-200 overflow-hidden bg-white",
-        isExpanded 
-          ? "border-brand shadow-sm" 
+        isExpanded
+          ? "border-brand shadow-sm"
           : "border-gray-100 shadow-sm hover:border-gray-200"
       )}>
         {/* Header */}

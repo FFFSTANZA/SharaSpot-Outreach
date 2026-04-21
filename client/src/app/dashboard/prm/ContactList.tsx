@@ -2,22 +2,24 @@
 
 import { Contact } from "@/types";
 import { cn } from "@/lib/utils";
-import { 
-  Mail, 
-  MoreVertical, 
-  Edit2, 
-  Trash2, 
-  Building2, 
+import {
+  Mail,
+  MoreVertical,
+  Edit2,
+  Trash2,
+  Building2,
   Briefcase,
   CheckCircle2,
   Clock,
   ExternalLink,
   MousePointer2,
   MessageSquare,
-  Eye
+  Eye,
+  Send
 } from "lucide-react";
-import { StatusBadge } from "@/components/StatusBadge";
+import StatusBadge from "@/components/StatusBadge";
 import { useState } from "react";
+import Link from "next/link";
 
 interface ContactListProps {
   contacts: Contact[];
@@ -63,7 +65,7 @@ export function ContactList({
         <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mb-4">
           <Mail className="w-8 h-8 text-text-muted" />
         </div>
-        <h3 className="text-lg font-black text-text-primary mb-2">No contacts found</h3>
+        <h3 className="text-lg font-bold text-text-primary mb-2">No contacts found</h3>
         <p className="text-text-muted max-w-xs mx-auto">
           Start building your personal relationship management by adding your first contact.
         </p>
@@ -84,11 +86,11 @@ export function ContactList({
                 onChange={toggleSelectAll}
               />
             </th>
-            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Contact</th>
-            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Company</th>
-            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Engagement</th>
-            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Stats</th>
-            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right"></th>
+            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-left">Contact</th>
+            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-left">Company</th>
+            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-center">Engagement</th>
+            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-center">Stats</th>
+            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-right"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border-light">
@@ -117,14 +119,14 @@ export function ContactList({
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-black shrink-0 border border-brand/5">
+                  <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-semibold shrink-0 border border-brand/5">
                     {contact.firstName?.[0] || contact.email[0].toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-black text-text-primary truncate">
+                    <div className="text-sm font-semibold text-text-primary truncate">
                       {contact.firstName ? `${contact.firstName} ${contact.lastName || ''}` : contact.email.split('@')[0]}
                     </div>
-                    <div className="text-xs text-text-muted font-bold truncate flex items-center gap-1">
+                    <div className="text-xs text-text-muted font-medium truncate flex items-center gap-1">
                       {contact.email}
                     </div>
                   </div>
@@ -132,11 +134,11 @@ export function ContactList({
               </td>
               <td className="px-6 py-4">
                 <div className="flex flex-col">
-                  <div className="text-sm font-black text-text-primary flex items-center gap-1.5">
+                  <div className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
                     {contact.company || "—"}
                   </div>
                   {contact.jobTitle && (
-                    <div className="text-xs text-text-muted font-bold flex items-center gap-1.5 mt-0.5">
+                    <div className="text-xs text-text-muted font-medium flex items-center gap-1.5 mt-0.5">
                       {contact.jobTitle}
                     </div>
                   )}
@@ -144,27 +146,27 @@ export function ContactList({
               </td>
               <td className="px-6 py-4">
                 <div className="flex flex-col items-center gap-1">
-                   <div className="flex items-center gap-1.5">
-                     <div className="h-1.5 w-24 bg-background rounded-full overflow-hidden border border-border-light">
-                        <div 
-                          className={cn(
-                            "h-full transition-all duration-500",
-                            (contact.engagementScore || 0) > 50 ? "bg-green-500" :
-                            (contact.engagementScore || 0) > 20 ? "bg-orange-500" :
-                            "bg-gray-400"
-                          )}
-                          style={{ width: `${Math.min(100, (contact.engagementScore || 0))}%` }}
-                        />
-                     </div>
-                     <span className="text-[10px] font-black text-text-primary">{(contact.engagementScore || 0)}</span>
-                   </div>
-                   <span className={cn(
-                    "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md",
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 w-24 bg-gray-100 rounded-full overflow-hidden border border-gray-100 shadow-inner">
+                      <div
+                        className={cn(
+                          "h-full transition-all duration-700 ease-out",
+                          (contact.engagementScore || 0) > 80 ? "bg-green-500" :
+                            (contact.engagementScore || 0) > 40 ? "bg-orange-500" :
+                              "bg-brand"
+                        )}
+                        style={{ width: `${Math.min(100, (contact.engagementScore || 0))}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-text-primary tabular-nums">{(contact.engagementScore || 0)}</span>
+                  </div>
+                  <span className={cn(
+                    "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md",
                     contact.stage === "COLD" ? "bg-gray-100 text-gray-500" :
-                    contact.stage === "WARM" ? "bg-blue-100 text-blue-600" :
-                    contact.stage === "HOT" ? "bg-orange-100 text-orange-600" :
-                    contact.stage === "REPLIED" ? "bg-green-100 text-green-600" :
-                    "bg-brand/10 text-brand"
+                      contact.stage === "WARM" ? "bg-blue-100 text-blue-600" :
+                        contact.stage === "HOT" ? "bg-orange-100 text-orange-600" :
+                          contact.stage === "REPLIED" ? "bg-green-100 text-green-600" :
+                            "bg-brand/10 text-brand"
                   )}>
                     {contact.stage}
                   </span>
@@ -173,25 +175,33 @@ export function ContactList({
               <td className="px-6 py-4">
                 <div className="flex items-center justify-center gap-3">
                   <div className="flex flex-col items-center" title="Sent">
-                    <span className="text-[10px] font-black text-text-primary">{(contact as any)._count?.emailsSent || 0}</span>
+                    <span className="text-[10px] font-bold text-text-primary">{(contact as any)._count?.emailsSent || 0}</span>
                     <Mail size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Opened">
-                    <span className="text-[10px] font-black text-text-primary">{(contact as any)._count?.emailsOpened || 0}</span>
+                    <span className="text-[10px] font-bold text-text-primary">{(contact as any)._count?.emailsOpened || 0}</span>
                     <Eye size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Clicked">
-                    <span className="text-[10px] font-black text-text-primary">{(contact as any)._count?.emailsClicked || 0}</span>
+                    <span className="text-[10px] font-bold text-text-primary">{(contact as any)._count?.emailsClicked || 0}</span>
                     <MousePointer2 size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Replied">
-                    <span className="text-[10px] font-black text-text-primary">{(contact as any)._count?.emailsReplied || 0}</span>
+                    <span className="text-[10px] font-bold text-text-primary">{(contact as any)._count?.emailsReplied || 0}</span>
                     <MessageSquare size={12} className="text-text-muted" />
                   </div>
                 </div>
               </td>
               <td className="px-6 py-4 text-right">
                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Link
+                    href={`/dashboard/compose?emails=${contact.email}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="p-1.5 text-text-muted hover:text-brand hover:bg-brand/10 rounded-md transition-all"
+                    title="Compose Email"
+                  >
+                    <Send size={16} />
+                  </Link>
                   <button
                     onClick={(e) => { e.stopPropagation(); onEdit(contact); }}
                     className="p-1.5 text-text-muted hover:text-brand hover:bg-brand/10 rounded-md transition-all"

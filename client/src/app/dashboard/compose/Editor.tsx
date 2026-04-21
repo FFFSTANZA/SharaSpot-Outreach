@@ -47,7 +47,7 @@ function ToolbarButton({
         flex items-center justify-center rounded-lg md:rounded-md
         transition-all duration-150 active:scale-95
         ${isActive
-          ? "bg-blue-100 text-blue-700"
+          ? "bg-green-100 text-green-700"
           : disabled
             ? "text-gray-400 cursor-not-allowed"
             : "text-gray-600 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200"
@@ -81,7 +81,7 @@ function LinkModal({
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://example.com"
-          className="w-full px-3 py-3 md:py-2 text-base md:text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+          className="w-full px-3 py-3 md:py-2 text-base md:text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-100"
           autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter" && url) onSubmit(url);
@@ -166,7 +166,7 @@ function TableModal({
               max={20}
               value={rows}
               onChange={(e) => setRows(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400"
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
             />
           </div>
           <div>
@@ -177,7 +177,7 @@ function TableModal({
               max={10}
               value={cols}
               onChange={(e) => setCols(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400"
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
             />
           </div>
         </div>
@@ -236,7 +236,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] md:min-h-[380px] px-3 md:px-5 py-3 md:py-5 text-sm text-gray-800 outline-none leading-relaxed " +
+          "min-h-[200px] md:min-h-[380px] px-3 md:px-5 py-3 md:py-5 text-gray-800 outline-none leading-relaxed " +
           "prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 " +
           "prose-blockquote:border-l-emerald-500 prose-blockquote:text-gray-600 " +
           "prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-emerald-600 prose-code:text-xs " +
@@ -293,7 +293,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
         username: calendlyUsername.trim(),
         eventType: calendlyEventType.trim() || undefined,
       });
-      const calendlyHtml = `<p><a href="${result.url}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #006BFF; color: white; text-decoration: none; border-radius: 4px; font-weight: 600;">${result.button.text || "Book a Meeting"}</a></p>`;
+      const calendlyHtml = `<p><a href="${result.url}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #00A63E; color: white; text-decoration: none; border-radius: 4px; font-weight: 600;">${result.button.text || "Book a Meeting"}</a></p>`;
       editor.chain().focus().insertContent(calendlyHtml).run();
       setShowCalendlyModal(false);
       setCalendlyUsername("");
@@ -333,26 +333,25 @@ export function Editor({ value = "", onChange }: EditorProps) {
 
           <ToolbarDivider />
 
-          {/* Text type - hidden on mobile, shown on desktop */}
-          <div className="hidden md:flex items-center gap-0.5">
-            <ToolbarButton onClick={() => editor.chain().focus().setParagraph().run()}
-              isActive={editor.isActive("paragraph") && !editor.isActive("heading")} title="Normal text">
-              <Type className={iconSize} />
-            </ToolbarButton>
-            <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-              isActive={editor.isActive("heading", { level: 1 })} title="Heading 1">
-              <Heading1 className={iconSize} />
-            </ToolbarButton>
-            <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-              isActive={editor.isActive("heading", { level: 2 })} title="Heading 2">
-              <Heading2 className={iconSize} />
-            </ToolbarButton>
-            <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-              isActive={editor.isActive("heading", { level: 3 })} title="Heading 3">
-              <Heading3 className={iconSize} />
-            </ToolbarButton>
-            <ToolbarDivider />
-          </div>
+          {/* Text type */}
+          <ToolbarButton onClick={() => editor.chain().focus().setParagraph().run()}
+            isActive={editor.isActive("paragraph") && !editor.isActive("heading")} title="Normal text">
+            <Type className={iconSize} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            isActive={editor.isActive("heading", { level: 1 })} title="Heading 1">
+            <Heading1 className={iconSize} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            isActive={editor.isActive("heading", { level: 2 })} title="Heading 2">
+            <Heading2 className={iconSize} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            isActive={editor.isActive("heading", { level: 3 })} title="Heading 3">
+            <Heading3 className={iconSize} />
+          </ToolbarButton>
+
+          <ToolbarDivider />
 
           {/* Inline formatting */}
           <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive("bold")} title="Bold">
@@ -413,13 +412,10 @@ export function Editor({ value = "", onChange }: EditorProps) {
             isActive={editor.isActive({ textAlign: "right" })} title="Align right">
             <AlignRight className={iconSize} />
           </ToolbarButton>
-          {/* Justify hidden on mobile to save space */}
-          <div className="hidden md:block">
-            <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-              isActive={editor.isActive({ textAlign: "justify" })} title="Justify">
-              <AlignJustify className={iconSize} />
-            </ToolbarButton>
-          </div>
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+            isActive={editor.isActive({ textAlign: "justify" })} title="Justify">
+            <AlignJustify className={iconSize} />
+          </ToolbarButton>
 
           <ToolbarDivider />
 
@@ -463,16 +459,14 @@ export function Editor({ value = "", onChange }: EditorProps) {
 
           <ToolbarDivider />
 
-          {/* Code & HR hidden on mobile */}
-          <div className="hidden md:flex items-center gap-0.5">
-            <ToolbarButton onClick={() => editor.chain().focus().toggleCode().run()}
-              isActive={editor.isActive("code")} title="Inline code">
-              <Code className={iconSize} />
-            </ToolbarButton>
-            <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal rule">
-              <Minus className={iconSize} />
-            </ToolbarButton>
-          </div>
+          {/* Code & HR */}
+          <ToolbarButton onClick={() => editor.chain().focus().toggleCode().run()}
+            isActive={editor.isActive("code")} title="Inline code">
+            <Code className={iconSize} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal rule">
+            <Minus className={iconSize} />
+          </ToolbarButton>
 
           <ToolbarDivider />
 
@@ -491,33 +485,6 @@ export function Editor({ value = "", onChange }: EditorProps) {
         </div>
       </div>
 
-      {/* Mobile heading row - only visible on small screens */}
-      <div className="flex md:hidden items-center gap-0.5 px-2 py-1.5 border-b border-gray-50 bg-gray-50/30">
-        <ToolbarButton onClick={() => editor.chain().focus().setParagraph().run()}
-          isActive={editor.isActive("paragraph") && !editor.isActive("heading")} title="Normal text">
-          <Type className={iconSize} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          isActive={editor.isActive("heading", { level: 1 })} title="Heading 1">
-          <Heading1 className={iconSize} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          isActive={editor.isActive("heading", { level: 2 })} title="Heading 2">
-          <Heading2 className={iconSize} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          isActive={editor.isActive("heading", { level: 3 })} title="Heading 3">
-          <Heading3 className={iconSize} />
-        </ToolbarButton>
-        <ToolbarDivider />
-        <ToolbarButton onClick={() => editor.chain().focus().toggleCode().run()}
-          isActive={editor.isActive("code")} title="Inline code">
-          <Code className={iconSize} />
-        </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal rule">
-          <Minus className={iconSize} />
-        </ToolbarButton>
-      </div>
 
       {/* Editor content */}
       <EditorContent editor={editor} />
@@ -553,7 +520,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
                   value={calendlyUsername}
                   onChange={(e) => setCalendlyUsername(e.target.value)}
                   placeholder="yourusername"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 mt-1"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-100 mt-1"
                 />
                 <p className="text-[10px] text-gray-400 mt-1">Just the username, not the full URL</p>
               </div>
@@ -564,7 +531,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
                   value={calendlyEventType}
                   onChange={(e) => setCalendlyEventType(e.target.value)}
                   placeholder="30-minute-call"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 mt-1"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-100 mt-1"
                 />
               </div>
             </div>
@@ -576,7 +543,7 @@ export function Editor({ value = "", onChange }: EditorProps) {
                 type="button"
                 onClick={handleInsertCalendly}
                 disabled={!calendlyUsername.trim() || isGeneratingCalendly}
-                className="px-4 py-2 text-sm bg-[#006BFF] text-white rounded-lg hover:bg-[#0052CC] disabled:opacity-50"
+                className="px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
               >
                 {isGeneratingCalendly ? "Generating..." : "Insert"}
               </button>

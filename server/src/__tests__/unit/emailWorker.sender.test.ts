@@ -77,7 +77,7 @@ jest.mock("../../utils/throttleEngine", () => ({
   getEffectiveLimits: jest.fn().mockResolvedValue({ perMinute: 10, perHour: 100, perDay: 500, isThrottled: false, isWarmup: false, isCooldown: false }),
 }));
 
-import { processEmailJob } from "../../worker/emailWorker";
+import { processEmailJob, clearSmtpPool } from "../../worker/emailWorker";
 import { prisma } from "../../config/prisma";
 import { emailQueue } from "../../queues/emailQueue";
 import nodemailer from "nodemailer";
@@ -139,7 +139,7 @@ function makeEmailJob(overrides: Record<string, any> = {}) {
       pauseReason: null,
       createdAt: new Date(),
       sender,
-      attachments: [],
+      attachments: [], sequenceSteps: [],
     },
     ...overrides,
   };
@@ -154,6 +154,7 @@ function makeEmailJob(overrides: Record<string, any> = {}) {
 describe("Email Worker — Sender Rotation: Daily Limit Enforcement", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    clearSmtpPool();
   });
 
   // -------------------------------------------------------------------------
@@ -165,17 +166,17 @@ describe("Email Worker — Sender Rotation: Daily Limit Enforcement", () => {
 
     (prisma.emailJob.findUnique as jest.Mock)
       .mockResolvedValueOnce(emailJob)
-      .mockResolvedValueOnce({ status: "SENDING" }); // re-read after send
+      .mockResolvedValueOnce({ status: "SENDING", sequenceSteps: [] }); // re-read after send
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
     (decrypt as jest.Mock).mockReturnValue("plain-password");
 
     const mockSendMail = jest.fn().mockResolvedValue({ messageId: "msg-1" });
-    (nodemailer.createTransport as jest.Mock).mockReturnValue({ sendMail: mockSendMail });
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({ sendMail: mockSendMail, close: jest.fn() });
     (prisma.emailJob.update as jest.Mock).mockResolvedValue(undefined);
     (prisma.emailJob.count as jest.Mock).mockResolvedValue(1);
-    (prisma.emailCampaign.findUnique as jest.Mock).mockResolvedValue({ status: "SENDING" });
+    (prisma.emailCampaign.findUnique as jest.Mock).mockResolvedValue({ status: "SENDING", sequenceSteps: [] });
 
     await processEmailJob(fakeJob("job-1"));
 
@@ -219,7 +220,7 @@ describe("Email Worker — Sender Rotation: Daily Limit Enforcement", () => {
         pauseReason: null,
         createdAt: new Date(),
         sender: sender1,
-        attachments: [],
+        attachments: [], sequenceSteps: [],
       },
     });
 
@@ -330,13 +331,13 @@ describe("Email Worker — Sender Rotation: Daily Limit Enforcement", () => {
         pauseReason: null,
         createdAt: new Date(),
         sender,
-        attachments: [],
+        attachments: [], sequenceSteps: [],
       },
     });
 
     (prisma.emailJob.findUnique as jest.Mock)
       .mockResolvedValueOnce(emailJob)
-      .mockResolvedValueOnce({ status: "SENDING" }); // re-read after send
+      .mockResolvedValueOnce({ status: "SENDING", sequenceSteps: [] }); // re-read after send
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
 
@@ -346,10 +347,10 @@ describe("Email Worker — Sender Rotation: Daily Limit Enforcement", () => {
     (decrypt as jest.Mock).mockReturnValue("plain-password");
 
     const mockSendMail = jest.fn().mockResolvedValue({ messageId: "msg-1" });
-    (nodemailer.createTransport as jest.Mock).mockReturnValue({ sendMail: mockSendMail });
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({ sendMail: mockSendMail, close: jest.fn() });
     (prisma.emailJob.update as jest.Mock).mockResolvedValue(undefined);
     (prisma.emailJob.count as jest.Mock).mockResolvedValue(1);
-    (prisma.emailCampaign.findUnique as jest.Mock).mockResolvedValue({ status: "SENDING" });
+    (prisma.emailCampaign.findUnique as jest.Mock).mockResolvedValue({ status: "SENDING", sequenceSteps: [] });
 
     await processEmailJob(fakeJob("job-1"));
 

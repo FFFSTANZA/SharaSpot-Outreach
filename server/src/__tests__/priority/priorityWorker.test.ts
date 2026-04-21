@@ -152,6 +152,7 @@ describe("Priority Worker Tests", () => {
         campaignId: "campaign-1",
         campaign: { senderId: "sender-1", sender: { id: "sender-1" } },
         sender: { id: "sender-1" },
+        status: "SENT",
       });
 
       (evaluateTiming as jest.Mock).mockReturnValue({

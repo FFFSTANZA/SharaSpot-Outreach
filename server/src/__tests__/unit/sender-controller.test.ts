@@ -14,6 +14,11 @@ jest.mock("../../config/prisma", () => ({
     sender: {
       create: jest.fn(),
       findMany: jest.fn(),
+      update: jest.fn(),
+    },
+    warmupSchedule: {
+      create: jest.fn().mockResolvedValue({ id: "warmup-1" }),
+      findUnique: jest.fn().mockResolvedValue(null),
     },
   },
 }));

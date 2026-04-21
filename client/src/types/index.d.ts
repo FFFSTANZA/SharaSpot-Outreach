@@ -214,10 +214,21 @@ export interface SidebarProps {
     email: string;
     avatarUrl: string;
   };
-  items: {
+  items?: {
     label: string;
     count?: number;
     icon?: React.ReactNode;
+  }[];
+  groups?: {
+    title: string;
+    links: {
+      label: string;
+      href?: string;
+      count?: number;
+      icon?: React.ReactNode;
+      isActive?: boolean;
+      onClick?: () => void;
+    }[];
   }[];
 }
 
@@ -575,6 +586,14 @@ export interface Note {
   updatedAt: string;
 }
 
+export interface ContactList {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ContactActivity {
   id: string;
   contactId: string;
@@ -598,6 +617,7 @@ export interface Contact {
   notes?: Note[];
   activities?: ContactActivity[];
   tags?: Tag[];
+  lists?: ContactList[];
   _count?: {
     emailsSent: number;
     emailsOpened: number;

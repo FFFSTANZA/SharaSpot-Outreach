@@ -52,7 +52,7 @@ function AnalyticsCard({
         </div>
         <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{label}</span>
       </div>
-      <div className="text-3xl font-black text-text-primary tracking-tighter">{value}</div>
+      <div className="text-3xl font-bold text-text-primary tracking-tighter">{value}</div>
       {subValue && (
         <div className="text-xs font-semibold text-text-muted mt-2 border-t border-border-light pt-2">
           {subValue}
@@ -191,8 +191,8 @@ const Dashboard = () => {
                         <AlertCircle className="h-8 w-8 text-error-text" />
                       </div>
                       <div className="text-center">
-                        <p className="font-bold text-text-primary">{error}</p>
-                        <button onClick={refresh} className="text-sm text-brand hover:underline mt-1 font-bold">Try Protocol Refresh</button>
+                        <p className="font-semibold text-text-primary">{error}</p>
+                        <button onClick={refresh} className="text-sm text-brand hover:underline mt-1 font-semibold">Try Protocol Refresh</button>
                       </div>
                     </div>
                   ) : (
@@ -229,7 +229,7 @@ const Dashboard = () => {
                       <div className="flex-1 flex flex-col min-h-0 bg-white">
                         <div className="px-6 py-4 flex items-center justify-between border-b border-border-light">
                           <div className="flex items-center gap-3">
-                            <h2 className="text-lg font-black tracking-tighter text-text-primary">{currentLabel}</h2>
+                            <h2 className="text-lg font-bold tracking-tight text-text-primary">{currentLabel}</h2>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-light text-brand uppercase">{total} Objects</span>
                           </div>
                           {total > 0 && <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Active Monitoring</div>}

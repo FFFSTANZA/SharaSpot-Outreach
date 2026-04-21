@@ -465,8 +465,14 @@ export const getPriorityStatus = async (campaignId: string): Promise<PriorityCam
 
 // ─── PRM / Contacts ───
 
-export const getContacts = async (params: { search?: string; stage?: string; tag?: string } = {}): Promise<Contact[]> => {
-  const qs = new URLSearchParams(params as any).toString();
+export const getContacts = async (params: { search?: string; stage?: string; tag?: string; listId?: string | null } = {}): Promise<Contact[]> => {
+  const cleanParams: any = { ...params };
+  Object.keys(cleanParams).forEach(key => {
+    if (cleanParams[key] === null || cleanParams[key] === undefined || cleanParams[key] === "") {
+      delete cleanParams[key];
+    }
+  });
+  const qs = new URLSearchParams(cleanParams).toString();
   const res = await api.get(`/api/contacts?${qs}`);
   return res.data;
 };
@@ -496,6 +502,53 @@ export const bulkUpdateContacts = async (ids: string[], data: { stage?: string; 
 
 export const bulkDeleteContacts = async (ids: string[]): Promise<void> => {
   await api.post("/api/contacts/bulk-delete", { ids });
+};
+
+export const importContacts = async (file: File, mapping: Record<string, string>): Promise<{ message: string; count: number; errors?: any[] }> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("mapping", JSON.stringify(mapping));
+  const res = await api.post("/api/contacts/import", formData);
+  return res.data;
+};
+
+// ─── Contact Lists (Folders) ───
+
+export interface ContactList {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    contacts: number;
+  };
+}
+
+export const getContactLists = async (): Promise<ContactList[]> => {
+  const res = await api.get("/api/contact-lists");
+  return res.data;
+};
+
+export const createContactList = async (name: string): Promise<ContactList> => {
+  const res = await api.post("/api/contact-lists", { name });
+  return res.data;
+};
+
+export const updateContactList = async (id: string, name: string): Promise<void> => {
+  await api.put(`/api/contact-lists/${id}`, { name });
+};
+
+export const deleteContactList = async (id: string): Promise<void> => {
+  await api.delete(`/api/contact-lists/${id}`);
+};
+
+export const addContactsToList = async (listId: string, contactIds: string[]): Promise<void> => {
+  await api.post(`/api/contact-lists/${listId}/contacts`, { contactIds });
+};
+
+export const removeContactsFromList = async (listId: string, contactIds: string[]): Promise<void> => {
+  await api.delete(`/api/contact-lists/${listId}/contacts`, { data: { contactIds } });
 };
 
 // ─── Notes ───

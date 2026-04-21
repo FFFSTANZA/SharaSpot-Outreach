@@ -8,6 +8,7 @@ const config: Config = {
   testMatch: ["**/__tests__/**/*.test.ts"],
   moduleFileExtensions: ["ts", "js", "json"],
   clearMocks: true,
+  setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
 };
 
 export default config;

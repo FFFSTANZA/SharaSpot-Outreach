@@ -1,0 +1,71 @@
+[
+  {
+    "scenario": "SMTP Congestion Adaptation",
+    "normalScore": 15,
+    "priorityScore": 94,
+    "improvement": "+526% Resilience",
+    "metrics": [
+      {
+        "label": "Detected Congestion",
+        "normal": "Ignored",
+        "priority": "40/1000"
+      },
+      {
+        "label": "Action Taken",
+        "normal": "Force Send",
+        "priority": "SEND_IMMEDIATELY"
+      },
+      {
+        "label": "Block Risk",
+        "normal": "CRITICAL",
+        "priority": "Minimal"
+      }
+    ]
+  },
+  {
+    "scenario": "Human-Pattern Mimicry",
+    "normalScore": 10,
+    "priorityScore": 98,
+    "improvement": "+880% Anonymity",
+    "metrics": [
+      {
+        "label": "Timing Uniformity",
+        "normal": "100% (Identifiable)",
+        "priority": "< 2% (Natural)"
+      },
+      {
+        "label": "Pattern Variance",
+        "normal": "0",
+        "priority": "439241"
+      },
+      {
+        "label": "ESP Detection Risk",
+        "normal": "High",
+        "priority": "Ultra Low"
+      }
+    ]
+  },
+  {
+    "scenario": "Network Capacity Compliance",
+    "normalScore": 40,
+    "priorityScore": 99,
+    "improvement": "+147% Reliability",
+    "metrics": [
+      {
+        "label": "Domain Rate Limits",
+        "normal": "Hard-coded / Passive",
+        "priority": "Dynamic / Active"
+      },
+      {
+        "label": "Warmup Alignment",
+        "normal": "Partial",
+        "priority": "100% Guarded"
+      },
+      {
+        "label": "Sender Reputation",
+        "normal": "Volatile",
+        "priority": "Protected"
+      }
+    ]
+  }
+]

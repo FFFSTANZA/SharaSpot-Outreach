@@ -4,7 +4,7 @@ import { Sidebar } from "../Sidebar";
 import { TopBar } from "../Topbar";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { getContacts, deleteContact, bulkDeleteContacts, getTags } from "@/lib/apis";
+import { getContacts, deleteContact, bulkDeleteContacts, getTags, removeContactsFromList } from "@/lib/apis";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -12,20 +12,30 @@ import { InlineLoader } from "@/components/PageLoader";
 import { ContactList } from "./ContactList";
 import { ContactDetails } from "./ContactDetails";
 import { ContactModal } from "./ContactModal";
+import ImportModal from "./ImportModal";
+import ContactListsSidebar from "./ContactListsSidebar";
+import AddToListModal from "./AddToListModal";
 import type { Contact, Tag } from "@/types";
-import { 
-  Users, 
-  UserPlus, 
-  Trash2, 
-  MoreHorizontal,
-  Mail,
-  MessageSquare,
-  MousePointer2,
-  Eye,
+import {
+  Users,
   Search,
-  Filter
+  Filter,
+  Megaphone,
+  FileText,
+  Settings,
+  CreditCard,
+  Inbox,
+  Star,
+  Clock,
+  Send,
+  Trash2,
+  UserPlus,
+  FolderPlus,
+  X,
+  Folder
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
+import { cn } from "@/lib/utils";
 
 export default function PRMPage() {
   const { user } = useAuth();
@@ -37,15 +47,20 @@ export default function PRMPage() {
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | undefined>(undefined);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false);
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [currentStageFilter, setCurrentStageFilter] = useState<string>("ALL");
+  const [refreshListsTrigger, setRefreshListsTrigger] = useState(0);
 
   const fetchContacts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getContacts({ 
+      const data = await getContacts({
         search: searchQuery,
-        stage: currentStageFilter === "ALL" ? undefined : currentStageFilter
+        stage: currentStageFilter === "ALL" ? undefined : currentStageFilter,
+        listId: selectedListId,
       });
       setContacts(data);
     } catch (error) {
@@ -53,13 +68,13 @@ export default function PRMPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, currentStageFilter, addToast]);
+  }, [searchQuery, currentStageFilter, selectedListId, addToast]);
 
   const fetchTags = useCallback(async () => {
     try {
       const data = await getTags();
       setTags(data);
-    } catch (error) {}
+    } catch (error) { }
   }, []);
 
   useEffect(() => {
@@ -117,8 +132,8 @@ export default function PRMPage() {
     }
   };
 
-  const selectedContact = useMemo(() => 
-    contacts.find(c => c.id === selectedContactId), 
+  const selectedContact = useMemo(() =>
+    contacts.find(c => c.id === selectedContactId),
     [contacts, selectedContactId]
   );
 
@@ -128,30 +143,18 @@ export default function PRMPage() {
         <SidebarProvider>
           <div className="flex h-screen bg-[#F8FAFC] font-sans">
             <Sidebar
-              currentLabel={currentStageFilter === "ALL" ? "All Contacts" : `${currentStageFilter} Stage`}
-              setLabel={(label) => {
-                const stage = STAGES.find(s => s === label.split(' ')[0].toUpperCase());
-                if (stage) setCurrentStageFilter(stage);
-                else if (label === "All Contacts") setCurrentStageFilter("ALL");
-              }}
+              currentLabel="Contacts"
+              setLabel={() => { }}
               profile={{
                 name: user?.name ?? "Outreach Pro",
                 email: user?.email ?? "",
                 avatarUrl: user?.avatarUrl ?? "",
               }}
               items={[
-                { label: "All Contacts", count: contacts.length, icon: <Users size={18} /> },
-                ...STAGES.filter(s => s !== "ALL").map(s => ({
-                   label: `${s.charAt(0) + s.slice(1).toLowerCase()} Stage`,
-                   icon: <div className={cn(
-                     "w-2 h-2 rounded-full",
-                     s === "COLD" ? "bg-gray-400" :
-                     s === "WARM" ? "bg-blue-400" :
-                     s === "HOT" ? "bg-orange-400" :
-                     s === "REPLIED" ? "bg-green-400" :
-                     "bg-brand"
-                   )} />
-                }))
+                { label: "All", icon: <Inbox size={18} /> },
+                { label: "Starred", icon: <Star size={18} /> },
+                { label: "Scheduled", icon: <Clock size={18} /> },
+                { label: "Sent", icon: <Send size={18} /> },
               ]}
             />
 
@@ -160,23 +163,64 @@ export default function PRMPage() {
                 <div className="px-6 py-4 border-b border-border-light bg-white">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h1 className="text-2xl font-black text-text-primary tracking-tight">PRM</h1>
+                      <h1 className="text-2xl font-semibold text-text-primary tracking-tight">PRM</h1>
                       <p className="text-sm text-text-muted font-medium">Manage your professional relationships</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {selectedIds.size > 0 && (
                         <div className="flex items-center gap-2 mr-4 pr-4 border-r border-border-light">
-                          <span className="text-xs font-black text-text-muted uppercase tracking-widest mr-2">{selectedIds.size} Selected</span>
-                          <select 
-                             onChange={(e) => handleBulkStageUpdate(e.target.value)}
-                             className="text-xs font-black uppercase tracking-wider bg-background border border-border-light rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand/20"
-                             value=""
+                          <span className="text-xs font-semibold text-text-muted uppercase tracking-widest mr-2">{selectedIds.size} Selected</span>
+                          <select
+                            onChange={(e) => handleBulkStageUpdate(e.target.value)}
+                            className="text-xs font-semibold uppercase tracking-wider bg-background border border-border-light rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand/20"
+                            value=""
                           >
-                             <option value="" disabled>Move to Stage...</option>
-                             {STAGES.filter(s => s !== "ALL").map(s => (
-                               <option key={s} value={s}>{s}</option>
-                             ))}
+                            <option value="" disabled>Move to Stage...</option>
+                            {STAGES.filter(s => s !== "ALL").map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
                           </select>
+                          <button
+                            onClick={() => {
+                              const selectedEmails = contacts
+                                .filter(c => selectedIds.has(c.id))
+                                .map(c => c.email)
+                                .join(",");
+                              window.location.href = `/dashboard/compose?emails=${selectedEmails}`;
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-brand text-white rounded-lg text-xs font-semibold hover:bg-brand-dark transition-all"
+                          >
+                            <Send size={14} />
+                            <span>Compose</span>
+                          </button>
+                          <button
+                            onClick={() => setIsAddToListModalOpen(true)}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border-light text-text-secondary rounded-lg text-xs font-semibold hover:bg-interactive-hover transition-all"
+                          >
+                            <FolderPlus size={14} />
+                            <span>Add to List</span>
+                          </button>
+                          {selectedListId && (
+                            <button
+                              onClick={async () => {
+                                if (confirm(`Remove ${selectedIds.size} contacts from this list?`)) {
+                                  try {
+                                    await removeContactsFromList(selectedListId, Array.from(selectedIds));
+                                    setSelectedIds(new Set());
+                                    fetchContacts();
+                                    setRefreshListsTrigger(prev => prev + 1);
+                                    addToast("success", "Contacts removed from list");
+                                  } catch (err) {
+                                    addToast("error", "Failed to remove contacts");
+                                  }
+                                }
+                              }}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border-light text-error-text rounded-lg text-xs font-semibold hover:bg-error-bg transition-all"
+                            >
+                              <X size={14} />
+                              <span>Remove</span>
+                            </button>
+                          )}
                           <button
                             onClick={handleBulkDelete}
                             className="p-2 text-error-text hover:bg-error-bg rounded-lg transition-all"
@@ -187,8 +231,15 @@ export default function PRMPage() {
                         </div>
                       )}
                       <button
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 border border-border-light text-text-secondary rounded-xl text-sm font-semibold hover:bg-background transition-all"
+                      >
+                        <FileText size={16} />
+                        <span>Import</span>
+                      </button>
+                      <button
                         onClick={handleCreateContact}
-                        className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-dark transition-all shadow-lg shadow-brand/20"
+                        className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark transition-all"
                       >
                         <UserPlus size={16} />
                         <span>Add Contact</span>
@@ -213,9 +264,9 @@ export default function PRMPage() {
                           key={s}
                           onClick={() => setCurrentStageFilter(s)}
                           className={cn(
-                            "px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
-                            currentStageFilter === s 
-                              ? "bg-white text-brand shadow-sm border border-border-light" 
+                            "px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all",
+                            currentStageFilter === s
+                              ? "bg-white text-brand shadow-sm border border-border-light"
                               : "text-text-muted hover:text-text-secondary"
                           )}
                         >
@@ -227,6 +278,14 @@ export default function PRMPage() {
                 </div>
 
                 <div className="flex-1 flex overflow-hidden">
+                  <aside className="w-64 border-r border-border-light bg-white flex flex-col shrink-0 hidden md:flex">
+                    <ContactListsSidebar
+                      selectedListId={selectedListId}
+                      onSelectList={setSelectedListId}
+                      onRefresh={fetchContacts}
+                    />
+                  </aside>
+
                   <div className={`flex-1 flex flex-col min-w-0 ${selectedContactId ? 'hidden lg:flex' : 'flex'}`}>
                     {isLoading && contacts.length === 0 ? (
                       <InlineLoader message="Loading your relationships..." />
@@ -265,6 +324,25 @@ export default function PRMPage() {
             onSuccess={() => {
               setIsModalOpen(false);
               fetchContacts();
+            }}
+          />
+
+          <ImportModal
+            isOpen={isImportModalOpen}
+            onClose={() => setIsImportModalOpen(false)}
+            onSuccess={() => {
+              fetchContacts();
+            }}
+          />
+
+          <AddToListModal
+            isOpen={isAddToListModalOpen}
+            onClose={() => setIsAddToListModalOpen(false)}
+            selectedContactIds={Array.from(selectedIds)}
+            onSuccess={() => {
+              setSelectedIds(new Set());
+              fetchContacts();
+              setRefreshListsTrigger(prev => prev + 1);
             }}
           />
         </SidebarProvider>

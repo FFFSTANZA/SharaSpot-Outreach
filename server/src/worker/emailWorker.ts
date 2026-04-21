@@ -55,6 +55,13 @@ interface SmtpPoolEntry {
 
 const smtpPool = new Map<string, SmtpPoolEntry>();
 
+export function clearSmtpPool(): void {
+  for (const entry of smtpPool.values()) {
+    entry.transporter.close();
+  }
+  smtpPool.clear();
+}
+
 function getSmtpPoolKey(sender: {
   smtpHost: string;
   smtpPort: number;
@@ -500,7 +507,7 @@ export async function processEmailJob(job: Job): Promise<void> {
     // ---------------------------------------------------------------------------
     try {
       const spamScore = quickSpamScore(emailSubject, emailBody.replace(/<[^>]*>?/gm, ''));
-      
+
       // Log warning for scores >= 40
       if (spamScore >= 40) {
         console.warn(`[SPAM CHECK] EmailJob ${emailJobId} has spam score ${spamScore} (threshold: 40)`);

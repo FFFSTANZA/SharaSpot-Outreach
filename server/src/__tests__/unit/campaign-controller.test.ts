@@ -315,6 +315,24 @@ describe("Campaign Controller — Property-Based Tests", () => {
                     };
                   }),
                 },
+                contact: {
+                  upsert: jest.fn().mockImplementation(async (args: any) => ({
+                    id: "contact-1",
+                    userId: args.where.userId_email.userId,
+                    email: args.where.userId_email.email,
+                  })),
+                  findUnique: jest.fn().mockResolvedValue({ id: "contact-1" }),
+                },
+                contactActivity: {
+                  create: jest.fn().mockResolvedValue({ id: "activity-1" }),
+                },
+                sequenceStep: {
+                  create: jest.fn().mockResolvedValue({ id: "step-1" }),
+                  update: jest.fn().mockResolvedValue({ id: "step-1" }),
+                },
+                recipientSequenceState: {
+                  create: jest.fn().mockResolvedValue({ id: "state-1" }),
+                },
               };
               return callback(tx);
             }
@@ -427,6 +445,28 @@ describe("Campaign Controller — Property-Based Tests", () => {
                     emailJobs.push(job);
                     return job;
                   }),
+                  update: jest.fn().mockImplementation(async (args: any) => ({
+                    id: args.where.id,
+                    ...args.data,
+                  })),
+                },
+                contact: {
+                  upsert: jest.fn().mockImplementation(async (args: any) => ({
+                    id: "contact-1",
+                    userId: args.where.userId_email.userId,
+                    email: args.where.userId_email.email,
+                  })),
+                  findUnique: jest.fn().mockResolvedValue({ id: "contact-1" }),
+                },
+                contactActivity: {
+                  create: jest.fn().mockResolvedValue({ id: "activity-1" }),
+                },
+                sequenceStep: {
+                  create: jest.fn().mockResolvedValue({ id: "step-1" }),
+                  update: jest.fn().mockResolvedValue({ id: "step-1" }),
+                },
+                recipientSequenceState: {
+                  create: jest.fn().mockResolvedValue({ id: "state-1" }),
                 },
               };
               const result = await callback(tx);
