@@ -1,80 +1,124 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Zap, ArrowRight, ShieldCheck, Cpu } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function PriorityFeature() {
     const router = useRouter();
 
     return (
-        <section id="priority" className="py-20 lg:py-28 bg-text-primary relative overflow-hidden">
+        <section id="priority" className="py-24 lg:py-36 bg-[#0A0C0E] relative overflow-hidden">
+            {/* Dark Mode Visual Elements */}
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-[#00A63E]/3 to-transparent opacity-60" />
-                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#00A63E]/2 to-transparent opacity-40" />
+                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-brand/[0.08] rounded-full blur-[140px] -mr-64 -mt-64" />
+                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-brand/[0.04] rounded-full blur-[120px] -ml-32 -mb-32" />
+                <div 
+                    className="absolute inset-0 opacity-[0.03]"
+                    style={{ 
+                        backgroundImage: `linear-gradient(var(--color-brand) 1px, transparent 1px), linear-gradient(90deg, var(--color-brand) 1px, transparent 1px)`, 
+                        backgroundSize: '40px 40px' 
+                    }}
+                />
             </div>
 
             <div className="max-w-6xl mx-auto px-6 relative">
-
-                <div className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20">
-                    <div className="pt-1">
-                        <div className="w-8 h-[3px] bg-brand rounded-full mb-5" />
-                        <p className="text-sm font-bold text-brand">Priority sending</p>
-                    </div>
-
+                <div className="grid lg:grid-cols-[1fr_480px] gap-20 items-center">
                     <div>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight mb-8">
-                            When your outreach cannot wait for a queue
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] font-bold tracking-[0.15em] uppercase mb-8">
+                            <Zap size={12} fill="currentColor" />
+                            Priority Infrastructure
+                        </div>
+                        
+                        <h2 className="text-4xl lg:text-6xl font-bold text-white tracking-tight leading-[1.05] mb-8">
+                            When your outreach <br />
+                            <span className="text-brand">cannot wait for a queue.</span>
                         </h2>
 
-                        <div className="space-y-8 mb-12">
-                            <p className="text-base text-white/70 leading-[1.8]">
-                                Most outreach can go out on a schedule. Some cannot. A fundraising window. A hiring push before a competitor moves. A deal that has gone quiet and needs a reply today. Priority sending skips the queue entirely and routes your campaign through your best-performing accounts with the cleanest sending history.
-                            </p>
-                            <p className="text-base text-white/70 leading-[1.8]">
-                                The email goes out immediately, lands in the primary inbox, and you see the reply come in while you are still at your desk. No batch delays, no throttling windows, no waiting.
-                            </p>
+                        <p className="text-lg text-white/60 leading-relaxed mb-12 max-w-xl">
+                            Standard outreach tools batch your emails, leading to delays and unpredictable delivery. Priority Mail uses dedicated, high-reputation channels to ensure instant placement in the primary inbox.
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-8 mb-12">
+                            <div className="flex gap-4">
+                                <div className="mt-1 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10">
+                                    <ShieldCheck size={20} className="text-brand" />
+                                </div>
+                                <div>
+                                    <h4 className="text-white font-bold text-[15px] mb-1">Reputation First</h4>
+                                    <p className="text-white/40 text-[13px] leading-relaxed">Clean-only routing across all campaigns.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="mt-1 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10">
+                                    <Cpu size={20} className="text-brand" />
+                                </div>
+                                <div>
+                                    <h4 className="text-white font-bold text-[15px] mb-1">Zero Latency</h4>
+                                    <p className="text-white/40 text-[13px] leading-relaxed">Real-time routing decisions in &lt;1ms.</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="rounded-xl bg-white/[2%] border border-white/[6%] p-8">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-6 h-6 rounded-full bg-brand/20 flex items-center justify-center">
-                                    <svg className="w-3 h-3 text-brand" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
-                                    </svg>
+                        <button
+                            onClick={() => router.push("/priority")}
+                            className="inline-flex items-center gap-2 text-brand font-bold text-sm hover:gap-3 transition-all group"
+                        >
+                            Explore Priority Infrastructure
+                            <ArrowRight size={18} />
+                        </button>
+                    </div>
+
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-brand/20 blur-3xl rounded-full opacity-20 animate-pulse" />
+                        <div className="relative bg-[#14171A] border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden">
+                            <div className="flex items-center justify-between mb-10">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+                                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Live Routing Engine</span>
                                 </div>
-                                <p className="text-[11px] font-semibold text-white/50 uppercase tracking-widest">
-                                    A real use case
+                                <span className="text-[10px] text-white/20">v2.0.4</span>
+                            </div>
+
+                            <div className="space-y-6">
+                                {[
+                                    { label: "Inbox Placement", val: "96.4%", color: "text-brand" },
+                                    { label: "Spam Detection Risk", val: "0.2%", color: "text-white/40" },
+                                    { label: "Throughput", val: "50k/sec", color: "text-white" },
+                                ].map((stat, i) => (
+                                    <div key={i}>
+                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider mb-2">
+                                            <span className="text-white/40">{stat.label}</span>
+                                            <span className={stat.color}>{stat.val}</span>
+                                        </div>
+                                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                            <motion.div 
+                                                initial={{ width: 0 }}
+                                                whileInView={{ width: '100%' }}
+                                                transition={{ duration: 1.5, delay: i * 0.2 }}
+                                                className="h-full bg-brand rounded-full" 
+                                                style={{ width: i === 1 ? '15%' : '100%' }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-10 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                                <p className="text-white/80 text-[14px] leading-relaxed italic">
+                                    &quot;We switched to Priority and saw open rates jump from 12% to 41% in 48 hours. It&apos;s a completely different class of delivery.&quot;
                                 </p>
-                            </div>
-                            <p className="text-base text-white/80 leading-[1.8] mb-8">
-                                Sahil saw a Sequoia tweet at 9am about wanting to meet climate founders. He turned on Priority sending for 12 VCs. By 9:45am every email was delivered and sitting in primary inboxes. He had his first reply by 10am.
-                            </p>
-                            <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/[8%]">
-                                <div>
-                                    <p className="text-3xl font-bold text-white tracking-tight">12</p>
-                                    <p className="text-xs text-white/50 mt-1">Emails sent</p>
-                                </div>
-                                <div>
-                                    <p className="text-3xl font-bold text-white tracking-tight">43<span className="text-lg font-normal text-white/50 ml-1">min</span></p>
-                                    <p className="text-xs text-white/50 mt-1">Send to first open</p>
-                                </div>
-                                <div>
-                                    <p className="text-3xl font-bold text-brand tracking-tight">4</p>
-                                    <p className="text-xs text-white/50 mt-1">Replies by end of day</p>
+                                <div className="mt-4 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-brand/20" />
+                                    <div>
+                                        <p className="text-white text-[12px] font-bold">Arnav S.</p>
+                                        <p className="text-white/30 text-[10px]">Founder, Series A</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="mt-10">
-                            <button
-                                onClick={() => router.push("/priority")}
-                                className="text-sm font-semibold text-brand border-b border-brand pb-0.5 hover:opacity-70 transition-opacity"
-                            >
-                                Learn more about Priority sending
-                            </button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
     );

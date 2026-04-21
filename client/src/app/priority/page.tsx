@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import MailAppContainer from "@/components/landing/MailAppContainer";
+import BenchmarkStory from "@/components/landing/BenchmarkStory";
 import {
     Zap, Shield, CheckCircle2, ArrowRight,
     TrendingUp, Activity, Star, Lock,
@@ -241,6 +242,8 @@ export default function PriorityPage() {
                         </div>
                     </div>
                 </section>
+
+                <BenchmarkStory />
 
                 {/* ── WHAT PRIORITY FEELS LIKE ── */}
                 <section className="py-24 bg-white border-b border-border-light">
