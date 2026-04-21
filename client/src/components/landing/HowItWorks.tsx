@@ -1,91 +1,75 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { UserPlus, Settings, Zap, BarChart3 } from "lucide-react";
 
 const steps = [
     {
-        step: "Connect your sending accounts",
-        desc: "Add one or more Gmail or Outlook accounts. SharaSpot runs a 14-day warmup automatically, gradually increasing volume through each account until it has a clean sending history. You can skip warmup for accounts you have already been using for outreach.",
-        note: "Takes about 3 minutes. No developer setup or IT involvement needed.",
+        icon: UserPlus,
+        title: "Connect Senders",
+        desc: "Add your Google Workspace, Microsoft 365, or custom SMTP accounts. Our system validates every connection in seconds.",
+        detail: "No limit on the number of accounts you can connect."
     },
     {
-        step: "Write your message and upload your list",
-        desc: "Paste a CSV with your contacts. Write your email in a plain editor, add follow-up steps, and use variables to personalize by name, company, or any column in your spreadsheet. There is a template library for investor, sales, and recruiting outreach if you want a starting point.",
-        note: "Your words, your message. SharaSpot handles everything after you hit send.",
+        icon: Settings,
+        title: "Auto-Warmup",
+        desc: "New accounts are gradually warmed up over 14-28 days. We handle the volume ramp-up so you don't have to.",
+        detail: "Building reputation with ESPs is fully automated."
     },
     {
-        step: "Watch the replies come in",
-        desc: "SharaSpot handles timing, rotation across your accounts, and follow-up scheduling. When anyone on your list replies, their sequence stops immediately. You come in to have the conversation. Everything else runs without you.",
-        note: "Real-time dashboard shows opens, clicks, and replies as they happen.",
+        icon: Zap,
+        title: "Launch Campaign",
+        desc: "Compose your sequence with rich personalization. We rotate senders and add human-like delays automatically.",
+        detail: "Priority routing ensures primary inbox placement."
     },
+    {
+        icon: BarChart3,
+        title: "Monitor & Scale",
+        desc: "Track opens, clicks, and replies in real-time. Follow-ups stop automatically when a reply is detected.",
+        detail: "Get detailed insights into which accounts perform best."
+    }
 ];
 
 export default function HowItWorks() {
-    const router = useRouter();
-
     return (
-        <section id="how-it-works" className="py-20 lg:py-28 bg-white relative overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-border-light to-transparent" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-border-light to-transparent" />
-                <div className="absolute top-1/4 right-0 w-[600px] h-[600px] rounded-full bg-[#00A63E]/[0.015] blur-3xl" />
-                <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] rounded-full bg-brand/[0.01] blur-3xl" />
-                <svg className="absolute top-20 left-[10%] w-24 h-24 text-border-light opacity-30" viewBox="0 0 100 100" fill="currentColor">
-                    <circle cx="50" cy="50" r="45" />
-                </svg>
-                <svg className="absolute bottom-32 right-[15%] w-16 h-16 text-border-light opacity-20" viewBox="0 0 100 100" fill="currentColor">
-                    <rect x="15" y="15" width="70" height="70" rx="8" />
-                </svg>
-            </div>
-
+        <section className="py-24 lg:py-32 bg-white relative overflow-hidden">
             <div className="max-w-6xl mx-auto px-6 relative">
-
-                <div className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20 mb-16">
-                    <div>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-text-primary tracking-tight leading-tight">
-                            How it works
-                        </h2>
-                    </div>
-                    <div className="lg:pt-2">
-                        <p className="text-text-secondary text-lg leading-relaxed max-w-xl">
-                            You do not need to understand email infrastructure. You need to know who you are reaching out to and what you want to say.
-                        </p>
-                    </div>
+                <div className="text-center mb-24">
+                    <p className="text-[11px] font-bold text-brand uppercase tracking-[0.2em] mb-4">The Process</p>
+                    <h2 className="text-4xl lg:text-5xl font-bold text-text-primary tracking-tight">
+                        Built for <span className="text-brand">professional</span> outreach.
+                    </h2>
                 </div>
 
-                <div className="border-t border-border-light">
-                    {steps.map((s, i) => (
-                        <div
-                            key={s.step}
-                            className="grid lg:grid-cols-[280px_1fr] gap-8 lg:gap-20 py-10 border-b border-border-light"
-                        >
-                            <div className="flex items-start gap-4 lg:block">
-                                <div className="w-8 h-8 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shrink-0 lg:mb-4">
-                                    {i + 1}
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+                    {steps.map((step, i) => (
+                        <div key={i} className="relative group">
+                            {/* Connector Line (visible on desktop) */}
+                            {i < steps.length - 1 && (
+                                <div className="hidden lg:block absolute top-10 left-full w-full h-px bg-border-light z-0 -translate-x-1/2" />
+                            )}
+                            
+                            <div className="relative z-10 flex flex-col items-center text-center">
+                                <div className="w-20 h-20 rounded-3xl bg-white border border-border-light shadow-sm flex items-center justify-center mb-8 group-hover:border-brand/30 group-hover:shadow-brand-glow transition-all duration-500">
+                                    <step.icon className="w-8 h-8 text-brand" />
                                 </div>
-                                <p className="text-sm font-bold text-text-primary lg:mt-0 mt-1.5">{s.step}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-text-secondary leading-[1.85] mb-4">{s.desc}</p>
-                                <p className="text-xs text-brand font-medium">{s.note}</p>
+                                
+                                <div className="inline-block px-3 py-0.5 rounded-full bg-slate-50 border border-border-light text-[10px] font-bold text-text-muted mb-4">
+                                    STEP 0{i + 1}
+                                </div>
+                                
+                                <h3 className="text-lg font-bold text-text-primary mb-4">{step.title}</h3>
+                                <p className="text-[14px] text-text-secondary leading-relaxed mb-6">
+                                    {step.desc}
+                                </p>
+                                
+                                <p className="text-[12px] font-medium text-brand/70 bg-brand-light px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    {step.detail}
+                                </p>
                             </div>
                         </div>
                     ))}
                 </div>
-
-                <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-10 border-t border-border-light">
-                    <div>
-                        <p className="text-base font-semibold text-text-primary mb-1">Ready to try it?</p>
-                        <p className="text-sm text-text-secondary">Free for 7 days. No credit card required.</p>
-                    </div>
-                    <button
-                        onClick={() => router.push("/login")}
-                        className="bg-brand text-white text-sm font-semibold px-6 py-3 rounded-lg hover:bg-brand/90 transition-colors whitespace-nowrap"
-                    >
-                        Get started free
-                    </button>
-                </div>
-
             </div>
         </section>
     );

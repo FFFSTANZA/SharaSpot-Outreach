@@ -1,31 +1,36 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 const personas = [
     {
         id: "founders",
-        label: "Founders pitching investors",
-        accent: "#1A56DB",
-        body: "You drafted the right message. You found the right partner at the right fund. You hit send, and nothing comes back. Not even a bounce. Someone with half your traction books the meeting because their email landed where yours didn't. SharaSpot fixes the delivery problem so the pitch gets a fair shot.",
-        detail: "Rotating sender accounts means your domain stays clean before you find product-market fit. Follow-ups stop the moment an investor replies, so you never double-email someone who already said yes.",
-        cta: "Reach investors without burning your domain",
+        label: "Founders",
+        title: "Pitching investors without the spam folder.",
+        accent: "#00A63E",
+        body: "You drafted the right message. You found the right partner at the right fund. You hit send, and nothing comes back. SharaSpot fixes the delivery problem so your pitch gets the attention it deserves.",
+        points: ["Avoid 'Promotions' tab", "Automatic follow-up pause", "Domain reputation safety"],
+        cta: "Scale your fundraise",
     },
     {
         id: "sales",
-        label: "Sales teams chasing decisions",
-        accent: "#B45309",
-        body: "The VP of Ops whose budget you need gets 80 cold emails a day. Generic sequences get axed before the subject line is read. Your SDRs are sending 200 emails a week and booking one call. The problem isn't the offer. It's where the email lands and how it reads when it gets there.",
-        detail: "SharaSpot sends through warmed-up accounts with human-like timing, so each email reads like it came from a colleague, not a tool. Sequences stop automatically when someone responds so there are no awkward follow-ups after a yes.",
-        cta: "Get more calls from the same outreach",
+        label: "Sales Teams",
+        title: "Book more calls from the same volume.",
+        accent: "#1A1D21",
+        body: "The VPs you need to reach get 100+ emails a day. SharaSpot sends through warmed-up accounts with human-like timing, so each email reads like it came from a colleague, not a bot.",
+        points: ["Multi-sender rotation", "Real-time reply detection", "Human-like sending patterns"],
+        cta: "Boost reply rates",
     },
     {
         id: "hr",
-        label: "HR teams sourcing candidates",
-        accent: "#047857",
-        body: "You're reaching out to a senior engineer at a competitor. Or a designer not actively looking. One wrong outreach tool gets your domain flagged and now even your job offers land in spam. The talent market is competitive enough without your emails working against you.",
-        detail: "SharaSpot distributes sourcing volume across multiple accounts so no single sender ever trips rate limits. Candidate replies are detected immediately and sequences stop, protecting your team's reputation with every person in the pipeline.",
-        cta: "Source talent at volume without burning your domain",
+        label: "Recruiters",
+        title: "Source talent without burning your domain.",
+        accent: "#5F6368",
+        body: "Top candidates aren't scrolling promo tabs. If your offer letter lands there, you've lost. Priority routing ensures your first touchpoint lands in the primary inbox every time.",
+        points: ["High-throughput delivery", "Verified placement stats", "Personalized at scale"],
+        cta: "Hire faster",
     },
 ];
 
@@ -33,62 +38,53 @@ export default function UseCases() {
     const router = useRouter();
 
     return (
-        <section className="py-20 lg:py-28 bg-text-primary relative overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-40 right-0 w-[500px] h-[500px] rounded-full bg-gradient-to-bl from-[#1A56DB]/10 to-transparent blur-3xl" />
-                <div className="absolute bottom-20 left-1/4 w-[300px] h-[300px] rounded-full bg-gradient-to-tr from-[#B45309]/8 to-transparent blur-3xl" />
-                <div className="absolute top-1/3 right-1/3 w-[400px] h-[400px] rounded-full bg-gradient-to-bl from-[#047857]/6 to-transparent blur-3xl" />
-            </div>
-
+        <section className="py-24 lg:py-32 bg-white relative overflow-hidden">
             <div className="max-w-6xl mx-auto px-6 relative">
-
-                <div className="max-w-2xl mb-20">
-                    <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-5">
-                        Three outreach problems. One fix.
+                <div className="max-w-3xl mb-24">
+                    <p className="text-[11px] font-bold text-brand uppercase tracking-[0.2em] mb-4">Strategic Use Cases</p>
+                    <h2 className="text-4xl lg:text-5xl font-bold text-text-primary tracking-tight leading-[1.1] mb-6">
+                        Three outreach problems. <br />
+                        <span className="text-text-muted text-3xl lg:text-4xl">One definitive solution.</span>
                     </h2>
-                    <p className="text-white/70 text-lg leading-relaxed">
-                        SharaSpot is not a general-purpose email tool. It is built specifically around the three types of outreach where delivery actually changes outcomes.
-                    </p>
                 </div>
 
-                <div className="space-y-20">
+                <div className="grid lg:grid-cols-3 gap-8">
                     {personas.map((p, i) => (
-                        <div key={p.id} id={p.id} className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20 items-start">
-
-                            {/* Left label col */}
-                            <div className="lg:pt-1">
-                                <div
-                                    className="w-8 h-[3px] mb-5 rounded-full"
-                                    style={{ background: p.accent }}
-                                />
-                                <h3
-                                    className="text-lg font-bold leading-snug"
-                                    style={{ color: p.accent }}
-                                >
+                        <div 
+                            key={p.id} 
+                            className="flex flex-col p-10 rounded-3xl border border-border-light bg-white hover:border-brand/20 hover:shadow-elevated transition-all duration-500 group"
+                        >
+                            <div className="mb-8">
+                                <span className="inline-block px-3 py-1 rounded-full bg-slate-50 border border-border-light text-[10px] font-bold text-text-muted uppercase tracking-wider mb-6">
                                     {p.label}
+                                </span>
+                                <h3 className="text-2xl font-bold text-text-primary leading-tight mb-4">
+                                    {p.title}
                                 </h3>
-                            </div>
-
-                            {/* Right body col */}
-                            <div>
-                                <p className="text-base text-white leading-[1.75] mb-6 font-medium">
+                                <p className="text-[15px] text-text-secondary leading-relaxed">
                                     {p.body}
                                 </p>
-                                <p className="text-sm text-white/60 leading-[1.8] mb-8">
-                                    {p.detail}
-                                </p>
-                                <button
-                                    onClick={() => router.push("/login")}
-                                    className="text-sm font-semibold text-white border-b border-white/60 pb-0.5 hover:opacity-60 transition-opacity"
-                                >
-                                    {p.cta}
-                                </button>
                             </div>
 
+                            <div className="space-y-3 mb-10 mt-auto">
+                                {p.points.map((point, j) => (
+                                    <div key={j} className="flex items-center gap-3">
+                                        <CheckCircle2 size={16} className="text-brand" />
+                                        <span className="text-[13px] font-medium text-text-primary">{point}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => router.push("/login")}
+                                className="w-full py-3 px-6 rounded-xl border border-border-medium text-sm font-semibold text-text-primary hover:bg-text-primary hover:text-white hover:border-text-primary transition-all flex items-center justify-center gap-2"
+                            >
+                                {p.cta}
+                                <ArrowRight size={15} />
+                            </button>
                         </div>
                     ))}
                 </div>
-
             </div>
         </section>
     );
