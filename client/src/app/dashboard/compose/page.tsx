@@ -7,6 +7,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { ComposeForm } from "./ComposeForm";
 import { createCampaign, uploadAttachments, deleteAttachment } from "@/lib/apis";
 import type { CreateCampaignPayload, UploadedAttachment } from "@/types";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 function ComposeContent() {
   const router = useRouter();
@@ -72,18 +73,20 @@ function ComposeContent() {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
-        <ComposeForm
-          scheduledAt={scheduledAt}
-          setScheduledAt={setScheduledAt}
-          uploadedAttachments={uploadedAttachments}
-          onFilesSelected={handleFilesSelected}
-          onRemoveAttachment={handleRemoveAttachment}
-          isUploading={isUploading}
-          onSubmit={handleSubmit}
-          submitTrigger={submitTrigger}
-          isSubmitting={isSubmitting}
-          initialEmails={initialEmails}
-        />
+        <ErrorBoundary>
+          <ComposeForm
+            scheduledAt={scheduledAt}
+            setScheduledAt={setScheduledAt}
+            uploadedAttachments={uploadedAttachments}
+            onFilesSelected={handleFilesSelected}
+            onRemoveAttachment={handleRemoveAttachment}
+            isUploading={isUploading}
+            onSubmit={handleSubmit}
+            submitTrigger={submitTrigger}
+            isSubmitting={isSubmitting}
+            initialEmails={initialEmails}
+          />
+        </ErrorBoundary>
       </div>
     </AuthGuard>
   );

@@ -49,6 +49,15 @@ export const scheduledEmails = async (
         campaign: { userId },
       },
       orderBy: { scheduledAt: "asc" },
+      include: {
+        campaign: {
+          select: {
+            id: true,
+            subject: true,
+            body: true,
+          },
+        },
+      },
       take,
       skip,
     });
@@ -76,6 +85,15 @@ export const sentEmails = async (
         campaign: { userId },
       },
       orderBy: { sentAt: "desc" },
+      include: {
+        campaign: {
+          select: {
+            id: true,
+            subject: true,
+            body: true,
+          },
+        },
+      },
       take,
       skip,
     });
@@ -114,6 +132,7 @@ export const getEmailsBySender = async (
         createdAt: true,
         campaign: {
           select: {
+            id: true,
             subject: true,
             body: true,
           },
@@ -258,7 +277,7 @@ export const searchEmails = async (
         )
       `;
       const matchingIds = rawMatches.map((m) => m.id);
-      
+
       if (matchingIds.length === 0) {
         res.status(200).json({
           results: [],
@@ -267,7 +286,7 @@ export const searchEmails = async (
         });
         return;
       }
-      
+
       where.AND.push({ id: { in: matchingIds } });
     }
 
@@ -292,6 +311,7 @@ export const searchEmails = async (
         include: {
           campaign: {
             select: {
+              id: true,
               subject: true,
               body: true,
               sender: { select: { id: true, email: true, name: true } },

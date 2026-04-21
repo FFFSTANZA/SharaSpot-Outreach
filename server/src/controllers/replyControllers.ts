@@ -1,19 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
-
-/**
- * Helper: verify campaign exists and is owned by the authenticated user.
- */
-async function verifyCampaignOwnership(req: Request, res: Response): Promise<string | null> {
-  const campaignId = req.params.campaignId as string;
-  const campaign = await prisma.emailCampaign.findUnique({
-    where: { id: campaignId },
-    select: { id: true, userId: true },
-  });
-  if (!campaign) { res.status(404).json({ message: "Campaign not found" }); return null; }
-  if (campaign.userId !== req.user!.id) { res.status(403).json({ message: "Forbidden" }); return null; }
-  return campaign.id;
-}
+import { verifyCampaignOwnership } from "../utils/authorization";
 
 /**
  * GET /api/replies/campaigns/:campaignId
@@ -21,8 +8,9 @@ async function verifyCampaignOwnership(req: Request, res: Response): Promise<str
  */
 export const getCampaignReplyMetrics = async (req: Request, res: Response): Promise<void> => {
   try {
-    const campaignId = await verifyCampaignOwnership(req, res);
-    if (!campaignId) return;
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+    const campaignId = campaign.id;
 
     const totalSent = await prisma.emailJob.count({
       where: { campaignId, status: "SENT" },
@@ -75,8 +63,9 @@ export const getCampaignReplyMetrics = async (req: Request, res: Response): Prom
  */
 export const getCampaignRepliedEmails = async (req: Request, res: Response): Promise<void> => {
   try {
-    const campaignId = await verifyCampaignOwnership(req, res);
-    if (!campaignId) return;
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+    const campaignId = campaign.id;
 
     const repliedJobs = await prisma.emailJob.findMany({
       where: { campaignId, status: "SENT", isReplied: true },
@@ -115,8 +104,9 @@ export const getCampaignRepliedEmails = async (req: Request, res: Response): Pro
  */
 export const getCampaignUnrepliedEmails = async (req: Request, res: Response): Promise<void> => {
   try {
-    const campaignId = await verifyCampaignOwnership(req, res);
-    if (!campaignId) return;
+    const campaign = await verifyCampaignOwnership(req, res);
+    if (!campaign) return;
+    const campaignId = campaign.id;
 
     const unrepliedJobs = await prisma.emailJob.findMany({
       where: { campaignId, status: "SENT", isReplied: false },

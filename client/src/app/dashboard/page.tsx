@@ -5,7 +5,7 @@ import { TopBar } from "./Topbar";
 import { EmailList } from "./EmailList";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { getSenders, toggleEmailStar } from "@/lib/apis";
+import { getSenders, toggleEmailStar, getDashboardStats, DashboardStats } from "@/lib/apis";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import type { SenderResponse } from "@/types";
 import { SidebarProvider } from "@/context/SidebarContext";
@@ -14,6 +14,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InlineLoader } from "@/components/PageLoader";
 import FilterPanel from "@/components/FilterPanel";
 import FilterSummaryBar from "@/components/FilterSummaryBar";
+import { cn } from "@/lib/utils";
 import {
   Inbox,
   Send,
@@ -45,14 +46,14 @@ function AnalyticsCard({
   color?: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-border-light p-5 shadow-card hover:border-brand/20 transition-all">
+    <div className="bg-white rounded-xl border border-border-light p-5 shadow-premium-sm hover:border-brand/20 transition-all hover:shadow-premium-md">
       <div className="flex items-center justify-between mb-4">
         <div className="p-2 rounded-lg bg-background group">
           <Icon className={`h-5 w-5 text-${color}`} />
         </div>
-        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{label}</span>
+        <span className="text-[11px] font-bold text-text-muted uppercase tracking-[0.1em]">{label}</span>
       </div>
-      <div className="text-3xl font-black text-text-primary tracking-tighter">{value}</div>
+      <div className="text-3xl font-bold text-text-primary tracking-tighter">{value}</div>
       {subValue && (
         <div className="text-xs font-semibold text-text-muted mt-2 border-t border-border-light pt-2">
           {subValue}
@@ -66,6 +67,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [globalStats, setGlobalStats] = useState<DashboardStats | null>(null);
 
   const {
     filters, results, total, isLoading, error,
@@ -74,7 +76,9 @@ const Dashboard = () => {
   } = useSearchFilters({ endpoint: "emails" });
 
   useEffect(() => {
-    getSenders().then(setSenders).catch(() => { });
+    getSenders().then(setSenders).catch((err) => {
+      console.error("[Dashboard] Failed to load senders:", err);
+    });
   }, []);
 
   // Sync label with filters using useEffect instead of direct render update
@@ -101,6 +105,23 @@ const Dashboard = () => {
       setFilters({ starred: "", status: statusMap[itemLabel] ?? "" });
     }
   }, [setFilters]);
+
+  useEffect(() => {
+    const fetchGlobalStats = () => {
+      getDashboardStats().then(setGlobalStats).catch(err => console.error("[Dashboard] Stats error:", err));
+    };
+
+    fetchGlobalStats();
+    const pollInterval = setInterval(() => {
+      // Only poll if tab is visible and we're not currently loading
+      if (document.visibilityState === "visible" && !isLoading) {
+        refresh();
+        fetchGlobalStats();
+      }
+    }, 10_000);
+
+    return () => clearInterval(pollInterval);
+  }, [refresh, isLoading]);
 
   const emailItems = useMemo(() => (results as any[]).map((r: any) => ({
     email: r,
@@ -152,8 +173,8 @@ const Dashboard = () => {
               ]}
             />
 
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden pt-4 px-4 bg-background">
-              <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col grow overflow-hidden">
+            <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-interactive-hover/40 p-4 lg:p-6">
+              <div className="bg-white rounded-2xl border border-border-light shadow-premium-lg flex flex-col grow overflow-hidden">
                 <TopBar
                   initialValue={filters.q}
                   onSearch={setQuery}
@@ -182,7 +203,7 @@ const Dashboard = () => {
                   senders={senders}
                 />
 
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 flex flex-col min-h-0">
                   {isLoading && results.length === 0 ? (
                     <InlineLoader message="Synchronizing your campaigns..." />
                   ) : error ? (
@@ -191,8 +212,8 @@ const Dashboard = () => {
                         <AlertCircle className="h-8 w-8 text-error-text" />
                       </div>
                       <div className="text-center">
-                        <p className="font-bold text-text-primary">{error}</p>
-                        <button onClick={refresh} className="text-sm text-brand hover:underline mt-1 font-bold">Try Protocol Refresh</button>
+                        <p className="font-semibold text-text-primary">{error}</p>
+                        <button onClick={refresh} className="text-sm text-brand hover:underline mt-1 font-semibold">Try Protocol Refresh</button>
                       </div>
                     </div>
                   ) : (
@@ -201,41 +222,53 @@ const Dashboard = () => {
                       <div className="px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-4 bg-background/30 border-b border-border-light">
                         <AnalyticsCard
                           icon={Mail}
-                          label="Visible Batch"
-                          value={total}
-                          subValue={`${stats.pending} in queue`}
+                          label="Global Outreach"
+                          value={globalStats?.total ?? stats.sent + stats.pending}
+                          subValue={`${globalStats?.pending ?? stats.pending} in queue`}
                         />
                         <AnalyticsCard
                           icon={CheckCircle}
                           label="Delivery Success"
-                          value={stats.sent}
-                          subValue={`${stats.failed} blocked`}
+                          value={globalStats?.sent ?? stats.sent}
+                          subValue={`${globalStats?.failed ?? stats.failed} blocked`}
                           color="brand"
                         />
                         <AnalyticsCard
                           icon={TrendingUp}
                           label="Efficiency Index"
-                          value={`${stats.efficiency}%`}
+                          value={`${globalStats?.efficiency ?? stats.efficiency}%`}
                           subValue="Reputation rating"
                         />
                         <AnalyticsCard
                           icon={BarChart3}
                           label="Engagement"
-                          value={`${stats.replyRate}%`}
-                          subValue={`${stats.replied} detected replies`}
+                          value={`${globalStats?.replyRate ?? stats.replyRate}%`}
+                          subValue={`${globalStats?.replied ?? stats.replied} detected replies`}
                         />
                       </div>
 
                       <div className="flex-1 flex flex-col min-h-0 bg-white">
                         <div className="px-6 py-4 flex items-center justify-between border-b border-border-light">
                           <div className="flex items-center gap-3">
-                            <h2 className="text-lg font-black tracking-tighter text-text-primary">{currentLabel}</h2>
+                            <h2 className="text-lg font-bold tracking-tight text-text-primary">{currentLabel}</h2>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-light text-brand uppercase">{total} Objects</span>
+                            {globalStats?.worker && (
+                              <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-border-light">
+                                <div className={cn(
+                                  "h-1.5 w-1.5 rounded-full",
+                                  globalStats.worker.status === "up" ? "bg-[#00A63E] animate-pulse" :
+                                    globalStats.worker.status === "stale" ? "bg-amber-500" : "bg-red-500"
+                                )} />
+                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                                  Worker {globalStats.worker.status}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           {total > 0 && <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Active Monitoring</div>}
                         </div>
 
-                        <div className="flex-1 overflow-hidden">
+                        <div className="flex-1 overflow-y-auto">
                           <EmailList
                             emails={emailItems}
                             onToggleStar={handleToggleStar}

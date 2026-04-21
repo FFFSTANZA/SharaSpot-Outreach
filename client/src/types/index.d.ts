@@ -8,6 +8,7 @@ export interface User {
   email: string;
   name: string;
   avatarUrl: string | null;
+  isPremium: boolean;
   createdAt: string;
 }
 
@@ -22,6 +23,7 @@ export interface SenderResponse {
   currentDailyCount?: number;
   smtpHost: string;
   smtpPort: number;
+  replyTo?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -155,6 +157,7 @@ export interface ComposeFormData {
 export interface EmailRowProps {
   email?: EmailJob;
   campaign?: {
+    id?: string;
     subject?: string;
     body?: string;
   };
@@ -214,10 +217,21 @@ export interface SidebarProps {
     email: string;
     avatarUrl: string;
   };
-  items: {
+  items?: {
     label: string;
     count?: number;
     icon?: React.ReactNode;
+  }[];
+  groups?: {
+    title: string;
+    links: {
+      label: string;
+      href?: string;
+      count?: number;
+      icon?: React.ReactNode;
+      isActive?: boolean;
+      onClick?: () => void;
+    }[];
   }[];
 }
 
@@ -541,12 +555,28 @@ export interface AnalyticsOverview {
   uniqueOpens: number;
   uniqueClicks: number;
   totalReplied: number;
+  totalBounced: number;
   openRate: number;
   clickRate: number;
   replyRate: number;
   dailySeries: DailySeriesPoint[];
   hourlySeries: HourlySeriesPoint[];
   topCampaigns: TopCampaign[];
+  platformBreakdown?: PlatformBreakdown[];
+  deviceBreakdown?: DeviceBreakdown[];
+  engagementScore?: number;
+}
+
+export interface PlatformBreakdown {
+  platform: string;
+  count: number;
+  percentage: number;
+}
+
+export interface DeviceBreakdown {
+  device: string;
+  count: number;
+  percentage: number;
 }
 
 export interface AnalyticsLink {
@@ -557,6 +587,40 @@ export interface AnalyticsLink {
 
 export interface AnalyticsLinksResponse {
   links: AnalyticsLink[];
+}
+
+export interface SenderHealthRecord {
+  id: string;
+  senderId: string;
+  date: string;
+  successCount: number;
+  errorCount: number;
+  bounceCount: number;
+  errorDetails: any;
+  sender: {
+    email: string;
+    name: string | null;
+  };
+}
+
+export interface ActivityLogEntry {
+  id: string;
+  eventType: string;
+  createdAt: string;
+  emailJob: {
+    toEmail: string;
+    campaign: { subject: string };
+  };
+}
+
+export interface ActivityLogsResponse {
+  logs: ActivityLogEntry[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 // ─── PRM / Contact Types ───
@@ -571,6 +635,14 @@ export interface Note {
   id: string;
   contactId: string;
   content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContactList {
+  id: string;
+  userId: string;
+  name: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -598,6 +670,7 @@ export interface Contact {
   notes?: Note[];
   activities?: ContactActivity[];
   tags?: Tag[];
+  lists?: ContactList[];
   _count?: {
     emailsSent: number;
     emailsOpened: number;
@@ -606,4 +679,39 @@ export interface Contact {
   };
 }
 
+export interface InboxThread {
+  id: string;
+  senderId: string;
+  threadId: string;
+  subject: string;
+  participants: string[];
+  lastMessageAt: string;
+  lastSnippet: string | null;
+  lastSenderEmail: string | null;
+  unreadCount: number;
+  hasAttachments: boolean;
+}
 
+export interface InboxEmail {
+  id: string;
+  senderId: string;
+  messageId: string;
+  inReplyTo: string | null;
+  references: string | null;
+  threadId: string | null;
+  fromName: string | null;
+  fromEmail: string;
+  toName: string | null;
+  toEmail: string;
+  subject: string;
+  bodyText: string | null;
+  bodyHtml: string | null;
+  snippet: string;
+  isRead: boolean;
+  isStarred: boolean;
+  isArchived: boolean;
+  isDeleted: boolean;
+  folder: string;
+  receivedAt: string;
+  syncedAt: string;
+}

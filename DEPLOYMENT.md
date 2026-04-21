@@ -94,13 +94,26 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=354664818470-veljl4900p28hf0i81u0r959ra11ihjt.apps.
 
 ---
 
-## Step 4: Deploy
+## Step 4: Unified Production Deployment
+
+The quickest way to deploy is using the unified production script, which handles dependencies, database migrations, building, and process management via PM2.
 
 ```bash
-bash deploy/deploy.sh
+bash deploy/production-deploy.sh
 ```
 
-This installs dependencies, runs Prisma migrations, builds both projects, sets up systemd services, and starts everything.
+This script:
+1.  Installs/Updates dependencies (`npm install`).
+2.  Applies database migrations (`prisma migrate deploy`).
+3.  Builds the API and Worker (`tsc`).
+4.  Builds the Frontend (`next build`).
+5.  Orchestrates all services using PM2 (`ecosystem.config.js`).
+
+To view status:
+```bash
+pm2 status
+pm2 monit
+```
 
 ---
 

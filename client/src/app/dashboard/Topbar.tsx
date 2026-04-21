@@ -107,7 +107,7 @@ export function TopBar({
           {showNotifications && (
             <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-2xl bg-white border border-border-light shadow-elevated animate-up">
               <div className="px-5 py-4 border-b border-border-light">
-                <p className="text-xs font-black uppercase tracking-widest text-text-muted">System Events</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-text-muted">System Events</p>
               </div>
               <div className="px-5 py-10 text-center">
                 <div className="h-10 w-10 bg-background rounded-full flex items-center justify-center mx-auto mb-4">

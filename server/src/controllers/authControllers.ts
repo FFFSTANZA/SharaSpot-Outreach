@@ -9,53 +9,45 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     const { idToken } = req.body;
     if (!idToken) { res.status(400).json({ message: "idToken is required" }); return; }
 
-    // Log the token receipt
-    console.log("Received idToken, verifying...");
     const ticket = await googleClient.verifyIdToken({ idToken, audience: process.env.GOOGLE_CLIENT_ID });
     const payload = ticket.getPayload();
     if (!payload) { res.status(401).json({ message: "Invalid Google token" }); return; }
 
     const { email, name, picture } = payload;
-    console.log(`Google payload: ${email}, ${name}`);
     if (!email || !name) { res.status(400).json({ message: "Incomplete profile" }); return; }
 
-    console.log("Upserting user in database...");
     const user = await prisma.user.upsert({
       where: { email },
       update: { name, avatarUrl: picture },
       create: {
-        email,
-        name,
-        avatarUrl: picture,
+        email, name, avatarUrl: picture,
         senders: { create: { email, name, appPassword: "" } },
         subscription: {
           create: {
-            trialEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            currentPeriodEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default to end of trial
-          }
+            trialEnd: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            currentPeriodEnd: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          },
         },
         tags: {
           create: [
             { name: "Investor", color: "#ef4444" },
             { name: "Founder", color: "#f59e0b" },
             { name: "Recruiter", color: "#10b981" },
-          ]
-        }
-      }
+          ],
+        },
+      },
     });
 
-    console.log("User upserted, generating tokens...");
     const newAccessToken = signAccessToken({ id: user.id, email: user.email });
     const newRefreshToken = signRefreshToken({ id: user.id });
-
-    await prisma.refreshToken.create({ data: { token: newRefreshToken, userId: user.id, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } });
+    await prisma.refreshToken.create({
+      data: { token: newRefreshToken, userId: user.id, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+    });
     res.cookie("refreshToken", newRefreshToken, refreshTokenCookieOptions);
     res.json({ accessToken: newAccessToken, user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl } });
   } catch (error) {
-    console.error("=== LOGIN ERROR ===");
-    console.error(error);
-    console.error("===================");
-    res.status(500).json({ message: "Login failed", error: String(error) });
+    console.error("[Auth] googleLogin error:", error);
+    res.status(500).json({ message: "Login failed" });
   }
 };
 export const refreshAccessToken = async (req: Request, res: Response): Promise<void> => {
@@ -76,7 +68,10 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<v
     await prisma.refreshToken.create({ data: { token: newRefreshToken, userId: payload.id, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } });
     res.cookie("refreshToken", newRefreshToken, refreshTokenCookieOptions);
     res.json({ accessToken: newAccessToken });
-  } catch (error) { res.status(500).json({ message: "Refresh failed" }); }
+  } catch (error) {
+    console.error("[Auth] refreshAccessToken error:", error);
+    res.status(500).json({ message: "Refresh failed" });
+  }
 };
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -84,5 +79,8 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     if (refreshToken) await prisma.refreshToken.updateMany({ where: { token: refreshToken }, data: { revoked: true } });
     res.clearCookie("refreshToken", { path: "/" });
     res.sendStatus(204);
-  } catch (error) { res.status(500).json({ message: "Logout failed" }); }
+  } catch (error) {
+    console.error("[Auth] logout error:", error);
+    res.status(500).json({ message: "Logout failed" });
+  }
 };

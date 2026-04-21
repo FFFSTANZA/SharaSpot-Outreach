@@ -18,7 +18,6 @@ err()   { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 DOMAIN="sharaspot.in"
 REPO_URL="https://github.com/FFFSTANZA/SharaSpot-Outreach.git"
-SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBibWtsYnZrdHBiemJ2enBhbWx1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTMxNzUzOCwiZXhwIjoyMDkwODkzNTM4fQ.-GEXB4uMBop6zVsiXsrlTfOCscVpewedZxAULhYs5p4"
 
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════╗${NC}"
@@ -84,9 +83,6 @@ ENCRYPTION_KEY=${ENCRYPTION_KEY}
 JWT_ACCESS_SECRET=${JWT_ACCESS}
 JWT_REFRESH_SECRET=${JWT_REFRESH}
 GOOGLE_CLIENT_ID=354664818470-veljl4900p28hf0i81u0r959ra11ihjt.apps.googleusercontent.com
-SUPABASE_URL=https://pbmklbvktpbzbvzpamlu.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_KEY}
-SUPABASE_BUCKET_NAME=sharaspot-attachments
 TRACKING_BASE_URL=https://${DOMAIN}
 WORKER_CONCURRENCY=5
 MIN_DELAY_MS=2000
@@ -111,7 +107,9 @@ NEXT_PUBLIC_BACKEND_URL=https://${DOMAIN}
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=354664818470-veljl4900p28hf0i81u0r959ra11ihjt.apps.googleusercontent.com
 ENVEOF
 
+mkdir -p /home/sharaspot/SharaSpot/server/uploads
 chown -R sharaspot:sharaspot /home/sharaspot/SharaSpot
+chmod 755 /home/sharaspot/SharaSpot/server/uploads
 
 # ─── 7. Install Node.js 22 ───
 if ! command -v node &>/dev/null; then

@@ -10,6 +10,10 @@ jest.mock("../../config/prisma", () => ({
   },
 }));
 
+jest.mock("../../utils/premiumCheck", () => ({
+  requirePremium: jest.fn().mockResolvedValue({ allowed: true }),
+}));
+
 import * as fc from "fast-check";
 import {
   createTemplate,
@@ -89,7 +93,9 @@ describe("Template Controller — Unit Tests", () => {
       { id: "t2", name: "B", isSystem: false, updatedAt: new Date("2026-02-01") },
       { id: "t1", name: "A", isSystem: false, updatedAt: new Date("2026-01-01") },
     ];
-    (prisma.emailTemplate.findMany as jest.Mock).mockResolvedValue(templates);
+    (prisma.emailTemplate.findMany as jest.Mock)
+      .mockResolvedValueOnce(templates) // user templates
+      .mockResolvedValueOnce([]); // system templates
 
     const { req, res } = mockReqRes();
     await getTemplates(req, res);

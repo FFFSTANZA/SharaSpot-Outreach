@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { getSequence, pauseRecipientSequence, resumeRecipientSequence, stopRecipientSequence, pauseAllSequence, resumeAllSequence, stopAllSequence } from "@/lib/apis";
 import type { SequenceResponse, StepStatusType } from "@/types";
 import Button from "@/components/Button";
-import { Pause, Play, Square, ChevronDown, CheckCircle2, Clock, XCircle, AlertCircle, SkipForward, MessageSquare, Mail } from "lucide-react";
+import { Pause, Play, Square, ChevronDown, ChevronUp, CheckCircle2, Clock, XCircle, AlertCircle, SkipForward, MessageSquare, Mail, Users, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SequenceViewProps {

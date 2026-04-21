@@ -1,10 +1,14 @@
 import { prisma } from "../config/prisma";
 import { dodo } from "../config/dodo";
 import {
-  DODO_PRODUCT_ID_MONTHLY,
+  DODO_PRODUCT_ID_GLOBAL,
+  DODO_PRODUCT_ID_INDIA,
   getReturnUrl,
 } from "../config/subscription";
 import { SubscriptionStatus } from "@prisma/client";
+import { isIndia, getCountryFromIp } from "../utils/geoUtils";
+import { redis } from "../config/redis";
+import { PREMIUM_CACHE_PREFIX } from "../config/subscription";
 
 export interface CreateCheckoutSessionResult {
   checkoutUrl: string;
@@ -18,17 +22,23 @@ export interface SubscriptionInfo {
   cancelAtPeriodEnd: boolean;
   cancelAt: Date | null;
   trialEnd: Date | null;
+  dodoSubscriptionId: string | null;
 }
 
 export async function createCheckoutSession(
   userId: string,
   userEmail: string,
-  userName: string | null
+  userName: string | null,
+  ipAddress?: string
 ): Promise<CreateCheckoutSessionResult> {
+  // Detect country from IP
+  const countryCode = ipAddress ? await getCountryFromIp(ipAddress) : null;
+  const productId = isIndia(countryCode) ? DODO_PRODUCT_ID_INDIA : DODO_PRODUCT_ID_GLOBAL;
+
   const session = await dodo.checkoutSessions.create({
     product_cart: [
       {
-        product_id: DODO_PRODUCT_ID_MONTHLY,
+        product_id: productId,
         quantity: 1,
       },
     ],
@@ -53,13 +63,18 @@ export async function cancelSubscription(userId: string): Promise<void> {
     where: { userId },
   });
 
-  if (!subscription?.dodoSubscriptionId) {
+  if (!subscription || !subscription.dodoSubscriptionId) {
     throw new Error("No active subscription found");
   }
 
-  await dodo.subscriptions.update(subscription.dodoSubscriptionId, {
-    cancel_at_next_billing_date: true,
-  });
+  // Handle demo/test subscriptions gracefully for UI testing
+  if (subscription.dodoSubscriptionId === "sub_test_premium_demo") {
+    console.log("Demo subscription cancellation - Skipping Dodo API call");
+  } else {
+    await dodo.subscriptions.update(subscription.dodoSubscriptionId, {
+      cancel_at_next_billing_date: true,
+    });
+  }
 
   await prisma.subscription.update({
     where: { userId },
@@ -68,6 +83,8 @@ export async function cancelSubscription(userId: string): Promise<void> {
       cancelAt: subscription.currentPeriodEnd,
     },
   });
+
+  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`);
 }
 
 export async function reactivateSubscription(userId: string): Promise<void> {
@@ -90,6 +107,8 @@ export async function reactivateSubscription(userId: string): Promise<void> {
       cancelAt: null,
     },
   });
+
+  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`);
 }
 
 export async function updateSubscriptionFromWebhook(
@@ -130,11 +149,17 @@ export async function updateSubscriptionFromWebhook(
       trialEnd: data.trialEnd,
     },
   });
+
+  if (subscription.userId) {
+    await redis.del(`${PREMIUM_CACHE_PREFIX}${subscription.userId}`);
+  }
 }
 
 export async function handleCheckoutCompleted(
   sessionId: string,
-  userId: string
+  userId: string,
+  dodoSubscriptionId?: string,
+  dodoCustomerId?: string
 ): Promise<void> {
   const existingSubscription = await prisma.subscription.findUnique({
     where: { userId },
@@ -148,8 +173,8 @@ export async function handleCheckoutCompleted(
     status: "ACTIVE" as SubscriptionStatus,
     currentPeriodStart: new Date(),
     currentPeriodEnd: periodEnd,
-    dodoCustomerId: null as string | null,
-    dodoSubscriptionId: null as string | null,
+    dodoCustomerId: dodoCustomerId || null,
+    dodoSubscriptionId: dodoSubscriptionId || null,
     cancelAtPeriodEnd: false,
     cancelAt: null,
     trialEnd: null,
@@ -165,6 +190,8 @@ export async function handleCheckoutCompleted(
       data: subscriptionData,
     });
   }
+
+  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`);
 }
 
 export async function getSubscriptionStatus(
@@ -179,9 +206,9 @@ export async function getSubscriptionStatus(
   // Trial is active if trialEnd is in the future
   const isTrialActive = subscription?.trialEnd && new Date(subscription.trialEnd) > now;
 
-  // Subscription is active if status is ACTIVE and currentPeriodEnd is in the future
+  // Subscription is active if status is ACTIVE/CANCELLED and currentPeriodEnd is in the future
   const isSubscriptionActive =
-    subscription?.status === SubscriptionStatus.ACTIVE &&
+    (subscription?.status === SubscriptionStatus.ACTIVE || subscription?.status === SubscriptionStatus.CANCELLED) &&
     subscription?.currentPeriodEnd &&
     new Date(subscription.currentPeriodEnd) > now;
 

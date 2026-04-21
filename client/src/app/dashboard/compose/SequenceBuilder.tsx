@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import { Editor } from "./Editor";
-import { Plus, Trash2, GripVertical, Eye, MousePointer2, MessageCircle, Clock, GitBranch, ChevronDown, Zap } from "lucide-react";
+import { Plus, Trash2, GripVertical, Eye, MousePointer2, MessageCircle, Clock, GitBranch, ChevronDown, Zap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SequenceStepInput, SequenceConditionType } from "@/types";
+import { generateAIFollowUps } from "@/lib/apis";
+import { useToast } from "@/context/ToastContext";
 
 interface SequenceBuilderProps {
   steps: SequenceStepInput[];
   onChange: (steps: SequenceStepInput[]) => void;
+  subject?: string;
+  body?: string;
 }
 
 const MAX_FOLLOW_UPS = 8;
@@ -16,7 +20,7 @@ const MAX_FOLLOW_UPS = 8;
 const CONDITION_OPTIONS: { value: SequenceConditionType; label: string; icon: typeof Eye; color: string; description: string }[] = [
   { value: "none", label: "After delay", icon: Clock, color: "gray", description: "Send after waiting" },
   { value: "opened", label: "If opened", icon: Eye, color: "brand", description: "Send if email was opened" },
-  { value: "clicked", label: "If clicked", icon: MousePointer2, color: "blue", description: "Send if link was clicked" },
+  { value: "clicked", label: "If clicked", icon: MousePointer2, color: "brand", description: "Send if link was clicked" },
   { value: "replied", label: "If replied", icon: MessageCircle, color: "brand", description: "Send if recipient replied" },
 ];
 
@@ -26,7 +30,6 @@ function ConditionBadge({ type }: { type: SequenceConditionType }) {
 
   const colorClasses: Record<string, string> = {
     brand: "bg-brand/10 text-brand",
-    blue: "bg-blue-50 text-blue-600",
   };
 
   return (
@@ -45,7 +48,7 @@ function TimelineConnector({ hasBranch = false }: { hasBranch?: boolean }) {
     <div className="flex items-center justify-center py-1">
       <div className={cn(
         "flex flex-col items-center",
-        hasBranch ? "text-blue-500" : "text-gray-100"
+        hasBranch ? "text-green-500" : "text-gray-100"
       )}>
         <div className="h-8 w-1 bg-current rounded-full" />
         {hasBranch && <GitBranch className="h-4 w-4 my-1" />}
@@ -75,7 +78,6 @@ function TimelineNode({
 
   const nodeColors: Record<string, string> = {
     brand: "bg-brand",
-    blue: "bg-blue-600",
     gray: "bg-gray-900",
   };
 
@@ -86,8 +88,8 @@ function TimelineNode({
 
       <div className={cn(
         "rounded-xl border transition-all duration-200 overflow-hidden bg-white",
-        isExpanded 
-          ? "border-brand shadow-sm" 
+        isExpanded
+          ? "border-brand shadow-sm"
           : "border-gray-100 shadow-sm hover:border-gray-200"
       )}>
         {/* Header */}
@@ -216,7 +218,7 @@ function TimelineNode({
   );
 }
 
-export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProps) {
+export default function SequenceBuilder({ steps, onChange, subject = "", body = "" }: SequenceBuilderProps) {
   const [expandedStep, setExpandedStep] = useState<number | null>(null);
 
   const addStep = () => {
@@ -288,13 +290,16 @@ export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProp
             <p className="text-sm text-text-secondary max-w-xs mx-auto leading-relaxed mb-8 font-medium">
               Sequences significantly increase reply rates by staying top-of-mind.
             </p>
-            <button
-              className="inline-flex items-center gap-2 px-6 h-11 bg-brand text-white rounded-xl text-sm font-bold shadow-sm hover:bg-brand-hover transition-all"
-              onClick={addStep}
-            >
-              <Plus className="h-4 w-4" />
-              Build First Step
-            </button>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                className="inline-flex items-center gap-2 px-6 h-11 bg-brand text-white rounded-xl text-sm font-bold shadow-sm hover:bg-brand-hover transition-all"
+                onClick={addStep}
+              >
+                <Plus className="h-4 w-4" />
+                Build First Step
+              </button>
+              <AIFollowUpButton onAIFollowUps={(newSteps) => onChange(newSteps)} subject={subject} body={body} />
+            </div>
           </div>
         ) : (
           /* Follow-up list */
@@ -344,5 +349,60 @@ export default function SequenceBuilder({ steps, onChange }: SequenceBuilderProp
         )}
       </div>
     </div>
+  );
+}
+
+interface AIFollowUpButtonProps {
+  onAIFollowUps: (steps: SequenceStepInput[]) => void;
+  disabled?: boolean;
+  subject?: string;
+  body?: string;
+}
+
+function AIFollowUpButton({ onAIFollowUps, disabled, subject = "", body = "" }: AIFollowUpButtonProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { addToast } = useToast();
+
+  const handleGenerate = async () => {
+    if (!subject || !body) {
+      addToast("error", "Please enter subject and body first");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await generateAIFollowUps("", subject, body);
+      
+      if (result.followUps && result.followUps.length > 0) {
+        const steps: SequenceStepInput[] = result.followUps.map((f: any) => ({
+          subject: f.subject,
+          body: f.body,
+          waitDays: f.waitDays,
+          condition: undefined,
+        }));
+        onAIFollowUps(steps);
+        addToast("success", "AI follow-ups generated!");
+      }
+    } catch (error) {
+      console.error("Failed to generate AI follow-ups:", error);
+      addToast("error", "Failed to generate follow-ups. Try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      className="inline-flex items-center gap-2 px-6 h-11 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-sm font-bold shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50"
+      onClick={handleGenerate}
+      disabled={disabled || isLoading}
+    >
+      {isLoading ? (
+        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      ) : (
+        <Sparkles className="h-4 w-4" />
+      )}
+      <span>AI Generate</span>
+    </button>
   );
 }

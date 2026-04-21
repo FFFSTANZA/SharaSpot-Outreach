@@ -26,6 +26,7 @@
  */
 
 import { prisma } from "../config/prisma";
+import { TrackingEventType } from "@prisma/client";
 import { decrypt } from "../utils/encryption";
 import { logContactActivityByEmail, updateContactStageByEmail } from "../utils/contactService";
 import Imap from "imap";
@@ -42,7 +43,7 @@ const REPLY_LOOKBACK_HOURS = parseInt(
 );
 
 const ADAPTIVE_POLL_WINDOW_HOURS = parseInt(
-  process.env.ADAPTIVE_POLL_WINDOW_HOURS || "48",
+  process.env.ADAPTIVE_POLL_WINDOW_HOURS || "168",
   10,
 );
 
@@ -222,7 +223,7 @@ function fetchRecentMessages(
       }
 
       const sinceStr = since.toISOString().split("T")[0];
-      imap.search([["SINCE", sinceStr], ["UNSEEN"]], (err: Error | null, results: number[]) => {
+      imap.search([["SINCE", sinceStr]], (err: Error | null, results: number[]) => {
         if (err || !results || results.length === 0) {
           cleanup();
           resolve(messages);
@@ -239,7 +240,7 @@ function fetchRecentMessages(
 
         fetch.on("message", (msg: Imap.ImapMessage) => {
           let headerBuffer = Buffer.alloc(0);
-          const seqNo = (msg as any).attributes?.uid ?? (msg as any).attributes?.seqno ?? 0;
+          const seqNo = (msg as any).seqno || (msg as any).attributes?.uid || (msg as any).attributes?.seqno || 0;
 
           msg.on("body", (stream: NodeJS.ReadableStream, info: { which: string }) => {
             const chunks: Buffer[] = [];
@@ -334,15 +335,20 @@ async function processHeadersAndFetchBodies(
     return;
   }
 
-  // Phase 2: Fetch bodies ONLY for reply candidates
-  const seqNos = replyCandidates.map((c) => c.seqNo);
+  // Phase 2: Fetch bodies ONLY for reply candidates (filter out invalid seqNos)
+  const seqNos = replyCandidates.map((c) => c.seqNo).filter(n => n > 0);
+  if (seqNos.length === 0) {
+    cleanup();
+    resolve(messages);
+    return;
+  }
   const bodyFetch = imap.fetch(seqNos, { bodies: ["TEXT"], struct: true });
 
   const bodyMap = new Map<number, string>();
   let bodiesProcessed = 0;
 
-      bodyFetch.on("message", (msg: Imap.ImapMessage) => {
-        const seqNo = (msg as any).attributes?.uid ?? (msg as any).attributes?.seqno ?? 0;
+  bodyFetch.on("message", (msg: Imap.ImapMessage) => {
+    const seqNo = (msg as any).seqno || (msg as any).attributes?.uid || (msg as any).attributes?.seqno || 0;
     let bodyText = "";
 
     msg.on("body", (stream: NodeJS.ReadableStream, info: { which: string }) => {
@@ -449,6 +455,58 @@ export function startIdleSessions(): void {
   setInterval(refreshIdleSessions, 60000);
 }
 
+/**
+ * Initial Catch-up Scan
+ * 
+ * WHY: If the worker was down for any reason, no IDLE or fallback detection
+ * was running. This scan runs once on startup to check for missed replies
+ * during the downtime across all verified senders.
+ */
+export async function performInitialCatchupScan(): Promise<void> {
+  console.log("📬 [ReplyDetector] Starting initial catch-up scan for missed replies...");
+
+  const senders = await prisma.sender.findMany({
+    where: { isVerified: true, appPassword: { not: "" } },
+    select: { id: true, email: true, appPassword: true, smtpHost: true },
+  });
+
+  if (senders.length === 0) return;
+
+  for (const sender of senders) {
+    try {
+      const decryptedPassword = decrypt(sender.appPassword);
+      const imapConfig = getImapConfig(sender.smtpHost);
+
+      const imap = await acquireConnection(imapConfig, sender.email, decryptedPassword);
+
+      await new Promise<void>((resolve, reject) => {
+        imap.openBox("INBOX", true, async (err) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          try {
+            const count = await processSenderRepliesWithImap(imap, sender);
+            if (count > 0) {
+              console.log(`📬 [ReplyDetector] Catch-up: Found ${count} missed replies for ${sender.email}`);
+            }
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+
+      releaseConnection(sender.email);
+    } catch (err) {
+      console.error(`❌ [ReplyDetector] Catch-up failed for ${sender.email}:`, err);
+    }
+  }
+
+  console.log("✅ [ReplyDetector] Initial catch-up scan complete.");
+}
+
+
 async function refreshIdleSessions(): Promise<void> {
   const activeSince = new Date(Date.now() - ADAPTIVE_POLL_WINDOW_HOURS * 60 * 60 * 1000);
 
@@ -536,15 +594,15 @@ async function runIdleSession(
       }, IDLE_TIMEOUT_MS);
 
       imap.once("ready", () => {
-          imap.openBox("INBOX", false, (err: Error | null) => {
-            if (err) {
-              clearTimeout(timeout);
-              imap.end();
-              resolve();
-              return;
-            }
+        imap.openBox("INBOX", false, (err: Error | null) => {
+          if (err) {
+            clearTimeout(timeout);
+            imap.end();
+            resolve();
+            return;
+          }
 
-            (imap as any).idle();
+          (imap as any).idle?.() || imap.end();
         });
       });
 
@@ -592,7 +650,7 @@ async function processSenderRepliesWithImap(
   const since = new Date(Date.now() - REPLY_LOOKBACK_HOURS * 60 * 60 * 1000);
 
   return new Promise((resolve, reject) => {
-    imap.search([["SINCE", since.toISOString().split("T")[0]], ["UNSEEN"]], (err: Error | null, results: number[]) => {
+    imap.search([["SINCE", since.toISOString().split("T")[0]]], (err: Error | null, results: number[]) => {
       if (err || !results || results.length === 0) {
         resolve(0);
         return;
@@ -649,7 +707,21 @@ async function matchHeadersAndResolve(
         ? parsed.references.join(" ")
         : (parsed.references ?? "");
 
-      if (inReplyTo || references || /^Re:/i.test(parsed.subject ?? "")) {
+      const subject = parsed.subject ?? "";
+      const fromEmail = (parsed.from?.text ?? "").toLowerCase();
+
+      // Detection logic:
+      // 1. Reply: Starts with Re: or has threading headers
+      const isReplyCandidate = (inReplyTo || references || /^Re:/i.test(subject));
+
+      // 2. Bounce: From known daemon addresses or has bounce subjects
+      const isBounceCandidate = (
+        fromEmail.includes("mailer-daemon") ||
+        fromEmail.includes("postmaster") ||
+        /undelivered|delivery status notification|returned mail|failure notice/i.test(subject)
+      );
+
+      if (isReplyCandidate || isBounceCandidate) {
         candidates.push(seqNo);
       }
     } catch {
@@ -676,6 +748,7 @@ async function matchHeadersAndResolve(
       campaignId: true,
       campaign: { select: { subject: true } },
     },
+    orderBy: { sentAt: "desc" },
   });
 
   if (sentJobs.length === 0) {
@@ -712,17 +785,33 @@ async function matchHeadersAndResolve(
       const match = await matchMessageToJob(message, flatJobs);
       if (!match) continue;
 
-      await prisma.emailJob.update({
-        where: { id: match.id },
-        data: { isReplied: true },
-      });
+      const isBounce = message.from.toLowerCase().includes("mailer-daemon") ||
+        message.from.toLowerCase().includes("postmaster") ||
+        /undelivered|delivery status notification|returned mail|failure notice/i.test(message.subject);
 
-      await prisma.trackingEvent.create({
-        data: {
-          emailJobId: match.id,
-          eventType: "REPLY",
-        },
-      });
+      if (isBounce) {
+        await prisma.trackingEvent.create({
+          data: {
+            emailJobId: match.id,
+            eventType: (TrackingEventType as any).BOUNCE,
+          },
+        });
+        await prisma.emailJob.update({
+          where: { id: match.id },
+          data: { status: "FAILED", error: "Asynchronous Bounce detected via IMAP" },
+        });
+      } else {
+        await prisma.emailJob.update({
+          where: { id: match.id },
+          data: { isReplied: true },
+        });
+        await prisma.trackingEvent.create({
+          data: {
+            emailJobId: match.id,
+            eventType: TrackingEventType.REPLY,
+          },
+        });
+      }
 
       const matchedJob = sentJobs.find((j) => j.id === match.id);
       if (matchedJob) {
@@ -783,8 +872,13 @@ async function matchMessageToJob(
       ...(message.references ? message.references.split(/\s+/).filter(Boolean) : []),
     ];
 
-    for (const refId of referencedIds) {
-      const match = sentJobs.find((job) => job.messageId === refId);
+    const cleanRefIds = referencedIds.map(id => id.replace(/[<>]/g, "").trim());
+
+    for (const refId of cleanRefIds) {
+      const match = sentJobs.find((job) => {
+        const cleanJobMsgId = (job.messageId || "").replace(/[<>]/g, "").trim();
+        return cleanJobMsgId === refId;
+      });
       if (match) return { id: match.id, campaignId: match.campaignId };
     }
   }
@@ -853,6 +947,7 @@ async function processSenderReplies(sender: {
       campaignId: true,
       campaign: { select: { subject: true } },
     },
+    orderBy: { sentAt: "desc" },
   });
 
   if (sentJobs.length === 0) return 0;

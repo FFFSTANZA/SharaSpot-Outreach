@@ -26,6 +26,15 @@ export const createCampaign = async (
   res: Response,
 ): Promise<void> => {
   try {
+    // --- Step 0: Global Premium Check (No Free Tier) ---
+    const globalCheck = await requirePremium(req.user!.id);
+    if (!globalCheck.allowed) {
+      res.status(403).json({
+        message: globalCheck.message,
+        upgradeRequired: true,
+      });
+      return;
+    }
     const {
       senderIds: rawSenderIds,
       senderId: legacySenderId,
@@ -43,6 +52,7 @@ export const createCampaign = async (
       businessStartHour,
       businessEndHour,
       isPriority,
+      replyTo,
     } = req.body;
 
     const trackOpens = rawTrackOpens !== false; // default true
@@ -265,6 +275,7 @@ export const createCampaign = async (
           businessStartHour: bStart,
           businessEndHour: bEnd,
           isPriority: isPriority === true,
+          replyTo: replyTo || null,
         },
       });
 
@@ -523,8 +534,6 @@ export const createCampaign = async (
       senderPool,
     });
   } catch (error: unknown) {
-    // --- Step 7: Error handling ---
-    // WHY: Generic message prevents leaking internal details to the client.
     res.status(500).json({
       message: "Error creating campaign",
     });

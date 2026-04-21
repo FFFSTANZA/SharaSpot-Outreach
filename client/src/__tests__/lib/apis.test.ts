@@ -37,7 +37,7 @@ describe("API Client — unit tests", () => {
   it("createSender calls POST /senders with payload", async () => {
     const payload = { name: "Test", email: "t@t.com", appPassword: "pw123" };
     await createSender(payload);
-    expect(mockedApi.post).toHaveBeenCalledWith("/senders", payload);
+    expect(mockedApi.post).toHaveBeenCalledWith("/api/senders", payload);
   });
 
   it("createCampaign calls POST /campaigns with payload", async () => {
@@ -51,17 +51,17 @@ describe("API Client — unit tests", () => {
       emails: ["a@b.com"],
     };
     await createCampaign(payload);
-    expect(mockedApi.post).toHaveBeenCalledWith("/campaigns", payload);
+    expect(mockedApi.post).toHaveBeenCalledWith("/api/campaigns", payload);
   });
 
   it("getCampaignById calls GET /campaigns/:id", async () => {
     await getCampaignById("camp-123");
-    expect(mockedApi.get).toHaveBeenCalledWith("/campaigns/camp-123");
+    expect(mockedApi.get).toHaveBeenCalledWith("/api/campaigns/camp-123");
   });
 
   it("toggleEmailStar calls PATCH /emails/:id/star", async () => {
     await toggleEmailStar("email-456");
-    expect(mockedApi.patch).toHaveBeenCalledWith("/emails/email-456/star");
+    expect(mockedApi.patch).toHaveBeenCalledWith("/api/emails/email-456/star");
   });
 });
 
@@ -86,7 +86,7 @@ describe("API Client — property-based tests", () => {
             mockedApi.post.mockClear();
             mockedApi.post.mockResolvedValueOnce({ data: {} });
             await createSender(payload);
-            expect(mockedApi.post).toHaveBeenCalledWith("/senders", payload);
+            expect(mockedApi.post).toHaveBeenCalledWith("/api/senders", payload);
           }
         ),
         { numRuns: 100 }
@@ -109,7 +109,7 @@ describe("API Client — property-based tests", () => {
             mockedApi.post.mockClear();
             mockedApi.post.mockResolvedValueOnce({ data: {} });
             await createCampaign(payload);
-            expect(mockedApi.post).toHaveBeenCalledWith("/campaigns", payload);
+            expect(mockedApi.post).toHaveBeenCalledWith("/api/campaigns", payload);
           }
         ),
         { numRuns: 100 }

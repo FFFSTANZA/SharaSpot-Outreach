@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import multer from "multer";
-import { supabase, SUPABASE_BUCKET, getSupabasePublicUrl } from "../config/supabase";
 import { prisma } from "../config/prisma";
+import fs from "fs/promises";
+import path from "path";
+import crypto from "crypto";
 
 // ---------------------------------------------------------------------------
 // Constants — file validation limits
@@ -28,8 +30,8 @@ const ALLOWED_MIME_TYPES = [
 const MAX_FILE_SIZE = 10 * 1024 * 1024;       // 10 MB per file
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024;       // 25 MB total per upload
 
-// Multer configured with memory storage — files stay in RAM as Buffers
-// so we can stream them directly to Supabase Storage without writing to disk.
+// Multer configured with memory storage — we'll write to local disk manually
+// so we can retain the same logic structure as before.
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -38,36 +40,36 @@ const upload = multer({
   },
 }).array("files");
 
-/**
- * Upload a file buffer to Supabase Storage.
- */
-async function uploadToSupabase(
-  buffer: Buffer,
-  path: string,
-  mimeType: string,
-): Promise<void> {
-  const { error } = await supabase
-    .storage
-    .from(SUPABASE_BUCKET)
-    .upload(path, buffer, {
-      contentType: mimeType,
-      upsert: false,
-    });
+// Base URL for attachments - uses TRACKING_BASE_URL (e.g., https://sharaspot.in)
+const getBaseUrl = () => {
+  return process.env.TRACKING_BASE_URL || "http://localhost:8000";
+};
 
-  if (error) throw error;
+/**
+ * Save a file buffer to local storage.
+ */
+async function saveToLocal(
+  buffer: Buffer,
+  filename: string
+): Promise<string> {
+  const uploadsDir = path.join(process.cwd(), "uploads");
+  const filePath = path.join(uploadsDir, filename);
+
+  await fs.writeFile(filePath, buffer);
+
+  return `${getBaseUrl()}/uploads/${filename}`;
 }
 
 /**
  * POST /attachments/upload
  *
  * Accepts multipart/form-data with one or more files in the "files" field.
- * Validates MIME types, per-file size, and total size before uploading to Supabase Storage.
+ * Validates MIME types, per-file size, and total size before saving locally.
  * Returns an array of {url, filename, size, mimeType} objects.
  */
 export const uploadAttachments = (req: Request, res: Response): void => {
   upload(req, res, async (multerError) => {
     try {
-      // Handle multer parsing errors (e.g., file too large)
       if (multerError) {
         if (multerError.code === "LIMIT_FILE_SIZE") {
           res.status(400).json({
@@ -86,17 +88,15 @@ export const uploadAttachments = (req: Request, res: Response): void => {
         return;
       }
 
-      // Validate MIME types
       for (const file of files) {
         if (!ALLOWED_MIME_TYPES.includes(file.mimetype as any)) {
           res.status(400).json({
-            message: `File type "${file.mimetype}" is not allowed. Allowed: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, PNG, JPG, GIF`,
+            message: `File type "${file.mimetype}" is not allowed.`,
           });
           return;
         }
       }
 
-      // Validate total size across all files
       const totalSize = files.reduce((sum, f) => sum + f.size, 0);
       if (totalSize > MAX_TOTAL_SIZE) {
         res.status(400).json({
@@ -105,13 +105,16 @@ export const uploadAttachments = (req: Request, res: Response): void => {
         return;
       }
 
-      // Upload each file to Supabase Storage
       const results = [];
       for (const file of files) {
-        const path = `attachments/${Date.now()}-${crypto.randomUUID()}-${file.originalname}`;
-        await uploadToSupabase(file.buffer, path, file.mimetype);
+        // Sanitize original filename (remove special chars/spaces)
+        const sanitizedOrig = file.originalname.replace(/[^a-zA-Z0-9.-]/g, "_");
+        const filename = `${Date.now()}-${crypto.randomUUID()}-${sanitizedOrig}`;
+
+        const url = await saveToLocal(file.buffer, filename);
+
         results.push({
-          url: getSupabasePublicUrl(path),
+          url,
           filename: file.originalname,
           size: file.size,
           mimeType: file.mimetype,
@@ -120,9 +123,8 @@ export const uploadAttachments = (req: Request, res: Response): void => {
 
       res.status(200).json(results);
     } catch (error) {
-      // Supabase upload failure or unexpected error
-      console.error("Supabase upload error:", error);
-      res.status(500).json({ message: "Failed to upload attachments" });
+      console.error("Local upload error:", error);
+      res.status(500).json({ message: "Failed to upload attachments locally" });
     }
   });
 };
@@ -130,7 +132,7 @@ export const uploadAttachments = (req: Request, res: Response): void => {
 /**
  * DELETE /attachments/delete
  *
- * Deletes a file from Supabase Storage by its URL.
+ * Deletes a file from local storage by its URL.
  */
 export const deleteAttachment = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -141,37 +143,37 @@ export const deleteAttachment = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // Verify the attachment belongs to a campaign owned by the authenticated user
     const attachment = await prisma.attachment.findFirst({
       where: { url },
       include: { campaign: { select: { userId: true } } },
     });
 
-    if (attachment && attachment.campaign.userId !== req.user!.id) {
+    if (attachment && attachment.campaign.userId !== (req as any).user!.id) {
       res.status(403).json({ message: "Forbidden" });
       return;
     }
 
-    // Extract path from Supabase public URL
-    // URL format: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
-    const urlParts = url.split("/object/public/");
+    // Extract filename from URL
+    const urlParts = url.split("/uploads/");
     if (urlParts.length < 2) {
-      res.status(400).json({ message: "Invalid Supabase Storage URL" });
+      res.status(400).json({ message: "Invalid Local Storage URL" });
       return;
     }
 
-    const path = urlParts[1];
+    const filename = urlParts[1];
+    const filePath = path.join(process.cwd(), "uploads", filename);
 
-    const { error } = await supabase
-      .storage
-      .from(SUPABASE_BUCKET)
-      .remove([path]);
+    try {
+      await fs.unlink(filePath);
+    } catch (unlinkErr: any) {
+      // If file not found, still return success to keep DB and disk in sync if possible
+      if (unlinkErr.code !== "ENOENT") throw unlinkErr;
+      console.warn(`File not found on disk during deletion: ${filePath}`);
+    }
 
-    if (error) throw error;
-
-    res.status(200).json({ message: "Attachment deleted" });
+    res.status(200).json({ message: "Attachment deleted from local storage" });
   } catch (error) {
-    console.error("Failed to delete attachment from Supabase:", error);
+    console.error("Failed to delete local attachment:", error);
     res.status(500).json({ message: "Failed to delete attachment" });
   }
 };

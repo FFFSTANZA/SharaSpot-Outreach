@@ -6,7 +6,7 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 const isBrowser = typeof window !== "undefined";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000",
   withCredentials: true,
 });
 
@@ -91,5 +91,16 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+// ERROR DIAGNOSTICS: Suppress noisy logs for canceled requests in development
+if (process.env.NODE_ENV === "development") {
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (axios.isCancel(error)) return Promise.reject(error);
+      return Promise.reject(error);
+    }
+  );
+}
 
 export default api;

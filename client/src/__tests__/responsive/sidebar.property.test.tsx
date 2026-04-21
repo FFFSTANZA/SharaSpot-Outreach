@@ -163,7 +163,7 @@ describe("Sidebar property tests", () => {
     }
 
     // Suppress console.error for expected error
-    const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const spy = jest.spyOn(console, "error").mockImplementation(() => { });
     expect(() => render(<BadComponent />)).toThrow(
       "useSidebar must be used within a SidebarProvider",
     );
@@ -202,11 +202,11 @@ describe("SidebarItem active styling property tests", () => {
           const item = container.firstElementChild!;
 
           if (isActive) {
-            expect(item.className).toContain("bg-[#E8F5E9]");
-            expect(item.className).toContain("text-[#037A31]");
+            expect(item.className).toContain("bg-brand/10");
+            expect(item.className).toContain("text-brand");
           } else {
-            expect(item.className).not.toContain("bg-[#E8F5E9]");
-            expect(item.className).not.toContain("text-[#037A31]");
+            expect(item.className).not.toContain("bg-brand/10");
+            expect(item.className).not.toContain("text-brand");
           }
 
           unmount();

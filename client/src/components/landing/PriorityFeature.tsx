@@ -1,80 +1,109 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Zap, Clock, ShieldCheck, ArrowRight, CheckCircle2, TrendingUp, Target, Crown } from "lucide-react";
 
 export default function PriorityFeature() {
     const router = useRouter();
 
     return (
-        <section id="priority" className="py-20 lg:py-28 bg-text-primary relative overflow-hidden">
+        <section id="priority" className="py-24 bg-slate-50/80 relative overflow-hidden border-y border-slate-200">
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-[#00A63E]/3 to-transparent opacity-60" />
-                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#00A63E]/2 to-transparent opacity-40" />
+                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-brand/5 blur-[100px] rounded-full" />
             </div>
-
             <div className="max-w-6xl mx-auto px-6 relative">
-
-                <div className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20">
-                    <div className="pt-1">
-                        <div className="w-8 h-[3px] bg-brand rounded-full mb-5" />
-                        <p className="text-sm font-bold text-brand">Priority sending</p>
-                    </div>
+                <div className="grid lg:grid-cols-[1fr_1.2fr] gap-16 lg:gap-32 items-center">
 
                     <div>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight mb-8">
-                            When your outreach cannot wait for a queue
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/[0.05] border border-brand/10 text-brand text-[10px] font-bold tracking-widest uppercase mb-8">
+                            <Zap size={10} fill="currentColor" /> The Priority Protocol
+                        </div>
+
+                        <h2 className="text-3xl lg:text-5xl font-bold text-text-primary tracking-tighter leading-[1.05] mb-8">
+                            When an email <span className="text-brand italic">absolutely</span> has to land.
                         </h2>
 
-                        <div className="space-y-8 mb-12">
-                            <p className="text-base text-white/70 leading-[1.8]">
-                                Most outreach can go out on a schedule. Some cannot. A fundraising window. A hiring push before a competitor moves. A deal that has gone quiet and needs a reply today. Priority sending skips the queue entirely and routes your campaign through your best-performing accounts with the cleanest sending history.
-                            </p>
-                            <p className="text-base text-white/70 leading-[1.8]">
-                                The email goes out immediately, lands in the primary inbox, and you see the reply come in while you are still at your desk. No batch delays, no throttling windows, no waiting.
-                            </p>
+                        <p className="text-lg text-text-secondary leading-relaxed mb-10 font-medium">
+                            Some outreach is too important to leave to chance. Priority Protocol ensures your most critical messages bypass the noise and land exactly where they will be seen by the people who make the final decisions.
+                        </p>
+
+                        <div className="space-y-6 mb-12">
+                            {[
+                                { title: "Guaranteed Primary Attention", desc: "Bypass the secondary tabs where marketing noise goes to be ignored." },
+                                { title: "Strategic Decision Windows", desc: "We ensure your inquiry arrives during the exact window when your target is most likely to act." },
+                                { title: "Peer-to-Peer Authority", desc: "Your identity is protected so you always appear as a professional peer, never a solicitor." }
+                            ].map((f, i) => (
+                                <div key={i} className="flex gap-4">
+                                    <div className="w-6 h-6 rounded-full bg-brand-light flex items-center justify-center shrink-0 mt-1">
+                                        <CheckCircle2 size={14} className="text-brand" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-bold text-text-primary mb-1 uppercase tracking-tight">{f.title}</h4>
+                                        <p className="text-[13px] text-text-secondary leading-relaxed font-medium">{f.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
-                        <div className="rounded-xl bg-white/[2%] border border-white/[6%] p-8">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-6 h-6 rounded-full bg-brand/20 flex items-center justify-center">
-                                    <svg className="w-3 h-3 text-brand" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
-                                    </svg>
-                                </div>
-                                <p className="text-[11px] font-semibold text-white/50 uppercase tracking-widest">
-                                    A real use case
-                                </p>
-                            </div>
-                            <p className="text-base text-white/80 leading-[1.8] mb-8">
-                                Sahil saw a Sequoia tweet at 9am about wanting to meet climate founders. He turned on Priority sending for 12 VCs. By 9:45am every email was delivered and sitting in primary inboxes. He had his first reply by 10am.
-                            </p>
-                            <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/[8%]">
-                                <div>
-                                    <p className="text-3xl font-bold text-white tracking-tight">12</p>
-                                    <p className="text-xs text-white/50 mt-1">Emails sent</p>
-                                </div>
-                                <div>
-                                    <p className="text-3xl font-bold text-white tracking-tight">43<span className="text-lg font-normal text-white/50 ml-1">min</span></p>
-                                    <p className="text-xs text-white/50 mt-1">Send to first open</p>
-                                </div>
-                                <div>
-                                    <p className="text-3xl font-bold text-brand tracking-tight">4</p>
-                                    <p className="text-xs text-white/50 mt-1">Replies by end of day</p>
-                                </div>
-                            </div>
-                        </div>
+                        <button
+                            onClick={() => router.push("/priority")}
+                            className="bg-brand text-white text-sm font-bold px-8 py-3 rounded-lg hover:bg-brand/90 transition-all flex items-center justify-center gap-2 group w-full sm:w-auto uppercase tracking-widest shadow-lg shadow-brand/20"
+                        >
+                            Explore Priority Outcomes
+                            <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                    </div>
 
-                        <div className="mt-10">
-                            <button
-                                onClick={() => router.push("/priority")}
-                                className="text-sm font-semibold text-brand border-b border-brand pb-0.5 hover:opacity-70 transition-opacity"
-                            >
-                                Learn more about Priority sending
-                            </button>
+                    <div className="relative">
+                        {/* Comparison Visual */}
+                        <div className="bg-[#fcfcfc] border border-border-light rounded-3xl p-8 lg:p-12 relative shadow-sm">
+                            <div className="space-y-12">
+                                {/* Standard Send */}
+                                <div className="relative">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className="text-[11px] font-bold text-text-muted uppercase tracking-widest">Standard Sending</span>
+                                        <span className="text-[11px] font-bold text-red-500">Often Ignored</span>
+                                    </div>
+                                    <div className="h-4 bg-slate-100 rounded-full overflow-hidden mb-2">
+                                        <div className="h-full bg-red-400 w-[48%] rounded-full opacity-50" />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <span className="text-[10px] text-text-muted font-bold bg-white border border-border-light px-2 py-0.5 rounded uppercase">Buried in Tabs</span>
+                                        <span className="text-[10px] text-text-muted font-bold bg-white border border-border-light px-2 py-0.5 rounded uppercase">Robotic Pattern</span>
+                                        <span className="text-[10px] text-text-muted font-bold bg-white border border-border-light px-2 py-0.5 rounded uppercase">Delayed Impact</span>
+                                    </div>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="h-px bg-border-light w-full relative">
+                                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4">
+                                        <div className="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center shadow-lg transform rotate-90">
+                                            <TrendingUp size={16} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Priority Send */}
+                                <div className="relative">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className="text-[11px] font-bold text-brand uppercase tracking-widest">SharaSpot Priority</span>
+                                        <span className="text-[11px] font-bold text-brand">96% Visibility</span>
+                                    </div>
+                                    <div className="h-4 bg-brand-light rounded-full overflow-hidden mb-2 border border-brand/10">
+                                        <div className="h-full bg-brand w-[96%] rounded-full shadow-lg shadow-brand/20 animate-pulse" />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <span className="text-[10px] text-brand font-bold bg-brand-light px-2 py-1 rounded border border-brand/20 uppercase tracking-tight">Immediate Sight</span>
+                                        <span className="text-[10px] text-brand font-bold bg-brand-light px-2 py-1 rounded border border-brand/20 uppercase tracking-tight">Strategic Timing</span>
+                                        <span className="text-[10px] text-brand font-bold bg-brand-light px-2 py-1 rounded border border-brand/20 uppercase tracking-tight">Elite Authority</span>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </section>
     );

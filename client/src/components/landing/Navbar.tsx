@@ -26,10 +26,11 @@ export default function Navbar() {
         { label: "Trust", href: "/#stats" },
         { label: "Guide", href: "/guide" },
         { label: "FAQ", href: "/faq" },
+        { label: "Support", href: BRAND_CONFIG.supportUrl, external: true },
     ];
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/80 backdrop-blur-md border-b border-border-light shadow-sm py-2" : "bg-transparent py-4"
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/90 backdrop-blur-lg border-b border-slate-200/60 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.1)] py-2" : "bg-white/10 backdrop-blur-[2px] py-4"
             }`}>
             <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
                 <Link href="/" className="hover:opacity-80 transition-opacity">
@@ -42,6 +43,7 @@ export default function Navbar() {
                         <Link
                             key={link.label}
                             href={link.href}
+                            target={link.external ? "_blank" : undefined}
                             className="text-sm font-medium text-text-secondary hover:text-brand transition-colors"
                         >
                             {link.label}
@@ -69,6 +71,7 @@ export default function Navbar() {
                             <Link
                                 key={link.label}
                                 href={link.href}
+                                target={link.external ? "_blank" : undefined}
                                 className="text-lg font-medium text-text-primary"
                                 onClick={() => setMobileMenuOpen(false)}
                             >

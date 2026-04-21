@@ -1198,6 +1198,104 @@ When a service is degraded:
 
 ---
 
+---
+
+# Analytics API
+
+Advanced analytics for monitoring campaign performance and worker health.
+
+---
+
+## Get dashboard stats
+
+In your `GET /api/analytics/dashboard-stats` request, retrieve aggregated performance metrics and live system telemetry.
+
+### Sample request
+
+```bash
+curl --request GET \
+--url 'http://localhost:8000/api/analytics/dashboard-stats' \
+--header 'Authorization: Bearer eyJhbG...'
+```
+
+### Response
+
+```json
+{
+  "totalSent": 4523,
+  "totalOpened": 2134,
+  "totalClicked": 567,
+  "totalReplied": 124,
+  "campaignsActive": 8,
+  "totalSenders": 12,
+  "workerHealth": {
+    "status": "online",
+    "lastHeartbeat": "2026-03-14T10:45:00.000Z",
+    "queueSize": 142
+  }
+}
+```
+
+---
+
+# Subscription API
+
+Manage Pro Outreach subscriptions via Dodo Payments.
+
+---
+
+## Get subscription status
+
+In your `GET /api/subscription` request, check if the user has an active premium subscription.
+
+### Sample request
+
+```bash
+curl --request GET \
+--url 'http://localhost:8000/api/subscription' \
+--header 'Authorization: Bearer eyJhbG...'
+```
+
+### Response
+
+```json
+{
+  "isPremium": true,
+  "region": "global",
+  "subscription": {
+    "status": "ACTIVE",
+    "currentPeriodEnd": "2026-04-14T10:30:00.000Z",
+    "cancelAtPeriodEnd": false,
+    "trialEnd": null
+  }
+}
+```
+
+---
+
+## Create checkout session
+
+In your `POST /api/subscription/checkout` request, generate a Dodo Payments checkout URL.
+
+### Sample request
+
+```bash
+curl --request POST \
+--url 'http://localhost:8000/api/subscription/checkout' \
+--header 'Authorization: Bearer eyJhbG...'
+```
+
+### Response
+
+```json
+{
+  "checkoutUrl": "https://dodopayments.com/checkout/...",
+  "sessionId": "cs_test_..."
+}
+```
+
+---
+
 ## Common Headers
 
 All authenticated requests require:

@@ -33,6 +33,7 @@ import {
   Layout,
   BarChart3,
   TrendingUp,
+  Star,
 } from "lucide-react";
 
 type CampaignStatus = "SCHEDULED" | "SENDING" | "PAUSED" | "CANCELLED" | "COMPLETED";
@@ -154,9 +155,10 @@ export default function CampaignDetailPage() {
           <Sidebar
             setLabel={setLabel}
             items={[
-              { label: "All", icon: <Inbox className="h-4 w-4" /> },
-              { label: "Scheduled", icon: <Clock className="h-4 w-4" /> },
-              { label: "Sent", icon: <Send className="h-4 w-4" /> },
+              { label: "All", icon: <Inbox size={18} /> },
+              { label: "Starred", icon: <Star size={18} /> },
+              { label: "Scheduled", icon: <Clock size={18} /> },
+              { label: "Sent", icon: <Send size={18} /> },
             ]}
             profile={{
               name: "User",
@@ -190,11 +192,11 @@ export default function CampaignDetailPage() {
               <div className="px-4 md:px-6 py-6 md:py-8 space-y-8">
                 {/* Back button */}
                 <button
-                  onClick={() => router.push("/dashboard/campaigns")}
+                  onClick={() => router.push("/dashboard")}
                   className="inline-flex items-center gap-2 text-xs font-semibold text-text-muted hover:text-gray-900 transition-all"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Back to campaigns
+                  Back to dashboard
                 </button>
 
                 {/* Campaign header card */}
@@ -208,7 +210,7 @@ export default function CampaignDetailPage() {
                         <StatusBadge status={campaign.status} size="md" pauseReason={campaign.pauseReason} />
                       </div>
                       <p className="text-sm text-text-secondary">
-                        Sender: <span className="text-gray-900 font-semibold">{campaign.sender.email}</span>
+                        Sender: <span className="text-gray-900 font-semibold">{campaign.sender?.email || "No sender assigned"}</span>
                       </p>
                     </div>
                     <div className="shrink-0">
@@ -370,16 +372,16 @@ export default function CampaignDetailPage() {
                                   <div className={cn(
                                     "h-2 w-2 rounded-full",
                                     email.status === "SENT" ? "bg-brand" :
-                                    email.status === "FAILED" ? "bg-red-500" :
-                                    email.status === "SENDING" ? "bg-brand animate-pulse" :
-                                    email.status === "PENDING" ? "bg-amber-500" : "bg-gray-400"
+                                      email.status === "FAILED" ? "bg-red-500" :
+                                        email.status === "SENDING" ? "bg-brand animate-pulse" :
+                                          email.status === "PENDING" ? "bg-amber-500" : "bg-gray-400"
                                   )} />
                                   <span className={cn(
                                     "text-[10px] font-bold uppercase tracking-wider",
                                     email.status === "SENT" ? "text-brand" :
-                                    email.status === "FAILED" ? "text-red-500" :
-                                    email.status === "SENDING" ? "text-brand" :
-                                    email.status === "PENDING" ? "text-amber-600" : "text-gray-500"
+                                      email.status === "FAILED" ? "text-red-500" :
+                                        email.status === "SENDING" ? "text-brand" :
+                                          email.status === "PENDING" ? "text-amber-600" : "text-gray-500"
                                   )}>
                                     {email.status}
                                   </span>

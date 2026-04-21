@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { ComposeFormData, ComposeFormProps, SenderResponse } from "@/types";
 import { getSenders, BatchValidationResponse } from "@/lib/apis";
 import { SenderModal } from "./SenderModal";
 import { Editor } from "./Editor";
-import { X, CheckCircle2, AlertCircle, Plus, AlertTriangle, ChevronDown, Copy, Trash2, Send, Loader2, Settings2, Zap, MoreHorizontal, FileText, Eye, MousePointer2, ArrowLeft, CheckSquare, Square } from "lucide-react";
+import { X, CheckCircle2, AlertCircle, Plus, AlertTriangle, ChevronDown, Copy, Trash2, Send, Loader2, Settings2, Zap, MoreHorizontal, FileText, Eye, MousePointer2, ArrowLeft, CheckSquare, Square, CalendarClock, Calendar } from "lucide-react";
 import TemplateSelector from "./TemplateSelector";
 import type { EmailTemplate, SequenceStepInput } from "@/types";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import VariablePreview from "./VariablePreview";
 import SequenceBuilder from "./SequenceBuilder";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { EmailValidator } from "./EmailValidator";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ export function ComposeForm({
   isSubmitting?: boolean;
   initialEmails?: string[];
 }) {
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const { addToast } = useToast();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
   const [isSenderLoading, setIsSenderLoading] = useState(true);
@@ -56,11 +58,24 @@ export function ComposeForm({
   const senderDropdownRef = useRef<HTMLDivElement>(null);
   const bulkMenuRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<ComposeFormData>({
-    from: "", selectedSenderIds: [], to: initialEmails || [], cc: [], bcc: [], subject: "", body: "",
-    delayBetweenEmails: 30, hourlyLimit: 50, selectedRecipients: new Set(),
+    from: "",
+    selectedSenderIds: [],
+    to: initialEmails || [],
+    cc: [],
+    bcc: [],
+    replyTo: "",
+    subject: "",
+    body: "",
+    delayBetweenEmails: 30,
+    hourlyLimit: 50,
+    selectedRecipients: new Set(),
     attachments: [],
     scheduleDate: null,
   });
+
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [tempDate, setTempDate] = useState("");
+  const [tempTime, setTempTime] = useState("");
 
   useEffect(() => {
     if (initialEmails && initialEmails.length > 0) {
@@ -72,6 +87,7 @@ export function ComposeForm({
   }, [initialEmails]);
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
+  const [showReplyTo, setShowReplyTo] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [priorityEnabled, setPriorityEnabled] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -87,6 +103,14 @@ export function ComposeForm({
   const [trackClicks, setTrackClicks] = useState(true);
   const [selectedSignature, setSelectedSignature] = useState<Signature | null>(signatures[0]);
   const [,] = useState<BatchValidationResponse | null>(null);
+
+  const availableVariables = useMemo(() => {
+    const firstEmail = Object.keys(recipientColumnData)[0];
+    if (firstEmail) {
+      return Object.keys(recipientColumnData[firstEmail]);
+    }
+    return [];
+  }, [recipientColumnData]);
 
   const selectedSenders = senders.filter(s => data.selectedSenderIds.includes(s.id));
   const selectedSender = selectedSenders[0] || null;
@@ -248,6 +272,55 @@ export function ComposeForm({
     addToast("success", "Signature saved");
   };
 
+  const openSchedule = () => {
+    if (scheduledAt) {
+      const d = scheduledAt;
+      setTempDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+      setTempTime(`${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
+    } else {
+      setTempDate("");
+      setTempTime("");
+    }
+    setIsScheduleOpen(true);
+  };
+
+  const confirmSchedule = () => {
+    if (tempDate && tempTime) {
+      // Use local date construction to avoid T-separator flakiness in some browsers
+      const [year, month, day] = tempDate.split("-").map(Number);
+      const [hours, minutes] = tempTime.split(":").map(Number);
+      const selectedDate = new Date(year, month - 1, day, hours, minutes);
+
+      if (selectedDate <= new Date()) {
+        addToast("error", "Please select a future time");
+        return;
+      }
+
+      setScheduledAt(selectedDate);
+      setIsScheduleOpen(false);
+      addToast("success", `Campaign scheduled for ${new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(selectedDate)}`);
+    }
+  };
+
+  const quickPick = (daysFromNow: number, hour: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + daysFromNow);
+    d.setHours(hour, 0, 0, 0);
+    setScheduledAt(d);
+    setIsScheduleOpen(false);
+    addToast("success", `Campaign scheduled for ${new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(d)}`);
+  };
+
   const handleFormSubmit = async () => {
     const e: Record<string, string> = {};
     if (!data.selectedSenderIds.length) e.from = "Select a sender";
@@ -279,6 +352,7 @@ export function ComposeForm({
         steps: sequenceSteps.length > 0 ? sequenceSteps : undefined,
         trackOpens,
         trackClicks,
+        replyTo: showReplyTo ? data.replyTo : undefined,
         isPriority: priorityEnabled,
       });
     } catch (err: unknown) {
@@ -304,20 +378,51 @@ export function ComposeForm({
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 min-h-full">
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => window.history.back()}
-                  className="group p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-white rounded-xl transition-all border border-transparent hover:border-gray-200 hover:shadow-sm"
+                  className="flex items-center gap-1.5 text-text-muted hover:text-text-primary transition-all pr-2"
                   title="Go back"
                 >
-                  <ArrowLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">Back</span>
                 </button>
+                <div className="h-6 w-px bg-border-light mx-1" />
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900 leading-none">Compose Campaign</h1>
-                  <p className="text-xs text-gray-500 mt-1">Create and schedule your email outreach</p>
+                  <h1 className="text-lg font-bold text-text-primary leading-tight">Compose</h1>
                 </div>
+                {scheduledAt && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-100 animate-in fade-in slide-in-from-left-2 transition-all">
+                    <CalendarClock className="h-3.5 w-3.5 text-green-600" />
+                    <span className="text-[11px] font-bold text-green-700">
+                      {new Intl.DateTimeFormat("en-US", {
+                        month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+                      }).format(scheduledAt)}
+                    </span>
+                    <button
+                      onClick={() => setScheduledAt(null)}
+                      className="ml-1 p-0.5 hover:bg-green-100 rounded-full transition-colors text-green-400 hover:text-green-600"
+                      title="Clear schedule"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={openSchedule}
+                  className={cn(
+                    "h-10 w-10 flex items-center justify-center rounded-xl border transition-all",
+                    scheduledAt
+                      ? "border-green-200 bg-green-50 text-green-700 shadow-sm"
+                      : "border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                  )}
+                  title="Schedule sending"
+                >
+                  <CalendarClock className="h-5 w-5" />
+                </button>
                 <Button
                   variant="primary"
                   className="px-6 gap-2 h-10 font-bold"
@@ -374,7 +479,7 @@ export function ComposeForm({
                             {senders.map(s => (
                               <label key={s.id} className={cn(
                                 "flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50",
-                                data.selectedSenderIds.includes(s.id) && "bg-blue-50/50"
+                                data.selectedSenderIds.includes(s.id) && "bg-green-50/50"
                               )}>
                                 <input
                                   type="checkbox"
@@ -423,14 +528,14 @@ export function ComposeForm({
                             className={cn(
                               "inline-flex items-center gap-1 rounded-md text-xs font-medium px-2 py-1 cursor-pointer transition-colors",
                               data.selectedRecipients.has(email)
-                                ? "bg-blue-600 text-white shadow-sm"
+                                ? "bg-green-600 text-white shadow-sm"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             )}
                           >
                             <span className="truncate max-w-[150px]">{email}</span>
                             <button
                               type="button"
-                              className={cn("ml-0.5 hover:scale-110 transition-transform", data.selectedRecipients.has(email) ? "text-blue-100" : "text-gray-400")}
+                              className={cn("ml-0.5 hover:scale-110 transition-transform", data.selectedRecipients.has(email) ? "text-green-100" : "text-gray-400")}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setData({ ...data, to: data.to.filter(e => e !== email) });
@@ -471,15 +576,21 @@ export function ComposeForm({
                       )}
                       <button
                         onClick={() => setShowCc(!showCc)}
-                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showCc ? "bg-blue-50 text-blue-600" : "text-gray-400 hover:bg-gray-50")}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showCc ? "bg-green-50 text-green-600" : "text-gray-400 hover:bg-gray-50")}
                       >
                         CC
                       </button>
                       <button
                         onClick={() => setShowBcc(!showBcc)}
-                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showBcc ? "bg-blue-50 text-blue-600" : "text-gray-400 hover:bg-gray-50")}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showBcc ? "bg-green-50 text-green-600" : "text-gray-400 hover:bg-gray-50")}
                       >
                         BCC
+                      </button>
+                      <button
+                        onClick={() => setShowReplyTo(!showReplyTo)}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showReplyTo ? "bg-green-50 text-green-600" : "text-gray-400 hover:bg-gray-50")}
+                      >
+                        Reply-To
                       </button>
                     </div>
                   </div>
@@ -518,6 +629,25 @@ export function ComposeForm({
                     </div>
                   )}
 
+                  {/* Reply-To */}
+                  {showReplyTo && (
+                    <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
+                      <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Reply-To</span>
+                      <div className="flex-1 min-w-0">
+                        <input
+                          type="email"
+                          value={data.replyTo || ""}
+                          onChange={(e) => setData({ ...data, replyTo: e.target.value })}
+                          placeholder="Routing replies to... (e.g. primary@company.com)"
+                          className="w-full text-sm bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                        />
+                      </div>
+                      <button type="button" className="text-gray-400 hover:text-gray-600 transition-colors" onClick={() => { setShowReplyTo(false); setData({ ...data, replyTo: "" }); }}>
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+
                   {/* Subject */}
                   <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3">
                     <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Subject</span>
@@ -532,7 +662,11 @@ export function ComposeForm({
 
                   {/* Body */}
                   <div className="min-h-[350px]">
-                    <Editor value={data.body} onChange={(html) => setData({ ...data, body: html })} />
+                    <Editor
+                      value={data.body}
+                      onChange={(html) => setData({ ...data, body: html })}
+                      availableVariables={availableVariables}
+                    />
                   </div>
 
                   {/* Footer */}
@@ -554,7 +688,7 @@ export function ComposeForm({
                           className={cn(
                             "h-10 px-4 rounded-xl border text-sm font-semibold flex items-center gap-2 transition-all",
                             data.selectedRecipients.size > 0
-                              ? "border-blue-200 bg-blue-50 text-blue-700"
+                              ? "border-green-200 bg-green-50 text-green-700"
                               : "border-gray-200 text-gray-600 hover:bg-gray-50"
                           )}
                         >
@@ -625,7 +759,7 @@ export function ComposeForm({
                 </div>
 
                 {/* Sequence Builder */}
-                <SequenceBuilder steps={sequenceSteps} onChange={setSequenceSteps} />
+                <SequenceBuilder steps={sequenceSteps} onChange={setSequenceSteps} subject={data.subject} body={data.body} />
               </div>
 
               {/* Right Sidebar */}
@@ -647,7 +781,7 @@ export function ComposeForm({
                     {/* Sending Rate */}
                     <div className="p-4 border-b border-gray-100">
                       <div className="flex items-center gap-2 mb-4">
-                        <Zap className="h-4 w-4 text-amber-500" />
+                        <Zap className="h-4 w-4 text-green-600" />
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Sending Strategy</p>
                       </div>
                       <div className="grid grid-cols-1 gap-4">
@@ -658,7 +792,7 @@ export function ComposeForm({
                               type="number"
                               value={data.delayBetweenEmails}
                               onChange={(e) => setData({ ...data, delayBetweenEmails: Number(e.target.value) })}
-                              className="w-full bg-white px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                              className="w-full bg-white px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium"
                               min={5}
                               max={300}
                             />
@@ -672,7 +806,7 @@ export function ComposeForm({
                               type="number"
                               value={data.hourlyLimit}
                               onChange={(e) => setData({ ...data, hourlyLimit: Number(e.target.value) })}
-                              className="w-full bg-white px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                              className="w-full bg-white px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium"
                               min={1}
                               max={500}
                             />
@@ -685,14 +819,14 @@ export function ComposeForm({
                     {/* Tracking */}
                     <div className="p-4 border-b border-gray-100">
                       <div className="flex items-center gap-2 mb-4">
-                        <Eye className="h-4 w-4 text-blue-500" />
+                        <Eye className="h-4 w-4 text-green-600" />
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Engagement Tracking</p>
                       </div>
                       <div className="space-y-3">
                         <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 transition-all group">
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-lg bg-[#00A63E]/50 flex items-center justify-center">
-                              <Eye className="h-4 w-4 text-[#00A63E]" />
+                            <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center">
+                              <Eye className="h-4 w-4 text-green-600" />
                             </div>
                             <div>
                               <p className="text-sm font-bold text-gray-700">Track Opens</p>
@@ -703,13 +837,13 @@ export function ComposeForm({
                             type="checkbox"
                             checked={trackOpens}
                             onChange={(e) => setTrackOpens(e.target.checked)}
-                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500/20 transition-all"
+                            className="h-5 w-5 rounded-md border-gray-300 text-green-600 focus:ring-green-500/20 transition-all"
                           />
                         </label>
                         <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 transition-all group">
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                              <MousePointer2 className="h-4 w-4 text-blue-600" />
+                            <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center">
+                              <MousePointer2 className="h-4 w-4 text-green-600" />
                             </div>
                             <div>
                               <p className="text-sm font-bold text-gray-700">Track Clicks</p>
@@ -720,7 +854,7 @@ export function ComposeForm({
                             type="checkbox"
                             checked={trackClicks}
                             onChange={(e) => setTrackClicks(e.target.checked)}
-                            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500/20 transition-all"
+                            className="h-5 w-5 rounded-md border-gray-300 text-green-600 focus:ring-green-500/20 transition-all"
                           />
                         </label>
                       </div>
@@ -734,8 +868,8 @@ export function ComposeForm({
                         {/* Priority Email Sending */}
                         <label className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-100 group">
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-[#00A63E]/10">
-                              <Zap className="h-4 w-4 text-[#00A63E]" />
+                            <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-green-50">
+                              <Zap className="h-4 w-4 text-green-600" />
                             </div>
                             <div>
                               <p className="text-sm font-bold text-gray-700">Priority Sending</p>
@@ -750,8 +884,8 @@ export function ComposeForm({
                           />
                         </label>
 
-                        <div className="p-3 bg-brand-light/30 rounded-xl border border-brand-light border-dashed">
-                          <p className="text-[10px] font-bold text-[#00A63E] uppercase tracking-wider mb-2">Priority Rules</p>
+                        <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Priority Rules</p>
                           <ul className="space-y-1.5">
                             {[
                               "Limit: 50 priority emails / day",
@@ -760,7 +894,7 @@ export function ComposeForm({
                               "Requires 20+ normal emails warmup"
                             ].map((text, i) => (
                               <li key={i} className="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
-                                <div className="h-1 w-1 rounded-full bg-[#00A63E]" />
+                                <div className="h-1 w-1 rounded-full bg-green-600" />
                                 {text}
                               </li>
                             ))}
@@ -775,7 +909,7 @@ export function ComposeForm({
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Signature</p>
                         <button
                           onClick={() => setIsSignatureModalOpen(true)}
-                          className="text-xs text-blue-600 hover:underline"
+                          className="text-xs text-green-600 hover:underline"
                         >
                           Manage
                         </button>
@@ -786,7 +920,7 @@ export function ComposeForm({
                           const sig = signatures.find(s => s.id === e.target.value);
                           if (sig) setSelectedSignature(sig);
                         }}
-                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-green-500"
                       >
                         <option value="">No signature</option>
                         {signatures.map(s => (
@@ -859,12 +993,6 @@ export function ComposeForm({
               <h3 className="text-base font-bold text-gray-900">Email Signatures</h3>
               <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Manage your professional sign-offs</p>
             </div>
-            <button
-              onClick={() => setIsSignatureModalOpen(false)}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-400"
-            >
-              <X className="h-4 w-4" />
-            </button>
           </div>
 
           <div className="p-6">
@@ -877,7 +1005,7 @@ export function ComposeForm({
                     value={editingSignature.name}
                     onChange={(e) => setEditingSignature({ ...editingSignature!, name: e.target.value })}
                     placeholder="e.g. Professional, Informal, Sales"
-                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -887,7 +1015,7 @@ export function ComposeForm({
                     onChange={(e) => setEditingSignature({ ...editingSignature!, content: e.target.value })}
                     placeholder="Best regards,&#10;John Doe"
                     rows={6}
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium resize-none leading-relaxed"
+                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium resize-none leading-relaxed"
                   />
                 </div>
                 <div className="flex gap-3 pt-2">
@@ -903,14 +1031,14 @@ export function ComposeForm({
                       key={sig.id}
                       className={cn(
                         "group flex items-start justify-between p-4 rounded-2xl border transition-all cursor-default",
-                        sig.isDefault ? "bg-blue-50/30 border-blue-100 shadow-sm" : "bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
+                        sig.isDefault ? "bg-green-50/30 border-green-100 shadow-sm" : "bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
                       )}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p className="font-bold text-gray-900 truncate">{sig.name}</p>
                           {sig.isDefault && (
-                            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-tighter">Default</span>
+                            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-tighter">Default</span>
                           )}
                         </div>
                         <p className="text-xs text-gray-400 line-clamp-1 italic">{sig.content || "No content"}</p>
@@ -918,7 +1046,7 @@ export function ComposeForm({
                       <div className="flex items-center gap-1 ml-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => setEditingSignature({ ...sig, content: sig.content || "" })}
-                          className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-gray-500 hover:text-green-600 hover:bg-green-50 transition-colors"
                         >
                           Edit
                         </button>
@@ -948,7 +1076,7 @@ export function ComposeForm({
 
                 <Button
                   variant="secondary"
-                  className="w-full h-12 border-2 border-dashed border-gray-200 hover:border-blue-400 hover:bg-blue-50/30 font-bold transition-all text-gray-500 hover:text-blue-600 rounded-2xl"
+                  className="w-full h-12 border-2 border-dashed border-gray-200 hover:border-green-400 hover:bg-green-50/30 font-bold transition-all text-gray-500 hover:text-green-600 rounded-2xl"
                   onClick={() => setEditingSignature({ id: Date.now().toString(), name: "", content: "", isDefault: false })}
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -956,6 +1084,104 @@ export function ComposeForm({
                 </Button>
               </div>
             )}
+          </div>
+        </div>
+      </Modal>
+      {/* ─── Schedule Modal ─── */}
+      <Modal
+        isOpen={isScheduleOpen}
+        onClose={() => setIsScheduleOpen(false)}
+        variant={isMobile ? "bottom-sheet" : "center"}
+      >
+        <div className="space-y-6 min-w-[340px] p-2 text-left">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-green-50 flex items-center justify-center border border-green-100">
+              <CalendarClock className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Schedule Email</h2>
+              <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Choose when to start this campaign</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Start Date</label>
+              <input
+                type="date"
+                value={tempDate}
+                onChange={(e) => setTempDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="w-full h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700
+                  outline-none focus:border-[#00A63E]/40 focus:ring-2 focus:ring-[#00A63E]/10 transition-all font-medium"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Start Time</label>
+              <input
+                type="time"
+                value={tempTime}
+                onChange={(e) => setTempTime(e.target.value)}
+                className="w-full h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700
+                  outline-none focus:border-[#00A63E]/40 focus:ring-2 focus:ring-[#00A63E]/10 transition-all font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest px-1">Quick Suggestions</p>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Tomorrow\n10 AM", days: 1, hour: 10 },
+                { label: "Tomorrow\n2 PM", days: 1, hour: 14 },
+                { label: "Next Week\n9 AM", days: 7, hour: 9 },
+              ].map(({ label, days, hour }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => quickPick(days, hour)}
+                  className="rounded-xl border border-gray-100 bg-gray-50/50 p-3 text-center
+                    hover:border-[#00A63E]/30 hover:bg-[#00A63E]/5 transition-all group"
+                >
+                  <Calendar className="h-4 w-4 text-gray-300 group-hover:text-[#00A63E] mx-auto mb-1.5 transition-colors" />
+                  <p className="text-[10px] font-bold text-gray-600 group-hover:text-[#00A63E] whitespace-pre-line leading-tight transition-colors">
+                    {label}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            {scheduledAt ? (
+              <button
+                type="button"
+                onClick={() => { setScheduledAt(null); setIsScheduleOpen(false); }}
+                className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors px-2"
+              >
+                Clear
+              </button>
+            ) : (
+              <span />
+            )}
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                className="h-10 px-5 text-xs font-bold"
+                onClick={() => setIsScheduleOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                className="h-10 px-6 text-xs font-bold gap-2"
+                onClick={confirmSchedule}
+                disabled={!tempDate || !tempTime}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Schedule
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>

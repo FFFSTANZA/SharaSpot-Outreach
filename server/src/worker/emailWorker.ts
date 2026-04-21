@@ -5,6 +5,7 @@ import { prisma } from "../config/prisma";
 import { redisConnection, redis } from "../config/redis";
 import { emailQueue } from "../queues/emailQueue";
 import { decrypt } from "../utils/encryption";
+import { sysLog } from "../utils/systemLogger";
 import { hasDailyCapacity, findAvailableSender } from "../utils/dailyLimitTracker";
 import { canSend, recordSendResult, computeJitteredDelay, getEffectiveLimits } from "../utils/throttleEngine";
 import { preprocessEmailHtml } from "../utils/emailPreprocessor";
@@ -54,6 +55,13 @@ interface SmtpPoolEntry {
 }
 
 const smtpPool = new Map<string, SmtpPoolEntry>();
+
+export function clearSmtpPool(): void {
+  for (const entry of smtpPool.values()) {
+    entry.transporter.close();
+  }
+  smtpPool.clear();
+}
 
 function getSmtpPoolKey(sender: {
   smtpHost: string;
@@ -114,6 +122,9 @@ function evictExpiredSmtpEntries(): void {
     }
   }
 }
+
+// Proactive cleanup: Run every 60 seconds to ensure idle connections are closed
+setInterval(evictExpiredSmtpEntries, 60000).unref();
 
 // ---------------------------------------------------------------------------
 // Helper: Create a per-job SMTP transporter
@@ -195,6 +206,27 @@ export async function processEmailJob(job: Job): Promise<void> {
   }
 
   // ---------------------------------------------------------------------------
+  // Premium Enforcement logic — prevent sending if subscription/trial expired
+  // ---------------------------------------------------------------------------
+  const { requirePremium } = await import("../utils/premiumCheck");
+  const premiumCheck = await requirePremium(campaign.userId, "Campaign Delivery");
+  if (!premiumCheck.allowed) {
+    console.warn(`Premium check failed for user ${campaign.userId}. Pausing campaign ${campaign.id}. Reason: ${premiumCheck.message}`);
+
+    // Reset job to PENDING so it can be resumed later, but pause the campaign
+    await prisma.emailJob.update({
+      where: { id: emailJobId },
+      data: { status: "PENDING" }
+    });
+
+    await prisma.emailCampaign.update({
+      where: { id: campaign.id },
+      data: { status: "PAUSED", pauseReason: "PREMIUM_SUBSCRIPTION_REQUIRED" }
+    });
+    return;
+  }
+
+  // ---------------------------------------------------------------------------
   // Campaign state check — respect pause/cancel
   // ---------------------------------------------------------------------------
 
@@ -227,11 +259,21 @@ export async function processEmailJob(job: Job): Promise<void> {
   }
 
   // If EmailJob status is not PENDING → another worker claimed it, skip
+  // EXCEPT: If status is SENDING and this is a BullMQ retry (attemptsMade > 0),
+  // we should allow it because it means the previous worker attempt likely
+  // crashed while it was in SENDING status.
   if (emailJob.status !== "PENDING") {
-    console.log(
-      `EmailJob ${emailJobId} status is ${emailJob.status}, not PENDING — skipping`,
-    );
-    return;
+    const isRetry = (job.attemptsMade ?? 0) > 0;
+    if (emailJob.status === "SENDING" && isRetry) {
+      console.log(
+        `EmailJob ${emailJobId} is SENDING but this is a retry attempt (attempt ${job.attemptsMade}) — proceeding`,
+      );
+    } else {
+      console.log(
+        `EmailJob ${emailJobId} status is ${emailJob.status}, not PENDING — skipping`,
+      );
+      return;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -244,13 +286,19 @@ export async function processEmailJob(job: Job): Promise<void> {
   // This prevents duplicate email sends without needing an external distributed lock.
   // ---------------------------------------------------------------------------
 
+  const isRetry = (job.attemptsMade ?? 0) > 0;
   const claimResult = await prisma.emailJob.updateMany({
-    where: { id: emailJobId, status: "PENDING" },
+    where: {
+      id: emailJobId,
+      status: isRetry ? { in: ["PENDING", "SENDING"] } : "PENDING",
+    },
     data: { status: "SENDING" },
   });
 
   if (claimResult.count === 0) {
-    console.log(`EmailJob ${emailJobId} already claimed by another worker, skipping`);
+    console.log(
+      `EmailJob ${emailJobId} already claimed or finished by another worker, skipping`,
+    );
     return;
   }
 
@@ -500,7 +548,7 @@ export async function processEmailJob(job: Job): Promise<void> {
     // ---------------------------------------------------------------------------
     try {
       const spamScore = quickSpamScore(emailSubject, emailBody.replace(/<[^>]*>?/gm, ''));
-      
+
       // Log warning for scores >= 40
       if (spamScore >= 40) {
         console.warn(`[SPAM CHECK] EmailJob ${emailJobId} has spam score ${spamScore} (threshold: 40)`);
@@ -564,11 +612,12 @@ export async function processEmailJob(job: Job): Promise<void> {
     // (e.g., https://sharaspot-api.onrender.com). 
     let trackingBaseUrl = process.env.TRACKING_BASE_URL;
 
-    // If no tracking base URL is defined in env, try to construct one.
-    // WARNING: localhost links in emails cause instant spam filtering.
-    // If we are falling back to localhost, we intentionally disable tracking.
+    // Validate that tracking URL is properly configured
     if (!trackingBaseUrl) {
-      console.warn(`WARNING: No TRACKING_BASE_URL provided in environment. Tracking is DISABLED for ${emailJobId} to prevent spam penalties.`);
+      console.warn(`[Tracking] NOTICE: TRACKING_BASE_URL is not set. Open/Click tracking will be disabled for EmailJob ${emailJobId}.`);
+    } else if (trackingBaseUrl.includes('localhost') && process.env.NODE_ENV === 'production') {
+      console.error(`[Tracking] CRITICAL: TRACKING_BASE_URL points to localhost in production for EmailJob ${emailJobId}! Tracking disabled.`);
+      trackingBaseUrl = undefined;
     }
 
     const processedBody = trackingBaseUrl ? preprocessEmailHtml(
@@ -588,6 +637,7 @@ export async function processEmailJob(job: Job): Promise<void> {
     await transporter.sendMail({
       from: sender.name ? `"${sender.name}" <${sender.email}>` : sender.email,
       to: emailJob.toEmail,
+      replyTo: (campaign as any).replyTo || (sender as any).replyTo || undefined,
       subject: emailSubject,
       text: plainTextBody,
       html: processedBody,
@@ -749,7 +799,7 @@ async function checkCampaignCompletion(campaignId: string): Promise<void> {
 
     if (nonTerminalCount === 0) {
       await prisma.emailCampaign.updateMany({
-        where: { id: campaignId, status: "SENDING" },
+        where: { id: campaignId, status: { in: ["SENDING", "SCHEDULED"] } },
         data: { status: "COMPLETED" },
       });
       console.log(`Campaign ${campaignId} completed — all jobs terminal`);
@@ -816,6 +866,37 @@ export const emailWorker = new Worker(
     },
   },
 );
+
+// ---------------------------------------------------------------------------
+// Dead Letter Queue (DLQ) Watcher
+// ---------------------------------------------------------------------------
+// WHY failed listener: BullMQ handles retries (3 by default), but if all 3
+// attempts fail, we must ensure the Database status reflects this final failure.
+// Without this, a job that crashes multiple times would be stuck in SENDING
+// state indefinitely.
+// ---------------------------------------------------------------------------
+
+emailWorker.on('failed', async (job, err) => {
+  if (!job) return;
+  const { emailJobId } = job.data;
+  const errorMessage = `Job failed after all retry attempts: ${err.message}`;
+
+  console.error(`[DLQ] Job ${job.id} (${emailJobId}) failed permanently:`, err.message);
+
+  await markFailed(emailJobId, errorMessage);
+
+  // Log to SystemAuditLog
+  await sysLog.error("INFRASTRUCTURE", `EmailJob ${emailJobId} failed permanently in queue.`, {
+    jobId: job.id,
+    error: err.message,
+    attempts: job.attemptsMade
+  });
+});
+
+emailWorker.on('error', (err) => {
+  console.error(`[Worker] Fatal worker error:`, err);
+  sysLog.critical("INFRASTRUCTURE", `Fatal email worker error: ${err.message}`);
+});
 
 // ---------------------------------------------------------------------------
 // Graceful shutdown

@@ -1,16 +1,29 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+
+// Explicitly load .env from server directory
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
 import crypto from "crypto";
 import { prisma } from "../config/prisma";
 import { emailQueue } from "../queues/emailQueue";
 import { priorityQueue, PRIORITY_QUEUE_NAME } from "../queues/priorityQueue";
+import { inboxQueue } from "../queues/inboxQueue";
 import { processSchedulerJob } from "./sequenceScheduler";
 import { autoResumePausedCampaigns } from "./autoResumeJob";
-import { processReplyDetectionJob, startIdleSessions, stopIdleSessions } from "./replyDetector";
+import { processReplyDetectionJob, startIdleSessions, stopIdleSessions, performInitialCatchupScan } from "./replyDetector";
 import { startTrackingBuffer, stopTrackingBuffer } from "../controllers/trackingControllers";
 import { pruneOldTrackingEvents } from "./trackingPruner";
+import { aggregateAnalytics, ensureAnalyticsUpToDate } from "./analyticsAggregator";
+import { processInboxSyncJob } from "./inboxWorker";
+import { sysLog } from "../utils/systemLogger";
 import { Queue, Worker, Job } from "bullmq";
 import { redis } from "../config/redis";
-import { processPriorityJob } from "./priorityEmailWorker";
+import os from "os";
+
+
+console.log("[SHARASPOT-WORKER] TRACKING_BASE_URL:", process.env.TRACKING_BASE_URL || "NOT SET - tracking will be disabled!");
+console.log("[SHARASPOT-WORKER] NODE_ENV:", process.env.NODE_ENV);
 
 /**
  * Startup Recovery Sweep
@@ -57,6 +70,43 @@ async function recoverOrphanedJobs(): Promise<void> {
 
   console.log(`✅ Startup recovery: Recovered ${orphanedJobs.length} orphaned jobs`);
 }
+
+/**
+ * PENDING Job Sync
+ * 
+ * WHY: If the API process crashes immediately after creating a job in the DB
+ * but before adding it to BullMQ, the job will be stuck in PENDING forever.
+ * This syncs all PENDING jobs from the DB into the queue on worker startup.
+ */
+async function syncPendingJobs(): Promise<void> {
+  const pendingJobs = await prisma.emailJob.findMany({
+    where: { status: "PENDING" },
+    select: { id: true, scheduledAt: true },
+  });
+
+  if (pendingJobs.length === 0) {
+    console.log("📋 Pending sync: No PENDING jobs to enqueue");
+    return;
+  }
+
+  console.log(`📋 Pending sync: Enqueuing ${pendingJobs.length} jobs`);
+
+  for (const job of pendingJobs) {
+    const delay = Math.max(0, new Date(job.scheduledAt).getTime() - Date.now());
+
+    await emailQueue.add(
+      "send-email",
+      { emailJobId: job.id },
+      {
+        jobId: `${job.id}-startup-sync-${crypto.randomUUID()}`,
+        delay,
+      },
+    );
+  }
+
+  console.log(`✅ Pending sync: Enqueued ${pendingJobs.length} jobs`);
+}
+
 
 /**
  * Periodic Stale-Job Sweep
@@ -205,14 +255,14 @@ async function sweepStalePriorityJobs(): Promise<void> {
  * This sweep finds all SENDING campaigns and checks if they SHOULD be COMPLETED.
  */
 async function sweepStuckCampaigns(): Promise<void> {
-  const sendingCampaigns = await prisma.emailCampaign.findMany({
-    where: { status: "SENDING" },
+  const stuckCampaigns = await prisma.emailCampaign.findMany({
+    where: { status: { in: ["SENDING", "SCHEDULED"] } },
     include: { sequenceSteps: { select: { id: true } } },
   });
 
-  if (sendingCampaigns.length === 0) return;
+  if (stuckCampaigns.length === 0) return;
 
-  for (const campaign of sendingCampaigns) {
+  for (const campaign of stuckCampaigns) {
     try {
       const nonTerminalCount = await prisma.emailJob.count({
         where: {
@@ -225,7 +275,7 @@ async function sweepStuckCampaigns(): Promise<void> {
       if (nonTerminalCount > 0) continue;
 
       const isSequence = campaign.sequenceSteps.length > 0;
-      
+
       if (isSequence) {
         // For sequence campaigns, also ensure every recipient has finished the sequence
         const activeStatesCount = await prisma.recipientSequenceState.count({
@@ -242,10 +292,10 @@ async function sweepStuckCampaigns(): Promise<void> {
       // If we got here, there are no jobs left AND (if sequence) no active recipients.
       // Mark as COMPLETED.
       const result = await prisma.emailCampaign.updateMany({
-        where: { id: campaign.id, status: "SENDING" },
+        where: { id: campaign.id, status: campaign.status },
         data: { status: "COMPLETED" },
       });
-      
+
       if (result.count > 0) {
         console.log(`🧹 Stuck Campaign sweep: Marked campaign ${campaign.id} as COMPLETED`);
       }
@@ -255,18 +305,76 @@ async function sweepStuckCampaigns(): Promise<void> {
   }
 }
 
-async function main(): Promise<void> {
+
+async function checkRedisHealth(): Promise<boolean> {
+  try {
+    const ping = await redis.ping();
+    if (ping !== "PONG") throw new Error("Redis PING failed");
+    console.log("📡 Redis health check: Connection verified");
+    return true;
+  } catch (err) {
+    console.error("❌ Redis health check: Failed to connect to Redis. Check REDIS_URL and firewall.");
+    return false;
+  }
+}
+
+async function checkPrismaHealth(): Promise<boolean> {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    console.log("📡 Prisma health check: Connection verified");
+    return true;
+  } catch (err) {
+    console.error("❌ Database health check failed:", err);
+    return false;
+  }
+}
+
+
+async function performStartupSelfHealing(): Promise<void> {
+  console.log("\n--- SHARASPOT WORKER SELF-HEALING BOOT ---");
+  await sysLog.info("INFRASTRUCTURE", "Worker self-healing boot sequence started.");
+
+  const redisHealthy = await checkRedisHealth();
+  const dbHealthy = await checkPrismaHealth();
+
+  if (!redisHealthy || !dbHealthy) {
+    const errorMsg = `Worker startup aborted: ${!redisHealthy ? "Redis DOWN" : ""} ${!dbHealthy ? "Postgres DOWN" : ""}`;
+    console.error(`[CRITICAL] ${errorMsg}`);
+    await sysLog.critical("INFRASTRUCTURE", errorMsg);
+    process.exit(1);
+  }
+
   await recoverOrphanedJobs();
   await recoverOrphanedPriorityJobs();
-  await sweepStuckCampaigns(); // Run once at startup to fix any existing stuck campaigns
-  
+  await syncPendingJobs();
+  await sweepStuckCampaigns();
+
+  try {
+    await performInitialCatchupScan();
+  } catch (err: any) {
+    await sysLog.error("INFRASTRUCTURE", `IMAP catch-up failed: ${err.message}`);
+  }
+
+  try {
+    await ensureAnalyticsUpToDate();
+  } catch (err: any) {
+    await sysLog.warn("INFRASTRUCTURE", `Startup analytics catch-up failed: ${err.message}`);
+  }
+
+  console.log("--- SELF-HEALING BOOT COMPLETE ---\n");
+  await sysLog.info("INFRASTRUCTURE", "Worker self-healing boot sequence completed.");
+}
+
+async function main(): Promise<void> {
+  await performStartupSelfHealing();
+
   // Import the worker modules AFTER recovery completes.
   // This ensures orphaned jobs are reset before workers start polling.
   await import("./emailWorker");
-  
+
   // Start the priority email worker
   await import("./priorityEmailWorker");
-  
+
   console.log("📨 Email worker started and accepting jobs");
   console.log("⭐ Priority email worker started and accepting jobs");
 
@@ -372,7 +480,68 @@ async function main(): Promise<void> {
 
   console.log(`🧹 Stuck-campaign sweep started (interval: ${STUCK_CAMPAIGN_INTERVAL_MS / 1000}s)`);
 
-  // Graceful shutdown — stop IMAP IDLE sessions, tracking buffer, and clean up connections
+  // Start analytics aggregation (every 30 minutes)
+  const analyticsInterval = parseInt(process.env.ANALYTICS_AGGREGATION_INTERVAL_MS || "1800000", 10);
+  const analyticsQueue = new Queue("analytics-aggregator", { connection: redis });
+
+  const existingAnalytics = await analyticsQueue.getRepeatableJobs();
+  for (const job of existingAnalytics) {
+    await analyticsQueue.removeRepeatableByKey(job.key);
+  }
+
+  await analyticsQueue.add("aggregate-stats", {}, {
+    repeat: { every: analyticsInterval },
+  });
+
+  new Worker("analytics-aggregator", async () => {
+    await aggregateAnalytics();
+  }, { connection: redis });
+
+  // Ensure analytics are up-to-date at startup
+  ensureAnalyticsUpToDate().catch(err => console.error("❌ Startup analytics error:", err));
+
+  console.log(`📊 Analytics aggregator started (interval: ${analyticsInterval}ms)`);
+
+  // Start worker heartbeat (every 30 seconds)
+  // WHY: Allows the API to monitor worker health and warn if background processing is down.
+  const HEARTBEAT_INTERVAL_MS = 30000;
+  const updateHeartbeat = async () => {
+    try {
+      const stats = {
+        timestamp: Date.now(),
+        memory: process.memoryUsage().heapUsed,
+        uptime: process.uptime(),
+        load: os.loadavg()[0],
+      };
+      await redis.set("worker:last_heartbeat", Date.now().toString(), "EX", 120); // 2 minute TTL
+      await redis.set("worker:stats", JSON.stringify(stats), "EX", 120);
+    } catch (err) {
+      console.error("❌ Heartbeat error:", err);
+    }
+  };
+  await updateHeartbeat();
+  setInterval(updateHeartbeat, HEARTBEAT_INTERVAL_MS);
+  console.log("💓 Worker heartbeat started (with telemetry)");
+
+  new Worker(inboxQueue.name, async (job: Job) => {
+    await processInboxSyncJob(job);
+  }, { connection: redis, concurrency: 2 });
+
+  console.log("📥 Inbox sync worker started");
+
+  setInterval(async () => {
+    const senders = await prisma.sender.findMany({
+      where: { isVerified: true },
+      select: { id: true },
+    });
+
+    for (const sender of senders) {
+      await inboxQueue.add("sync-inbox", { senderId: sender.id }).catch(() => { });
+    }
+  }, 300000);
+
+
+  // Graceful shutdown
   process.on("SIGTERM", () => {
     console.log("Received SIGTERM, stopping services...");
     stopIdleSessions();

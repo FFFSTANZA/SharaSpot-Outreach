@@ -27,6 +27,14 @@ const personas = [
         detail: "SharaSpot distributes sourcing volume across multiple accounts so no single sender ever trips rate limits. Candidate replies are detected immediately and sequences stop, protecting your team's reputation with every person in the pipeline.",
         cta: "Source talent at volume without burning your domain",
     },
+    {
+        id: "prm",
+        label: "Teams managing partner relationships",
+        accent: "#7C3AED",
+        body: "You're trying to build a channel partner network or manage relationships with existing resellers. Your outreach lives in spreadsheets, your follow-ups are manual, and you have no idea who actually opened your last proposal. The relationship is only as good as your memory.",
+        detail: "SharaSpot gives you a dedicated CRM for partner relationships—track stages, segment by region or tier, and keep every touchpoint in one place. Automated follow-ups remind you when it's time to reconnect, so no partnership slips through the cracks.",
+        cta: "Manage partnerships without the spreadsheet chaos",
+    },
 ];
 
 export default function UseCases() {
@@ -38,16 +46,17 @@ export default function UseCases() {
                 <div className="absolute top-40 right-0 w-[500px] h-[500px] rounded-full bg-gradient-to-bl from-[#1A56DB]/10 to-transparent blur-3xl" />
                 <div className="absolute bottom-20 left-1/4 w-[300px] h-[300px] rounded-full bg-gradient-to-tr from-[#B45309]/8 to-transparent blur-3xl" />
                 <div className="absolute top-1/3 right-1/3 w-[400px] h-[400px] rounded-full bg-gradient-to-bl from-[#047857]/6 to-transparent blur-3xl" />
+                <div className="absolute bottom-40 right-1/4 w-[350px] h-[350px] rounded-full bg-gradient-to-tr from-[#7C3AED]/8 to-transparent blur-3xl" />
             </div>
 
             <div className="max-w-6xl mx-auto px-6 relative">
 
                 <div className="max-w-2xl mb-20">
                     <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-5">
-                        Three outreach problems. One fix.
+                        Four outreach problems. One fix.
                     </h2>
                     <p className="text-white/70 text-lg leading-relaxed">
-                        SharaSpot is not a general-purpose email tool. It is built specifically around the three types of outreach where delivery actually changes outcomes.
+                        SharaSpot is not a general-purpose email tool. It is built specifically around the four types of outreach where delivery actually changes outcomes.
                     </p>
                 </div>
 

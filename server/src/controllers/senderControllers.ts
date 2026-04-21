@@ -30,13 +30,23 @@ export const createSender = async (
   res: Response,
 ): Promise<void> => {
   try {
+    // --- Step 0: Global Premium Check ---
+    const { requirePremium } = await import("../utils/premiumCheck");
+    const globalCheck = await requirePremium(req.user!.id);
+    if (!globalCheck.allowed) {
+      res.status(403).json({
+        message: globalCheck.message,
+        upgradeRequired: true,
+      });
+      return;
+    }
     // Require authenticated user
     if (!req.user?.id) {
       res.status(401).json({ message: "Authentication required" });
       return;
     }
 
-    const { name, email, appPassword } = req.body;
+    const { name, email, appPassword, smtpHost, smtpPort, replyTo } = req.body;
 
     // Validate all required fields are present and non-empty
     const missingFields: string[] = [];
@@ -57,11 +67,16 @@ export const createSender = async (
       return;
     }
 
+    // Use provided SMTP settings or default to Gmail
+    const host = smtpHost || "smtp.gmail.com";
+    const port = smtpPort || 465;
+    const isSecure = port === 465;
+
     // Create SMTP transporter and verify credentials before saving
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465, // Use 465 for secure TLS (required for Gmail App Passwords to avoid blocks)
-      secure: true,
+      host,
+      port,
+      secure: isSecure,
       auth: {
         user: email,
         pass: appPassword,
@@ -72,9 +87,9 @@ export const createSender = async (
 
     try {
       await transporter.verify();
-    } catch {
+    } catch (err: any) {
       res.status(400).json({
-        message: "Invalid SMTP credentials. Please check your email and app password.",
+        message: `SMTP Verification failed: ${err.message || "Invalid credentials"}`,
       });
       return;
     }
@@ -87,16 +102,16 @@ export const createSender = async (
         name,
         email,
         appPassword: encryptedPassword,
-        smtpHost: "smtp.gmail.com",
-        smtpPort: 465,
+        smtpHost: host,
+        smtpPort: port,
+        replyTo: replyTo || null,
         isVerified: true,
         userId: req.user.id,
       },
     });
 
     // Auto-detect provider from SMTP host and associate the profile
-    const smtpHost = sender.smtpHost;
-    const profile = await detectProvider(smtpHost);
+    const profile = await detectProvider(host);
     if (profile) {
       await prisma.sender.update({
         where: { id: sender.id },
@@ -105,9 +120,7 @@ export const createSender = async (
       sender.providerProfileId = profile.id;
     }
 
-    // Create WarmupSchedule for newly verified sender — same as verifySender().
-    // Without this, senders created via createSender() skip warmup entirely
-    // and can immediately send at full provider limits.
+    // Create WarmupSchedule for newly verified sender
     const optedOut = req.body.skipWarmup === true;
     await prisma.warmupSchedule.create({
       data: {
@@ -120,20 +133,16 @@ export const createSender = async (
       },
     });
 
-    // Strip appPassword from the response — never expose encrypted credentials to the client
+    // Strip appPassword from the response
     const { appPassword: _, ...senderResponse } = sender;
-
     res.status(201).json(senderResponse);
   } catch (error: any) {
-    // Handle unique constraint violation (duplicate sender email per user)
     if (error?.code === "P2002") {
       res.status(409).json({
         message: "A sender with this email already exists for your account",
       });
       return;
     }
-
-    // Generic error — never expose stack traces to the client
     res.status(500).json({
       message: "An error occurred while creating the sender",
     });
@@ -158,7 +167,7 @@ export const verifySender = async (
     }
 
     const id = req.params.id as string;
-    const { name, appPassword } = req.body;
+    const { name, appPassword, smtpHost, smtpPort, replyTo } = req.body;
 
     if (!appPassword || (typeof appPassword === "string" && appPassword.trim() === "")) {
       res.status(400).json({ message: "App password is required" });
@@ -175,11 +184,16 @@ export const verifySender = async (
       return;
     }
 
+    // Use provided SMTP settings, fall back to existing stored values, or default to Gmail
+    const host = smtpHost || existingSender.smtpHost || "smtp.gmail.com";
+    const port = smtpPort || existingSender.smtpPort || 465;
+    const isSecure = port === 465;
+
     // Test SMTP connection with the provided credentials
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465, // Use 465 for secure TLS
-      secure: true,
+      host,
+      port,
+      secure: isSecure,
       auth: {
         user: existingSender.email,
         pass: appPassword,
@@ -190,9 +204,9 @@ export const verifySender = async (
 
     try {
       await transporter.verify();
-    } catch {
+    } catch (err: any) {
       res.status(400).json({
-        message: "Invalid SMTP credentials. Please check your app password.",
+        message: `SMTP Verification failed: ${err.message || "Invalid credentials"}`,
       });
       return;
     }
@@ -204,14 +218,16 @@ export const verifySender = async (
       where: { id },
       data: {
         appPassword: encryptedPassword,
+        smtpHost: host,
+        smtpPort: port,
+        replyTo: replyTo || existingSender.replyTo,
         isVerified: true,
         ...(name ? { name } : {}),
       },
     });
 
     // Auto-detect provider from SMTP host and associate the profile
-    const smtpHost = updatedSender.smtpHost;
-    const profile = await detectProvider(smtpHost);
+    const profile = await detectProvider(host);
     if (profile) {
       await prisma.sender.update({
         where: { id },
@@ -266,6 +282,7 @@ export const getSenders = async (
         smtpPort: true,
         isVerified: true,
         dailyLimit: true,
+        replyTo: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -343,6 +360,7 @@ export const getSenderById = async (
         isVerified: true,
         dailyLimit: true,
         hourlyLimit: true,
+        replyTo: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -396,6 +414,44 @@ export const getSenderById = async (
   } catch (error: any) {
     res.status(500).json({
       message: "An error occurred while fetching sender",
+    });
+  }
+};
+
+/**
+ * DELETE /senders/:id — Delete a sender account.
+ */
+export const deleteSender = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    const id = req.params.id as string;
+
+    // Check if sender exists and belongs to user
+    const sender = await prisma.sender.findFirst({
+      where: { id, userId: req.user.id }
+    });
+
+    if (!sender) {
+      res.status(404).json({ message: "Sender not found" });
+      return;
+    }
+
+    // Delete sender (cascades or manual depending on schema settings)
+    await prisma.sender.delete({
+      where: { id }
+    });
+
+    res.status(200).json({ message: "Sender deleted successfully" });
+  } catch (error: any) {
+    res.status(500).json({
+      message: "An error occurred while deleting sender",
     });
   }
 };

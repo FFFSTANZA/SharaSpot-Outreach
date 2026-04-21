@@ -6,11 +6,11 @@ import { Contact, Tag } from "@/types";
 import { createContact, updateContact } from "@/lib/apis";
 import { useToast } from "@/context/ToastContext";
 import Button from "@/components/Button";
-import { 
-  User, 
-  Mail, 
-  Building2, 
-  Briefcase, 
+import {
+  User,
+  Mail,
+  Building2,
+  Briefcase,
   ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -98,7 +98,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="p-8">
         <div className="mb-6">
-          <h2 className="text-xl font-black tracking-tighter text-text-primary uppercase">
+          <h2 className="text-xl font-bold tracking-tight text-text-primary uppercase">
             {contact ? "Edit Contact" : "Add New Contact"}
           </h2>
           <p className="text-sm text-text-muted mt-1 font-semibold">
@@ -110,7 +110,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">First Name</label>
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">First Name</label>
                 <div className="relative group">
                   <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
                   <input
@@ -123,7 +123,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Last Name</label>
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Last Name</label>
                 <div className="relative group">
                   <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
                   <input
@@ -138,7 +138,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Email Address</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Email Address</label>
               <div className="relative group">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
                 <input
@@ -155,7 +155,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Company</label>
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Company</label>
                 <div className="relative group">
                   <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
                   <input
@@ -168,7 +168,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Job Title</label>
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Job Title</label>
                 <div className="relative group">
                   <Briefcase size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
                   <input
@@ -183,7 +183,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Pipeline Stage</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Pipeline Stage</label>
               <div className="relative">
                 <select
                   value={formData.stage}
@@ -201,7 +201,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Tags</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Tags</label>
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
                   <button
@@ -209,7 +209,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
                     type="button"
                     onClick={() => toggleTag(tag.id)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-[10px] font-black transition-all border-2 uppercase tracking-wider",
+                      "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border-2 uppercase tracking-wider",
                       formData.selectedTags.includes(tag.id)
                         ? "bg-brand/10 border-brand text-brand"
                         : "bg-white border-border-light text-text-muted hover:border-brand/30"
@@ -224,9 +224,9 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border-light">
-            <button 
-              type="button" 
-              onClick={onClose} 
+            <button
+              type="button"
+              onClick={onClose}
               className="px-6 py-2.5 rounded-xl text-sm font-bold text-text-muted hover:text-text-primary transition-colors"
             >
               Cancel

@@ -12,17 +12,18 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const navLinks = [
-        { label: "For Founders", href: "/#founders" },
         { label: "Priority", href: "/priority" },
         { label: "How It Works", href: "/#how-it-works" },
+        { label: "Pricing", href: "/#pricing" },
         { label: "Guide", href: "/guide" },
         { label: "FAQ", href: "/faq" },
+        { label: "Support", href: BRAND_CONFIG.supportUrl, external: true },
     ];
 
     return (
         <div className="min-h-screen bg-white text-text-primary font-sans">
             {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border-light">
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/60 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)]">
                 <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
                         <Logo size="md" />
@@ -33,6 +34,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                             <Link
                                 key={link.label}
                                 href={link.href}
+                                target={link.external ? "_blank" : undefined}
                                 className="text-sm text-text-secondary hover:text-text-primary transition-colors"
                             >
                                 {link.label}
@@ -70,6 +72,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                                 <Link
                                     key={link.label}
                                     href={link.href}
+                                    target={link.external ? "_blank" : undefined}
                                     className="text-base font-medium text-text-primary"
                                     onClick={() => setMobileMenuOpen(false)}
                                 >

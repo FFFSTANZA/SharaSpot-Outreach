@@ -13,6 +13,19 @@ import * as signalCollector from "../../utils/signalCollector";
 import { priorityQueue } from "../../queues/priorityQueue";
 import { SubscriptionStatus } from "@prisma/client";
 
+// Mock ioredis before anything else
+jest.mock("ioredis", () => {
+  return jest.fn().mockImplementation(() => ({
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue("OK"),
+    del: jest.fn().mockResolvedValue(1),
+    lpush: jest.fn().mockResolvedValue(1),
+    rpop: jest.fn().mockResolvedValue(null),
+    quit: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+  }));
+});
+
 // Mock nodemailer
 jest.mock("nodemailer");
 
@@ -23,6 +36,7 @@ jest.mock("bullmq", () => {
       add: jest.fn().mockResolvedValue({ id: "mock-priority-job-id" }),
     })),
     Worker: jest.fn().mockImplementation(() => ({
+      on: jest.fn().mockReturnThis(),
       close: jest.fn().mockResolvedValue(undefined),
     })),
     Job: jest.fn(),
@@ -31,16 +45,16 @@ jest.mock("bullmq", () => {
 
 // Mock individual queues
 jest.mock("../../queues/priorityQueue", () => ({
-    priorityQueue: {
-        add: jest.fn().mockResolvedValue({ id: "mock-priority-job-id" }),
-    },
-    PRIORITY_QUEUE_NAME: "priority-email-queue"
+  priorityQueue: {
+    add: jest.fn().mockResolvedValue({ id: "mock-priority-job-id" }),
+  },
+  PRIORITY_QUEUE_NAME: "priority-email-queue"
 }));
 
 jest.mock("../../queues/emailQueue", () => ({
-    emailQueue: {
-        add: jest.fn().mockResolvedValue({ id: "mock-job-id" }),
-    }
+  emailQueue: {
+    add: jest.fn().mockResolvedValue({ id: "mock-job-id" }),
+  }
 }));
 
 describe("Priority Mail Flow Integration Test", () => {
@@ -49,17 +63,7 @@ describe("Priority Mail Flow Integration Test", () => {
   let senderId: string;
 
   beforeAll(async () => {
-    // Clean up
-    await prisma.priorityQueueJob.deleteMany();
-    await prisma.priorityUserQuota.deleteMany();
-    await prisma.domainRateLimit.deleteMany();
-    await prisma.emailJob.deleteMany();
-    await prisma.campaignSender.deleteMany();
-    await prisma.emailCampaign.deleteMany();
-    await prisma.senderCooldown.deleteMany();
-    await prisma.warmupSchedule.deleteMany();
-    await prisma.sender.deleteMany();
-    await prisma.subscription.deleteMany();
+    // Clean up in correct order
     await prisma.user.deleteMany();
 
     // Create user
@@ -73,11 +77,11 @@ describe("Priority Mail Flow Integration Test", () => {
 
     // Create premium subscription
     await prisma.subscription.create({
-        data: {
-            userId,
-            status: SubscriptionStatus.ACTIVE,
-            currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        }
+      data: {
+        userId,
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      }
     });
 
     // Create verified sender
@@ -101,18 +105,22 @@ describe("Priority Mail Flow Integration Test", () => {
   afterAll(async () => {
     // Final cleanup
     try {
-        await prisma.priorityQueueJob.deleteMany();
-        await prisma.priorityUserQuota.deleteMany();
-        await prisma.domainRateLimit.deleteMany();
-        await prisma.emailJob.deleteMany();
-        await prisma.campaignSender.deleteMany();
-        await prisma.emailCampaign.deleteMany();
-        await prisma.senderCooldown.deleteMany();
-        await prisma.warmupSchedule.deleteMany();
-        await prisma.sender.deleteMany();
-        await prisma.subscription.deleteMany();
-        await prisma.user.deleteMany();
-    } catch (e) {}
+      await prisma.trackingEvent.deleteMany();
+      await prisma.priorityQueueJob.deleteMany();
+      await prisma.priorityUserQuota.deleteMany();
+      await prisma.domainRateLimit.deleteMany();
+      await prisma.emailJob.deleteMany();
+      await prisma.campaignSender.deleteMany();
+      await prisma.attachment.deleteMany();
+      await prisma.sequenceStep.deleteMany();
+      await prisma.recipientSequenceState.deleteMany();
+      await prisma.emailCampaign.deleteMany();
+      await prisma.senderCooldown.deleteMany();
+      await prisma.warmupSchedule.deleteMany();
+      await prisma.sender.deleteMany();
+      await prisma.subscription.deleteMany();
+      await prisma.user.deleteMany();
+    } catch (e) { }
 
     await prisma.$disconnect();
   });
@@ -158,13 +166,13 @@ describe("Priority Mail Flow Integration Test", () => {
 
     // Mock low congestion
     jest.spyOn(signalCollector, "collectSmtpTiming").mockResolvedValue({
-        tcpConnectMs: 10,
-        greetingDelayMs: 20,
-        tlsHandshakeMs: 30,
-        mailFromMs: 10,
-        rcptToMs: 10,
-        dataMs: 10,
-        totalMs: 100,
+      tcpConnectMs: 10,
+      greetingDelayMs: 20,
+      tlsHandshakeMs: 30,
+      mailFromMs: 10,
+      rcptToMs: 10,
+      dataMs: 10,
+      totalMs: 100,
     });
 
     const fakeJob = {
@@ -220,13 +228,13 @@ describe("Priority Mail Flow Integration Test", () => {
 
     // 2. Mock high congestion
     jest.spyOn(signalCollector, "collectSmtpTiming").mockResolvedValue({
-        tcpConnectMs: 1000,
-        greetingDelayMs: 2000,
-        tlsHandshakeMs: 1000,
-        mailFromMs: 500,
-        rcptToMs: 500,
-        dataMs: 1000,
-        totalMs: 6000,
+      tcpConnectMs: 1000,
+      greetingDelayMs: 2000,
+      tlsHandshakeMs: 1000,
+      mailFromMs: 500,
+      rcptToMs: 500,
+      dataMs: 1000,
+      totalMs: 6000,
     });
 
     const fakeJob = {
@@ -240,9 +248,9 @@ describe("Priority Mail Flow Integration Test", () => {
 
     // 3. Verify it was re-queued due to congestion
     expect(priorityQueueAddSpy).toHaveBeenCalledWith(
-        "send-priority-email",
-        expect.objectContaining({ emailJobId: emailJob!.id }),
-        expect.objectContaining({ delay: expect.any(Number) })
+      "send-priority-email",
+      expect.objectContaining({ emailJobId: emailJob!.id }),
+      expect.objectContaining({ delay: expect.any(Number) })
     );
 
     const updatedPriorityRecord = await prisma.priorityQueueJob.findUnique({
@@ -255,73 +263,73 @@ describe("Priority Mail Flow Integration Test", () => {
   });
 
   it("should enforce user priority quota", async () => {
-      // 1. Create a job for a user at quota limit
-      const userAtLimit = await prisma.user.create({
-          data: {
-              email: "limited-user@example.com",
-              name: "Limited User",
-          }
-      });
+    // 1. Create a job for a user at quota limit
+    const userAtLimit = await prisma.user.create({
+      data: {
+        email: "limited-user@example.com",
+        name: "Limited User",
+      }
+    });
 
-      // Create premium subscription
-      await prisma.subscription.create({
-          data: {
-              userId: userAtLimit.id,
-              status: SubscriptionStatus.ACTIVE,
-              currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          }
-      });
-      
-      await prisma.priorityUserQuota.create({
-          data: {
-              userId: userAtLimit.id,
-              dailyCount: 50,
-              dailyLimit: 50,
-              dailyResetAt: new Date(Date.now() + 3600000), // 1 hour from now
-          }
-      });
+    // Create premium subscription
+    await prisma.subscription.create({
+      data: {
+        userId: userAtLimit.id,
+        status: SubscriptionStatus.ACTIVE,
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      }
+    });
 
-      const campaignPayload = {
-        senderId,
-        subject: "Quota Subject",
-        body: "Quota Body",
-        startTime: new Date().toISOString(),
-        delaySeconds: 0,
-        hourlyLimit: 100,
-        emails: ["quota-test@gmail.com"],
-        isPriority: true,
-      };
-  
-      const createRes = await request(app)
-        .post("/api/campaigns")
-        .set("Authorization", `Bearer ${signAccessToken({ id: userAtLimit.id, email: userAtLimit.email })}`)
-        .send(campaignPayload);
-  
-      const campaignId = createRes.body.campaignId;
-      const emailJob = await prisma.emailJob.findFirst({
-        where: { campaignId },
-      });
+    await prisma.priorityUserQuota.create({
+      data: {
+        userId: userAtLimit.id,
+        dailyCount: 50,
+        dailyLimit: 50,
+        dailyResetAt: new Date(Date.now() + 3600000), // 1 hour from now
+      }
+    });
 
-      const fakeJob = {
-        data: { emailJobId: emailJob!.id, userId: userAtLimit.id },
-      } as any;
+    const campaignPayload = {
+      senderId,
+      subject: "Quota Subject",
+      body: "Quota Body",
+      startTime: new Date().toISOString(),
+      delaySeconds: 0,
+      hourlyLimit: 100,
+      emails: ["quota-test@gmail.com"],
+      isPriority: true,
+    };
 
-      const priorityQueueAddSpy = priorityQueue.add as jest.Mock;
-      priorityQueueAddSpy.mockClear();
+    const createRes = await request(app)
+      .post("/api/campaigns")
+      .set("Authorization", `Bearer ${signAccessToken({ id: userAtLimit.id, email: userAtLimit.email })}`)
+      .send(campaignPayload);
 
-      await processPriorityJob(fakeJob);
+    const campaignId = createRes.body.campaignId;
+    const emailJob = await prisma.emailJob.findFirst({
+      where: { campaignId },
+    });
 
-      // 2. Verify it was re-queued due to quota exceeded
-      expect(priorityQueueAddSpy).toHaveBeenCalledWith(
-          "send-priority-email",
-          expect.objectContaining({ emailJobId: emailJob!.id }),
-          expect.objectContaining({ delay: expect.any(Number) })
-      );
+    const fakeJob = {
+      data: { emailJobId: emailJob!.id, userId: userAtLimit.id },
+    } as any;
 
-      const updatedPriorityRecord = await prisma.priorityQueueJob.findUnique({
-        where: { emailJobId: emailJob!.id },
-      });
-      expect(updatedPriorityRecord?.status).toBe("PRIORITY_PENDING");
-      expect(updatedPriorityRecord?.statusMessage).toContain("Daily priority quota exceeded");
+    const priorityQueueAddSpy = priorityQueue.add as jest.Mock;
+    priorityQueueAddSpy.mockClear();
+
+    await processPriorityJob(fakeJob);
+
+    // 2. Verify it was re-queued due to quota exceeded
+    expect(priorityQueueAddSpy).toHaveBeenCalledWith(
+      "send-priority-email",
+      expect.objectContaining({ emailJobId: emailJob!.id }),
+      expect.objectContaining({ delay: expect.any(Number) })
+    );
+
+    const updatedPriorityRecord = await prisma.priorityQueueJob.findUnique({
+      where: { emailJobId: emailJob!.id },
+    });
+    expect(updatedPriorityRecord?.status).toBe("PRIORITY_PENDING");
+    expect(updatedPriorityRecord?.statusMessage).toContain("Daily priority quota exceeded");
   });
 });

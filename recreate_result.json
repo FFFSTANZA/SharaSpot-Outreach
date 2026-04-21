@@ -1,0 +1,10 @@
+Initialized 118 tools
+MCP Server starting on stdio transport
+Registered 118 tools
+[INFO] MCP Server with stdio transport started successfully with 118 tools
+[DEBUG] Handling CallTool request: {"name":"VPS_recreateVirtualMachineV1","params":{"virtualMachineId":1558685,"template_id":1007,"password":"SharaSpot-Prod-2026#"}}
+[INFO] Executing tool: VPS_recreateVirtualMachineV1
+[DEBUG] API Request: POST https://developers.hostinger.com/api/vps/v1/virtual-machines/1558685/recreate
+[DEBUG] Request config:: {"url":"https://developers.hostinger.com/api/vps/v1/virtual-machines/1558685/recreate","method":"post","headers":["User-Agent","Authorization","Content-Type"]}
+[DEBUG] Response status: 200
+{"result":{"content":[{"type":"text","text":"{\"id\":90907833,\"name\":\"ct_recreate\",\"state\":\"started\",\"created_at\":\"2026-04-25T22:06:57Z\",\"updated_at\":\"2026-04-25T22:06:57Z\"}"}]},"jsonrpc":"2.0","id":1}

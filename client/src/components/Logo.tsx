@@ -34,7 +34,7 @@ export function Logo({ size = "md", variant = "dark", showText = true, className
     <div className={cn("flex items-center gap-2.5", className)}>
       <div className={cn(
         s.box,
-        "bg-[#00A63E]",
+        "bg-brand",
         "flex items-center justify-center",
       )}>
         <LogoMark className={s.svg} />
@@ -45,7 +45,7 @@ export function Logo({ size = "md", variant = "dark", showText = true, className
           "font-extrabold tracking-tight leading-none",
           textColor,
         )}>
-          Shara<span className="text-[#00A63E]">Spot</span>
+          Shara<span className="text-brand">Spot</span>
         </span>
       )}
     </div>
@@ -62,7 +62,7 @@ export function LogoIcon({ className, size = "md" }: { className?: string; size?
   return (
     <div className={cn(
       sizeClasses[size],
-      "bg-[#00A63E]",
+      "bg-brand",
       "flex items-center justify-center",
       className,
     )}>

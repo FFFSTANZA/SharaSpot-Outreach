@@ -9,6 +9,15 @@ export const createTemplate = async (
   res: Response
 ): Promise<void> => {
   try {
+    const { requirePremium } = await import("../utils/premiumCheck");
+    const globalCheck = await requirePremium(req.user!.id);
+    if (!globalCheck.allowed) {
+      res.status(403).json({
+        message: globalCheck.message,
+        upgradeRequired: true,
+      });
+      return;
+    }
     const { name, subject, body } = req.body;
 
     if (!name || typeof name !== "string" || name.trim() === "") {

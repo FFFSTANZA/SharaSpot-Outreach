@@ -14,6 +14,11 @@ jest.mock("../../config/prisma", () => ({
     sender: {
       create: jest.fn(),
       findMany: jest.fn(),
+      update: jest.fn(),
+    },
+    warmupSchedule: {
+      create: jest.fn().mockResolvedValue({ id: "warmup-1" }),
+      findUnique: jest.fn().mockResolvedValue(null),
     },
   },
 }));
@@ -45,6 +50,10 @@ jest.mock("../../utils/adaptiveThrottle", () => ({
 
 jest.mock("../../utils/dailyLimitTracker", () => ({
   getSentCountToday: jest.fn().mockResolvedValue(0),
+}));
+
+jest.mock("../../utils/premiumCheck", () => ({
+  requirePremium: jest.fn().mockResolvedValue({ allowed: true }),
 }));
 
 import * as fc from "fast-check";
@@ -242,6 +251,9 @@ describe("Sender Controller — Property-Based Tests", () => {
               data: expect.objectContaining({
                 appPassword: encryptedValue,
                 isVerified: true,
+                smtpHost: "smtp.gmail.com",
+                smtpPort: 465,
+                replyTo: null
               }),
             })
           );
@@ -361,7 +373,8 @@ describe("Sender Controller — Property-Based Tests", () => {
             isVerified: true,
             userId,
             smtpHost: "smtp.gmail.com",
-            smtpPort: 587,
+            smtpPort: 465,
+            replyTo: null,
             dailyLimit: 500,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -450,5 +463,54 @@ describe("Sender Controller — Property-Based Tests", () => {
       ),
       { numRuns: 100 }
     );
+  });
+
+  // -------------------------------------------------------------------------
+  // Property 25: Custom SMTP and Reply-To are Stored Correctly
+  // -------------------------------------------------------------------------
+  it("Property 25: successful creation stores custom smtpHost, smtpPort, and replyTo", async () => {
+    jest.clearAllMocks();
+
+    const body = {
+      name: "Custom Team",
+      email: "outreach@custom.com",
+      appPassword: "custom-pass-123",
+      smtpHost: "smtp.custom.io",
+      smtpPort: 587,
+      replyTo: "support@custom.com"
+    };
+
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({
+      verify: jest.fn().mockResolvedValue(true),
+    });
+    (encrypt as jest.Mock).mockReturnValue("encrypted-custom");
+    (prisma.sender.create as jest.Mock).mockResolvedValue({
+      ...body,
+      id: "sender-custom",
+      appPassword: "encrypted-custom"
+    });
+
+    const { req, res } = mockReqRes(body);
+    await createSender(req, res);
+
+    expect(nodemailer.createTransport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        host: "smtp.custom.io",
+        port: 587,
+        secure: false // Port 587 should not be secure (TLS), port 465 is secure (SSL)
+      })
+    );
+
+    expect(prisma.sender.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          smtpHost: "smtp.custom.io",
+          smtpPort: 587,
+          replyTo: "support@custom.com"
+        })
+      })
+    );
+
+    expect(res.status).toHaveBeenCalledWith(201);
   });
 });

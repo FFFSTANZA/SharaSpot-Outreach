@@ -6,28 +6,36 @@ import {
   reactivateSubscription,
   getSubscriptionStatus,
 } from "../services/subscriptionService";
+import { getCountryFromIp, isIndia } from "../utils/geoUtils";
 import { SUBSCRIPTION_PRICE_USD, SUBSCRIPTION_INTERVAL } from "../config/subscription";
+import { dodo } from "../config/dodo";
 
 export async function getSubscription(req: Request, res: Response): Promise<void> {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
 
+    const ipAddress = (req.headers["x-forwarded-for"] as string) || req.ip || "";
+    const countryCode = await getCountryFromIp(ipAddress);
+    const region = isIndia(countryCode) ? "india" : "global";
+
     const { isPremium, subscription } = await getSubscriptionStatus(userId);
 
     res.json({
       isPremium,
+      region,
       subscription: subscription
         ? {
-            status: subscription.status,
-            currentPeriodStart: subscription.currentPeriodStart,
-            currentPeriodEnd: subscription.currentPeriodEnd,
-            cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-            trialEnd: subscription.trialEnd,
-          }
+          status: subscription.status,
+          currentPeriodStart: subscription.currentPeriodStart,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          trialEnd: subscription.trialEnd,
+          dodoSubscriptionId: subscription.dodoSubscriptionId,
+        }
         : null,
       pricing: {
         amount: SUBSCRIPTION_PRICE_USD,
@@ -43,7 +51,7 @@ export async function getSubscription(req: Request, res: Response): Promise<void
 
 export async function createSubscription(req: Request, res: Response): Promise<void> {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
@@ -56,27 +64,34 @@ export async function createSubscription(req: Request, res: Response): Promise<v
     }
 
     const existing = await getSubscriptionStatus(userId);
-    if (existing.isPremium) {
-      res.status(400).json({ message: "Already subscribed to premium" });
+    // Only block if they already have an active PAID subscription
+    if (existing.subscription?.dodoSubscriptionId && existing.subscription.status === "ACTIVE") {
+      res.status(400).json({ message: "Already subscribed to Pro Outreach Pro" });
       return;
     }
+
+    const ipAddress = (req.headers["x-forwarded-for"] as string) || req.ip;
 
     const { checkoutUrl, sessionId } = await createCheckoutSession(
       userId,
       user.email,
-      user.name
+      user.name,
+      ipAddress
     );
 
     res.json({ checkoutUrl, sessionId });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating checkout session:", error);
-    res.status(500).json({ message: "Failed to create checkout session" });
+    res.status(500).json({
+      message: "Failed to create checkout session",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 }
 
 export async function cancelUserSubscription(req: Request, res: Response): Promise<void> {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
@@ -92,7 +107,7 @@ export async function cancelUserSubscription(req: Request, res: Response): Promi
 
 export async function reactivateUserSubscription(req: Request, res: Response): Promise<void> {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
@@ -107,35 +122,72 @@ export async function reactivateUserSubscription(req: Request, res: Response): P
 }
 
 export async function handleWebhook(req: Request, res: Response): Promise<void> {
-  try {
-    const event = req.body;
+  console.log("Dodo Webhook received:", req.body);
 
-    switch (event.type) {
+  const secret = process.env.DODO_WEBHOOK_SECRET;
+  let event: any;
+
+  if (secret) {
+    try {
+      const body = JSON.stringify(req.body);
+      const headers = req.headers as Record<string, string>;
+      event = dodo.webhooks.unwrap(body, { headers, key: secret });
+      console.log(`[SUBSCRIPTION-WEBHOOK] Verified event: ${event.type}`);
+    } catch (error) {
+      console.error("[SUBSCRIPTION-WEBHOOK] Signature verification failed:", error);
+      res.status(401).json({ error: "Invalid signature" });
+      return;
+    }
+  } else {
+    console.warn("[SUBSCRIPTION-WEBHOOK] DODO_WEBHOOK_SECRET not set, skipping signature verification");
+    event = req.body;
+  }
+
+  try {
+    const { type, data } = event;
+
+    switch (type) {
       case "checkout.session.completed":
-        await handleCheckoutCompleted(event.data.session_id, event.data.metadata?.userId);
+        console.log(`[SUBSCRIPTION-WEBHOOK] Checkout completed: ${data.session_id}`);
+        await handleCheckoutCompleted(
+          data.session_id,
+          data.metadata?.userId || data.customer_id,
+          data.subscription_id,
+          data.customer_id
+        );
         break;
+
       case "subscription.active":
-      case "subscription.updated":
       case "subscription.cancelled":
-      case "subscription.on_hold":
       case "subscription.expired":
-        await handleSubscriptionUpdate(event.data);
+      case "subscription.failed":
+      case "subscription.on_hold":
+      case "subscription.renewed":
+      case "subscription.updated":
+        console.log(`[SUBSCRIPTION-WEBHOOK] Subscription updated: ${data.subscription_id || data.id} (${type})`);
+        await handleSubscriptionUpdate(data);
         break;
+
       default:
-        console.log(`Unhandled webhook event type: ${event.type}`);
+        console.log(`[SUBSCRIPTION-WEBHOOK] Unhandled event type: ${type}`);
     }
 
-    res.json({ received: true });
+    res.status(200).json({ received: true });
   } catch (error) {
-    console.error("Webhook error:", error);
-    res.status(500).json({ message: "Webhook processing failed" });
+    console.error("[SUBSCRIPTION-WEBHOOK] Error processing event:", error);
+    res.status(500).json({ error: "Webhook handling failed" });
   }
 }
 
-async function handleCheckoutCompleted(sessionId: string, userId?: string): Promise<void> {
+async function handleCheckoutCompleted(
+  sessionId: string,
+  userId?: string,
+  dodoSubscriptionId?: string,
+  dodoCustomerId?: string
+): Promise<void> {
   if (!userId) return;
   const { handleCheckoutCompleted: handleComplete } = await import("../services/subscriptionService");
-  await handleComplete(sessionId, userId);
+  await handleComplete(sessionId, userId, dodoSubscriptionId, dodoCustomerId);
 }
 
 async function handleSubscriptionUpdate(data: any): Promise<void> {

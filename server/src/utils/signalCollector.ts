@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma";
 import dns from "dns";
 import { promisify } from "util";
+import { resolveMxWithTiming } from "./mxResolver";
 
 const dnsResolveMx = promisify(dns.resolveMx);
 
@@ -37,9 +38,9 @@ export async function collectSmtpTiming(
 
   try {
     // Resolve MX records with timing
-    const mxStart = Date.now();
     const mxRecords = await resolveMxWithTiming(recipientDomain);
-    const mxResolveMs = Date.now() - mxStart;
+    // Use the best MX record's latency for estimations
+    const mxResolveMs = mxRecords[0]?.latencyMs ?? 100;
 
     // Estimate typical SMTP timings based on MX response
     // In production, this would hook into nodemailer's actual events
@@ -86,25 +87,6 @@ export async function collectSmtpTiming(
 }
 
 /**
- * Resolve MX records with timing measurement
- */
-async function resolveMxWithTiming(domain: string): Promise<string[]> {
-  const startTime = Date.now();
-  
-  try {
-    const mxRecords = await dnsResolveMx(domain);
-    const elapsed = Date.now() - startTime;
-    
-    console.log(`[SIGNAL] MX resolve for ${domain}: ${elapsed}ms`);
-    
-    return mxRecords.map(r => r.exchange);
-  } catch (error) {
-    console.warn(`[SIGNAL] MX resolve failed for ${domain}:`, error);
-    return [];
-  }
-}
-
-/**
  * Compute congestion score (0-1000) based on SMTP timings
  * 
  * Scores:
@@ -122,7 +104,7 @@ export function computeCongestionScore(metrics: SmtpSignalMetrics): number {
   const dataWeight = 0.15;
 
   // Calculate weighted score
-  const rawScore = 
+  const rawScore =
     (metrics.tcpConnectMs * tcpWeight) +
     (metrics.greetingDelayMs * greetingWeight) +
     (metrics.tlsHandshakeMs * tlsWeight) +
@@ -132,7 +114,7 @@ export function computeCongestionScore(metrics: SmtpSignalMetrics): number {
 
   // Scale to 0-1000
   const scaledScore = Math.min(1000, Math.round(rawScore / 10));
-  
+
   return scaledScore;
 }
 
@@ -185,7 +167,7 @@ export async function getSenderSignalStats(senderId: string): Promise<{
   }
 
   const sum = signals.reduce((acc, s) => acc + s.congestionScore, 0);
-  
+
   return {
     avgCongestionScore: Math.round(sum / signals.length),
     totalSignals: signals.length,

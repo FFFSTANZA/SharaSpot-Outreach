@@ -7,27 +7,31 @@ import { BRAND_CONFIG } from "@/lib/config";
 const faqs = [
     {
         q: "I am not technical at all. Can I still use this?",
-        a: "Yes. You connect your Gmail or Outlook account, upload a spreadsheet of contacts, write your email, and click send. The 14-day account warmup, sending rotation, and reply detection all happen automatically in the background. Most people have their first campaign running on the same day they sign up."
+        a: "Yes. You simply connect your email account, upload your contacts, and write your message. Our system handles everything else in the background—from establishing your professional reputation to ensuring your outreach arrives at the perfect time. Most people have their first outcome-driven campaign running the same day they sign up."
     },
     {
-        q: "Why is my outreach landing in spam?",
-        a: "Usually one of three reasons: you are sending too many emails from a single account (Gmail flags this quickly), your email account is too new with no sending history, or your message looks identical to thousands of other cold emails and spam filters recognize the pattern. SharaSpot addresses all three."
+        q: "How does the AI Follow-up Generator work?",
+        a: "Our AI engine uses 'Context Locking' to analyze your original email and craft follow-ups that reference specific value anchors. This ensures every message feels like a direct, human-to-human continuation of your first outreach."
+    },
+    {
+        q: "Can I use multiple email accounts?",
+        a: "Yes. SharaSpot is built for scale. You can connect multiple SMTP accounts and our multi-sender rotation system will automatically distribute your campaign volume across them to maximize deliverability."
     },
     {
         q: "What happens when someone on my list replies?",
-        a: "SharaSpot monitors your inbox. The moment a reply arrives from anyone in your campaign, their follow-up sequence is cut immediately. You will not accidentally send a follow-up to an investor who already agreed to a call, or to a candidate who already declined."
+        a: "The moment a reply arrives, SharaSpot stops all follow-up actions for that person immediately. This prevents the awkwardness of sending a robotic follow-up to someone who has already engaged, preserving the professional respect you've built."
     },
     {
-        q: "I tried a cold email tool before. Why would this be different?",
-        a: "Most tools focus on volume. SharaSpot focuses on delivery and readability. The relevant question is not how many emails you can send, but how many land in the primary inbox and read like a personal message. That is where reply rates are won or lost."
+        q: "Why is my outreach landing in spam?",
+        a: "Usually it is because your account is being flagged as a 'promotions' sender. Standard tools send emails in predictable, robotic batches. SharaSpot fixes this by making your activity indistinguishable from a personal, one-to-one email sent by a human."
     },
     {
-        q: "Is it safe to use with my main Gmail account?",
-        a: "We recommend connecting a domain-based email (like yourname@yourcompany.com) rather than your personal Gmail. SharaSpot warms up that account first and keeps daily volume safe. You can add multiple accounts to spread the load further. Your main personal address stays untouched."
+        q: "Is it safe to use with my main work account?",
+        a: "Yes. SharaSpot establishes a safe sending limit and uses an adaptive warmup algorithm to protect your account's reputation. Your primary professional identity is always our first priority."
     },
     {
         q: `How much does it cost?`,
-        a: `During early access, it is $${BRAND_CONFIG.pricing.monthly} per month. That includes everything. Priority sending, unlimited campaigns, tracking, and reply detection. There are no seat limits and no feature tiers. The price will increase when we launch publicly.`
+        a: `During early access, it is ${BRAND_CONFIG.pricing.global.symbol}${BRAND_CONFIG.pricing.global.amount} per month for full access to our premium infrastructure. This includes Priority Sending, AI Follow-ups, and PRM capabilities.`
     },
 ];
 
@@ -59,44 +63,48 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function FAQ() {
     return (
-        <section id="faq" className="py-20 lg:py-28 bg-[#f8f9fa] relative overflow-hidden">
+        <section id="faq" className="py-24 bg-white relative overflow-hidden border-t border-slate-100">
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-border-light to-transparent" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-border-light to-transparent" />
-                <div className="absolute top-1/3 right-[5%] w-[350px] h-[350px] rounded-full bg-[#00A63E]/[0.02] blur-3xl" />
-                <div className="absolute bottom-1/4 left-[10%] w-[300px] h-[300px] rounded-full bg-brand/[0.015] blur-3xl" />
+                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand/[0.03] blur-[120px] rounded-full opacity-50" />
+                <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-brand/[0.03] blur-[120px] rounded-full opacity-50" />
             </div>
 
-            <div className="max-w-6xl mx-auto px-6 relative">
-
-                <div className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20">
-                    <div>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-text-primary tracking-tight leading-tight">
-                            Questions
-                        </h2>
+            <div className="max-w-4xl mx-auto px-6 relative">
+                <div className="text-center mb-20">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/[0.05] border border-brand/10 text-brand text-[10px] font-bold tracking-[0.2em] uppercase mb-6">
+                        Support & Knowledge
                     </div>
+                    <h2 className="text-4xl lg:text-5xl font-black text-text-primary tracking-tighter leading-tight mb-6">
+                        Everything you need <br /><span className="text-brand">to know.</span>
+                    </h2>
+                    <p className="text-text-secondary text-lg font-medium max-w-xl mx-auto">
+                        Got a question? We have answers. If you don't find what you are looking for, our support team is just a click away.
+                    </p>
+                </div>
 
-                    <div>
-                        {faqs.map((f, i) => (
-                            <FAQItem key={i} q={f.q} a={f.a} />
-                        ))}
+                <div className="bg-[#fcfcfc] border border-border-light rounded-[32px] p-2 lg:p-4 shadow-sm">
+                    <div className="bg-white border border-border-light rounded-[24px] overflow-hidden p-6 lg:p-10">
+                        <div className="divide-y divide-slate-100">
+                            {faqs.map((f, i) => (
+                                <FAQItem key={i} q={f.q} a={f.a} />
+                            ))}
+                        </div>
 
-                        <div className="pt-8 mt-2">
-                            <p className="text-sm text-text-secondary">
-                                Something else on your mind?{" "}
-                                <a
-                                    href={BRAND_CONFIG.supportUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-brand font-medium hover:underline underline-offset-4"
-                                >
-                                    Talk to the team
-                                </a>
+                        <div className="pt-10 mt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <p className="text-sm text-text-muted font-medium">
+                                Something else on your mind?
                             </p>
+                            <a
+                                href={BRAND_CONFIG.supportUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-brand text-white text-[11px] font-black uppercase tracking-widest px-8 py-3.5 rounded-xl hover:bg-brand/90 transition-all shadow-lg shadow-brand/20"
+                            >
+                                Talk to the team
+                            </a>
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
     );

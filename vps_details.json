@@ -1,0 +1,10 @@
+Initialized 118 tools
+MCP Server starting on stdio transport
+Registered 118 tools
+[INFO] MCP Server with stdio transport started successfully with 118 tools
+[DEBUG] Handling CallTool request: {"name":"VPS_getVirtualMachineDetailsV1","params":{"virtualMachineId":1558685}}
+[INFO] Executing tool: VPS_getVirtualMachineDetailsV1
+[DEBUG] API Request: GET https://developers.hostinger.com/api/vps/v1/virtual-machines/1558685
+[DEBUG] Request config:: {"url":"https://developers.hostinger.com/api/vps/v1/virtual-machines/1558685","method":"get","params":{},"headers":["User-Agent","Authorization"]}
+[DEBUG] Response status: 200
+{"result":{"content":[{"type":"text","text":"{\"id\":1558685,\"firewall_group_id\":null,\"subscription_id\":\"169ySDVFqO0kM5yK1\",\"data_center_id\":12,\"plan\":\"KVM 2\",\"hostname\":\"srv1558685.hstgr.cloud\",\"state\":\"recreating\",\"actions_lock\":\"locked\",\"cpus\":2,\"memory\":8192,\"disk\":102400,\"bandwidth\":8192000,\"ns1\":\"153.92.2.6\",\"ns2\":\"1.1.1.1\",\"ipv4\":[{\"id\":22210,\"address\":\"194.59.165.179\",\"ptr\":\"srv1558685.hstgr.cloud\"}],\"ipv6\":[{\"id\":689150,\"address\":\"2a02:4780:e:edc1::1\",\"ptr\":\"srv1558685.hstgr.cloud\"}],\"template\":{\"id\":1007,\"name\":\"Ubuntu 22.04 LTS\",\"description\":\"Ubuntu is a computer operating system based on the Debian Linux distribution and distributed as free and open source software, using its own desktop environment. Ubuntu is designed primarily for use on personal computers, although a server edition also exists.\",\"documentation\":null},\"created_at\":\"2026-04-04T17:23:08Z\"}"}]},"jsonrpc":"2.0","id":1}

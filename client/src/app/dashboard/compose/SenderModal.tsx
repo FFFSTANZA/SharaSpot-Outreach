@@ -6,29 +6,23 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { createSender, verifySender } from "@/lib/apis";
 import { SenderModalProps } from "@/types";
-import { Loader2, AlertCircle, ExternalLink } from "lucide-react";
+import { Loader2, AlertCircle, ExternalLink, Settings, Globe, Reply } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { cn } from "@/lib/utils";
 
 /**
  * SenderModal - Add a new sender or verify an existing unverified sender.
- *
- * Two modes:
- * 1. "Add" mode (default): All fields editable, calls createSender.
- * 2. "Verify" mode (existingSender provided): Email is read-only/pre-filled,
- *    only name + appPassword are editable, calls verifySender.
- *
- * WHY modal instead of separate page: Users should be able to add a sender
- * without leaving the compose flow. Interrupting campaign creation to navigate
- * to a settings page would lose their form data.
- *
- * WHY App Password field: Google requires App Passwords for third-party SMTP
- * access since they disabled "Less Secure App" access in May 2022.
+ * Supports custom SMTP (Host/Port) and default Reply-To.
  */
 export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: SenderModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [appPassword, setAppPassword] = useState("");
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState("465");
+  const [replyTo, setReplyTo] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [skipWarmup, setSkipWarmup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,17 +31,23 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
 
   const isVerifyMode = !!existingSender;
 
-  // Pre-fill fields when entering verify mode
+  // Pre-fill fields
   useEffect(() => {
     if (existingSender && isOpen) {
       setName(existingSender.name || "");
       setEmail(existingSender.email);
+      setSmtpHost(existingSender.smtpHost || "");
+      setSmtpPort(existingSender.smtpPort?.toString() || "465");
+      setReplyTo(existingSender.replyTo || "");
       setAppPassword("");
       setSkipWarmup(false);
       setError(null);
     } else if (!existingSender && isOpen) {
       setName("");
       setEmail("");
+      setSmtpHost("");
+      setSmtpPort("465");
+      setReplyTo("");
       setAppPassword("");
       setSkipWarmup(false);
       setError(null);
@@ -66,6 +66,16 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
 
     try {
       let sender;
+      const payload = {
+        name,
+        email,
+        appPassword,
+        smtpHost: smtpHost.trim() || undefined,
+        smtpPort: smtpPort ? parseInt(smtpPort) : undefined,
+        replyTo: replyTo.trim() || undefined,
+        skipWarmup: skipWarmup || undefined,
+      };
+
       if (isVerifyMode) {
         sender = await verifySender(existingSender.id, {
           name: name.trim() || undefined,
@@ -73,33 +83,16 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
           skipWarmup: skipWarmup || undefined,
         });
       } else {
-        sender = await createSender({ name, email, appPassword, skipWarmup: skipWarmup || undefined });
+        sender = await createSender(payload);
       }
-      // Reset form and notify parent
-      setName("");
-      setEmail("");
-      setAppPassword("");
-      if (isVerifyMode) {
-        addToast("success", `Sender verified: ${existingSender.email}`);
-      } else {
-        addToast("success", `Sender added: ${email}`);
-      }
+
+      addToast("success", isVerifyMode ? `Sender updated` : `Sender added: ${email}`);
       onSuccess(sender);
       onClose();
     } catch (err: any) {
-      const status = err?.response?.status;
-      const message = err?.response?.data?.message;
-
-      let errorMessage: string;
-      if (status === 409) {
-        errorMessage = "This sender email already exists for your account.";
-      } else if (status === 400) {
-        errorMessage = message || "Invalid credentials. Please check your email and app password.";
-      } else {
-        errorMessage = "Something went wrong. Please try again.";
-      }
-      setError(errorMessage);
-      addToast("error", `Verification failed: ${errorMessage}`);
+      const message = err?.response?.data?.message || "Something went wrong. Please try again.";
+      setError(message);
+      addToast("error", `Failed: ${message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -118,123 +111,153 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
       onClose={handleClose}
       variant={isMobile ? "bottom-sheet" : "center"}
     >
-      <div className="p-8 space-y-6">
+      <div className="p-8 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar bg-white">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            {isVerifyMode ? "Verify Sender" : "Add Sender Account"}
+          <h2 className="text-xl font-bold text-text-primary tracking-tight">
+            {isVerifyMode ? "Configure Sender" : "Add Sender Account"}
           </h2>
-          <p className="text-sm text-gray-400 mt-1">
-            {isVerifyMode
-              ? "Add your Google App Password to verify this sender for campaigns."
-              : "Connect a Gmail or Google Workspace account for sending campaigns."}
+          <p className="text-sm font-medium text-text-secondary mt-1">
+            Connect any SMTP provider or Google account.
           </p>
         </div>
 
-        {/* Error message */}
         {error && (
-          <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-100 px-3 py-2.5 text-sm text-red-600">
+          <div className="flex items-start gap-2 rounded-xl bg-error-bg border border-error-border/30 px-4 py-3 text-sm text-error-text font-medium">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Form fields */}
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Sender Name</label>
-            <Input
-              type="text"
-              placeholder="e.g. Sales Team"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={isSubmitting}
-            />
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">Sender Name</label>
+              <Input
+                type="text"
+                placeholder="e.g. Sales Team"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">Email Address</label>
+              <Input
+                type="email"
+                placeholder="e.g. sales@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting || isVerifyMode}
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Email Address</label>
-            <Input
-              type="email"
-              placeholder="e.g. sales@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isSubmitting || isVerifyMode}
-            />
-            {isVerifyMode && (
-              <p className="mt-1 text-[11px] text-gray-400">
-                Email cannot be changed for an existing sender.
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">
-              Google App Password
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">
+              App Password / SMTP Password
             </label>
             <Input
               type="password"
-              placeholder="16-character app password"
+              placeholder="Your 16-character app password"
               value={appPassword}
               onChange={(e) => setAppPassword(e.target.value)}
               disabled={isSubmitting}
             />
-            <p className="mt-1.5 text-[11px] text-gray-400 leading-relaxed">
-              App Passwords are 16-character codes generated by Google for third-party apps.
-              You need 2-Step Verification enabled first.{" "}
-              <a
-                href="https://myaccount.google.com/apppasswords"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand hover:underline inline-flex items-center gap-0.5"
-              >
-                Generate one here <ExternalLink className="h-2.5 w-2.5" />
-              </a>
+            <p className="mt-2 text-[10px] font-semibold text-text-muted leading-relaxed flex items-center gap-1.5">
+              <ExternalLink className="h-3 w-3" />
+              For Gmail, use a Google App Password.{" "}
+              <a href="https://myaccount.google.com/apppasswords" target="_blank" className="text-brand hover:underline">Generate here</a>
             </p>
           </div>
 
-          {/* Skip warmup option */}
-          <label className="flex items-start gap-2.5 cursor-pointer">
+          {/* Advanced Settings Toggle */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex items-center gap-2 text-xs font-bold text-brand hover:text-brand-dark transition-colors"
+            >
+              <Settings className={cn("h-3.5 w-3.5 transition-transform duration-300", showAdvanced && "rotate-90")} />
+              {showAdvanced ? "Hide SMTP Settings" : "Configure Custom SMTP"}
+            </button>
+          </div>
+
+          {showAdvanced && (
+            <div className="space-y-4 pt-4 border-t border-border-light animate-in">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2 space-y-1.5">
+                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">
+                    <Globe className="inline h-3 w-3 mr-1.5" /> SMTP Host
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="smtp.gmail.com"
+                    value={smtpHost}
+                    onChange={(e) => setSmtpHost(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em] text-center">Port</label>
+                  <Input
+                    type="number"
+                    placeholder="465"
+                    value={smtpPort}
+                    onChange={(e) => setSmtpPort(e.target.value)}
+                    className="text-center"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">
+                  <Reply className="inline h-3 w-3 mr-1.5" /> Default Reply-To
+                </label>
+                <Input
+                  type="email"
+                  placeholder="e.g. founders@company.com"
+                  value={replyTo}
+                  onChange={(e) => setReplyTo(e.target.value)}
+                />
+                <p className="mt-1.5 text-[10px] text-text-muted font-semibold">
+                  Replies will be routed here instead of the sender address.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <label className="flex items-start gap-4 cursor-pointer p-4 rounded-xl border border-border-light bg-interactive-hover/30 hover:bg-interactive-hover transition-colors">
             <input
               type="checkbox"
               checked={skipWarmup}
               onChange={(e) => setSkipWarmup(e.target.checked)}
-              disabled={isSubmitting}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-brand focus:ring-brand"
+              className="mt-1 h-4 w-4 rounded border-border-medium text-brand focus:ring-brand/20 transition-all"
             />
-            <div>
-              <span className="text-xs font-medium text-gray-600">Skip warmup period</span>
-              <p className="text-[11px] text-gray-400 leading-relaxed mt-0.5">
-                New senders go through a 14-day warmup that gradually increases daily limits.
-                Skip this if the account already has sending history.
+            <div className="space-y-0.5">
+              <span className="text-xs font-bold text-text-primary">Skip Provider Warmup</span>
+              <p className="text-[10px] text-text-secondary font-medium leading-relaxed">
+                Send at full volume immediately. Only recommended for established accounts with good reputation.
               </p>
             </div>
           </label>
         </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
-          <button
+        <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-light">
+          <Button
+            variant="ghost"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium text-gray-500 hover:text-gray-700 disabled:opacity-50"
+            className="px-6"
           >
             Cancel
-          </button>
+          </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!isFormValid || isSubmitting}
-            className="w-auto px-5 py-2 rounded-lg text-xs"
+            isLoading={isSubmitting}
+            disabled={!isFormValid}
+            className="px-8"
           >
-            {isSubmitting ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Verifying...
-              </span>
-            ) : isVerifyMode ? (
-              "Verify & Connect"
-            ) : (
-              "Add Sender"
-            )}
+            {isVerifyMode ? "Update Account" : "Connect Account"}
           </Button>
         </div>
       </div>

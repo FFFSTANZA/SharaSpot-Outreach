@@ -15,6 +15,8 @@ jest.mock("ioredis", () => {
   return jest.fn().mockImplementation((opts: any) => ({
     ...opts,
     disconnect: jest.fn(),
+    on: jest.fn(),
+    quit: jest.fn().mockResolvedValue("OK"),
   }));
 });
 

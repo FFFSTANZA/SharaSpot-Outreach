@@ -1,27 +1,52 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { SidebarItem } from "@/components/SidebarItem";
 import { SidebarProps } from "@/types";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { X, Megaphone, LogOut, FileText, Plus, Settings, CreditCard, Users } from "lucide-react";
+import { X, Megaphone, LogOut, FileText, Plus, Settings, CreditCard, Users, Mail, Inbox, HelpCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { logout } from "@/lib/apis";
+import { TrialBanner } from "@/components/TrialBanner";
+import { logout, getUnreadCount, getSenders } from "@/lib/apis";
 import { cn } from "@/lib/utils";
 import Button from "@/components/Button";
 
-export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarProps) {
+export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], groups }: SidebarProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { isOpen, close } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
   const touchStartX = useRef(0);
 
+  useEffect(() => {
+    getSenders().then(senders => {
+      if (senders[0]?.id) {
+        getUnreadCount(senders[0].id).then(res => {
+          setUnreadCount(res.unreadCount || 0);
+        }).catch(() => { });
+      }
+    }).catch(() => { });
+  }, []);
+
   const handleNavClick = useCallback(
-    (item: (typeof items)[number]) => {
-      if (pathname !== "/dashboard") {
+    (item: any) => {
+      if (item.onClick) {
+        item.onClick();
+        close();
+        return;
+      }
+
+      if (item.href) {
+        router.push(item.href);
+        close();
+        return;
+      }
+
+      // Default dashboard filtering behavior
+      if (pathname !== "/dashboard" && !pathname.startsWith("/dashboard?")) {
         const queryParams = new URLSearchParams();
         if (item.label === "Scheduled") queryParams.set("status", "PENDING");
         if (item.label === "Sent") queryParams.set("status", "SENT");
@@ -54,7 +79,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
     router.push("/login");
   };
 
-  const menuGroups = [
+  const menuGroups = groups || [
     {
       title: "Navigation",
       links: items.map(item => ({
@@ -66,8 +91,9 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
     {
       title: "Outreach",
       links: [
-        { label: "Campaigns", href: "/dashboard/campaigns", icon: <Megaphone size={18} /> },
+        { label: "Inbox", href: "/dashboard/inbox", icon: <Inbox size={18} />, count: unreadCount },
         { label: "Contacts", href: "/dashboard/prm", icon: <Users size={18} /> },
+        { label: "Accounts", href: "/dashboard/senders", icon: <Mail size={18} /> },
         { label: "Templates", href: "/dashboard/templates", icon: <FileText size={18} /> },
       ]
     },
@@ -80,6 +106,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
     }
   ];
 
+
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="mb-10 px-2 shrink-0">
@@ -87,6 +114,8 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           <Logo size="md" />
         </Link>
       </div>
+
+      <TrialBanner />
 
       <div className="mb-8 shrink-0">
         <Button
@@ -101,7 +130,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
       <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
         {menuGroups.map((group) => (
           <div key={group.title}>
-            <h3 className="px-3 mb-3 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
+            <h3 className="px-3 mb-3 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
               {group.title}
             </h3>
             <div className="space-y-1">
@@ -183,8 +212,8 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
 
       {isOpen && (
         <>
-          <div className="lg:hidden fixed inset-0 z-40 bg-text-primary/10 backdrop-blur-sm animate-in" onClick={close} />
-          <aside className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] bg-white p-6 border-r border-border-light shadow-2xl animate-up">
+          <div className="lg:hidden fixed inset-0 z-40 bg-text-primary/10 backdrop-blur-md animate-in" onClick={close} />
+          <aside className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] bg-white/95 backdrop-blur-sm p-6 border-r border-border-light shadow-premium-lg animate-up">
             <button
               onClick={close}
               className="absolute right-4 top-4 p-2 text-text-muted hover:text-text-primary"
@@ -195,6 +224,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items }: SidebarP
           </aside>
         </>
       )}
+      {/* Sidebar logic ends here */}
     </>
   );
 }

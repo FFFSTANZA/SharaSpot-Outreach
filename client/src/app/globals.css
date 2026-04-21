@@ -34,12 +34,74 @@
   --color-error-border: #FCA5A5;
 
   /* Shadows - Minimalist depth */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-brand-glow: 0 0 20px rgba(0, 166, 56, 0.15);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-premium-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-premium-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-premium-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-brand-glow: 0 0 25px rgba(0, 166, 56, 0.12);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-blur: 12px;
 
   /* Motion Tokens */
-  --animate-in: fade-in 0.4s ease-out forwards;
+  --animate-in: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-up: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-scale: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-toast-enter: toast-enter 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  --animate-toast-exit: toast-exit 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+  --animate-toast-progress: toast-progress linear forwards;
+  --animate-toast-nudge: toast-nudge 0.3s ease-out forwards;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toast-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+}
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes toast-nudge {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }
 
 /* 
@@ -73,6 +135,18 @@
 
 .shadow-sm {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.shadow-premium-glow {
+  box-shadow: 0 0 20px rgba(0, 166, 62, 0.15), 0 0 40px rgba(0, 166, 62, 0.05);
+}
+
+.shadow-premium-hover:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.bg-premium-gradient {
+  background: linear-gradient(135deg, #1A1D21 0%, #2D3339 100%);
 }
 
 @layer base {
@@ -127,6 +201,7 @@
   0% {
     background-position: 0 0, 0 0, 0 0;
   }
+
   100% {
     background-position: 40px 40px, 40px 40px, 40px 40px;
   }
@@ -166,12 +241,48 @@ body {
    TIPTAP EDITOR REFINEMENT 
 */
 .tiptap {
-  @apply outline-none min-h-[200px] text-text-primary leading-relaxed;
+  @apply outline-none min-h-[200px] text-text-primary leading-relaxed p-4;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   @apply float-left text-text-muted pointer-events-none h-0 italic;
+}
+
+/* Headings */
+.tiptap h1 {
+  @apply text-2xl font-bold mb-4 mt-6;
+}
+
+.tiptap h2 {
+  @apply text-xl font-bold mb-3 mt-5;
+}
+
+.tiptap h3 {
+  @apply text-lg font-bold mb-2 mt-4;
+}
+
+/* Lists */
+.tiptap ul {
+  @apply list-disc ml-5 mb-4 space-y-1;
+}
+
+.tiptap ol {
+  @apply list-decimal ml-5 mb-4 space-y-1;
+}
+
+.tiptap li {
+  @apply pl-1;
+}
+
+/* Blockquotes */
+.tiptap blockquote {
+  @apply border-l-4 border-brand-muted pl-4 italic text-text-secondary my-4;
+}
+
+/* Code */
+.tiptap code {
+  @apply bg-gray-100 px-1 py-0.5 rounded text-brand font-mono text-sm;
 }
 
 /* Scrollbar styling */

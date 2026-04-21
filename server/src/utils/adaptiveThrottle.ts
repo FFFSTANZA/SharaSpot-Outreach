@@ -1,10 +1,12 @@
 import { prisma } from "../config/prisma";
+import { sysLog } from "./systemLogger";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 export const ERROR_RATE_THRESHOLD = 0.1; // 10%
 export const BOUNCE_RATE_THRESHOLD = 0.05; // 5%
 export const CONSECUTIVE_ERROR_LIMIT = 3;
+export const QUARANTINE_ERROR_LIMIT = 10;
 export const COOLDOWN_DURATION_MS = parseInt(
   process.env.COOLDOWN_DURATION_MS || "300000",
   10
@@ -18,7 +20,9 @@ export interface AdaptiveState {
   consecutiveErrors: number;
   isThrottled: boolean;
   isCooldown: boolean;
+  isQuarantined: boolean;
   cooldownExpiresAt?: Date;
+  quarantinedAt?: Date;
   rateMultiplier: number;
 }
 
@@ -27,13 +31,6 @@ export interface AdaptiveState {
 /**
  * Computes the adaptive throttle state for a sender by querying EmailJob
  * records within a rolling 1-hour window and checking SenderCooldown state.
- *
- * - errorRate: ratio of FAILED jobs to total completed jobs (SENT + FAILED)
- * - bounceRate: ratio of bounce-like failures (error message containing "bounce"
- *   or a 5xx status code pattern) to total completed jobs
- * - isThrottled: true if errorRate > ERROR_RATE_THRESHOLD OR bounceRate > BOUNCE_RATE_THRESHOLD
- * - rateMultiplier: 0.5 when throttled, 1.0 otherwise (not stacked)
- * - isCooldown: true if the sender's cooldownUntil is in the future
  */
 export async function getAdaptiveState(
   senderId: string
@@ -54,7 +51,6 @@ export async function getAdaptiveState(
   const failedJobs = recentJobs.filter((j) => j.status === "FAILED");
   const failedCount = failedJobs.length;
 
-  // Detect bounces: FAILED jobs whose error message contains "bounce" or a 5xx code
   const bouncedCount = failedJobs.filter((j) => {
     if (!j.error) return false;
     const lower = j.error.toLowerCase();
@@ -71,8 +67,12 @@ export async function getAdaptiveState(
 
   const consecutiveErrors = cooldown?.consecutiveErrors ?? 0;
   const now = new Date();
-  const isCooldown = cooldown?.cooldownUntil != null && cooldown.cooldownUntil > now;
+
+  const isQuarantined = cooldown?.quarantinedAt != null;
+  const isCooldown = !isQuarantined && cooldown?.cooldownUntil != null && cooldown.cooldownUntil > now;
+
   const cooldownExpiresAt = isCooldown ? cooldown!.cooldownUntil! : undefined;
+  const quarantinedAt = isQuarantined ? cooldown!.quarantinedAt! : undefined;
 
   const isThrottled =
     errorRate > ERROR_RATE_THRESHOLD || bounceRate > BOUNCE_RATE_THRESHOLD;
@@ -84,7 +84,9 @@ export async function getAdaptiveState(
     consecutiveErrors,
     isThrottled,
     isCooldown,
+    isQuarantined,
     cooldownExpiresAt,
+    quarantinedAt,
     rateMultiplier,
   };
 }
@@ -92,8 +94,8 @@ export async function getAdaptiveState(
 /**
  * Records a consecutive SMTP error for the sender.
  * Upserts the SenderCooldown record, incrementing consecutiveErrors.
- * If consecutiveErrors reaches CONSECUTIVE_ERROR_LIMIT, sets cooldownUntil
- * to now + COOLDOWN_DURATION_MS.
+ * If consecutiveErrors reaches CONSECUTIVE_ERROR_LIMIT, sets cooldownUntil.
+ * If consecutiveErrors reaches QUARANTINE_ERROR_LIMIT, sets quarantinedAt.
  */
 export async function recordConsecutiveError(
   senderId: string
@@ -103,10 +105,24 @@ export async function recordConsecutiveError(
   });
 
   const newCount = (existing?.consecutiveErrors ?? 0) + 1;
-  const cooldownUntil =
-    newCount >= CONSECUTIVE_ERROR_LIMIT
-      ? new Date(Date.now() + COOLDOWN_DURATION_MS)
-      : existing?.cooldownUntil ?? null;
+  let cooldownUntil = existing?.cooldownUntil ?? null;
+  let quarantinedAt = existing?.quarantinedAt ?? null;
+
+  if (newCount >= QUARANTINE_ERROR_LIMIT && !quarantinedAt) {
+    quarantinedAt = new Date();
+    await sysLog.critical("SENDER", `Sender ${senderId} has been QUARANTINED due to ${newCount} consecutive SMTP errors.`, {
+      senderId,
+      consecutiveErrors: newCount
+    });
+  } else if (newCount >= CONSECUTIVE_ERROR_LIMIT) {
+    cooldownUntil = new Date(Date.now() + COOLDOWN_DURATION_MS);
+    if (newCount === CONSECUTIVE_ERROR_LIMIT) {
+      await sysLog.warn("SENDER", `Sender ${senderId} entered COOLDOWN due to repeated SMTP errors.`, {
+        senderId,
+        consecutiveErrors: newCount
+      });
+    }
+  }
 
   await prisma.senderCooldown.upsert({
     where: { senderId },
@@ -114,10 +130,12 @@ export async function recordConsecutiveError(
       senderId,
       consecutiveErrors: newCount,
       cooldownUntil,
+      quarantinedAt,
     },
     update: {
       consecutiveErrors: newCount,
       cooldownUntil,
+      quarantinedAt,
     },
   });
 }
@@ -125,6 +143,7 @@ export async function recordConsecutiveError(
 /**
  * Resets consecutive errors and cooldown for the sender.
  * Called after a successful send to restore normal operation.
+ * NOTE: Does NOT automatically lift quarantine.
  */
 export async function resetConsecutiveErrors(
   senderId: string

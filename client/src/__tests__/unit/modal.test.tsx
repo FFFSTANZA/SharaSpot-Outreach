@@ -39,7 +39,7 @@ describe("Modal component", () => {
     );
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveClass("max-w-[480px]");
-    expect(dialog).toHaveClass("rounded-2xl");
+    expect(dialog).toHaveClass("rounded-xl");
   });
 
   // --- Bottom-sheet variant ---
@@ -51,7 +51,7 @@ describe("Modal component", () => {
       </Modal>,
     );
     const dialog = screen.getByRole("dialog");
-    expect(dialog).toHaveClass("rounded-t-2xl");
+    expect(dialog).toHaveClass("rounded-t-xl");
     expect(dialog).toHaveClass("inset-x-0");
     expect(dialog).toHaveClass("bottom-0");
   });

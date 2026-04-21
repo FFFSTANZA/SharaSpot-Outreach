@@ -1,33 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { getUser } from "../lib/apis";
 import type { User } from "@/types";
 
 /**
  * useAuth — fetches the authenticated user on mount.
  *
- * Returns { user, isLoading } where user is typed as User | null
- * instead of `any` for proper type safety across the app.
+ * Returns { user, isLoading, refreshUser } where user is typed as User | null.
  */
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await getUser();
-        setUser(userData);
-      } catch {
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
+  const fetchUser = useCallback(async () => {
+    try {
+      const userData = await getUser();
+      setUser(userData);
+    } catch {
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  return { user, isLoading };
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  // Sync: Re-fetch user if subscription=success is detected in URL
+  useEffect(() => {
+    if (searchParams.get("subscription") === "success") {
+      fetchUser();
+    }
+  }, [searchParams, fetchUser]);
+
+  return {
+    user,
+    isLoading,
+    refreshUser: fetchUser
+  };
 };

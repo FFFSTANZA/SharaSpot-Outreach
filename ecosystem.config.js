@@ -1,41 +1,60 @@
+const path = require('path');
+const homeDir = process.env.HOME || '/home/fffstanza';
+const baseDir = path.join(homeDir, 'Folonite/SharaSpot-Outreach');
+
 module.exports = {
   apps: [
     {
       name: "sharaspot-api",
-      cwd: "/root/SharaSpot-Outreach/server",
-      script: "dist/index.js",
-      instances: 1,
+      cwd: path.join(baseDir, 'server'),
+      script: "npm",
+      args: "run start", // Using production build (dist/index.js)
+      env: {
+        NODE_ENV: "production",
+      },
       autorestart: true,
       max_memory_restart: "500M",
-      env_file: "/root/SharaSpot-Outreach/server/.env",
-      error_file: "/var/log/sharaspot/api-error.log",
-      out_file: "/var/log/sharaspot/api-out.log",
-      merge_logs: true,
+      error_file: path.join(homeDir, ".pm2/logs/sharaspot-api-error.log"),
+      out_file: path.join(homeDir, ".pm2/logs/sharaspot-api-out.log"),
     },
     {
       name: "sharaspot-worker",
-      cwd: "/root/SharaSpot-Outreach/server",
-      script: "dist/worker/index.js",
-      instances: 1,
+      cwd: path.join(baseDir, 'server'),
+      script: "npm",
+      args: "run worker:prod", // Using production build (dist/worker/index.js)
+      env: {
+        NODE_ENV: "production",
+      },
       autorestart: true,
       max_memory_restart: "500M",
-      env_file: "/root/SharaSpot-Outreach/server/.env",exec_mode: "fork", 
-      error_file: "/var/log/sharaspot/worker-error.log",
-      out_file: "/var/log/sharaspot/worker-out.log",
-      merge_logs: true,
+      error_file: path.join(homeDir, ".pm2/logs/sharaspot-worker-error.log"),
+      out_file: path.join(homeDir, ".pm2/logs/sharaspot-worker-out.log"),
     },
     {
       name: "sharaspot-frontend",
-      cwd: "/root/SharaSpot-Outreach/client",
+      cwd: path.join(baseDir, 'client'),
       script: "npm",
-      args: "start",
-      instances: 1,
+      args: "run start", // Using production build (next start)
+      env: {
+        NODE_ENV: "production",
+      },
       autorestart: true,
       max_memory_restart: "1G",
-      env_file: "/root/SharaSpot-Outreach/client/.env",
-      error_file: "/var/log/sharaspot/frontend-error.log",
-      out_file: "/var/log/sharaspot/frontend-out.log",
-      merge_logs: true,
+      error_file: path.join(homeDir, ".pm2/logs/sharaspot-frontend-error.log"),
+      out_file: path.join(homeDir, ".pm2/logs/sharaspot-frontend-out.log"),
+    },
+    {
+      name: "sharaspot-admin",
+      cwd: path.join(baseDir, 'admin-dashboard'),
+      script: "npm",
+      args: "run start", // Using production build (next start)
+      env: {
+        NODE_ENV: "production",
+      },
+      autorestart: true,
+      max_memory_restart: "500M",
+      error_file: path.join(homeDir, ".pm2/logs/sharaspot-admin-error.log"),
+      out_file: path.join(homeDir, ".pm2/logs/sharaspot-admin-out.log"),
     },
   ],
 };

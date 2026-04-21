@@ -12,8 +12,8 @@
 #   - SharaSpot Frontend (Next.js)
 #   - Nginx (reverse proxy + SSL)
 #
-# Supabase is used ONLY for file storage (attachments).
-# Database runs locally — zero cloud DB costs.
+# Attachments are stored locally on the VPS filesystem and persisted via volumes.
+# Database and Redis also run locally — zero cloud DB costs.
 
 services:
   postgres:
@@ -68,6 +68,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
 
   worker:
     build:
@@ -113,7 +115,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./deploy/docker-nginx.conf:/etc/nginx/conf.d/default.conf
       - ./deploy/nginx/ssl:/etc/nginx/ssl
     depends_on:
       - api
@@ -122,3 +124,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  uploads_data:

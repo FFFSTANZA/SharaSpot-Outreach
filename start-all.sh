@@ -15,3 +15,8 @@ echo "Worker PID: $!"
 cd /home/fffstanza/Folonite/SharaSpot-Outreach/client
 nohup npm run dev > /tmp/sharaspot-client.log 2>&1 &
 echo "Client PID: $!"
+
+# Start Admin Dashboard
+cd /home/fffstanza/Folonite/SharaSpot-Outreach/admin-dashboard
+nohup npm run dev -- -p 3001 > /tmp/sharaspot-admin.log 2>&1 &
+echo "Admin PID: $!"

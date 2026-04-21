@@ -54,6 +54,24 @@ function FAQAccordion({ item, isOpen, onToggle }: { item: FAQItem; isOpen: boole
 }
 
 const faqItems: FAQItem[] = [
+  // ─── AI & Automation ───
+  {
+    category: "AI & Innovation",
+    icon: Zap,
+    question: "How does the AI Follow-up Generator work?",
+    answer: (
+      <div className="space-y-2">
+        <p>SharaSpot uses a proprietary &ldquo;Context Locking&rdquo; engine. It analyzes your original email to identify unique value anchors (like specific pain points or offers) and crafts follow-ups that feel like a direct continuation of your first message.</p>
+        <p>Unlike generic tools, it avoids robotic filler words and focuses on curiosity-driven questions that provoke higher reply rates.</p>
+      </div>
+    ),
+  },
+  {
+    category: "AI & Innovation",
+    icon: RefreshCw,
+    question: "What is the Shara AI Agent?",
+    answer: <p>The Shara Agent is an experimental autonomous outreach engine that handles personalized research and initial contact on your behalf. It mimics human research patterns to find high-intent signals before reaching out, ensuring every email is deeply relevant.</p>,
+  },
   // ─── Warmup & Throttling ───
   {
     category: "Warmup & Throttling",
@@ -62,7 +80,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>When you add a new sender, SharaSpot automatically starts a 14-day warmup period that gradually increases your daily sending limit from 20 to 500 emails/day. This builds your sender reputation with email providers and prevents your account from being flagged.</p>
-        <p>You can skip warmup by checking &ldquo;Skip warmup period&rdquo; when adding a sender - but only do this if the account already has established sending history. Skipping warmup on a brand-new account risks triggering Gmail&apos;s spam filters.</p>
+        <p>You can skip warmup for established accounts, but we always recommend letting our adaptive algorithm handle the ramp-up for maximum delivery safety.</p>
       </div>
     ),
   },
@@ -73,122 +91,33 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>SharaSpot enforces three layers of rate limiting: per-minute, per-hour, and per-day. When any limit is reached, pending emails are automatically rescheduled with a small random delay - they&apos;re not lost.</p>
-        <p>If you&apos;re using multiple senders, SharaSpot will automatically rotate to the next available sender. If all senders are exhausted, the campaign pauses and auto-resumes when capacity is available (checked every hour).</p>
+        <p>If you&apos;re using multiple senders, SharaSpot will automatically rotate to the next available sender. If all senders are exhausted, the campaign pauses and auto-resumes when capacity is available.</p>
       </div>
     ),
   },
+  // ─── Multi-Sender & Scale ───
   {
-    category: "Warmup & Throttling",
-    icon: Snowflake,
-    question: "What is a cooldown and why did my sender enter one?",
-    answer: (
-      <div className="space-y-2">
-        <p>If a sender encounters 3 consecutive SMTP errors (e.g., connection refused, authentication failure), SharaSpot puts it in a 5-minute cooldown. No emails are sent during cooldown to prevent further damage to your sender reputation.</p>
-        <p>After cooldown expires, sending resumes automatically. A single successful send resets the error counter. You can see cooldown status in the Throttle Status panel on the campaign detail page.</p>
-      </div>
-    ),
-  },
-  {
-    category: "Warmup & Throttling",
-    icon: Gauge,
-    question: "What does 'adaptive throttle' mean?",
-    answer: (
-      <p>SharaSpot monitors your error rate and bounce rate over a rolling 1-hour window. If more than 10% of emails fail or more than 5% bounce, all rate limits are automatically halved to protect your account. Once the rates drop back to normal, full speed resumes.</p>
-    ),
-  },
-  // ─── Multi-Sender ───
-  {
-    category: "Multi-Sender",
+    category: "Scale & Delivery",
     icon: Users,
-    question: "How does multi-sender rotation work?",
-    answer: (
-      <div className="space-y-2">
-        <p>When you select multiple senders for a campaign, SharaSpot distributes emails across them using round-robin - each sender gets roughly equal volume, respecting their individual daily limits.</p>
-        <p>During sending, if one sender hits its limit, emails are automatically reassigned to the next available sender. This lets you send higher volumes without exceeding any single account&apos;s limits.</p>
-      </div>
-    ),
+    question: "Can I use multiple email accounts?",
+    answer: <p>Yes. SharaSpot is built for scale. You can connect multiple SMTP accounts and our multi-sender rotation engine will automatically distribute your campaign volume across all of them to stay under provider limits and maintain high deliverability.</p>,
   },
   {
-    category: "Multi-Sender",
-    icon: Users,
-    question: "Do all senders need to be verified?",
-    answer: <p>Yes. Every sender in a campaign must have verified SMTP credentials (a Google App Password). Unverified senders are shown in the dropdown but can&apos;t be selected for campaigns.</p>,
-  },
-  // ─── Sequences ───
-  {
-    category: "Sequences",
-    icon: RefreshCw,
-    question: "How do follow-up sequences work?",
-    answer: (
-      <div className="space-y-2">
-        <p>You can add up to 5 follow-up steps to a campaign. Each step has its own subject, body, and a wait period (in days) after the previous step was sent.</p>
-        <p>The sequence scheduler runs every 15 minutes, checking which recipients are due for their next follow-up. If a recipient replies to any step, their sequence stops automatically.</p>
-      </div>
-    ),
-  },
-  {
-    category: "Sequences",
-    icon: RefreshCw,
-    question: "Can I pause or stop a sequence for specific recipients?",
-    answer: <p>Yes. On the campaign detail page, switch to the Sequence tab. You can pause, resume, or stop individual recipients. You can also pause/stop the entire sequence for all recipients at once.</p>,
-  },
-  // ─── Template Variables ───
-  {
-    category: "Templates & Variables",
-    icon: Zap,
-    question: "How do template variables work with CSV imports?",
-    answer: (
-      <div className="space-y-2">
-        <p>When you import a CSV, the first column must be email addresses. Additional columns become template variables. For example, a CSV with columns <code className="bg-gray-100 px-1 rounded text-xs">email, name, company</code> lets you use <code className="bg-gray-100 px-1 rounded text-xs">{"{{name}}"}</code> and <code className="bg-gray-100 px-1 rounded text-xs">{"{{company}}"}</code> in your subject and body.</p>
-        <p>Variables are resolved per-recipient when the campaign is created. Unmatched variables (no CSV column) are left as-is in the email. The Variable Preview panel shows you exactly what each recipient will see.</p>
-      </div>
-    ),
-  },
-  {
-    category: "Templates & Variables",
-    icon: FileText,
-    question: "What&apos;s the difference between templates and template variables?",
-    answer: (
-      <div className="space-y-2">
-        <p>Templates are saved subject/body pairs you can reuse across campaigns - like a &ldquo;cold outreach&rdquo; template or a &ldquo;follow-up&rdquo; template. You create them in the Templates page.</p>
-        <p>Template variables (<code className="bg-gray-100 px-1 rounded text-xs">{"{{variable}}"}</code>) are placeholders that get replaced with per-recipient data from your CSV. They work inside any email, whether you started from a template or wrote it from scratch.</p>
-      </div>
-    ),
-  },
-  // ─── Attachments ───
-  {
-    category: "Attachments",
-    icon: Paperclip,
-    question: "What are the attachment limits?",
-    answer: (
-      <div className="space-y-2">
-        <p>10 MB per file, 25 MB total per campaign, up to 10 files. Supported formats: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, PNG, JPG, GIF.</p>
-        <p>The 25 MB limit matches Gmail&apos;s attachment limit - exceeding it would cause emails to bounce. Files are stored in Supabase Storage and downloaded by the worker at send time.</p>
-      </div>
-    ),
-  },
-  // ─── Campaign Controls ───
-  {
-    category: "Campaign Controls",
+    category: "Scale & Delivery",
     icon: Shield,
-    question: "What happens when I pause a campaign?",
+    question: "Is there a limit on how many campaigns I can run?",
+    answer: <p>No. During our early access period, every active subscription includes unlimited campaigns. You can run parallel outreach for different products, markets, or hiring roles without any artificial caps.</p>,
+  },
+  // ─── PRM & Inbox ───
+  {
+    category: "PRM & Inbox",
+    icon: Mail,
+    question: "What is the PRM Infrastructure?",
     answer: (
       <div className="space-y-2">
-        <p>Pending emails stop being sent immediately. Emails already in the process of sending will complete. When you resume, any emails whose scheduled time has passed are rescheduled starting from now, preserving the original order and delay settings.</p>
+        <p>PRM stands for Personal Relationship Management. Our infrastructure treats your outreach as the beginning of a long-term relationship, not a one-off broadcast. It includes automatic reply detection, thread-safe follow-ups, and an integrated inbox that keeps your high-stakes conversations organized and moving forward.</p>
       </div>
     ),
-  },
-  {
-    category: "Campaign Controls",
-    icon: Shield,
-    question: "What happens when I cancel a campaign?",
-    answer: <p>All pending emails are immediately marked as cancelled and won&apos;t be sent. Emails already sent are not affected. Cancellation is permanent - you can&apos;t resume a cancelled campaign.</p>,
-  },
-  {
-    category: "Campaign Controls",
-    icon: Shield,
-    question: "Why does my campaign show 'Paused · All senders at limit'?",
-    answer: <p>This means every sender in the campaign has reached their daily sending limit. The campaign will automatically resume when any sender regains capacity (checked every hour). You can also manually resume it, which will trigger rescheduling.</p>,
   },
   // ─── Security ───
   {
@@ -198,7 +127,7 @@ const faqItems: FAQItem[] = [
     answer: (
       <div className="space-y-2">
         <p>Your Google App Password is encrypted using AES-256-CBC with a unique random initialization vector before being stored in the database. The encryption key is a server-side secret that never leaves the server.</p>
-        <p>Credentials are only decrypted momentarily in memory when the worker needs to send an email, then discarded. They are never included in API responses, logs, or error messages.</p>
+        <p>Credentials are only decrypted momentarily in memory when the worker needs to send an email, then discarded immediately.</p>
       </div>
     ),
   },
@@ -208,8 +137,8 @@ const faqItems: FAQItem[] = [
     question: "What is a Google App Password and why do I need one?",
     answer: (
       <div className="space-y-2">
-        <p>Google App Passwords are 16-character codes that let third-party apps access your Gmail via SMTP without using your main password. Google requires them since they disabled "Less Secure App" access in 2022.</p>
-        <p>To generate one: go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-[#00A63E] hover:underline">myaccount.google.com/apppasswords</a> (requires 2-Step Verification enabled). Create one specifically for SharaSpot and paste it when adding a sender.</p>
+        <p>Google App Passwords are 16-character codes that let SharaSpot access your Gmail via SMTP without using your main password. Google requires them specifically for high-security third-party access.</p>
+        <p>To generate one: go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline font-bold">myaccount.google.com/apppasswords</a> (requires 2-Step Verification enabled).</p>
       </div>
     ),
   },
@@ -220,52 +149,15 @@ const faqItems: FAQItem[] = [
     question: "How does open tracking work?",
     answer: (
       <div className="space-y-2">
-        <p>SharaSpot adds a tiny transparent 1x1 pixel image to each outgoing email. When the recipient&apos;s email client loads this image, the server records an open event. This is the industry-standard method used by all email marketing platforms.</p>
-        <p>Limitation: some email clients (notably Outlook desktop) block images by default, so open rates will undercount. Apple Mail Privacy Protection may inflate rates by pre-fetching images. Open rates are best used as a relative indicator, not an absolute measure.</p>
+        <p>SharaSpot adds a tiny transparent 1x1 pixel image to each outgoing email. When the recipient&apos;s email client loads this image, the server records an open event. This is the industry-standard method used by all professional outreach platforms.</p>
       </div>
     ),
-  },
-  {
-    category: "Tracking",
-    icon: Mail,
-    question: "How does click tracking work?",
-    answer: <p>Links in your email are automatically rewritten to route through SharaSpot&apos;s server. When a recipient clicks a link, the server records the click and immediately redirects them to the original URL. The redirect is instant (302) so recipients don&apos;t notice any delay. <code className="bg-gray-100 px-1 rounded text-xs">mailto:</code> links and anchor links are not rewritten.</p>,
   },
   {
     category: "Tracking",
     icon: Mail,
     question: "Can I disable tracking for a specific campaign?",
-    answer: <p>Yes. In the compose form&apos;s Sending Settings section, you&apos;ll see &ldquo;Track opens&rdquo; and &ldquo;Track clicks&rdquo; toggles. Both are enabled by default. Turn them off before sending if you want to respect recipient privacy for that campaign. The Tracking tab will show a &ldquo;Tracking not enabled&rdquo; message for campaigns with tracking disabled.</p>,
-  },
-  {
-    category: "Tracking",
-    icon: Mail,
-    question: "Why is my open rate higher than expected?",
-    answer: <p>Apple Mail Privacy Protection (introduced in iOS 15 / macOS Monterey) pre-fetches all email images through a proxy, which triggers the tracking pixel even if the recipient never actually reads the email. This inflates open rates. There&apos;s no reliable way to filter these out - it&apos;s an industry-wide issue affecting all email tracking platforms.</p>,
-  },
-  // ─── General ───
-  {
-    category: "General",
-    icon: Clock,
-    question: "How does smart scheduling work?",
-    answer: (
-      <div className="space-y-2">
-        <p>Instead of sending emails at rigid fixed intervals (which looks robotic to email providers), SharaSpot uses your hourly limit to compute an average gap, then randomizes each gap by +/-40%. For example, with an hourly limit of 40, the average gap is 90 seconds - but actual gaps range from ~54s to ~126s randomly.</p>
-        <p>Your "Min delay" setting acts as a floor - no two emails will ever be closer than this value. The result is a natural-looking send pattern that averages out to your hourly limit over time.</p>
-      </div>
-    ),
-  },
-  {
-    category: "General",
-    icon: Clock,
-    question: "When do daily limits reset?",
-    answer: <p>Daily sending limits reset at midnight UTC. This means if you&apos;re in a timezone behind UTC, your limit resets in the evening. If you&apos;re ahead of UTC, it resets in the morning. All rate limiting (per-minute, per-hour, per-day) uses UTC time.</p>,
-  },
-  {
-    category: "General",
-    icon: HelpCircle,
-    question: "Can I use SharaSpot with non-Gmail providers?",
-    answer: <p>Yes. While the default SMTP settings are configured for Gmail, the system supports any SMTP provider. The throttle engine uses provider profiles to set appropriate rate limits - Gmail, Outlook, and a default profile for custom SMTP hosts.</p>,
+    answer: <p>Yes. In the compose form&apos;s Sending Settings section, you can toggle &ldquo;Track opens&rdquo; and &ldquo;Track clicks&rdquo; independently. This is useful for high-priority personal outreach where you want to maintain maximum privacy.</p>,
   },
 ];
 
@@ -288,34 +180,14 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* JSON-LD FAQ Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: faqItems.map((item) => ({
-              "@type": "Question",
-              name: item.question,
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: typeof item.answer === "string"
-                  ? item.answer
-                  : item.answer?.toString() || "",
-              },
-            })),
-          }),
-        }}
-      />
       {/* Navbar */}
       <nav className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-gray-100">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
           <Link href="/" aria-label="Go to homepage"><Logo size="md" /></Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-500">
-            <Link href="/guide" className="hover:text-gray-900 transition-colors">Guide</Link>
-            <Link href="/priority" className="hover:text-gray-900 transition-colors">Priority</Link>
-            <Link href="/faq" className="text-gray-900">FAQ</Link>
+            <Link href="/guide" className="hover:text-brand transition-colors">Guide</Link>
+            <Link href="/priority" className="hover:text-brand transition-colors">Priority</Link>
+            <Link href="/faq" className="text-brand">FAQ</Link>
           </div>
           <Button className="hidden md:block w-auto px-5 py-2 rounded-full text-sm" onClick={() => router.push("/login")}>
             Get Started
@@ -328,83 +200,83 @@ export default function FAQPage() {
           <div className="md:hidden border-t border-gray-100 px-6 py-4 space-y-1 bg-white">
             <Link href="/guide" className="block text-sm text-gray-600 py-3">Guide</Link>
             <Link href="/priority" className="block text-sm text-gray-600 py-3">Priority</Link>
-            <Link href="/faq" className="block text-sm text-gray-900 font-medium py-3">FAQ</Link>
+            <Link href="/faq" className="block text-sm text-brand font-bold py-3">FAQ</Link>
             <Button className="w-full rounded-full mt-2" onClick={() => router.push("/login")}>Get Started</Button>
           </div>
         )}
       </nav>
 
       {/* Hero */}
-      <div className="relative overflow-hidden py-16 md:py-20 bg-gradient-to-b from-violet-50/60 to-white">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-violet-200/20 to-transparent rounded-full blur-3xl" />
+      <div className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-b from-brand/[0.03] to-white">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand/[0.05] rounded-full blur-[120px]" />
         <div className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-violet-100 px-4 py-1.5 text-sm font-medium text-violet-700 mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-brand/[0.08] border border-brand/10 px-4 py-1.5 text-xs font-bold text-brand uppercase tracking-widest mb-6">
             <HelpCircle className="h-3.5 w-3.5" />
-            Frequently Asked Questions
+            Support & Knowledge
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-            Got questions? We&apos;ve got answers.
+          <h1 className="text-4xl sm:text-6xl font-black text-gray-900 tracking-tighter leading-[1.05]">
+            Everything you need <br /><span className="text-brand">to know.</span>
           </h1>
-          <p className="mt-4 text-base text-gray-500 max-w-lg mx-auto">
-            Everything you need to know about warmup, throttling, sequences, and more.
+          <p className="mt-6 text-lg text-gray-500 max-w-xl mx-auto font-medium">
+            Find answers to common questions about warmup, AI-driven follow-ups, and high-performance deliverability settings.
           </p>
 
           {/* Search */}
-          <div className="relative mt-8 max-w-md mx-auto">
+          <div className="relative mt-10 max-w-md mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search questions..."
-              className="w-full h-12 rounded-xl bg-white border border-gray-200 pl-11 pr-4 text-sm text-gray-700 outline-none shadow-sm focus:border-violet-300 focus:ring-2 focus:ring-violet-100 placeholder:text-gray-300 transition-all"
+              placeholder="Search concepts or questions..."
+              className="w-full h-14 rounded-2xl bg-white border border-gray-200 pl-12 pr-4 text-sm text-gray-700 outline-none shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/10 placeholder:text-gray-300 transition-all font-medium"
             />
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 md:py-12">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12 md:py-16">
         {/* Category pills */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-10">
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
-              "rounded-full px-4 py-1.5 text-xs font-medium transition-all",
+              "rounded-full px-5 py-2 text-[11px] font-black uppercase tracking-widest transition-all",
               !activeCategory
-                ? "bg-gray-900 text-white shadow-sm"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                ? "bg-brand text-white shadow-lg shadow-brand/20"
+                : "bg-gray-50 text-gray-400 hover:bg-gray-100 border border-gray-100"
             )}
           >
-            All ({faqItems.length})
+            All Categories
           </button>
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
               className={cn(
-                "rounded-full px-4 py-1.5 text-xs font-medium transition-all",
+                "rounded-full px-5 py-2 text-[11px] font-black uppercase tracking-widest transition-all border",
                 activeCategory === cat
-                  ? "bg-gray-900 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  ? "bg-brand text-white border-brand shadow-lg shadow-brand/20"
+                  : "bg-gray-50 text-gray-400 border-gray-100 hover:bg-gray-100"
               )}
             >
-              {cat} ({faqItems.filter((i) => i.category === cat).length})
+              {cat}
             </button>
           ))}
         </div>
 
         {/* FAQ items */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filtered.length === 0 ? (
-            <div className="text-center py-12">
-              <HelpCircle className="h-10 w-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-400">No matching questions found.</p>
+            <div className="text-center py-20 border-2 border-dashed border-gray-100 rounded-3xl">
+              <HelpCircle className="h-12 w-12 text-gray-200 mx-auto mb-4" />
+              <p className="text-base font-bold text-gray-400">No matching questions found.</p>
               <button
                 onClick={() => { setSearchQuery(""); setActiveCategory(null); }}
-                className="text-sm text-teal-600 hover:underline mt-2"
+                className="text-sm text-brand font-black uppercase tracking-widest mt-4 hover:underline"
               >
-                Clear filters
+                Clear all filters
               </button>
             </div>
           ) : (
@@ -420,20 +292,20 @@ export default function FAQPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 sm:p-10 text-center relative overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-gradient-to-b from-violet-500/15 to-transparent rounded-full blur-3xl" />
-          <div className="relative">
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-3">Still have questions?</h3>
-            <p className="text-xs sm:text-sm text-gray-400 mb-6 max-w-md mx-auto">Check out our detailed guide or get started and explore the features yourself.</p>
-            <div className="flex flex-col items-center gap-3 max-w-xs mx-auto">
-              <Button className="!w-full px-6 py-3 rounded-full text-sm" onClick={() => router.push("/guide")}>
-                Read the Guide <ArrowRight className="ml-1.5 h-3.5 w-3.5 inline" />
+        <div className="mt-20 rounded-[40px] bg-gray-900 p-8 sm:p-14 text-center relative overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand/[0.1] rounded-full blur-[120px]" />
+          <div className="relative z-10">
+            <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tighter mb-4">Still have questions?</h3>
+            <p className="text-base text-gray-400 mb-10 max-w-md mx-auto font-medium leading-relaxed">Our documentation and support team are here to ensure your outreach engine never stops.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+              <Button className="w-full sm:w-auto px-10 py-4 rounded-xl text-sm font-black uppercase tracking-widest" onClick={() => router.push("/guide")}>
+                View Documentation
               </Button>
               <button
-                onClick={() => router.push("/contact")}
-                className="w-full px-6 py-3 rounded-full text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                onClick={() => window.open("https://tally.so/r/aQee69", "_blank")}
+                className="w-full sm:w-auto px-10 py-4 rounded-xl text-sm font-black uppercase tracking-widest text-white border border-white/10 hover:bg-white/5 transition-colors"
               >
-                Contact Us
+                Contact Support
               </button>
             </div>
           </div>
@@ -441,17 +313,20 @@ export default function FAQPage() {
       </div>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-gray-100 bg-gray-50/50">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col items-center gap-5 md:flex-row md:justify-between">
-          <a href="/" aria-label="Go to homepage"><Logo size="sm" /></a>
-          <nav className="flex items-center gap-6">
-            <Link href="/guide" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Guide</Link>
-            <Link href="/priority" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Priority</Link>
-            <Link href="/faq" className="text-xs font-medium text-gray-900 transition-colors">FAQ</Link>
-            <Link href="/privacy" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Privacy</Link>
-            <Link href="/terms" className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">Terms</Link>
+      <footer className="py-12 border-t border-gray-100 bg-[#fdfdfd]">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <Link href="/" aria-label="Go to homepage"><Logo size="sm" /></Link>
+            <p className="text-xs text-text-muted font-medium">Built for high-stakes outreach by Folonite.</p>
+          </div>
+          <nav className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4">
+            <Link href="/guide" className="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-brand transition-colors">Guide</Link>
+            <Link href="/priority" className="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-brand transition-colors">Priority</Link>
+            <Link href="/privacy" className="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-brand transition-colors">Privacy</Link>
+            <Link href="/terms" className="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-brand transition-colors">Terms</Link>
+            <a href="https://tally.so/r/aQee69" target="_blank" rel="noopener noreferrer" className="text-[11px] font-black uppercase tracking-widest text-brand transition-colors">Support</a>
           </nav>
-          <span className="text-xs text-gray-500">© 2026 SharaSpot</span>
+          <span className="text-[11px] font-bold text-gray-300">© 2026 SharaSpot</span>
         </div>
       </footer>
     </div>

@@ -4,49 +4,50 @@ import { cn, formatTime, stripHtml, resolveVariables } from "@/lib/utils";
 import { EmailRowProps } from "@/types";
 import { Check, XCircle, Clock, Star, Ban, Loader2 } from "lucide-react";
 import MatchHighlighter from "./MatchHighlighter";
+import { useRouter } from "next/navigation";
 
 type EmailStatus = "PENDING" | "SENDING" | "SENT" | "FAILED" | "CANCELLED";
 
 /**
  * Email status configuration.
  */
-const statusConfig: Record<EmailStatus, { 
-  bg: string; 
-  text: string; 
-  icon: typeof Clock; 
+const statusConfig: Record<EmailStatus, {
+  bg: string;
+  text: string;
+  icon: typeof Clock;
   label: string;
   animate?: boolean;
 }> = {
-  PENDING: { 
-    bg: "bg-amber-50", 
-    text: "text-amber-700", 
-    icon: Clock, 
-    label: "Scheduled" 
+  PENDING: {
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    icon: Clock,
+    label: "Scheduled"
   },
-  SENDING: { 
-    bg: "bg-blue-50", 
-    text: "text-blue-700", 
-    icon: Loader2, 
+  SENDING: {
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    icon: Loader2,
     label: "Sending",
     animate: true,
   },
-  SENT: { 
-    bg: "bg-brand-light", 
-    text: "text-brand", 
-    icon: Check, 
-    label: "Sent" 
+  SENT: {
+    bg: "bg-brand-light",
+    text: "text-brand",
+    icon: Check,
+    label: "Sent"
   },
-  FAILED: { 
-    bg: "bg-red-50", 
-    text: "text-red-700", 
-    icon: XCircle, 
-    label: "Failed" 
+  FAILED: {
+    bg: "bg-red-50",
+    text: "text-red-700",
+    icon: XCircle,
+    label: "Failed"
   },
-  CANCELLED: { 
-    bg: "bg-gray-100", 
-    text: "text-gray-500", 
-    icon: Ban, 
-    label: "Cancelled" 
+  CANCELLED: {
+    bg: "bg-gray-100",
+    text: "text-gray-500",
+    icon: Ban,
+    label: "Cancelled"
   },
 };
 
@@ -58,7 +59,7 @@ function EmailStatusBadge({ status, time }: { status?: string; time?: string }) 
   return (
     <div className={cn(
       "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-semibold border border-transparent whitespace-nowrap",
-      config.bg, 
+      config.bg,
       config.text,
     )}>
       {config.animate ? (
@@ -72,21 +73,29 @@ function EmailStatusBadge({ status, time }: { status?: string; time?: string }) 
 }
 
 export function EmailRow({ email, campaign, onToggleStar, searchQuery = "" }: EmailRowProps) {
+  const router = useRouter();
   const colData = (email as any)?.columnData ?? {};
   const recipientEmail = email?.toEmail ?? "";
-  
+
   const resolvedSubject = resolveVariables(campaign?.subject ?? "", colData, { email: recipientEmail });
   const resolvedBody = resolveVariables(campaign?.body ?? "", colData, { email: recipientEmail });
-  
+
   const plainPreview = resolvedBody ? stripHtml(resolvedBody).slice(0, 100) : "";
   const timeValue = email?.status === "SENT" ? email?.sentAt : email?.scheduledAt;
   const isRead = (email as any)?.isRead ?? true;
 
   return (
-    <div className={cn(
-      "group flex items-center gap-4 px-6 py-4 cursor-pointer transition-all duration-200 border-b border-gray-50",
-      !isRead ? "bg-brand-light/20" : "hover:bg-gray-50/50"
-    )}>
+    <div
+      onClick={() => {
+        if (campaign?.id) {
+          router.push(`/dashboard/campaigns/${campaign.id}`);
+        }
+      }}
+      className={cn(
+        "group flex items-center gap-4 px-6 py-4 cursor-pointer transition-all duration-200 border-b border-gray-50",
+        !isRead ? "bg-brand-light/20" : "hover:bg-gray-50/50"
+      )}
+    >
       {/* Star Button */}
       <button
         onClick={(e) => {

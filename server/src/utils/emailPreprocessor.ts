@@ -12,6 +12,39 @@ export interface PreprocessOptions {
   trackingBaseUrl: string;
   trackOpens: boolean;
   trackClicks: boolean;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  campaignId?: string;
+}
+
+function extractUtmParams(href: string): { utmSource?: string; utmMedium?: string; utmCampaign?: string; utmContent?: string; utmTerm?: string } {
+  const url = new URL(href);
+  return {
+    utmSource: url.searchParams.get("utm_source") || undefined,
+    utmMedium: url.searchParams.get("utm_medium") || undefined,
+    utmCampaign: url.searchParams.get("utm_campaign") || undefined,
+    utmContent: url.searchParams.get("utm_content") || undefined,
+    utmTerm: url.searchParams.get("utm_term") || undefined,
+  };
+}
+
+function buildTrackingUrl(options: PreprocessOptions, originalUrl: string, utmParams?: ReturnType<typeof extractUtmParams>): string {
+  const params = new URLSearchParams();
+  params.set("url", originalUrl);
+  
+  const utmSource = utmParams?.utmSource || options.utmSource;
+  const utmMedium = utmParams?.utmMedium || options.utmMedium;
+  const utmCampaign = utmParams?.utmCampaign || options.utmCampaign;
+  
+  if (utmSource) params.set("utm_source", utmSource);
+  if (utmMedium) params.set("utm_medium", utmMedium);
+  if (utmCampaign) params.set("utm_campaign", utmCampaign);
+  if (utmParams?.utmContent) params.set("utm_content", utmParams.utmContent);
+  if (utmParams?.utmTerm) params.set("utm_term", utmParams.utmTerm);
+  if (options.campaignId) params.set("campaign", options.campaignId);
+  
+  return `${options.trackingBaseUrl}/track/click/${options.emailJobId}?${params.toString()}`;
 }
 
 /**
@@ -67,14 +100,13 @@ function injectTrackingPixel(html: string, options: PreprocessOptions): string {
 
 function rewriteLinks(html: string, options: PreprocessOptions): string {
   return html.replace(LINK_REGEX, (match, before, href, after) => {
-    // Skip mailto: links
     if (href.startsWith("mailto:")) return match;
-    // Skip anchor links
     if (href.startsWith("#")) return match;
-    // Skip already-rewritten tracking links
     if (href.includes("/track/click/")) return match;
-
-    const trackingUrl = `${options.trackingBaseUrl}/track/click/${options.emailJobId}?url=${encodeURIComponent(href)}`;
-    return `<a ${before}href="${trackingUrl}"${after}>`;
+    if (href.startsWith("javascript:")) return match;
+    
+    const utmParams = extractUtmParams(href);
+    const trackingUrl = buildTrackingUrl(options, href, utmParams);
+    return `<a ${before} href="${trackingUrl}" ${after}>`;
   });
 }

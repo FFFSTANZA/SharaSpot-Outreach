@@ -16,18 +16,50 @@ import type {
 
 // ─── Auth ───
 
+// WORKAROUND: Force absolute URLs for auth to bypass baseURL hydration issues in some dev setups
+const getAuthUrl = (path: string) => {
+  const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+  return `${base}${path}`;
+};
+
 export const loginWithGoogle = async (idToken: string) => {
-  const res = await api.post("/auth/google", { idToken });
-  return res.data;
+  const url = getAuthUrl("/auth/google");
+  console.log(`[AUTH-DEBUG] Triggering FETCH POST to ${url}...`);
+  console.log("[AUTH-DEBUG] Payload ID Token Length:", idToken?.length);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ idToken }),
+    });
+
+    console.log("[AUTH-DEBUG] Fetch response status:", response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+      console.error("[AUTH-DEBUG] Fetch Error Data:", errorData);
+      throw new Error(errorData.message || `Server responded with ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("[AUTH-DEBUG] Login Success!");
+    return data;
+  } catch (err) {
+    console.error("[AUTH-DEBUG] CRITICAL FETCH ERROR:", err);
+    throw err;
+  }
 };
 
 export const refreshAccessToken = async () => {
-  const res = await api.post("/auth/refresh");
+  const res = await api.post(getAuthUrl("/auth/refresh"));
   return res.data;
 };
 
 export const logout = async (): Promise<void> => {
-  await api.post("/auth/logout");
+  await api.post(getAuthUrl("/auth/logout"));
 };
 
 // ─── Users ───
@@ -73,12 +105,23 @@ export const getSenderById = async (senderId: string): Promise<SenderResponse & 
   return res.data;
 };
 
+export const deleteSender = async (senderId: string): Promise<void> => {
+  await api.delete(`/api/senders/${senderId}`);
+};
+
 // ─── Campaigns ───
 
 export const createCampaign = async (
   data: CreateCampaignPayload
 ): Promise<{ campaignId: string; message: string }> => {
   const res = await api.post("/api/campaigns", data);
+  return res.data;
+};
+
+export const generateAIFollowUps = async (campaignId: string, subject: string, body: string): Promise<{
+  followUps: Array<{ stepNumber: number; subject: string; body: string; waitDays: number }>;
+}> => {
+  const res = await api.post("/api/campaigns/ai-followups", { campaignId, subject, body });
   return res.data;
 };
 
@@ -225,12 +268,102 @@ import type {
   UnrepliedEmailDetail,
   AnalyticsOverview,
   AnalyticsLinksResponse,
+  SenderHealthRecord,
+  ActivityLogsResponse,
+  TrackerEvent,
   PriorityQuota,
   PriorityCampaignStatus,
   Contact,
   Note,
   Tag,
+  InboxThread,
+  InboxEmail,
 } from "@/types";
+
+export interface DashboardStats {
+  total: number;
+  sent: number;
+  failed: number;
+  pending: number;
+  replied: number;
+  efficiency: number;
+  replyRate: number;
+  worker: {
+    status: "up" | "down" | "stale";
+    telemetry: {
+      timestamp: number;
+      memory: number;
+      uptime: number;
+      load: number;
+    } | null;
+  };
+}
+
+// ─── Inbox ───
+
+export const getInboxThreads = async (senderId?: string, page = 1, limit = 20): Promise<{ threads: InboxThread[]; total: number }> => {
+  const qs = new URLSearchParams({
+    ...(senderId && { senderId }),
+    page: page.toString(),
+    limit: limit.toString()
+  }).toString();
+  const res = await api.get(`/api/inbox/threads?${qs}`);
+  return res.data;
+};
+
+export const getInboxEmails = async (senderId?: string, folder = "INBOX", page = 1, limit = 20): Promise<{ emails: InboxEmail[]; total: number }> => {
+  const qs = new URLSearchParams({
+    ...(senderId && { senderId }),
+    folder,
+    page: page.toString(),
+    limit: limit.toString()
+  }).toString();
+  const res = await api.get(`/api/inbox/emails?${qs}`);
+  return res.data;
+};
+
+export const syncInbox = async (senderId: string): Promise<{ success: boolean; messagesProcessed: number }> => {
+  const res = await api.post("/api/inbox/sync", { senderId });
+  return res.data;
+};
+
+export const getUnreadCount = async (senderId?: string): Promise<{ unreadCount: number }> => {
+  const qs = senderId ? `?senderId=${senderId}` : "";
+  const res = await api.get(`/api/inbox/unread-count${qs}`);
+  return res.data;
+};
+
+export const sendInboxReply = async (data: {
+  senderId: string;
+  toEmail: string;
+  subject: string;
+  body: string;
+  inReplyToMessageId?: string;
+  threadId?: string;
+}): Promise<{ success: boolean; messageId: string }> => {
+  const res = await api.post("/api/inbox/reply", data);
+  return res.data;
+};
+
+export const markInboxRead = async (emailId: string): Promise<{ success: boolean }> => {
+  const res = await api.patch(`/api/inbox/emails/${emailId}/read`);
+  return res.data;
+};
+
+export const toggleInboxStar = async (emailId: string): Promise<{ isStarred: boolean }> => {
+  const res = await api.patch(`/api/inbox/emails/${emailId}/star`);
+  return res.data;
+};
+
+export const archiveInboxEmail = async (emailId: string): Promise<{ success: boolean }> => {
+  const res = await api.patch(`/api/inbox/emails/${emailId}/archive`);
+  return res.data;
+};
+
+export const deleteInboxEmail = async (emailId: string): Promise<{ success: boolean }> => {
+  const res = await api.patch(`/api/inbox/emails/${emailId}/delete`);
+  return res.data;
+};
 
 export const getTrackingMetrics = async (campaignId: string): Promise<TrackingMetrics> => {
   const res = await api.get(`/api/tracking/campaigns/${campaignId}`);
@@ -296,6 +429,21 @@ export const getAnalyticsOverview = async (days?: number): Promise<AnalyticsOver
 
 export const getAnalyticsLinks = async (): Promise<AnalyticsLinksResponse> => {
   const res = await api.get("/api/analytics/links");
+  return res.data;
+};
+
+export const getSenderHealth = async (): Promise<{ health: SenderHealthRecord[] }> => {
+  const res = await api.get("/api/analytics/sender-health");
+  return res.data;
+};
+
+export const getActivityLogs = async (page = 1, limit = 50): Promise<ActivityLogsResponse> => {
+  const res = await api.get(`/api/analytics/activity-logs?page=${page}&limit=${limit}`);
+  return res.data;
+};
+
+export const getDashboardStats = async (): Promise<DashboardStats> => {
+  const res = await api.get("/api/analytics/dashboard-stats");
   return res.data;
 };
 
@@ -465,8 +613,14 @@ export const getPriorityStatus = async (campaignId: string): Promise<PriorityCam
 
 // ─── PRM / Contacts ───
 
-export const getContacts = async (params: { search?: string; stage?: string; tag?: string } = {}): Promise<Contact[]> => {
-  const qs = new URLSearchParams(params as any).toString();
+export const getContacts = async (params: { search?: string; stage?: string; tag?: string; listId?: string | null } = {}): Promise<Contact[]> => {
+  const cleanParams: any = { ...params };
+  Object.keys(cleanParams).forEach(key => {
+    if (cleanParams[key] === null || cleanParams[key] === undefined || cleanParams[key] === "") {
+      delete cleanParams[key];
+    }
+  });
+  const qs = new URLSearchParams(cleanParams).toString();
   const res = await api.get(`/api/contacts?${qs}`);
   return res.data;
 };
@@ -498,6 +652,53 @@ export const bulkDeleteContacts = async (ids: string[]): Promise<void> => {
   await api.post("/api/contacts/bulk-delete", { ids });
 };
 
+export const importContacts = async (file: File, mapping: Record<string, string>): Promise<{ message: string; count: number; errors?: any[] }> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("mapping", JSON.stringify(mapping));
+  const res = await api.post("/api/contacts/import", formData);
+  return res.data;
+};
+
+// ─── Contact Lists (Folders) ───
+
+export interface ContactList {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    contacts: number;
+  };
+}
+
+export const getContactLists = async (): Promise<ContactList[]> => {
+  const res = await api.get("/api/contact-lists");
+  return res.data;
+};
+
+export const createContactList = async (name: string): Promise<ContactList> => {
+  const res = await api.post("/api/contact-lists", { name });
+  return res.data;
+};
+
+export const updateContactList = async (id: string, name: string): Promise<void> => {
+  await api.put(`/api/contact-lists/${id}`, { name });
+};
+
+export const deleteContactList = async (id: string): Promise<void> => {
+  await api.delete(`/api/contact-lists/${id}`);
+};
+
+export const addContactsToList = async (listId: string, contactIds: string[]): Promise<void> => {
+  await api.post(`/api/contact-lists/${listId}/contacts`, { contactIds });
+};
+
+export const removeContactsFromList = async (listId: string, contactIds: string[]): Promise<void> => {
+  await api.delete(`/api/contact-lists/${listId}/contacts`, { data: { contactIds } });
+};
+
 // ─── Notes ───
 
 export const createNote = async (contactId: string, content: string): Promise<Note> => {
@@ -525,5 +726,6 @@ export const createTag = async (name: string, color: string): Promise<Tag> => {
   const res = await api.post("/api/tags", { name, color });
   return res.data;
 };
+
 
 

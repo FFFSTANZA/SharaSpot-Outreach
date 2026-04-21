@@ -64,7 +64,7 @@ export default function ToastComponent({
   const IconComponent = TOAST_ICONS[toast.type];
 
   const handleAnimationEnd = (e: React.AnimationEvent<HTMLDivElement>) => {
-    if (e.animationName === "toastExit") {
+    if (e.animationName === "toast-exit" || e.animationName === "toastExit") {
       onExitComplete(toast.id);
     }
   };
@@ -72,9 +72,7 @@ export default function ToastComponent({
   return (
     <div
       className={cn(
-        "relative rounded-xl shadow-modal border border-gray-100 border-l-4 overflow-hidden",
-        colors.bg,
-        colors.border,
+        "relative rounded-2xl shadow-2xl border border-white/40 overflow-hidden backdrop-blur-xl",
         toast.isExiting
           ? "animate-toast-exit"
           : "animate-toast-enter",
@@ -85,45 +83,64 @@ export default function ToastComponent({
       tabIndex={0}
       role="listitem"
     >
+      <div className="absolute inset-0 bg-white/70" />
+
       {/* Content area */}
-      <div className="flex items-start gap-3 p-4 pr-12">
-        {/* Icon */}
-        <div className="flex-shrink-0">
-          <IconComponent className={cn("h-5 w-5", colors.icon)} />
+      <div className="relative flex items-start gap-3.5 p-5 pr-14">
+        {/* Icon with colored glow */}
+        <div className={cn(
+          "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-white/50",
+          toast.type === "success" ? "bg-brand/10 text-brand" :
+            toast.type === "error" ? "bg-red-50 text-red-500" :
+              toast.type === "warning" ? "bg-amber-50 text-amber-500" :
+                "bg-blue-50 text-blue-500"
+        )}>
+          <IconComponent className="h-5 w-5" />
         </div>
 
         {/* Text content */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pt-0.5">
           {toast.title && (
-            <p className={cn("text-sm font-bold text-gray-900")}>
+            <p className="text-sm font-bold text-gray-900 tracking-tight mb-0.5">
               {toast.title}
             </p>
           )}
-          <p className={cn("text-sm text-gray-600 font-medium", toast.title && "mt-0.5")}>
+          <p className={cn(
+            "text-sm font-semibold leading-relaxed",
+            toast.title ? "text-gray-600" : "text-gray-900"
+          )}>
             {toast.message}
           </p>
         </div>
       </div>
 
-      {/* Close button */}
+      {/* Close button with better hover state and z-index */}
       <button
-        onClick={() => onDismiss(toast.id)}
-        className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors rounded-lg"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDismiss(toast.id);
+        }}
+        className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-900/5 transition-all rounded-lg z-30"
         aria-label="Dismiss notification"
       >
         <X className="h-4 w-4" />
       </button>
 
-      {/* Progress bar */}
-      <div className="w-full h-1 bg-gray-50">
+      <div className={cn(
+        "absolute bottom-0 left-0 right-0 h-[3px] opacity-10",
+        colors.progress
+      )} />
+
+      {/* Simplified progress bar without gradient feel */}
+      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-gray-100/30">
         <div
           className={cn(
-            "h-full animate-toast-progress",
+            "h-full transition-transform origin-left",
             colors.progress
           )}
           style={{
-            animationDuration: `${toast.duration}ms`,
-            animationPlayState: toast.isPaused ? "paused" : "running",
+            transform: `scaleX(${toast.remainingTime / toast.duration})`,
+            transition: toast.isPaused ? 'none' : `transform ${toast.remainingTime}ms linear`
           }}
         />
       </div>

@@ -11,8 +11,16 @@ export const BRAND_CONFIG = {
     url: "https://sharaspot.in",
     supportUrl: "https://tally.so/r/aQee69",
     pricing: {
-        monthly: 20,
-        currency: "USD",
+        global: {
+            amount: 29,
+            currency: "USD",
+            symbol: "$",
+        },
+        india: {
+            amount: 499,
+            currency: "INR",
+            symbol: "₹",
+        },
         trialDays: 7,
     },
     features: [

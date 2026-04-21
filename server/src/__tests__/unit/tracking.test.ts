@@ -14,6 +14,7 @@ jest.mock("../../config/prisma", () => ({
     prisma: {
         trackingEvent: {
             createMany: jest.fn(),
+            findFirst: jest.fn().mockResolvedValue(null),
         },
         emailJob: {
             findMany: jest.fn(),
@@ -36,6 +37,7 @@ describe("Tracking Controllers", () => {
         it("should buffer an OPEN event and return a transparent GIF", async () => {
             const req = {
                 params: { emailJobId },
+                query: {},
                 headers: { "user-agent": "Mozilla/5.0", "x-forwarded-for": "1.2.3.4" },
             } as unknown as Request;
 
