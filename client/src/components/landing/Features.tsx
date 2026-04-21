@@ -1,76 +1,94 @@
 "use client";
 
-import { Shield, Zap, Clock, Fingerprint, Database, Globe } from "lucide-react";
+import { Shield, Zap, Clock, Fingerprint, Database, Globe, Users, BarChart3, Lock, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
-
-const features = [
-    {
-        icon: Zap,
-        title: "Lightning Fast Delivery",
-        description: "Bypass standard queues with high-performance infrastructure designed for speed and reliability.",
-    },
-    {
-        icon: Shield,
-        title: "Domain Protection",
-        description: "Automatic sender rotation and volume limits keep your primary domain safe from being blacklisted.",
-    },
-    {
-        icon: Clock,
-        title: "Human-Like Timing",
-        description: "Intelligent delays mimic real human behavior, making your outreach indistinguishable from a manual send.",
-    },
-    {
-        icon: Fingerprint,
-        title: "Deep Personalization",
-        description: "Dynamic variables and custom templates that feel personally written for every single recipient.",
-    },
-    {
-        icon: Database,
-        title: "Enterprise Analytics",
-        description: "Track opens, clicks, and replies with per-recipient granularity and real-time dashboard updates.",
-    },
-    {
-        icon: Globe,
-        title: "Universal Support",
-        description: "Works seamlessly with Google Workspace, Microsoft 365, and any custom SMTP/IMAP provider.",
-    },
-];
 
 export default function Features() {
     return (
-        <section className="py-24 lg:py-32 bg-[#fcfcfc] relative overflow-hidden border-y border-border-light">
+        <section id="features" className="py-24 lg:py-32 bg-white relative overflow-hidden border-y border-border-light">
             <div className="max-w-6xl mx-auto px-6 relative">
-                <div className="grid lg:grid-cols-[300px_1fr] gap-16 lg:gap-24 mb-20">
-                    <div>
-                        <p className="text-[11px] font-bold text-brand uppercase tracking-[0.2em] mb-4">Core Capabilities</p>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-text-primary tracking-tight leading-tight">
-                            Everything you need to <span className="text-text-muted">scale outreach.</span>
-                        </h2>
-                    </div>
-                    <div className="flex items-end">
-                        <p className="text-text-secondary text-lg max-w-xl leading-relaxed">
-                            We've engineered every part of the outreach stack to prioritize one thing: getting your message in front of the right person.
-                        </p>
-                    </div>
+                <div className="mb-20">
+                    <p className="text-[11px] font-bold text-brand uppercase tracking-[0.2em] mb-4">Functional Architecture</p>
+                    <h2 className="text-3xl lg:text-4xl font-bold text-text-primary tracking-tight leading-tight max-w-2xl">
+                        A structured approach to <span className="text-text-muted">unbreakable delivery.</span>
+                    </h2>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-border-light border border-border-light rounded-3xl overflow-hidden">
-                    {features.map((feature, index) => (
-                        <div
-                            key={index}
-                            className="p-10 bg-white hover:bg-slate-50/50 transition-colors group"
-                        >
-                            <div className="w-12 h-12 rounded-xl bg-brand/5 flex items-center justify-center mb-6 group-hover:bg-brand group-hover:text-white transition-all duration-300">
-                                <feature.icon className="w-6 h-6 text-brand group-hover:text-white transition-colors" />
+                <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-px bg-border-light border border-border-light">
+                    {/* Multi-Sender Rotation - Large 2x2 */}
+                    <div className="md:col-span-2 md:row-span-2 bg-white p-10 flex flex-col justify-between group">
+                        <div>
+                            <div className="w-10 h-10 border border-border-light flex items-center justify-center mb-8 group-hover:border-brand transition-colors">
+                                <RotateCcw size={20} className="text-text-muted group-hover:text-brand" />
                             </div>
-                            <h3 className="text-[17px] font-bold text-text-primary mb-3">
-                                {feature.title}
-                            </h3>
-                            <p className="text-[14px] text-text-secondary leading-relaxed">
-                                {feature.description}
+                            <h3 className="text-xl font-bold text-text-primary mb-4">Multi-Sender Rotation</h3>
+                            <p className="text-text-secondary text-sm leading-relaxed max-w-sm">
+                                Distribute volume across hundreds of unique sender profiles. Our system automatically rotates accounts to maintain high reputation and bypass daily provider limits.
                             </p>
                         </div>
-                    ))}
+                        <div className="mt-12 bg-slate-50 border border-border-light p-6 rounded-sm">
+                            <div className="flex flex-col gap-3">
+                                {[
+                                    { name: "Sender Alpha", status: "Active", load: "24%" },
+                                    { name: "Sender Beta", status: "Active", load: "18%" },
+                                    { name: "Sender Gamma", status: "Cooldown", load: "0%" }
+                                ].map((s, i) => (
+                                    <div key={i} className="flex items-center justify-between text-[11px]">
+                                        <span className="font-bold text-text-primary">{s.name}</span>
+                                        <div className="flex items-center gap-4">
+                                            <span className={s.status === 'Active' ? 'text-brand' : 'text-text-muted'}>{s.status}</span>
+                                            <span className="text-text-muted tabular-nums w-8 text-right">{s.load}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Priority Email - Wide 2x1 */}
+                    <div className="md:col-span-2 bg-white p-10 flex flex-col justify-between group">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h3 className="text-xl font-bold text-text-primary mb-2">Priority Protocol</h3>
+                                <p className="text-text-secondary text-sm leading-relaxed max-w-xs">
+                                    High-stakes messages bypass standard buffers for immediate primary inbox placement.
+                                </p>
+                            </div>
+                            <div className="w-10 h-10 border border-border-light flex items-center justify-center group-hover:border-brand transition-colors">
+                                <Zap size={20} className="text-brand" fill="currentColor" />
+                            </div>
+                        </div>
+                        <div className="mt-8 flex items-center gap-2">
+                            <div className="flex -space-x-1">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-100" />
+                                ))}
+                            </div>
+                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">+ 42 verification nodes active</span>
+                        </div>
+                    </div>
+
+                    {/* Analytics - Small 1x1 */}
+                    <div className="bg-white p-8 group">
+                        <div className="w-10 h-10 border border-border-light flex items-center justify-center mb-6 group-hover:border-brand transition-colors">
+                            <BarChart3 size={20} className="text-text-muted group-hover:text-brand" />
+                        </div>
+                        <h3 className="text-sm font-bold text-text-primary mb-2">Deep Analytics</h3>
+                        <p className="text-text-muted text-xs leading-relaxed">
+                            Per-recipient granularity on opens, clicks, and session time.
+                        </p>
+                    </div>
+
+                    {/* Security - Small 1x1 */}
+                    <div className="bg-white p-8 group">
+                        <div className="w-10 h-10 border border-border-light flex items-center justify-center mb-6 group-hover:border-brand transition-colors">
+                            <Lock size={20} className="text-text-muted group-hover:text-brand" />
+                        </div>
+                        <h3 className="text-sm font-bold text-text-primary mb-2">Encryption</h3>
+                        <p className="text-text-muted text-xs leading-relaxed">
+                            Enterprise-grade security for your credentials and data.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>

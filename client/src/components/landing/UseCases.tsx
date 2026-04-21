@@ -8,29 +8,26 @@ const personas = [
     {
         id: "founders",
         label: "Founders",
-        title: "Pitching investors without the spam folder.",
-        accent: "#00A63E",
-        body: "You drafted the right message. You found the right partner at the right fund. You hit send, and nothing comes back. SharaSpot fixes the delivery problem so your pitch gets the attention it deserves.",
-        points: ["Avoid 'Promotions' tab", "Automatic follow-up pause", "Domain reputation safety"],
-        cta: "Scale your fundraise",
+        title: "Investor relations that bypass the noise.",
+        body: "Fresh domains and critical updates require perfect placement. Ensure your pitch lands in the primary inbox where decisions happen.",
+        points: ["Zero 'Promotions' risk", "Reputation-safe warming", "Adaptive sender rotation"],
+        cta: "Scale fundraise",
     },
     {
         id: "sales",
         label: "Sales Teams",
-        title: "Book more calls from the same volume.",
-        accent: "#1A1D21",
-        body: "The VPs you need to reach get 100+ emails a day. SharaSpot sends through warmed-up accounts with human-like timing, so each email reads like it came from a colleague, not a bot.",
-        points: ["Multi-sender rotation", "Real-time reply detection", "Human-like sending patterns"],
-        cta: "Boost reply rates",
+        title: "Maximize response across every domain.",
+        body: "Outreach that feels authentic. Our system randomizes patterns and timings to remain indistinguishable from manual sends.",
+        points: ["High-volume resilience", "Real-time reply tracking", "Pattern variance engine"],
+        cta: "Increase replies",
     },
     {
         id: "hr",
         label: "Recruiters",
-        title: "Source talent without burning your domain.",
-        accent: "#5F6368",
-        body: "Top candidates aren't scrolling promo tabs. If your offer letter lands there, you've lost. Priority routing ensures your first touchpoint lands in the primary inbox every time.",
-        points: ["High-throughput delivery", "Verified placement stats", "Personalized at scale"],
-        cta: "Hire faster",
+        title: "High-stakes sourcing for elite talent.",
+        body: "The candidates you want aren't looking for you in the junk folder. Priority routing guarantees visibility for your outreach.",
+        points: ["Primary inbox placement", "Verified open tracking", "Scalable personalization"],
+        cta: "Optimize sourcing",
     },
 ];
 
@@ -38,49 +35,49 @@ export default function UseCases() {
     const router = useRouter();
 
     return (
-        <section className="py-24 lg:py-32 bg-white relative overflow-hidden">
+        <section className="py-24 lg:py-32 bg-white relative overflow-hidden border-b border-border-light">
             <div className="max-w-6xl mx-auto px-6 relative">
                 <div className="max-w-3xl mb-24">
-                    <p className="text-[11px] font-bold text-brand uppercase tracking-[0.2em] mb-4">Strategic Use Cases</p>
-                    <h2 className="text-4xl lg:text-5xl font-bold text-text-primary tracking-tight leading-[1.1] mb-6">
-                        Three outreach problems. <br />
-                        <span className="text-text-muted text-3xl lg:text-4xl">One definitive solution.</span>
+                    <p className="text-[11px] font-bold text-text-muted uppercase tracking-[0.2em] mb-4">Tactical Implementation</p>
+                    <h2 className="text-3xl lg:text-4xl font-bold text-text-primary tracking-tight leading-tight">
+                        Engineered for situations where <br />
+                        <span className="text-text-muted">delivery is the only metric.</span>
                     </h2>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-8">
+                <div className="grid lg:grid-cols-3 gap-px bg-border-light border border-border-light">
                     {personas.map((p, i) => (
                         <div 
                             key={p.id} 
-                            className="flex flex-col p-10 rounded-3xl border border-border-light bg-white hover:border-brand/20 hover:shadow-elevated transition-all duration-500 group"
+                            className="flex flex-col p-10 bg-white group hover:bg-slate-50 transition-colors duration-300"
                         >
-                            <div className="mb-8">
-                                <span className="inline-block px-3 py-1 rounded-full bg-slate-50 border border-border-light text-[10px] font-bold text-text-muted uppercase tracking-wider mb-6">
-                                    {p.label}
+                            <div className="mb-12">
+                                <span className="inline-block px-2.5 py-1 border border-border-light text-[10px] font-bold text-text-muted uppercase tracking-widest mb-8">
+                                    Use Case: {p.label}
                                 </span>
-                                <h3 className="text-2xl font-bold text-text-primary leading-tight mb-4">
+                                <h3 className="text-xl font-bold text-text-primary leading-tight mb-4">
                                     {p.title}
                                 </h3>
-                                <p className="text-[15px] text-text-secondary leading-relaxed">
+                                <p className="text-sm text-text-secondary leading-relaxed">
                                     {p.body}
                                 </p>
                             </div>
 
-                            <div className="space-y-3 mb-10 mt-auto">
+                            <div className="space-y-3 mb-12 mt-auto">
                                 {p.points.map((point, j) => (
                                     <div key={j} className="flex items-center gap-3">
-                                        <CheckCircle2 size={16} className="text-brand" />
-                                        <span className="text-[13px] font-medium text-text-primary">{point}</span>
+                                        <CheckCircle2 size={14} className="text-brand" />
+                                        <span className="text-[12px] font-semibold text-text-primary">{point}</span>
                                     </div>
                                 ))}
                             </div>
 
                             <button
                                 onClick={() => router.push("/login")}
-                                className="w-full py-3 px-6 rounded-xl border border-border-medium text-sm font-semibold text-text-primary hover:bg-text-primary hover:text-white hover:border-text-primary transition-all flex items-center justify-center gap-2"
+                                className="w-full py-4 border border-text-primary text-[11px] font-bold uppercase tracking-widest text-text-primary hover:bg-text-primary hover:text-white transition-all flex items-center justify-center gap-2"
                             >
                                 {p.cta}
-                                <ArrowRight size={15} />
+                                <ArrowRight size={14} />
                             </button>
                         </div>
                     ))}
