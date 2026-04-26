@@ -205,6 +205,7 @@ export interface SenderModalProps {
 // AuthGuard component props
 export interface AuthGuardProps {
   children: React.ReactNode;
+  requirePremium?: boolean;
 }
 
 // Sidebar component props

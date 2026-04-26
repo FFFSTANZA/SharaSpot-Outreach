@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/context/ToastContext";
 import { PageLoader } from "@/components/PageLoader";
 
+import { AuthGuardProps } from "@/types";
+
 /**
  * AuthGuard - Protects routes from unauthenticated access.
  *
@@ -13,7 +15,7 @@ import { PageLoader } from "@/components/PageLoader";
  * with a breathing animation. This reinforces the brand during the brief
  * auth check and prevents the flash of protected content.
  */
-export function AuthGuard({ children }: { children: React.ReactNode }) {
+export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const { addToast } = useToast();
@@ -31,14 +33,20 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       }
 
       router.replace("/login");
+      return;
     }
-  }, [user, isLoading, router, addToast]);
+
+    if (!isLoading && user && requirePremium && !(user as any).isPremium) {
+      addToast("info", "This feature requires a Pro subscription.");
+      router.replace("/dashboard/settings/billing");
+    }
+  }, [user, isLoading, router, addToast, requirePremium]);
 
   if (isLoading) {
     return <PageLoader message="Checking authentication..." />;
   }
 
-  if (!user) {
+  if (!user || (requirePremium && !(user as any).isPremium)) {
     return null;
   }
 
