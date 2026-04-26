@@ -40,7 +40,7 @@ async function callAI(prompt: string, systemPrompt: string): Promise<string> {
     };
   } else {
     model = "google/gemini-2.0-flash";
-    url = "https://api.aicredits.in/v1/chat/completions";
+    url = `${process.env.AICREDIT_BASE_URL || "https://api.aicredits.in/v1"}/chat/completions`;
     headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${process.env.AICREDIT_API_KEY}`,
