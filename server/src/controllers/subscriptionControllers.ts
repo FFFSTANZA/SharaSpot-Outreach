@@ -129,12 +129,33 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
   if (secret) {
     try {
-      const body = (req as any).rawBody || JSON.stringify(req.body);
-      const headers = req.headers as Record<string, string>;
+      const rawBody = (req as any).rawBody;
+      const body = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
+
+      const svix_id = req.headers["svix-id"] as string;
+      const svix_timestamp = req.headers["svix-timestamp"] as string;
+      const svix_signature = req.headers["svix-signature"] as string;
+
+      if (!svix_id || !svix_timestamp || !svix_signature) {
+        console.error("[SUBSCRIPTION-WEBHOOK] Missing svix headers");
+        res.status(401).json({ error: "Missing signatures" });
+        return;
+      }
+
+      console.log(`[SUBSCRIPTION-WEBHOOK] Verifying ${svix_id}`);
+
+      // We pass the headers in the format Svix expects
+      const headers = {
+        "svix-id": svix_id,
+        "svix-timestamp": svix_timestamp,
+        "svix-signature": svix_signature,
+      };
+
       event = dodo.webhooks.unwrap(body, { headers, key: secret });
-      console.log(`[SUBSCRIPTION-WEBHOOK] Verified event: ${event.type}`);
-    } catch (error) {
-      console.error("[SUBSCRIPTION-WEBHOOK] Signature verification failed:", error);
+      console.log(`[SUBSCRIPTION-WEBHOOK] Verified: ${event.type}`);
+    } catch (error: any) {
+      console.error("[SUBSCRIPTION-WEBHOOK] Verification Failed!");
+      console.error("[SUBSCRIPTION-WEBHOOK] Error:", error.message);
       res.status(401).json({ error: "Invalid signature" });
       return;
     }
