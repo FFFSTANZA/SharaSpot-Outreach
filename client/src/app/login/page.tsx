@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Shield, Zap, Send, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useToast } from "@/context/ToastContext";
+import { useAuth } from "@/hooks/useAuth";
 
 declare global {
   interface Window {
@@ -37,6 +38,7 @@ declare global {
 const LoginPage = () => {
   const router = useRouter();
   const { addToast } = useToast();
+  const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
 
@@ -45,7 +47,7 @@ const LoginPage = () => {
     if (token) router.replace("/dashboard");
   }, [router]);
 
-  const sdkInitialized = useEffect(() => {
+  useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!clientId || !window.google || (window as any).googleSdkInitialized) return;
 
@@ -57,6 +59,9 @@ const LoginPage = () => {
           try {
             const data = await loginWithGoogle(response.credential);
             localStorage.setItem("accessToken", data.accessToken);
+
+            // CRITICAL: Refresh the global auth state before proceeding
+            await refreshUser();
 
             // Check subscription status after login.
             // New users have NO subscription — send them straight to Dodo checkout.
