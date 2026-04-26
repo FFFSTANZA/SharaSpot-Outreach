@@ -38,8 +38,22 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
     }
 
     if (!isLoading && user && requirePremium && !(user as any).isPremium) {
-      addToast("info", "This feature requires a Pro subscription.");
-      router.replace("/dashboard/settings/billing");
+      console.log("AuthGuard: Premium required but user is not premium. Initiating checkout redirect...");
+      const initiateCheckout = async () => {
+        try {
+          const { createSubscription } = await import("@/lib/apis");
+          const checkout = await createSubscription();
+          if (checkout.checkoutUrl) {
+            window.location.href = checkout.checkoutUrl;
+          } else {
+            router.replace("/login");
+          }
+        } catch (err) {
+          console.error("AuthGuard: Checkout initiation failed", err);
+          router.replace("/login");
+        }
+      };
+      initiateCheckout();
     }
   }, [user, isLoading, router, addToast, requirePremium]);
 
