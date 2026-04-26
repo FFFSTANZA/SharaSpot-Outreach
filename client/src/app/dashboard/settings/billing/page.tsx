@@ -7,7 +7,7 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { Sidebar } from "../../Sidebar";
 import { TopBar } from "../../Topbar";
 import {
-    Zap, Check, CreditCard, ArrowLeft, ArrowRight, Inbox, Star, Clock, Send, ShieldCheck
+    Zap, Check, CreditCard, ArrowLeft, ArrowRight, Inbox, Star, Clock, Send, ShieldCheck, AlertTriangle
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -70,7 +70,6 @@ export default function BillingPage() {
 }
 
 function PremiumCard() {
-    const [region, setRegion] = React.useState<"india" | "global">("global");
     const [subscription, setSubscription] = React.useState<any>(null);
     const [loading, setLoading] = React.useState(true);
     const { user } = useAuth();
@@ -79,198 +78,112 @@ function PremiumCard() {
         getSubscription()
             .then((data: any) => {
                 setSubscription(data.subscription);
-                if (data.region) setRegion(data.region);
                 setLoading(false);
             })
-            .catch(() => {
-                setRegion("global");
-                setLoading(false);
-            });
+            .catch(() => setLoading(false));
     }, []);
 
-    const pricing = BRAND_CONFIG.pricing[region];
-    const [timeLeft, setTimeLeft] = React.useState<string>("");
-
-    React.useEffect(() => {
-        if (!subscription?.trialEnd) return;
-
-        const updateTimer = () => {
-            const now = new Date().getTime();
-            const end = new Date(subscription.trialEnd).getTime();
-            const diff = end - now;
-
-            if (diff <= 0) {
-                setTimeLeft("Expired");
-                return;
-            }
-
-            const h = Math.floor(diff / (1000 * 60 * 60));
-            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-            setTimeLeft(`${h}h ${m}m ${s}s`);
-        };
-
-        const interval = setInterval(updateTimer, 1000);
-        updateTimer();
-        return () => clearInterval(interval);
-    }, [subscription]);
-
-    const now = new Date();
-    // A Dodo trial is active if trialEnd exists and is in the future (set by webhook)
-    const isTrialActive = subscription?.trialEnd && new Date(subscription.trialEnd) > now;
-    const isPaidActive = subscription?.dodoSubscriptionId && subscription?.status === "ACTIVE" && subscription?.currentPeriodEnd && new Date(subscription.currentPeriodEnd) > now;
-    const isPremium = isTrialActive || isPaidActive;
-
-    const handleUpgrade = async () => {
-        try {
-            const data = await createSubscription();
-            if (data.checkoutUrl) {
-                window.location.href = data.checkoutUrl;
-            }
-        } catch (error) {
-            console.error("Failed to start checkout:", error);
-        }
-    };
-
     const handleCancel = async () => {
-        if (!confirm("Are you sure you want to cancel your pro subscription? You will keep your features until the end of the billing period.")) return;
+        if (!confirm("Are you sure? Your pro features will remain active until the end of the current billing period.")) return;
         try {
             await cancelSubscription();
             const data = await getSubscription();
             setSubscription(data.subscription);
         } catch (error) {
-            console.error("Failed to cancel subscription:", error);
+            console.error("Cancel failed:", error);
         }
     };
 
-    const handleReactivate = async () => {
-        try {
-            await reactivateSubscription();
-            const data = await getSubscription();
-            setSubscription(data.subscription);
-        } catch (error) {
-            console.error("Failed to reactivate subscription:", error);
+    if (loading) return (
+        <div className="flex items-center justify-center p-12 bg-slate-50 rounded-3xl animate-pulse">
+            <span className="text-sm font-bold text-slate-400">Loading subscription details...</span>
+        </div>
+    );
+
+    const now = new Date();
+    const expiryDate = subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null;
+    const trialEnd = subscription?.trialEnd ? new Date(subscription.trialEnd) : null;
+    const isPremium = (expiryDate && expiryDate > now) || (trialEnd && trialEnd > now);
+    const isCancelled = subscription?.status === "cancelled" || subscription?.cancelAtPeriodEnd;
+
+    React.useEffect(() => {
+        if (!loading && !isPremium) {
+            const timer = setTimeout(() => {
+                window.location.href = "/login";
+            }, 3000);
+            return () => clearTimeout(timer);
         }
-    };
+    }, [loading, isPremium]);
+
+    if (!isPremium) {
+        return (
+            <div className="p-8 bg-slate-50 rounded-3xl border border-slate-200 text-center">
+                <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-4" />
+                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">No Active Subscription</h3>
+                <p className="text-sm text-slate-500 mt-2">Redirecting you to secure payment setup...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
-            <div className={cn(
-                "rounded-3xl p-8 relative overflow-hidden transition-all duration-500",
-                isPaidActive
-                    ? "bg-slate-900 border-2 border-slate-800 shadow-2xl"
-                    : "bg-white border-2 border-brand shadow-2xl shadow-brand/10"
-            )}>
-                <div className="absolute top-0 right-0 p-6 flex flex-col items-end gap-2">
-                    {isPaidActive ? (
-                        <div className="flex items-center gap-2.5 bg-brand text-white px-3.5 py-1.5 rounded-full shadow-lg shadow-brand/20 border border-brand/50">
-                            <ShieldCheck size={14} strokeWidth={3} />
-                            <span className="text-[10px] font-black uppercase tracking-[0.1em]">Verified Pro</span>
-                        </div>
-                    ) : (
-                        <div className="bg-brand text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-wider shadow-xl shadow-brand/20">Recommended</div>
-                    )}
+            <div className="bg-slate-900 rounded-3xl p-8 border-2 border-slate-800 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6">
+                    <div className="flex items-center gap-2 bg-brand text-white px-3.5 py-1.5 rounded-full shadow-lg border border-brand/50">
+                        <ShieldCheck size={14} strokeWidth={3} />
+                        <span className="text-[10px] font-black uppercase tracking-wider">Verified Pro</span>
+                    </div>
                 </div>
 
-                <div className="relative z-10">
-                    <div className="flex items-center justify-between mt-6">
-                        <h2 className={cn("text-4xl font-black", isPaidActive ? "text-white" : "text-gray-900")}>
-                            {pricing.symbol}{pricing.amount}<span className={cn("text-lg font-bold", isPaidActive ? "text-slate-400" : "text-gray-400")}>/mo</span>
-                        </h2>
-                        {isPaidActive ? (
-                            <div className="flex items-center gap-2 text-brand font-black text-[10px] uppercase tracking-[0.15em] bg-brand/5 px-2.5 py-1 rounded border border-brand/20">
-                                PRO SUB
-                            </div>
-                        ) : isTrialActive ? (
-                            <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-full">
-                                Trial Access
-                            </span>
-                        ) : null}
-                    </div>
-                    <p className={cn("text-xl font-bold mt-2", isPaidActive ? "text-slate-200" : "text-gray-700")}>Pro Outreach Plan</p>
+                <div className="relative z-10 pt-4">
+                    <h2 className="text-3xl font-black text-white tracking-tight">Pro Outreach Plan</h2>
+                    <p className="text-brand font-black text-[10px] uppercase tracking-[0.2em] mt-1">Managed By Dodo Payments</p>
 
-                    <div className="text-sm mt-1 flex items-center gap-2">
-                        {isPaidActive ? (
-                            <div className="flex items-center gap-2 px-2.5 py-1 bg-brand/10 border border-brand/20 rounded-lg">
-                                <CreditCard size={12} className="text-brand" />
-                                <span className="text-brand font-black text-[10px] uppercase tracking-wider">
-                                    Next billing: {new Date(subscription.currentPeriodEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                </span>
-                            </div>
-                        ) : isTrialActive ? (
-                            <div className="flex items-center gap-2 px-2.5 py-1 bg-amber-50 border border-amber-100 rounded-lg">
-                                <Clock size={12} className="text-amber-600" />
-                                <span className="text-amber-600 font-black text-[10px] uppercase tracking-wider tabular-nums">
-                                    Trial Ends: {timeLeft}
-                                </span>
-                            </div>
-                        ) : (
-                            <span className="text-gray-500 italic text-xs">7-day free trial via Dodo Payments</span>
-                        )}
-                    </div>
-
-                    <div className="mt-10 space-y-3">
-                        <FeatureItem text="Unlimited Multi-Sender Rotation" isPro={isPremium} isDark={isPaidActive} />
-                        <FeatureItem text="Automated Warmup Infrastructure" isPro={isPremium} isDark={isPaidActive} />
-                        <FeatureItem text="Real-time IMAP Reply Detection" isPro={isPremium} isDark={isPaidActive} />
-                        <FeatureItem text="Priority Agency-Grade Delivery" isPro={isPremium} isDark={isPaidActive} />
-                    </div>
-
-                    <div className="mt-10">
-                        {isPaidActive ? (
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="py-4 text-slate-500 font-bold rounded-2xl bg-slate-800/30 border border-slate-800 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em]">
-                                    <Zap size={12} className="text-brand fill-brand" /> PRO STATUS
+                    <div className="mt-10 space-y-4">
+                        <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-700">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subscription Status</p>
+                                    <p className={cn(
+                                        "text-sm font-black mt-1 uppercase tracking-wider",
+                                        isCancelled ? "text-amber-500" : "text-brand"
+                                    )}>
+                                        {isCancelled ? "Cancelled (Pending Expiry)" : "Active & SECURE"}
+                                    </p>
                                 </div>
-                                {subscription.cancelAtPeriodEnd ? (
-                                    <button
-                                        onClick={handleReactivate}
-                                        className="py-4 bg-brand text-white font-black rounded-2xl hover:scale-[1.02] transition-all text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand/20"
-                                    >
-                                        Reactivate
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={handleCancel}
-                                        className="py-4 bg-slate-800 text-slate-500 font-bold rounded-2xl hover:bg-red-900/10 hover:text-red-400 hover:border-red-900/20 border border-slate-700 transition-all text-[10px] uppercase tracking-[0.2em]"
-                                    >
-                                        Cancel
-                                    </button>
-                                )}
+                                <div className="text-right">
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                        {isCancelled ? "Expires On" : "Next Billing"}
+                                    </p>
+                                    <p className="text-sm font-bold text-slate-300 mt-1">
+                                        {(expiryDate || trialEnd)?.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    </p>
+                                </div>
                             </div>
-                        ) : (
+                        </div>
+
+                        {!isCancelled && (
                             <button
-                                onClick={handleUpgrade}
-                                className="w-full py-5 text-white font-black rounded-2xl bg-brand shadow-2xl shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
+                                onClick={handleCancel}
+                                className="w-full py-4 bg-slate-800 text-slate-400 font-bold rounded-2xl hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 border border-slate-700 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2"
                             >
-                                <span className="uppercase tracking-widest text-sm">Start 7-Day Free Trial</span>
-                                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                <Zap className="w-3 h-3" /> Cancel Subscription
                             </button>
+                        )}
+
+                        {isCancelled && (
+                            <div className="py-4 px-6 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
+                                <p className="text-[11px] text-amber-500/80 font-bold leading-relaxed">
+                                    Your subscription has been cancelled. You will continue to have full access to all Pro features until
+                                    <span className="text-amber-500 ml-1">
+                                        {(expiryDate || trialEnd)?.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    </span>.
+                                </p>
+                            </div>
                         )}
                     </div>
                 </div>
             </div>
-
-            {isPaidActive && (
-                <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Renewal Status</p>
-                        <p className={cn(
-                            "text-sm font-black mt-1 uppercase tracking-wider",
-                            subscription.cancelAtPeriodEnd ? "text-amber-600" : "text-brand"
-                        )}>
-                            {subscription.cancelAtPeriodEnd ? "Expiring Soon" : "Auto-renewing"}
-                        </p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Next Cycle</p>
-                        <p className="text-sm font-bold text-slate-600 mt-1">
-                            {new Date(subscription.currentPeriodEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                        </p>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

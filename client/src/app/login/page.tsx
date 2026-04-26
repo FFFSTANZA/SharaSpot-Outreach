@@ -60,12 +60,11 @@ const LoginPage = () => {
             const data = await loginWithGoogle(response.credential);
             localStorage.setItem("accessToken", data.accessToken);
 
-            // CRITICAL: Refresh the global auth state to get the latest isPremium status from the server
+            // 1. Refresh state to get latest isPremium from server
             const updatedUser = await refreshUser();
 
-            // Simple flow: If NOT premium, send straight to Dodo checkout.
+            // 2. Strict flow: Not premium -> Dodo Checkout. Premium -> Dashboard.
             if (updatedUser && !updatedUser.isPremium) {
-              addToast("info", "Starting your 7-day free trial setup...");
               try {
                 const { createSubscription } = await import("@/lib/apis");
                 const checkout = await createSubscription();
@@ -74,11 +73,10 @@ const LoginPage = () => {
                   return;
                 }
               } catch (subErr) {
-                console.error("[Login] Checkout initiation failed:", subErr);
+                console.error("[Login] Checkout redirect failed:", subErr);
               }
             }
 
-            addToast("success", "Welcome back!");
             router.push("/dashboard");
           } catch (err) {
             console.error("Google login failed", err);
