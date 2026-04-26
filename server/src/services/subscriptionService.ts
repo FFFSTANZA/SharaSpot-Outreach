@@ -196,23 +196,26 @@ export async function handleCheckoutCompleted(
 
 export async function getSubscriptionStatus(
   userId: string
-): Promise<{ isPremium: boolean; subscription: SubscriptionInfo | null }> {
+): Promise<{ isPremium: boolean; subscription: any | null }> {
   const subscription = await prisma.subscription.findUnique({
     where: { userId },
   });
 
+  if (!subscription) {
+    return { isPremium: false, subscription: null };
+  }
+
   const now = new Date();
 
-  // Trial is active if trialEnd is in the future
-  const isTrialActive = subscription?.trialEnd && new Date(subscription.trialEnd) > now;
+  // A user is premium if:
+  // 1. They have an ACTIVE or CANCELLED (but pending end) status
+  // 2. The period hasn't ended yet
+  const isPremium = (
+    subscription.status === SubscriptionStatus.ACTIVE ||
+    subscription.status === SubscriptionStatus.CANCELLED
+  ) && (
+      subscription.currentPeriodEnd && new Date(subscription.currentPeriodEnd) > now
+    );
 
-  // Subscription is active if status is ACTIVE/CANCELLED and currentPeriodEnd is in the future
-  const isSubscriptionActive =
-    (subscription?.status === SubscriptionStatus.ACTIVE || subscription?.status === SubscriptionStatus.CANCELLED) &&
-    subscription?.currentPeriodEnd &&
-    new Date(subscription.currentPeriodEnd) > now;
-
-  const isPremium = !!(isTrialActive || isSubscriptionActive);
-
-  return { isPremium, subscription };
+  return { isPremium: !!isPremium, subscription };
 }

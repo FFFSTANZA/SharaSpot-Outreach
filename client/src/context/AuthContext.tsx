@@ -7,7 +7,7 @@ import type { User } from "@/types";
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
-    refreshUser: () => Promise<void>;
+    refreshUser: () => Promise<User | null>;
     logout: () => void;
 }
 
@@ -17,21 +17,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchUser = useCallback(async () => {
+    const fetchUser = useCallback(async (): Promise<User | null> => {
         // Only fetch if we have an access token
         const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
         if (!token) {
             setUser(null);
             setIsLoading(false);
-            return;
+            return null;
         }
 
+        setIsLoading(true);
         try {
             const userData = await getUser();
             setUser(userData);
+            return userData;
         } catch (err) {
             console.error("[AuthContext] Fetch user failed:", err);
             setUser(null);
+            return null;
         } finally {
             setIsLoading(false);
         }

@@ -60,34 +60,22 @@ const LoginPage = () => {
             const data = await loginWithGoogle(response.credential);
             localStorage.setItem("accessToken", data.accessToken);
 
-            // CRITICAL: Refresh the global auth state before proceeding
-            await refreshUser();
+            // CRITICAL: Refresh the global auth state to get the latest isPremium status from the server
+            const updatedUser = await refreshUser();
 
-            // Check subscription status after login.
-            // New users have NO subscription — send them straight to Dodo checkout.
-            try {
-              const { getSubscription, createSubscription } = await import("@/lib/apis");
-              const sub = await getSubscription();
-              const now = new Date();
-              const isActive =
-                sub.subscription &&
-                (sub.subscription.status === "ACTIVE" || sub.subscription.status === "CANCELLED") &&
-                new Date(sub.subscription.currentPeriodEnd) > now;
-              const isTrialActive =
-                sub.subscription?.trialEnd && new Date(sub.subscription.trialEnd) > now;
-
-              if (!isActive && !isTrialActive) {
-                // No active plan — initiate Dodo checkout immediately
-                addToast("info", "Starting your 7-day free trial setup...");
+            // Simple flow: If NOT premium, send straight to Dodo checkout.
+            if (updatedUser && !updatedUser.isPremium) {
+              addToast("info", "Starting your 7-day free trial setup...");
+              try {
+                const { createSubscription } = await import("@/lib/apis");
                 const checkout = await createSubscription();
                 if (checkout.checkoutUrl) {
                   window.location.href = checkout.checkoutUrl;
                   return;
                 }
+              } catch (subErr) {
+                console.error("[Login] Checkout initiation failed:", subErr);
               }
-            } catch (subErr) {
-              // If subscription check fails, fall through to dashboard
-              console.warn("[Login] Subscription check failed, falling through:", subErr);
             }
 
             addToast("success", "Welcome back!");

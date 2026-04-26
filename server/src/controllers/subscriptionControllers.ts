@@ -122,8 +122,6 @@ export async function reactivateUserSubscription(req: Request, res: Response): P
 }
 
 export async function handleWebhook(req: Request, res: Response): Promise<void> {
-  console.log("Dodo Webhook received:", req.body);
-
   const secret = process.env.DODO_WEBHOOK_SECRET;
   let event: any;
 
@@ -131,94 +129,44 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     try {
       const rawBody = (req as any).rawBody;
       const body = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
-
-      const svix_id = req.headers["svix-id"] as string;
-      const svix_timestamp = req.headers["svix-timestamp"] as string;
-      const svix_signature = req.headers["svix-signature"] as string;
-
-      if (!svix_id || !svix_timestamp || !svix_signature) {
-        console.error("[SUBSCRIPTION-WEBHOOK] Missing svix headers");
-        res.status(401).json({ error: "Missing signatures" });
-        return;
-      }
-
-      console.log(`[SUBSCRIPTION-WEBHOOK] Verifying ${svix_id}`);
-
-      // We pass the headers in the format Svix expects
       const headers = {
-        "svix-id": svix_id,
-        "svix-timestamp": svix_timestamp,
-        "svix-signature": svix_signature,
+        "svix-id": req.headers["svix-id"] as string,
+        "svix-timestamp": req.headers["svix-timestamp"] as string,
+        "svix-signature": req.headers["svix-signature"] as string,
       };
 
       event = dodo.webhooks.unwrap(body, { headers, key: secret });
-      console.log(`[SUBSCRIPTION-WEBHOOK] Verified: ${event.type}`);
     } catch (error: any) {
-      console.error("[SUBSCRIPTION-WEBHOOK] Verification Failed!");
-      console.error("[SUBSCRIPTION-WEBHOOK] Error:", error.message);
-      res.status(401).json({ error: "Invalid signature" });
+      console.error("[WEBHOOK] Invalid Signature:", error.message);
+      res.status(401).json({ error: "Unauthorized" });
       return;
     }
   } else {
-    console.warn("[SUBSCRIPTION-WEBHOOK] DODO_WEBHOOK_SECRET not set, skipping signature verification");
     event = req.body;
   }
 
   try {
     const { type, data } = event;
+    const { updateSubscriptionFromWebhook, handleCheckoutCompleted: finalizeCheckout } = await import("../services/subscriptionService");
 
-    switch (type) {
-      case "checkout.session.completed":
-        console.log(`[SUBSCRIPTION-WEBHOOK] Checkout completed: ${data.session_id}`);
-        await handleCheckoutCompleted(
-          data.session_id,
-          data.metadata?.userId || data.customer_id,
-          data.subscription_id,
-          data.customer_id
-        );
-        break;
-
-      case "subscription.active":
-      case "subscription.cancelled":
-      case "subscription.expired":
-      case "subscription.failed":
-      case "subscription.on_hold":
-      case "subscription.renewed":
-      case "subscription.updated":
-        console.log(`[SUBSCRIPTION-WEBHOOK] Subscription updated: ${data.subscription_id || data.id} (${type})`);
-        await handleSubscriptionUpdate(data);
-        break;
-
-      default:
-        console.log(`[SUBSCRIPTION-WEBHOOK] Unhandled event type: ${type}`);
+    if (type.startsWith("subscription.")) {
+      await updateSubscriptionFromWebhook(data.subscription_id || data.id, {
+        status: data.status,
+        currentPeriodStart: data.current_period_start ? new Date(data.current_period_start) : undefined,
+        currentPeriodEnd: data.current_period_end ? new Date(data.current_period_end) : undefined,
+        cancelAtPeriodEnd: data.cancel_at_next_billing_date,
+        trialEnd: data.trial_period_end ? new Date(data.trial_period_end) : null,
+      });
+    } else if (type === "checkout.session.completed" || type === "checkout.completed") {
+      const userId = data.metadata?.userId || data.customer_id;
+      if (userId) {
+        await finalizeCheckout(data.session_id, userId, data.subscription_id, data.customer_id);
+      }
     }
 
-    res.status(200).json({ received: true });
+    res.json({ success: true });
   } catch (error) {
-    console.error("[SUBSCRIPTION-WEBHOOK] Error processing event:", error);
-    res.status(500).json({ error: "Webhook handling failed" });
+    console.error("[WEBHOOK] Error:", error);
+    res.status(500).json({ error: "Webhook failure" });
   }
-}
-
-async function handleCheckoutCompleted(
-  sessionId: string,
-  userId?: string,
-  dodoSubscriptionId?: string,
-  dodoCustomerId?: string
-): Promise<void> {
-  if (!userId) return;
-  const { handleCheckoutCompleted: handleComplete } = await import("../services/subscriptionService");
-  await handleComplete(sessionId, userId, dodoSubscriptionId, dodoCustomerId);
-}
-
-async function handleSubscriptionUpdate(data: any): Promise<void> {
-  const { updateSubscriptionFromWebhook } = await import("../services/subscriptionService");
-  await updateSubscriptionFromWebhook(data.id, {
-    status: data.status,
-    currentPeriodStart: data.current_period_start ? new Date(data.current_period_start * 1000) : undefined,
-    currentPeriodEnd: data.current_period_end ? new Date(data.current_period_end * 1000) : undefined,
-    cancelAtPeriodEnd: data.cancel_at_period_end,
-    cancelAt: data.cancel_at ? new Date(data.cancel_at * 1000) : null,
-    trialEnd: data.trial_end ? new Date(data.trial_end * 1000) : null,
-  });
 }
