@@ -147,6 +147,18 @@ export async function reactivateUserSubscription(req: Request, res: Response): P
   }
 }
 
+/**
+ * Safely parse dates from Dodo Payments (handles seconds vs milliseconds vs ISO strings)
+ */
+function parseDodoDate(dateInput: any): Date | undefined {
+  if (!dateInput) return undefined;
+  if (typeof dateInput === 'number') {
+    return new Date(dateInput < 10000000000 ? dateInput * 1000 : dateInput);
+  }
+  const d = new Date(dateInput);
+  return isNaN(d.getTime()) ? undefined : d;
+}
+
 export async function handleWebhook(req: Request, res: Response): Promise<void> {
   const secret = process.env.DODO_WEBHOOK_SECRET?.trim();
   let event: any;
@@ -173,6 +185,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
   try {
     const { type, data, id: eventId } = event;
+    console.log(`[WEBHOOK] Received ${type} (ID: ${eventId})`);
 
     // Webhook Idempotency: Check if we already processed this event
     const alreadyProcessed = await prisma.processedWebhook.findUnique({
@@ -187,21 +200,20 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
     const { updateSubscriptionFromWebhook, handleCheckoutCompleted: finalizeCheckout } = await import("../services/subscriptionService");
 
-    // Process logic and mark as handled in a single transaction if possible
-    // (Note: subscription services manage their own logic, so we just wrap the marker)
-
     if (type.startsWith("subscription.")) {
+      console.log(`[WEBHOOK-DEBUG] Sub Status: ${data.status}, End: ${data.current_period_end}`);
       await updateSubscriptionFromWebhook(data.subscription_id || data.id, {
         status: data.status,
-        currentPeriodStart: data.current_period_start ? new Date(data.current_period_start) : undefined,
-        currentPeriodEnd: data.current_period_end ? new Date(data.current_period_end) : undefined,
+        currentPeriodStart: parseDodoDate(data.current_period_start),
+        currentPeriodEnd: parseDodoDate(data.current_period_end),
         cancelAtPeriodEnd: data.cancel_at_next_billing_date,
-        trialEnd: data.trial_period_end ? new Date(data.trial_period_end) : null,
+        trialEnd: parseDodoDate(data.trial_period_end) || null,
       });
     } else if (type === "checkout.session.completed" || type === "checkout.completed") {
-      const userId = data.metadata?.userId || data.customer_id;
-      if (userId) {
-        await finalizeCheckout(data.session_id, userId, data.subscription_id, data.customer_id);
+      const uId = data.metadata?.userId || data.customer_id;
+      console.log(`[WEBHOOK-DEBUG] Checkout Success for ${uId}. Sub: ${data.subscription_id}`);
+      if (uId) {
+        await finalizeCheckout(data.session_id, uId, data.subscription_id, data.customer_id);
       }
     }
 

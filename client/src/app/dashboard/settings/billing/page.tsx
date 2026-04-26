@@ -5,14 +5,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { Sidebar } from "../../Sidebar";
-import { TopBar } from "../../Topbar";
 import {
-    Zap, Check, CreditCard, ArrowLeft, ArrowRight, Inbox, Star, Clock, Send, ShieldCheck, AlertTriangle
+    Zap, Check, CreditCard, ArrowLeft, ShieldCheck, AlertTriangle, Clock
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { BRAND_CONFIG } from "@/lib/config";
-import { getSubscription, createSubscription, cancelSubscription, reactivateSubscription } from "@/lib/apis";
+import { getSubscription, cancelSubscription } from "@/lib/apis";
 
 export default function BillingPage() {
     const { user } = useAuth();
@@ -21,16 +18,11 @@ export default function BillingPage() {
     return (
         <AuthGuard>
             <SidebarProvider>
-                <div className="flex h-screen bg-background font-sans">
+                <div className="flex h-screen bg-white font-sans text-slate-900">
                     <Sidebar
                         currentLabel="Billing"
                         setLabel={() => { }}
-                        items={[
-                            { label: "All", icon: <Inbox size={18} /> },
-                            { label: "Starred", icon: <Star size={18} /> },
-                            { label: "Scheduled", icon: <Clock size={18} /> },
-                            { label: "Sent", icon: <Send size={18} /> },
-                        ]}
+                        items={[]}
                         profile={{
                             name: user?.name ?? "User",
                             email: user?.email ?? "",
@@ -38,29 +30,22 @@ export default function BillingPage() {
                         }}
                     />
 
-                    <main className="flex-1 flex flex-col min-w-0 overflow-hidden pt-4 px-4 bg-background">
-                        <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col grow overflow-hidden">
-                            <TopBar onRefresh={() => { }} />
+                    <main className="flex-1 flex flex-col min-w-0 overflow-hidden px-10 py-12">
+                        <div className="max-w-3xl mx-auto w-full">
+                            <button
+                                onClick={() => router.push("/dashboard/settings")}
+                                className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-slate-900 transition-all mb-10 group"
+                            >
+                                <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                                RETURN TO SETTINGS
+                            </button>
 
-                            <div className="flex-1 overflow-y-auto p-8 max-w-5xl mx-auto w-full">
-                                <button
-                                    onClick={() => router.push("/dashboard/settings")}
-                                    className="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-gray-900 transition-all mb-8"
-                                >
-                                    <ArrowLeft size={16} />
-                                    Back to Settings
-                                </button>
+                            <header className="mb-12 text-center md:text-left">
+                                <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Billing</h1>
+                                <p className="text-slate-500 mt-2 text-sm font-medium">Manage your subscription and payment details</p>
+                            </header>
 
-                                <div className="mb-12">
-                                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Billing & Plans</h1>
-                                    <p className="text-sm text-gray-500 mt-1">Simple pricing for high-deliverability outreach</p>
-                                </div>
-
-                                <div className="max-w-2xl mx-auto">
-                                    <PremiumCard />
-                                </div>
-
-                            </div>
+                            <PremiumCard />
                         </div>
                     </main>
                 </div>
@@ -82,14 +67,12 @@ function PremiumCard() {
             try {
                 const data = await getSubscription();
                 setSubscription(data.subscription);
-
-                // If we just came back from successful payment but local state is not updated,
-                // try to refresh the user state as well.
                 if (isSuccessRedirect && !data.isPremium) {
-                    await refreshUser();
+                    // Give a small delay for webhook to propagate before refresh
+                    setTimeout(() => refreshUser(), 1000);
                 }
             } catch (err) {
-                console.error("Failed to fetch subscription:", err);
+                console.error("Failed to fetch billing status:", err);
             } finally {
                 setLoading(false);
             }
@@ -98,19 +81,20 @@ function PremiumCard() {
     }, [isSuccessRedirect, refreshUser]);
 
     const handleCancel = async () => {
-        if (!confirm("Are you sure? Your pro features will remain active until the end of the current billing period.")) return;
+        if (!confirm("Your pro features will expire at the end of your billing cycle. Are you sure?")) return;
         try {
             await cancelSubscription();
             const data = await getSubscription();
             setSubscription(data.subscription);
         } catch (error) {
-            console.error("Cancel failed:", error);
+            console.error("Cancellation failed:", error);
         }
     };
 
     if (loading) return (
-        <div className="flex items-center justify-center p-12 bg-slate-50 rounded-3xl animate-pulse">
-            <span className="text-sm font-bold text-slate-400">Verifying secure access...</span>
+        <div className="p-12 border border-slate-100 rounded-3xl bg-slate-50/50 flex flex-col items-center justify-center animate-pulse">
+            <div className="h-4 w-48 bg-slate-200 rounded-full mb-3" />
+            <div className="h-3 w-32 bg-slate-100 rounded-full" />
         </div>
     );
 
@@ -121,107 +105,113 @@ function PremiumCard() {
     const isCancelled = subscription?.status === "cancelled" || subscription?.cancelAtPeriodEnd;
 
     if (!isPremium) {
-        if (isSuccessRedirect) {
-            return (
-                <div className="p-8 bg-slate-50 rounded-3xl border border-slate-200 text-center">
-                    <div className="animate-spin h-8 w-8 text-brand mx-auto mb-4 border-2 border-brand border-t-transparent rounded-full" />
-                    <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Syncing With Payment Provider</h3>
-                    <p className="text-sm text-slate-500 mt-2">We've detected your payment. Securing your dashboard access now...</p>
-                </div>
-            );
-        }
-
         return (
-            <div className="p-8 bg-slate-50 rounded-3xl border border-slate-200 text-center">
-                <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-4" />
-                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Access Restricted</h3>
-                <p className="text-sm text-slate-500 mt-2">An active subscription is required to access these features.</p>
+            <div className="p-10 border border-slate-200 rounded-3xl text-center bg-white shadow-sm transition-all hover:shadow-md">
+                <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto mb-5" />
+                <h3 className="text-xl font-bold text-slate-900">No Active Plan</h3>
+                <p className="text-slate-500 mt-2 text-sm leading-relaxed max-w-xs mx-auto">
+                    You currently don't have an active subscription. Upgrade to Pro to start your outreach campaigns.
+                </p>
                 <button
                     onClick={() => router.push("/login")}
-                    className="mt-6 px-8 py-3 bg-brand text-white font-bold rounded-xl hover:shadow-lg transition-all uppercase tracking-widest text-xs"
+                    className="mt-8 px-10 py-3.5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all text-xs uppercase tracking-widest"
                 >
-                    Secure Pro Access
+                    Upgrade to SharaSpot Pro
                 </button>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <div className="bg-slate-900 rounded-3xl p-8 border-2 border-slate-800 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6">
-                    <div className="flex items-center gap-2 bg-brand text-white px-3.5 py-1.5 rounded-full shadow-lg border border-brand/50">
-                        <ShieldCheck size={14} strokeWidth={3} />
-                        <span className="text-[10px] font-black uppercase tracking-wider">Verified Pro</span>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Main Plan Information */}
+            <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-sm bg-white">
+                <div className="p-8 md:p-10">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Current Plan</span>
+                                <div className="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[9px] font-black uppercase tracking-wider border border-green-100 italic">Active</div>
+                            </div>
+                            <h2 className="text-3xl font-black text-slate-900 flex items-center gap-2">
+                                SharaSpot Pro
+                                <ShieldCheck className="text-brand h-6 w-6" />
+                            </h2>
+                        </div>
+                        <div className="text-left md:text-right">
+                            <p className="text-4xl font-black text-slate-900">$29<span className="text-sm font-bold text-slate-400 ml-1">USD/mo</span></p>
+                            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest italic">Professional Tier</p>
+                        </div>
                     </div>
-                </div>
 
-                <div className="relative z-10 pt-4">
-                    <h2 className="text-3xl font-black text-white tracking-tight">Pro Outreach Plan</h2>
-                    <p className="text-brand font-black text-[10px] uppercase tracking-[0.2em] mt-1">Managed By Dodo Payments</p>
-
-                    <div className="mt-10 space-y-4">
-                        <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-700">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subscription Status</p>
-                                    <p className={cn(
-                                        "text-sm font-black mt-1 uppercase tracking-wider",
-                                        isCancelled ? "text-amber-500" : "text-brand"
-                                    )}>
-                                        {isCancelled ? "Cancelled (Pending Expiry)" : "Active & SECURE"}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                        {isCancelled ? "Expires On" : "Next Billing"}
-                                    </p>
-                                    <p className="text-sm font-bold text-slate-300 mt-1">
-                                        {(expiryDate || trialEnd)?.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                    </p>
-                                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-10 border-y border-slate-100">
+                        <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Renewal Date</p>
+                            <p className="text-lg font-bold text-slate-900">
+                                {(expiryDate || trialEnd)?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Payment Method</p>
+                            <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                                <CreditCard size={18} className="text-slate-300" />
+                                Standard Billing
                             </div>
                         </div>
+                    </div>
 
-                        {!isCancelled && (
+                    <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
+                        {!isCancelled ? (
                             <button
                                 onClick={handleCancel}
-                                className="w-full py-4 bg-slate-800 text-slate-400 font-bold rounded-2xl hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 border border-slate-700 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                                className="px-6 py-3 border border-slate-200 text-slate-400 font-bold rounded-xl hover:border-red-100 hover:text-red-500 hover:bg-red-50 transition-all text-[11px] uppercase tracking-widest"
                             >
-                                <Zap className="w-3 h-3" /> Cancel Subscription
+                                Cancel Subscription
                             </button>
-                        )}
-
-                        {isCancelled && (
-                            <div className="py-4 px-6 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
-                                <p className="text-[11px] text-amber-500/80 font-bold leading-relaxed">
-                                    Your subscription has been cancelled. You will continue to have full access to all Pro features until
-                                    <span className="text-amber-500 ml-1">
-                                        {(expiryDate || trialEnd)?.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                    </span>.
+                        ) : (
+                            <div className="flex items-center gap-3 px-5 py-3 bg-amber-50 rounded-xl border border-amber-100 text-amber-700">
+                                <Clock size={16} />
+                                <p className="text-[11px] font-bold uppercase tracking-wider">
+                                    Ends on {(expiryDate || trialEnd)?.toLocaleDateString()}
                                 </p>
                             </div>
                         )}
+
+                        <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest hidden md:block">
+                            Secured by Dodo Payments
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Plan Features / Proof of Status */}
+            <div className="p-8 border border-slate-100 rounded-3xl bg-slate-50/40">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <Zap className="text-brand h-4 w-4" />
+                        <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.1em]">Plan Inclusions</h3>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-12">
+                    <BenefitItem text="Multi-Sender Rotation Engine" />
+                    <BenefitItem text="Professional AI Follow-ups" />
+                    <BenefitItem text="Unlimited Campaign Senders" />
+                    <BenefitItem text="Primary Inbox Optimization" />
+                    <BenefitItem text="Advanced Deliverability Tools" />
+                    <BenefitItem text="Priority Email Infrastructure" />
                 </div>
             </div>
         </div>
     );
 }
 
-function FeatureItem({ text, isPro, isDark }: { text: string; isPro?: boolean; isDark?: boolean }) {
+function BenefitItem({ text }: { text: string }) {
     return (
         <div className="flex items-center gap-3">
-            <div className={cn(
-                "h-5 w-5 rounded-full flex items-center justify-center shrink-0",
-                isPro ? "bg-brand text-white" : (isDark ? "bg-slate-800 text-slate-600" : "bg-gray-200 text-gray-400")
-            )}>
-                <Check size={12} strokeWidth={4} />
+            <div className="h-5 w-5 bg-green-50 rounded-full flex items-center justify-center shrink-0 border border-green-100">
+                <Check size={10} className="text-green-600" strokeWidth={4} />
             </div>
-            <span className={cn(
-                "text-sm font-bold",
-                isPro ? (isDark ? "text-slate-200" : "text-gray-800") : (isDark ? "text-slate-600" : "text-gray-400")
-            )}>{text}</span>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">{text}</span>
         </div>
     );
 }

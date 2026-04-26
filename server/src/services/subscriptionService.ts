@@ -179,28 +179,30 @@ export async function handleCheckoutCompleted(
   dodoSubscriptionId?: string,
   dodoCustomerId?: string
 ): Promise<void> {
+  console.log(`[SUBSCRIPTION-SYNC] Finalizing checkout for user ${userId}, session ${sessionId}`);
+
+  // Base dates for a new subscription
+  const periodStart = new Date();
   const periodEnd = new Date();
   periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-  const subscriptionData = {
-    userId,
-    status: SubscriptionStatus.ACTIVE,
-    currentPeriodStart: new Date(),
-    currentPeriodEnd: periodEnd,
-    dodoCustomerId: dodoCustomerId || null,
-    dodoSubscriptionId: dodoSubscriptionId || null,
-    cancelAtPeriodEnd: false,
-    cancelAt: null,
-    trialEnd: null,
-  };
-
-  // Atomic Update using transaction to ensure consistency
+  // Atomic sync or create
   await prisma.$transaction(async (tx) => {
-    const existingSubscription = await tx.subscription.findUnique({
-      where: { userId },
-    });
+    const existing = await tx.subscription.findUnique({ where: { userId } });
 
-    if (existingSubscription) {
+    const subscriptionData = {
+      userId,
+      status: SubscriptionStatus.ACTIVE,
+      dodoCustomerId: dodoCustomerId || existing?.dodoCustomerId || null,
+      dodoSubscriptionId: dodoSubscriptionId || existing?.dodoSubscriptionId || null,
+      // Only set dates if not already present or if we are forced to
+      currentPeriodStart: existing?.currentPeriodStart || periodStart,
+      currentPeriodEnd: existing?.currentPeriodEnd || periodEnd,
+      cancelAtPeriodEnd: existing?.cancelAtPeriodEnd ?? false,
+      trialEnd: existing?.trialEnd || null,
+    };
+
+    if (existing) {
       await tx.subscription.update({
         where: { userId },
         data: subscriptionData,
@@ -212,10 +214,9 @@ export async function handleCheckoutCompleted(
     }
   });
 
-  // Clear cache AFTER successful DB transaction
-  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`).catch((err) => {
-    console.error(`[AUTH-CACHE] Failed to clear premium cache for ${userId}:`, err.message);
-  });
+  // Clear cache
+  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`).catch(() => { });
+  console.log(`[SUBSCRIPTION-SYNC] Success for ${userId}`);
 }
 
 
