@@ -138,7 +138,7 @@ export default function PRMPage() {
   );
 
   return (
-    <AuthGuard>
+    <AuthGuard requirePremium={true}>
       <ErrorBoundary>
         <SidebarProvider>
           <div className="flex h-screen bg-[#F8FAFC] font-sans">

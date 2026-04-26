@@ -110,7 +110,7 @@ export default function TemplatesPage() {
   });
 
   return (
-    <AuthGuard>
+    <AuthGuard requirePremium={true}>
       <SidebarProvider>
         <div className="flex h-screen bg-[#f9fafb]">
           <Sidebar

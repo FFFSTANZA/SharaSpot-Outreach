@@ -45,9 +45,9 @@ const LoginPage = () => {
     if (token) router.replace("/dashboard");
   }, [router]);
 
-  useEffect(() => {
+  const sdkInitialized = useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId || !window.google) return;
+    if (!clientId || !window.google || (window as any).googleSdkInitialized) return;
 
     try {
       window.google.accounts.id.initialize({
@@ -57,6 +57,34 @@ const LoginPage = () => {
           try {
             const data = await loginWithGoogle(response.credential);
             localStorage.setItem("accessToken", data.accessToken);
+
+            // Check subscription status after login.
+            // New users have NO subscription — send them straight to Dodo checkout.
+            try {
+              const { getSubscription, createSubscription } = await import("@/lib/apis");
+              const sub = await getSubscription();
+              const now = new Date();
+              const isActive =
+                sub.subscription &&
+                (sub.subscription.status === "ACTIVE" || sub.subscription.status === "CANCELLED") &&
+                new Date(sub.subscription.currentPeriodEnd) > now;
+              const isTrialActive =
+                sub.subscription?.trialEnd && new Date(sub.subscription.trialEnd) > now;
+
+              if (!isActive && !isTrialActive) {
+                // No active plan — initiate Dodo checkout immediately
+                addToast("info", "Starting your 7-day free trial setup...");
+                const checkout = await createSubscription();
+                if (checkout.checkoutUrl) {
+                  window.location.href = checkout.checkoutUrl;
+                  return;
+                }
+              }
+            } catch (subErr) {
+              // If subscription check fails, fall through to dashboard
+              console.warn("[Login] Subscription check failed, falling through:", subErr);
+            }
+
             addToast("success", "Welcome back!");
             router.push("/dashboard");
           } catch (err) {
@@ -66,11 +94,12 @@ const LoginPage = () => {
             setIsLoading(false);
           }
         },
-        use_fedcm_for_prompt: false,
+        use_fedcm_for_prompt: true, // Addressing FedCM warning
       });
 
+      (window as any).googleSdkInitialized = true;
+
       // Render the standard button into the container
-      // This is much more reliable than id.prompt() for a button click action
       window.google.accounts.id.renderButton(
         document.getElementById("googleButtonContainer"),
         {

@@ -5,8 +5,8 @@
 <h1 align="center">SharaSpot</h1>
 
 <p align="center">
-  Cold outreach email platform for job seekers.<br/>
-  Send personalized emails to recruiters at scale with smart scheduling, multi-sender rotation, and follow-up sequences.
+  The elite cold outreach platform for high-stakes relationship building.<br/>
+  Scale your Founder-Investor connections, Enterprise Sales, and HR Headhunting with intelligent automation and human-like delivery.
 </p>
 
 <p align="center">
@@ -26,9 +26,9 @@
 
 ## What is SharaSpot
 
-SharaSpot is a cold outreach platform designed for job seekers who want to reach recruiters through cold email. Connect your email accounts (Gmail, Outlook, Zoho, Yahoo, or any custom provider), import recipients from a CSV, write personalized emails with template variables, and let SharaSpot handle the scheduling, sending limits, and follow-ups.
+SharaSpot is a high-performance cold outreach engine built for Founders, Sales Professionals, and HR Leaders who need to build high-value relationships at scale. Whether you’re pitching investors, closing major deals, or headhunting top talent, SharaSpot ensures your message cuts through the noise.
 
-Built for deliverability: adaptive sender warmup, intelligent sending limits, natural sending patterns, inbox protection with bounce and reply detection, and automatic blocking of invalid recipients.
+Connect your professional email accounts (Gmail, Outlook, Zoho, or custom domains), import target lists, and deploy hyper-personalized sequences that maintain absolute deliverability through adaptive warmup, human-like sending patterns, and intelligent reply detection.
 
 ---
 

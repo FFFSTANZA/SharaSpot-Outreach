@@ -72,20 +72,15 @@ export default function CampaignDetailPage() {
 
   // Polling for live updates when campaign is active
   useEffect(() => {
-    if (!campaign) return;
-
-    const isActive = ACTIVE_STATUSES.includes(campaign.status as CampaignStatus);
-
-    if (isActive) {
-      pollRef.current = setInterval(async () => {
-        try {
-          const data = await getCampaignById(id);
-          setCampaign(data);
-        } catch {
-          // Silent fail on poll
-        }
-      }, POLL_INTERVAL_MS);
-    }
+    pollRef.current = setInterval(async () => {
+      // Fetch latest data regardless of current status to detect status changes
+      try {
+        const data = await getCampaignById(id);
+        setCampaign(data);
+      } catch {
+        // Silent fail on poll
+      }
+    }, POLL_INTERVAL_MS);
 
     return () => {
       if (pollRef.current) {
@@ -93,7 +88,7 @@ export default function CampaignDetailPage() {
         pollRef.current = null;
       }
     };
-  }, [campaign?.status, id]);
+  }, [id]); // Only depend on the ID
 
   const formatDate = (iso: string) =>
     new Intl.DateTimeFormat("en-US", {
@@ -149,7 +144,7 @@ export default function CampaignDetailPage() {
   ] : [];
 
   return (
-    <AuthGuard>
+    <AuthGuard requirePremium={true}>
       <SidebarProvider>
         <div className="flex h-screen bg-background">
           <Sidebar

@@ -170,7 +170,7 @@ export default function InboxPage() {
     const selectedThread = threads.find(t => t.id === selectedThreadId);
 
     return (
-        <AuthGuard>
+        <AuthGuard requirePremium={true}>
             <ErrorBoundary>
                 <SidebarProvider>
                     <div className="flex h-screen bg-background font-sans text-text-primary">

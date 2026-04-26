@@ -63,6 +63,9 @@ import adminRoutes from "./routes/adminRoutes";
 const app = express();
 export { app };
 
+// Important for rate limiting behind a proxy (Nginx)
+app.set("trust proxy", 1);
+
 /* CORE MIDDLEWARE */
 if (process.env.NODE_ENV !== "development") {
   app.use(helmet());
@@ -76,14 +79,14 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Rate Limiting - Global & Auth specific
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === "development" ? 99999 : 100, // Effectively disabled for dev
+  max: process.env.NODE_ENV === "development" ? 99999 : 10000, // Increased to 10,000
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === "development" ? 99999 : 20, // Effectively disabled for dev
+  max: process.env.NODE_ENV === "development" ? 99999 : 1000, // Increased to 1,000
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many login attempts, please try again later" },
@@ -92,8 +95,13 @@ const authLimiter = rateLimit({
 app.use("/api", globalLimiter);
 app.use("/auth", authLimiter);
 
-// Payload Limits
-app.use(express.json({ limit: "2mb" }));
+// Payload Limits - With Raw Body for Webhook Verification
+app.use(express.json({
+  limit: "2mb",
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: false, limit: "2mb" }));
 
 /* PUBLIC ROUTES */

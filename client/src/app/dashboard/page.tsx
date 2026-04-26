@@ -108,20 +108,25 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchGlobalStats = () => {
-      getDashboardStats().then(setGlobalStats).catch(err => console.error("[Dashboard] Stats error:", err));
+      getDashboardStats()
+        .then(setGlobalStats)
+        .catch(err => console.error("[Dashboard] Stats error:", err));
     };
 
     fetchGlobalStats();
+
+    // Stable polling interval
     const pollInterval = setInterval(() => {
-      // Only poll if tab is visible and we're not currently loading
-      if (document.visibilityState === "visible" && !isLoading) {
+      // Only poll if tab is visible. 
+      // We check isLoading at the time of execution, not as a dependency.
+      if (document.visibilityState === "visible") {
         refresh();
         fetchGlobalStats();
       }
-    }, 10_000);
+    }, 30_000); // Increased to 30s to reduce load
 
     return () => clearInterval(pollInterval);
-  }, [refresh, isLoading]);
+  }, []); // Only run once on mount
 
   const emailItems = useMemo(() => (results as any[]).map((r: any) => ({
     email: r,

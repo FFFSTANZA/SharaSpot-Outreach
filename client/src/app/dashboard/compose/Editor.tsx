@@ -215,13 +215,13 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
         heading: { levels: [1, 2, 3] },
         bulletList: { keepMarks: true },
         orderedList: { keepMarks: true },
+        // @ts-ignore - StarterKit 3.x includes Link
+        link: {
+          openOnClick: false,
+          HTMLAttributes: { class: "text-emerald-600 underline cursor-pointer" },
+        },
       }),
-      Underline,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: { class: "text-emerald-600 underline cursor-pointer" },
-      }),
       TextStyle,
       Color,
       Highlight.configure({ multicolor: true }),

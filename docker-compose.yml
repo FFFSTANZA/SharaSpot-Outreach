@@ -27,7 +27,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sharaspot"]
       interval: 10s
@@ -58,8 +58,8 @@ services:
     env_file:
       - ./server/.env
     environment:
-      DATABASE_URL: postgresql://sharaspot:${DB_PASSWORD:-changeme}@postgres:5432/sharaspot
-      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      DATABASE_URL: postgresql://sharaspot:${DB_PASSWORD:-changeme}@sharaspot-db:5432/sharaspot
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@sharaspot-redis:6379
       NODE_ENV: production
     ports:
       - "127.0.0.1:8000:8000"
@@ -80,8 +80,8 @@ services:
     env_file:
       - ./server/.env
     environment:
-      DATABASE_URL: postgresql://sharaspot:${DB_PASSWORD:-changeme}@postgres:5432/sharaspot
-      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      DATABASE_URL: postgresql://sharaspot:${DB_PASSWORD:-changeme}@sharaspot-db:5432/sharaspot
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@sharaspot-redis:6379
       NODE_ENV: production
     command: ["node", "dist/worker/index.js"]
     depends_on:
@@ -96,6 +96,9 @@ services:
     build:
       context: .
       dockerfile: deploy/Dockerfile.client
+      args:
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://sharaspot.in}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-354664818470-veljl4900p28hf0i81u0r959ra11ihjt.apps.googleusercontent.com}
     container_name: sharaspot-frontend
     restart: unless-stopped
     env_file:
@@ -115,7 +118,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/docker-nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./deploy/docker-nginx-http.conf:/etc/nginx/conf.d/default.conf
       - ./deploy/nginx/ssl:/etc/nginx/ssl
     depends_on:
       - api

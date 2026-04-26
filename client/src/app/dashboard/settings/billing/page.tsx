@@ -117,7 +117,8 @@ function PremiumCard() {
     }, [subscription]);
 
     const now = new Date();
-    const isTrialActive = !subscription?.dodoSubscriptionId && subscription?.trialEnd && new Date(subscription.trialEnd) > now;
+    // A Dodo trial is active if trialEnd exists and is in the future (set by webhook)
+    const isTrialActive = subscription?.trialEnd && new Date(subscription.trialEnd) > now;
     const isPaidActive = subscription?.dodoSubscriptionId && subscription?.status === "ACTIVE" && subscription?.currentPeriodEnd && new Date(subscription.currentPeriodEnd) > now;
     const isPremium = isTrialActive || isPaidActive;
 
@@ -205,7 +206,7 @@ function PremiumCard() {
                                 </span>
                             </div>
                         ) : (
-                            <span className="text-gray-500 italic text-xs">Includes 7-day payment trial</span>
+                            <span className="text-gray-500 italic text-xs">7-day free trial via Dodo Payments</span>
                         )}
                     </div>
 
@@ -243,7 +244,7 @@ function PremiumCard() {
                                 onClick={handleUpgrade}
                                 className="w-full py-5 text-white font-black rounded-2xl bg-brand shadow-2xl shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
                             >
-                                <span className="uppercase tracking-widest text-sm">{isTrialActive ? "Claim Pro Access" : "Start 7-Day Trial"}</span>
+                                <span className="uppercase tracking-widest text-sm">Start 7-Day Free Trial</span>
                                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </button>
                         )}

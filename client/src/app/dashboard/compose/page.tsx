@@ -71,7 +71,7 @@ function ComposeContent() {
   );
 
   return (
-    <AuthGuard>
+    <AuthGuard requirePremium={true}>
       <div className="min-h-screen bg-gray-50">
         <ErrorBoundary>
           <ComposeForm

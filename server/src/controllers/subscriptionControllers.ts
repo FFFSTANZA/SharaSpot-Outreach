@@ -129,7 +129,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
   if (secret) {
     try {
-      const body = JSON.stringify(req.body);
+      const body = (req as any).rawBody || JSON.stringify(req.body);
       const headers = req.headers as Record<string, string>;
       event = dodo.webhooks.unwrap(body, { headers, key: secret });
       console.log(`[SUBSCRIPTION-WEBHOOK] Verified event: ${event.type}`);

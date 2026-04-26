@@ -12,7 +12,7 @@ export default function SettingsPage() {
     const { user } = useAuth();
 
     return (
-        <AuthGuard>
+        <AuthGuard requirePremium={true}>
             <SidebarProvider>
                 <div className="flex h-screen bg-background font-sans text-text-primary">
                     <Sidebar

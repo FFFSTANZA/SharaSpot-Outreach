@@ -75,7 +75,7 @@ export default function SendersPage() {
     };
 
     return (
-        <AuthGuard>
+        <AuthGuard requirePremium={true}>
             <ErrorBoundary>
                 <SidebarProvider>
                     <div className="flex h-screen bg-background font-sans text-text-primary">

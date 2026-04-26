@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+export const dynamic = 'force-dynamic';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
@@ -55,7 +56,7 @@ export const metadata: Metadata = {
     description: "High-stakes cold outreach for founders and sales teams. Ensure your emails land in the primary inbox with multi-sender rotation and AI follow-ups.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "SharaSpot - High-Performance Outreach System",
@@ -66,7 +67,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SharaSpot — Cold Outreach That Gets Replies",
     description: "Ensure your cold emails land in the primary inbox. SharaSpot uses multi-sender rotation and AI to maximize your outreach results.",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
@@ -156,6 +157,7 @@ const jsonLd = {
   ]
 };
 
+import { AuthProvider } from "@/context/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function RootLayout({
@@ -176,7 +178,9 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <ToastProvider>
-            {children}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
           </ToastProvider>
         </ErrorBoundary>
       </body>
