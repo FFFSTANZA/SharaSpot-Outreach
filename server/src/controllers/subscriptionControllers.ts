@@ -90,9 +90,9 @@ export async function createSubscription(req: Request, res: Response): Promise<v
     }
 
     const existing = await getSubscriptionStatus(userId);
-    // Only block if they already have an active PAID subscription
-    if (existing.subscription?.dodoSubscriptionId && existing.subscription.status === "ACTIVE") {
-      res.status(400).json({ message: "Already subscribed to Pro Outreach Pro" });
+    // Only block if they are actually PREMIUM (Active/Trial and not expired)
+    if (existing.isPremium) {
+      res.status(400).json({ message: "You already have an active premium subscription." });
       return;
     }
 
