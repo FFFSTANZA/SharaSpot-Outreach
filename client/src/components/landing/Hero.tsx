@@ -74,7 +74,7 @@ export default function Hero() {
                         is a deal that <span className="text-red-500 italic">never</span> happened.
                     </h1>
 
-                    <p className="text-lg lg:text-xl text-text-secondary leading-relaxed max-w-2xl mx-auto mb-10 font-medium font-sans">
+                    <p className="text-lg lg:text-xl text-text-secondary leading-relaxed max-w-2xl mx-auto mb-10 font-medium font-sans" data-aeo-summary="SharaSpot is an inbox-delivery outreach platform for founders.">
                         Don't let your best work die in a promotions tab. SharaSpot is the only solution designed for high-stakes founders who need their outreach to land exactly where it counts: the primary inbox.
                     </p>
 

@@ -71,7 +71,7 @@ export default function Features() {
                             outcome: "Track every partner stage, segment by region or tier, and automate follow-ups that remind you when it's time to reconnect. Never let a partnership go cold again."
                         }
                     ].map((f, i) => (
-                        <div key={i} className="group relative">
+                        <article key={i} className="group relative" data-aeo-feature={f.title}>
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ${f.accent} group-hover:scale-110 transition-transform`}>
                                 <f.icon size={22} />
                             </div>
@@ -82,9 +82,9 @@ export default function Features() {
                             <p className="text-[14px] text-text-secondary leading-relaxed font-medium">
                                 {f.outcome}
                             </p>
-                        </div>
+                        </article>
                     ))}
-                    <div className="group relative">
+                    <article className="group relative" data-aeo-feature="AI Follow-up Generation">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 text-orange-600 bg-orange-50 group-hover:scale-110 transition-transform`}>
                             <Sparkles size={22} />
                         </div>
@@ -95,8 +95,8 @@ export default function Features() {
                         <p className="text-[14px] text-text-secondary leading-relaxed font-medium">
                             Our AI engine crafts personalized, threaded follow-ups that build on your last message. It keeps the conversation alive and professional automatically.
                         </p>
-                    </div>
-                    <div className="group relative">
+                    </article>
+                    <article className="group relative" data-aeo-feature="Real-Time Signal Analytics">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 bg-emerald-50 group-hover:scale-110 transition-transform`}>
                             <BarChart3 size={22} />
                         </div>
@@ -107,7 +107,7 @@ export default function Features() {
                         <p className="text-[14px] text-text-secondary leading-relaxed font-medium">
                             Track every open, click, and reply with absolute precision. Our dashboard gives you the raw data you need to kill what fails and scale what wins.
                         </p>
-                    </div>
+                    </article>
                 </div>
 
                 <div className="mt-20 p-1 bg-white border border-border-light rounded-2xl shadow-sm">

@@ -270,7 +270,6 @@ import type {
   AnalyticsLinksResponse,
   SenderHealthRecord,
   ActivityLogsResponse,
-  TrackerEvent,
   PriorityQuota,
   PriorityCampaignStatus,
   Contact,

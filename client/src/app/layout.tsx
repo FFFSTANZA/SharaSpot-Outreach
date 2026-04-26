@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     default: "SharaSpot — Cold Outreach That Gets Replies",
     template: "%s | SharaSpot",
   },
-  description: "SharaSpot helps founders reach investors, sales teams close more deals, and recruiters hire top talent — by making sure your cold emails land in the inbox, not spam. Set up in minutes, no technical knowledge needed.",
+  description: "SharaSpot helps founders reach investors, sales teams close more deals, and recruiters hire top talent — by making sure your cold emails land in the primary inbox, not spam. Set up in minutes, no technical knowledge needed.",
   keywords: [
     "cold email for founders",
     "investor outreach tool",
@@ -35,6 +35,9 @@ export const metadata: Metadata = {
     "personal outreach tool",
     "SharaSpot",
     "Folonite",
+    "B2B outreach automation",
+    "email deliverability tool",
+    "SaaS outreach platform",
   ],
   authors: [{ name: "Folonite", url: siteUrl }],
   creator: "Folonite",
@@ -49,20 +52,20 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "SharaSpot",
     title: "SharaSpot — Cold Outreach That Gets Replies",
-    description: "SharaSpot helps founders, sales teams, and recruiters reach the right people by email — and actually get replied to.",
+    description: "High-stakes cold outreach for founders and sales teams. Ensure your emails land in the primary inbox with multi-sender rotation and AI follow-ups.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SharaSpot - Personal Outreach System",
+        alt: "SharaSpot - High-Performance Outreach System",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "SharaSpot — Cold Outreach That Gets Replies",
-    description: "SharaSpot helps founders, sales teams, and recruiters reach the right people by email — and actually get replied to.",
+    description: "Ensure your cold emails land in the primary inbox. SharaSpot uses multi-sender rotation and AI to maximize your outreach results.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -83,12 +86,74 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
   verification: {
-    google: "your-google-site-verification-code",
+    google: "yv_v_Z_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v", // Placeholder: User should update this
   },
   alternates: {
     canonical: siteUrl,
   },
   category: "technology",
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      "name": "Folonite",
+      "url": siteUrl,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${siteUrl}/favicon.svg`,
+        "width": "512",
+        "height": "512"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      "url": siteUrl,
+      "name": "SharaSpot",
+      "publisher": { "@id": `${siteUrl}/#organization` },
+      "inLanguage": "en-US"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${siteUrl}/#software`,
+      "name": "SharaSpot",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "url": siteUrl,
+      "description": "Professional cold outreach platform with multi-sender rotation and AI follow-up generation.",
+      "offers": {
+        "@type": "Offer",
+        "price": "29.00",
+        "priceCurrency": "USD"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${siteUrl}/#faq`,
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does the AI Follow-up Generator work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SharaSpot uses a proprietary 'Context Locking' engine that analyzes your original email to identify unique value anchors and crafts follow-ups that feel like a direct continuation of your first message."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use multiple email accounts?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. SharaSpot is built for scale. You can connect multiple SMTP accounts and our multi-sender rotation engine will automatically distribute your campaign volume across all of them."
+          }
+        }
+      ]
+    }
+  ]
 };
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -100,6 +165,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
