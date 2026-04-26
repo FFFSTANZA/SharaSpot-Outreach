@@ -60,21 +60,21 @@ export const TrialBanner = () => {
 
     if (!isPremium) {
         return (
-            <div className="mx-2 mb-6 px-4 py-3 rounded-xl bg-error-bg/30 border border-error-text/20 backdrop-blur-sm">
+            <div className="mx-2 mb-6 px-4 py-3 rounded-xl bg-brand/5 border border-brand/20 backdrop-blur-sm group transition-all hover:border-brand/40">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-error-bg">
-                        <AlertTriangle className="w-4 h-4 text-error-text" />
+                    <div className="p-2 rounded-lg bg-brand/10">
+                        <Sparkles className="w-4 h-4 text-brand" />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[11px] font-bold text-error-text uppercase tracking-wider">Access Restricted</span>
-                        <span className="text-[13px] font-bold text-text-primary leading-tight">Trial Expired</span>
+                        <span className="text-[11px] font-bold text-brand uppercase tracking-wider">Unverified Pro</span>
+                        <span className="text-[13px] font-bold text-text-primary leading-tight">Activate Your Trial</span>
                     </div>
                 </div>
                 <Link
                     href="/dashboard/settings/billing"
-                    className="mt-3 flex items-center justify-center w-full py-1.5 bg-error-text text-white text-[12px] font-bold rounded-lg hover:bg-opacity-90 transition-colors"
+                    className="mt-3 flex items-center justify-center w-full py-2 bg-brand text-white text-[12px] font-extrabold rounded-xl shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                    Renew Access
+                    Start 7-Day Trial
                 </Link>
             </div>
         );
