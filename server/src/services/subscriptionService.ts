@@ -207,15 +207,16 @@ export async function getSubscriptionStatus(
 
   const now = new Date();
 
-  // A user is premium if:
-  // 1. They have an ACTIVE or CANCELLED (but pending end) status
-  // 2. The period hasn't ended yet
-  const isPremium = (
+  // Premium if subscription Active/Cancelled OR Trial is still active
+  const isSubscriptionActive = (
     subscription.status === SubscriptionStatus.ACTIVE ||
     subscription.status === SubscriptionStatus.CANCELLED
   ) && (
       subscription.currentPeriodEnd && new Date(subscription.currentPeriodEnd) > now
     );
 
-  return { isPremium: !!isPremium, subscription };
+  const isTrialActive = subscription.trialEnd && new Date(subscription.trialEnd) > now;
+  const isPremium = !!(isSubscriptionActive || isTrialActive);
+
+  return { isPremium, subscription };
 }

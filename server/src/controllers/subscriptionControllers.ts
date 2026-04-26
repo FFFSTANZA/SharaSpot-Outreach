@@ -22,7 +22,32 @@ export async function getSubscription(req: Request, res: Response): Promise<void
     const countryCode = await getCountryFromIp(ipAddress);
     const region = isIndia(countryCode) ? "india" : "global";
 
-    const { isPremium, subscription } = await getSubscriptionStatus(userId);
+    let { isPremium, subscription } = await getSubscriptionStatus(userId);
+
+    // FAIL-SAFE: If not premium locally but has a Dodo record, try one-time sync from Dodo API
+    if (!isPremium && subscription?.dodoSubscriptionId) {
+      try {
+        const dodoSub = await dodo.subscriptions.retrieve(subscription.dodoSubscriptionId);
+        if (dodoSub) {
+          const { updateSubscriptionFromWebhook } = await import("../services/subscriptionService");
+          const s = dodoSub as any;
+          await updateSubscriptionFromWebhook(s.subscription_id, {
+            status: s.status,
+            currentPeriodStart: new Date(s.current_period_start),
+            currentPeriodEnd: new Date(s.current_period_end),
+            cancelAtPeriodEnd: s.cancel_at_next_billing_date,
+            trialEnd: s.trial_period_end ? new Date(s.trial_period_end) : null,
+          });
+          // Re-fetch after sync
+          const refreshed = await getSubscriptionStatus(userId);
+          isPremium = refreshed.isPremium;
+          subscription = refreshed.subscription;
+          console.log(`[SYNC-FAILSAFE] Synced ${userId} from Dodo API`);
+        }
+      } catch (syncErr) {
+        console.warn("[SYNC-FAILSAFE] Background sync failed:", syncErr);
+      }
+    }
 
     res.json({
       isPremium,
@@ -122,7 +147,7 @@ export async function reactivateUserSubscription(req: Request, res: Response): P
 }
 
 export async function handleWebhook(req: Request, res: Response): Promise<void> {
-  const secret = process.env.DODO_WEBHOOK_SECRET;
+  const secret = process.env.DODO_WEBHOOK_SECRET?.trim();
   let event: any;
 
   if (secret) {
@@ -137,7 +162,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
       event = dodo.webhooks.unwrap(body, { headers, key: secret });
     } catch (error: any) {
-      console.error("[WEBHOOK] Invalid Signature:", error.message);
+      console.error("[WEBHOOK] Auth Failed:", error.message);
       res.status(401).json({ error: "Unauthorized" });
       return;
     }

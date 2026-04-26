@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { getSubscription, SubscriptionResponse } from "../lib/apis";
 import { useAuth } from "../hooks/useAuth";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Clock, AlertTriangle, Sparkles } from "lucide-react";
+import { Clock, AlertTriangle, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const TrialBanner = () => {
     const { user } = useAuth();
+    const searchParams = useSearchParams();
     const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -23,6 +25,8 @@ export const TrialBanner = () => {
         }
     }, [user]);
 
+    const isSuccessRedirect = searchParams?.get("subscription") === "success";
+
     if (loading || !subscription) return null;
 
     const now = new Date();
@@ -30,10 +34,23 @@ export const TrialBanner = () => {
     const isTrialActive = trialEnd && trialEnd > now;
     const isPremium = subscription.isPremium;
 
-    // Hide banner only for active paid premium users. 
-    // Trial users (who also have isPremium=true) should still see the banner.
-    const isPaidPremium = isPremium && !isTrialActive;
-    if (isPaidPremium) return null;
+    // Hide banner for active premium users
+    if (isPremium && !isTrialActive) return null;
+
+    // Show processing state if they just paid
+    if (isSuccessRedirect && !isPremium) {
+        return (
+            <div className="mx-2 mb-6 px-4 py-3 rounded-xl bg-brand/5 border border-brand/20 backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                    <Loader2 className="w-4 h-4 text-brand animate-spin" />
+                    <div className="flex flex-col">
+                        <span className="text-[11px] font-bold text-brand uppercase tracking-wider">Verifying Pro</span>
+                        <span className="text-[13px] font-bold text-text-primary leading-tight">Securing your access...</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (isTrialActive) {
         const hoursLeft = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60)));

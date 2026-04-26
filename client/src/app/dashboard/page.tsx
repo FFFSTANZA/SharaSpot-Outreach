@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { TopBar } from "./Topbar";
 import { EmailList } from "./EmailList";
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getSenders, toggleEmailStar, getDashboardStats, DashboardStats } from "@/lib/apis";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
@@ -74,6 +75,15 @@ const Dashboard = () => {
     setQuery, setFilter, setFilters, clearFilter, clearAllFilters, refresh,
     activeFilterCount,
   } = useSearchFilters({ endpoint: "emails" });
+
+  const { refreshUser } = useAuth();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams?.get("subscription") === "success") {
+      refreshUser();
+    }
+  }, [searchParams, refreshUser]);
 
   useEffect(() => {
     getSenders().then(setSenders).catch((err) => {
