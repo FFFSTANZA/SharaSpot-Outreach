@@ -21,17 +21,18 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
   const { addToast } = useToast();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      const hadToken = typeof window !== "undefined" && localStorage.getItem("accessToken");
+    const hasToken = typeof window !== "undefined" && !!localStorage.getItem("accessToken");
 
-      if (hadToken) {
-        console.warn("AuthGuard: Token exists but user is null. Session likely expired.");
-        localStorage.removeItem("accessToken");
-        addToast("warning", "Session expired. Please sign in again.");
-      } else {
-        console.log("AuthGuard: No token found, redirecting to login.");
+    if (!isLoading && !user) {
+      if (hasToken) {
+        // We have a token but no user yet. 
+        // This is likely a race condition where the token was just set but the context hasn't refreshed.
+        // We should wait for a bit or manually trigger a refresh if not already loading.
+        console.log("AuthGuard: Token exists but no user. Waiting for state sync...");
+        return;
       }
 
+      console.log("AuthGuard: No token and no user, redirecting to login.");
       router.replace("/login");
       return;
     }
@@ -42,8 +43,8 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
     }
   }, [user, isLoading, router, addToast, requirePremium]);
 
-  if (isLoading) {
-    return <PageLoader message="Checking authentication..." />;
+  if (isLoading || (!user && typeof window !== "undefined" && localStorage.getItem("accessToken"))) {
+    return <PageLoader message="Verifying session..." />;
   }
 
   if (!user || (requirePremium && !(user as any).isPremium)) {
