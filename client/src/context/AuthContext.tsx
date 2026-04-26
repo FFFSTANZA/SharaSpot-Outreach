@@ -1,14 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { getUser } from "@/lib/apis";
+import { getUser, logout as apiLogout } from "@/lib/apis";
 import type { User } from "@/types";
 
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     refreshUser: () => Promise<User | null>;
-    logout: () => void;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,7 +18,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchUser = useCallback(async (): Promise<User | null> => {
-        // Only fetch if we have an access token
         const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
         if (!token) {
             setUser(null);
@@ -40,14 +39,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
+    const logout = useCallback(async () => {
+        try {
+            await apiLogout();
+        } catch (err) {
+            console.error("[AuthContext] Logout API failed:", err);
+        } finally {
+            localStorage.removeItem("accessToken");
+            setUser(null);
+        }
+    }, []);
+
     useEffect(() => {
         fetchUser();
     }, [fetchUser]);
-
-    const logout = useCallback(() => {
-        localStorage.removeItem("accessToken");
-        setUser(null);
-    }, []);
 
     return (
         <AuthContext.Provider value={{ user, isLoading, refreshUser: fetchUser, logout }}>

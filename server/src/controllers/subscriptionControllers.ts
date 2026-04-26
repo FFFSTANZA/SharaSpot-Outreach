@@ -5,6 +5,8 @@ import {
   cancelSubscription,
   reactivateSubscription,
   getSubscriptionStatus,
+  logPaymentAuditEvent,
+  syncSubscriptionFromDodo,
 } from "../services/subscriptionService";
 import { getCountryFromIp, isIndia } from "../utils/geoUtils";
 import { SUBSCRIPTION_PRICE_USD, SUBSCRIPTION_INTERVAL } from "../config/subscription";
@@ -24,21 +26,11 @@ export async function getSubscription(req: Request, res: Response): Promise<void
 
     let { isPremium, subscription } = await getSubscriptionStatus(userId);
 
-    // FAIL-SAFE: If not premium locally but has a Dodo record, try one-time sync from Dodo API
-    if (!isPremium && subscription?.dodoSubscriptionId) {
+    // FAIL-SAFE: If not premium locally but has a Dodo subscription ID, sync from Dodo API
+    if (!isPremium && subscription?.dodoSubscriptionId && subscription.dodoSubscriptionId !== "sub_test_premium_demo") {
       try {
-        const dodoSub = await dodo.subscriptions.retrieve(subscription.dodoSubscriptionId);
-        if (dodoSub) {
-          const { updateSubscriptionFromWebhook } = await import("../services/subscriptionService");
-          const s = dodoSub as any;
-          await updateSubscriptionFromWebhook(s.subscription_id, {
-            status: s.status,
-            currentPeriodStart: new Date(s.current_period_start),
-            currentPeriodEnd: new Date(s.current_period_end),
-            cancelAtPeriodEnd: s.cancel_at_next_billing_date,
-            trialEnd: s.trial_period_end ? new Date(s.trial_period_end) : null,
-          });
-          // Re-fetch after sync
+        const { synced } = await syncSubscriptionFromDodo(userId);
+        if (synced) {
           const refreshed = await getSubscriptionStatus(userId);
           isPremium = refreshed.isPremium;
           subscription = refreshed.subscription;
@@ -162,10 +154,10 @@ function parseDodoDate(dateInput: any): Date | undefined {
 export async function handleWebhook(req: Request, res: Response): Promise<void> {
   const secret = process.env.DODO_WEBHOOK_SECRET?.trim();
   let event: any;
+  const rawBody = (req as any).rawBody;
 
   if (secret) {
     try {
-      const rawBody = (req as any).rawBody;
       const body = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
       const headers = {
         "svix-id": req.headers["svix-id"] as string,
@@ -183,51 +175,118 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     event = req.body;
   }
 
+  let prismaTx: any = null;
+  
   try {
     const { type, data, id: eventId } = event;
-    console.log(`[WEBHOOK] Received ${type} (ID: ${eventId})`);
-
-    // Webhook Idempotency: Check if we already processed this event
-    const alreadyProcessed = await prisma.processedWebhook.findUnique({
-      where: { eventId },
+    console.log(`[WEBHOOK] Received ${type} (ID: ${eventId})`, {
+      subscriptionId: data?.subscription_id || data?.id,
+      sessionId: data?.session_id,
+      customerId: data?.customer_id,
+      metadata: data?.metadata,
+      status: data?.status,
     });
 
-    if (alreadyProcessed) {
-      console.log(`[WEBHOOK] Event ${eventId} already processed. Skipping.`);
-      res.json({ success: true, duplicated: true });
-      return;
+    if (!eventId) {
+      console.warn("[WEBHOOK] Missing event ID, processing anyway");
+    } else {
+      const alreadyProcessed = await prisma.processedWebhook.findUnique({
+        where: { eventId },
+      });
+
+      if (alreadyProcessed) {
+        console.log(`[WEBHOOK] Event ${eventId} already processed. Skipping.`);
+        res.json({ success: true, duplicated: true });
+        return;
+      }
     }
 
     const { updateSubscriptionFromWebhook, handleCheckoutCompleted: finalizeCheckout } = await import("../services/subscriptionService");
 
     if (type.startsWith("subscription.")) {
-      console.log(`[WEBHOOK-DEBUG] Sub Status: ${data.status}, End: ${data.current_period_end}`);
-      await updateSubscriptionFromWebhook(data.subscription_id || data.id, {
+      const subscriptionId = data.subscription_id || data.id;
+      console.log(`[WEBHOOK] Processing subscription event: ${type}`, {
+        subscriptionId,
+        status: data.status,
+        periodEnd: data.current_period_end,
+        trialEnd: data.trial_period_end,
+      });
+      
+      await updateSubscriptionFromWebhook(subscriptionId, {
         status: data.status,
         currentPeriodStart: parseDodoDate(data.current_period_start),
         currentPeriodEnd: parseDodoDate(data.current_period_end),
         cancelAtPeriodEnd: data.cancel_at_next_billing_date,
         trialEnd: parseDodoDate(data.trial_period_end) || null,
       });
+
+      await logPaymentAuditEvent(
+        "subscription." + type.replace("subscription.", ""),
+        subscriptionId,
+        { status: data.status, periodEnd: data.current_period_end }
+      );
     } else if (type === "checkout.session.completed" || type === "checkout.completed") {
-      const uId = data.metadata?.userId || data.customer_id;
-      console.log(`[WEBHOOK-DEBUG] Checkout Success for ${uId}. Sub: ${data.subscription_id}`);
-      if (uId) {
-        await finalizeCheckout(data.session_id, uId, data.subscription_id, data.customer_id);
+      const userId = data.metadata?.userId;
+      const sessionId = data.session_id;
+      const dodoSubscriptionId = data.subscription_id;
+      const customerId = data.customer_id;
+
+      console.log(`[WEBHOOK] Processing checkout completed`, {
+        userId,
+        sessionId,
+        dodoSubscriptionId,
+        customerId,
+        metadata: data.metadata,
+      });
+
+      if (!userId) {
+        console.error("[WEBHOOK] CRITICAL: No userId in checkout metadata!", data);
+        
+        if (customerId) {
+          console.log("[WEBHOOK] Attempting to find user by customer ID...");
+          const existingSub = await prisma.subscription.findFirst({
+            where: { dodoCustomerId: customerId },
+            include: { user: true },
+          });
+          
+          if (existingSub) {
+            console.log(`[WEBHOOK] Found user ${existingSub.userId} via customer ID mapping`);
+          } else {
+            console.error("[WEBHOOK] No subscription found for customer ID either");
+          }
+        }
+        
+        await logPaymentAuditEvent("checkout.completed.error", sessionId, { 
+          error: "No userId in metadata",
+          customerId,
+          data: JSON.stringify(data),
+        });
+        
+        res.status(400).json({ error: "Missing userId in metadata" });
+        return;
       }
+
+      await finalizeCheckout(sessionId, userId, dodoSubscriptionId, customerId);
+      
+      await logPaymentAuditEvent("checkout.completed", userId, {
+        sessionId,
+        dodoSubscriptionId,
+        customerId,
+      });
     }
 
-    // Mark as processed
-    await prisma.processedWebhook.create({
-      data: {
-        eventId,
-        eventType: type,
-      },
-    });
+    if (eventId) {
+      await prisma.processedWebhook.create({
+        data: {
+          eventId,
+          eventType: type,
+        },
+      });
+    }
 
     res.json({ success: true });
-  } catch (error) {
-    console.error("[WEBHOOK] Error:", error);
-    res.status(500).json({ error: "Webhook failure" });
+  } catch (error: any) {
+    console.error("[WEBHOOK] Error processing webhook:", error.message, error.stack);
+    res.status(500).json({ error: "Webhook failure", message: error.message });
   }
 }

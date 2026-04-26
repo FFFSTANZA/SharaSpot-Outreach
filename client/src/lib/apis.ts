@@ -451,6 +451,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
 
 export interface SubscriptionResponse {
   isPremium: boolean;
+  region?: string;
   subscription: {
     status: string;
     currentPeriodStart: string;
