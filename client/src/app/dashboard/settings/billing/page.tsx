@@ -72,16 +72,30 @@ export default function BillingPage() {
 function PremiumCard() {
     const [subscription, setSubscription] = React.useState<any>(null);
     const [loading, setLoading] = React.useState(true);
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
+    const router = useRouter();
+    const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const isSuccessRedirect = searchParams?.get("subscription") === "success";
 
     React.useEffect(() => {
-        getSubscription()
-            .then((data: any) => {
+        const fetchStatus = async () => {
+            try {
+                const data = await getSubscription();
                 setSubscription(data.subscription);
+
+                // If we just came back from successful payment but local state is not updated,
+                // try to refresh the user state as well.
+                if (isSuccessRedirect && !data.isPremium) {
+                    await refreshUser();
+                }
+            } catch (err) {
+                console.error("Failed to fetch subscription:", err);
+            } finally {
                 setLoading(false);
-            })
-            .catch(() => setLoading(false));
-    }, []);
+            }
+        };
+        fetchStatus();
+    }, [isSuccessRedirect, refreshUser]);
 
     const handleCancel = async () => {
         if (!confirm("Are you sure? Your pro features will remain active until the end of the current billing period.")) return;
@@ -96,7 +110,7 @@ function PremiumCard() {
 
     if (loading) return (
         <div className="flex items-center justify-center p-12 bg-slate-50 rounded-3xl animate-pulse">
-            <span className="text-sm font-bold text-slate-400">Loading subscription details...</span>
+            <span className="text-sm font-bold text-slate-400">Verifying secure access...</span>
         </div>
     );
 
@@ -106,21 +120,28 @@ function PremiumCard() {
     const isPremium = (expiryDate && expiryDate > now) || (trialEnd && trialEnd > now);
     const isCancelled = subscription?.status === "cancelled" || subscription?.cancelAtPeriodEnd;
 
-    React.useEffect(() => {
-        if (!loading && !isPremium) {
-            const timer = setTimeout(() => {
-                window.location.href = "/login";
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [loading, isPremium]);
-
     if (!isPremium) {
+        if (isSuccessRedirect) {
+            return (
+                <div className="p-8 bg-slate-50 rounded-3xl border border-slate-200 text-center">
+                    <div className="animate-spin h-8 w-8 text-brand mx-auto mb-4 border-2 border-brand border-t-transparent rounded-full" />
+                    <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Syncing With Payment Provider</h3>
+                    <p className="text-sm text-slate-500 mt-2">We've detected your payment. Securing your dashboard access now...</p>
+                </div>
+            );
+        }
+
         return (
             <div className="p-8 bg-slate-50 rounded-3xl border border-slate-200 text-center">
                 <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-4" />
-                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">No Active Subscription</h3>
-                <p className="text-sm text-slate-500 mt-2">Redirecting you to secure payment setup...</p>
+                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Access Restricted</h3>
+                <p className="text-sm text-slate-500 mt-2">An active subscription is required to access these features.</p>
+                <button
+                    onClick={() => router.push("/login")}
+                    className="mt-6 px-8 py-3 bg-brand text-white font-bold rounded-xl hover:shadow-lg transition-all uppercase tracking-widest text-xs"
+                >
+                    Secure Pro Access
+                </button>
             </div>
         );
     }

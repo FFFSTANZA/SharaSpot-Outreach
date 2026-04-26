@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Script from "next/script";
 import { loginWithGoogle } from "../../lib/apis";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Zap, Send, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useToast } from "@/context/ToastContext";
@@ -37,6 +37,9 @@ declare global {
 
 const LoginPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isSubscriptionSuccess = searchParams?.get("subscription") === "success";
+
   const { addToast } = useToast();
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -64,7 +67,14 @@ const LoginPage = () => {
             const updatedUser = await refreshUser();
 
             // 2. Strict flow: Not premium -> Dodo Checkout. Premium -> Dashboard.
+            // If we just successfully subscribed, we SKIP the redirect to checkout to avoid race condition loop.
             if (updatedUser && !updatedUser.isPremium) {
+              if (isSubscriptionSuccess) {
+                console.log("[Login] Subscription success flag detected. Bypassing checkout redirect to allow sync.");
+                router.push("/dashboard?subscription=success");
+                return;
+              }
+
               try {
                 const { createSubscription } = await import("@/lib/apis");
                 const checkout = await createSubscription();

@@ -668,3 +668,12 @@ enum LogLevel {
   ERROR
   CRITICAL
 }
+
+model ProcessedWebhook {
+  id        String   @id @default(cuid())
+  eventId   String   @unique
+  eventType String
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+}

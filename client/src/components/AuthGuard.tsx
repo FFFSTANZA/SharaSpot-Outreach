@@ -16,28 +16,32 @@ import { AuthGuardProps } from "@/types";
  * auth check and prevents the flash of protected content.
  */
 export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, refreshUser } = useAuth();
   const router = useRouter();
   const { addToast } = useToast();
+
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const isSuccessRedirect = searchParams?.get("subscription") === "success";
 
   useEffect(() => {
     const hasToken = typeof window !== "undefined" && !!localStorage.getItem("accessToken");
 
     if (!isLoading && !user) {
-      if (hasToken) {
-        // We have a token but no user yet. 
-        // This is likely a race condition where the token was just set but the context hasn't refreshed.
-        // We should wait for a bit or manually trigger a refresh if not already loading.
-        console.log("AuthGuard: Token exists but no user. Waiting for state sync...");
-        return;
-      }
-
-      console.log("AuthGuard: No token and no user, redirecting to login.");
+      if (hasToken) return;
       router.replace("/login");
       return;
     }
 
     if (!isLoading && user && requirePremium && !(user as any).isPremium) {
+      // If we just came back from a successful payment, try to proactively refresh
+      if (isSuccessRedirect) {
+        console.log("AuthGuard: Payment success detected. Proactively refreshing user state...");
+        const timer = setTimeout(() => {
+          refreshUser().catch(() => { });
+        }, 1500); // 1.5s delay to allow webhook a head start
+        return () => clearTimeout(timer);
+      }
+
       console.log("AuthGuard: Premium required but user is not premium. Initiating checkout redirect...");
       const initiateCheckout = async () => {
         try {
@@ -55,10 +59,15 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
       };
       initiateCheckout();
     }
-  }, [user, isLoading, router, addToast, requirePremium]);
+  }, [user, isLoading, router, requirePremium, isSuccessRedirect, refreshUser]);
 
   if (isLoading || (!user && typeof window !== "undefined" && localStorage.getItem("accessToken"))) {
     return <PageLoader message="Verifying session..." />;
+  }
+
+  // Show a special loader if we are waiting for a success sync
+  if (isSuccessRedirect && user && !(user as any).isPremium) {
+    return <PageLoader message="Synchronizing Pro Access..." />;
   }
 
   if (!user || (requirePremium && !(user as any).isPremium)) {

@@ -31,6 +31,12 @@ export async function createCheckoutSession(
   userName: string | null,
   ipAddress?: string
 ): Promise<CreateCheckoutSessionResult> {
+  // Prevent duplicate subscriptions if already premium (Active or Trial)
+  const { isPremium } = await getSubscriptionStatus(userId);
+  if (isPremium) {
+    throw new Error("User already has an active premium subscription or trial.");
+  }
+
   // Detect country from IP
   const countryCode = ipAddress ? await getCountryFromIp(ipAddress) : null;
   const productId = isIndia(countryCode) ? DODO_PRODUCT_ID_INDIA : DODO_PRODUCT_ID_GLOBAL;
@@ -68,12 +74,16 @@ export async function cancelSubscription(userId: string): Promise<void> {
   }
 
   // Handle demo/test subscriptions gracefully for UI testing
-  if (subscription.dodoSubscriptionId === "sub_test_premium_demo") {
-    console.log("Demo subscription cancellation - Skipping Dodo API call");
-  } else {
-    await dodo.subscriptions.update(subscription.dodoSubscriptionId, {
-      cancel_at_next_billing_date: true,
-    });
+  if (subscription.dodoSubscriptionId !== "sub_test_premium_demo") {
+    // Only update DB if Dodo API succeeds or if it's the demo ID
+    try {
+      await dodo.subscriptions.update(subscription.dodoSubscriptionId, {
+        cancel_at_next_billing_date: true,
+      });
+    } catch (err: any) {
+      console.error("[SUBSCRIPTION] Dodo cancelation failed:", err.message);
+      throw new Error(`Failed to cancel subscription via payment provider: ${err.message}`);
+    }
   }
 
   await prisma.subscription.update({
@@ -84,7 +94,7 @@ export async function cancelSubscription(userId: string): Promise<void> {
     },
   });
 
-  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`);
+  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`).catch(() => { });
 }
 
 export async function reactivateSubscription(userId: string): Promise<void> {
@@ -96,9 +106,16 @@ export async function reactivateSubscription(userId: string): Promise<void> {
     throw new Error("No subscription found");
   }
 
-  await dodo.subscriptions.update(subscription.dodoSubscriptionId, {
-    cancel_at_next_billing_date: false,
-  });
+  if (subscription.dodoSubscriptionId !== "sub_test_premium_demo") {
+    try {
+      await dodo.subscriptions.update(subscription.dodoSubscriptionId, {
+        cancel_at_next_billing_date: false,
+      });
+    } catch (err: any) {
+      console.error("[SUBSCRIPTION] Dodo reactivation failed:", err.message);
+      throw new Error(`Failed to reactivate subscription: ${err.message}`);
+    }
+  }
 
   await prisma.subscription.update({
     where: { userId },
@@ -108,7 +125,7 @@ export async function reactivateSubscription(userId: string): Promise<void> {
     },
   });
 
-  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`);
+  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`).catch(() => { });
 }
 
 export async function updateSubscriptionFromWebhook(
@@ -127,6 +144,7 @@ export async function updateSubscriptionFromWebhook(
   });
 
   if (!subscription) {
+    console.warn(`[WEBHOOK] Subscription ${dodoSubscriptionId} not found in local DB.`);
     return;
   }
 
@@ -151,7 +169,7 @@ export async function updateSubscriptionFromWebhook(
   });
 
   if (subscription.userId) {
-    await redis.del(`${PREMIUM_CACHE_PREFIX}${subscription.userId}`);
+    await redis.del(`${PREMIUM_CACHE_PREFIX}${subscription.userId}`).catch(() => { });
   }
 }
 
@@ -161,16 +179,12 @@ export async function handleCheckoutCompleted(
   dodoSubscriptionId?: string,
   dodoCustomerId?: string
 ): Promise<void> {
-  const existingSubscription = await prisma.subscription.findUnique({
-    where: { userId },
-  });
-
   const periodEnd = new Date();
   periodEnd.setMonth(periodEnd.getMonth() + 1);
 
   const subscriptionData = {
     userId,
-    status: "ACTIVE" as SubscriptionStatus,
+    status: SubscriptionStatus.ACTIVE,
     currentPeriodStart: new Date(),
     currentPeriodEnd: periodEnd,
     dodoCustomerId: dodoCustomerId || null,
@@ -180,19 +194,30 @@ export async function handleCheckoutCompleted(
     trialEnd: null,
   };
 
-  if (existingSubscription) {
-    await prisma.subscription.update({
+  // Atomic Update using transaction to ensure consistency
+  await prisma.$transaction(async (tx) => {
+    const existingSubscription = await tx.subscription.findUnique({
       where: { userId },
-      data: subscriptionData,
     });
-  } else {
-    await prisma.subscription.create({
-      data: subscriptionData,
-    });
-  }
 
-  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`);
+    if (existingSubscription) {
+      await tx.subscription.update({
+        where: { userId },
+        data: subscriptionData,
+      });
+    } else {
+      await tx.subscription.create({
+        data: subscriptionData,
+      });
+    }
+  });
+
+  // Clear cache AFTER successful DB transaction
+  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`).catch((err) => {
+    console.error(`[AUTH-CACHE] Failed to clear premium cache for ${userId}:`, err.message);
+  });
 }
+
 
 export async function getSubscriptionStatus(
   userId: string

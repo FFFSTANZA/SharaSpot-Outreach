@@ -79,11 +79,13 @@ const Dashboard = () => {
   const { refreshUser } = useAuth();
   const searchParams = useSearchParams();
 
+  const isSubscriptionSuccess = searchParams?.get("subscription") === "success";
+
   useEffect(() => {
-    if (searchParams?.get("subscription") === "success") {
+    if (isSubscriptionSuccess) {
       refreshUser();
     }
-  }, [searchParams, refreshUser]);
+  }, [isSubscriptionSuccess, refreshUser]);
 
   useEffect(() => {
     getSenders().then(setSenders).catch((err) => {

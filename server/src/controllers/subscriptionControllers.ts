@@ -59,6 +59,7 @@ export async function getSubscription(req: Request, res: Response): Promise<void
           currentPeriodEnd: subscription.currentPeriodEnd,
           cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
           trialEnd: subscription.trialEnd,
+          dodoCustomerId: subscription.dodoCustomerId,
           dodoSubscriptionId: subscription.dodoSubscriptionId,
         }
         : null,
@@ -171,8 +172,23 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
   }
 
   try {
-    const { type, data } = event;
+    const { type, data, id: eventId } = event;
+
+    // Webhook Idempotency: Check if we already processed this event
+    const alreadyProcessed = await prisma.processedWebhook.findUnique({
+      where: { eventId },
+    });
+
+    if (alreadyProcessed) {
+      console.log(`[WEBHOOK] Event ${eventId} already processed. Skipping.`);
+      res.json({ success: true, duplicated: true });
+      return;
+    }
+
     const { updateSubscriptionFromWebhook, handleCheckoutCompleted: finalizeCheckout } = await import("../services/subscriptionService");
+
+    // Process logic and mark as handled in a single transaction if possible
+    // (Note: subscription services manage their own logic, so we just wrap the marker)
 
     if (type.startsWith("subscription.")) {
       await updateSubscriptionFromWebhook(data.subscription_id || data.id, {
@@ -188,6 +204,14 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         await finalizeCheckout(data.session_id, userId, data.subscription_id, data.customer_id);
       }
     }
+
+    // Mark as processed
+    await prisma.processedWebhook.create({
+      data: {
+        eventId,
+        eventType: type,
+      },
+    });
 
     res.json({ success: true });
   } catch (error) {
