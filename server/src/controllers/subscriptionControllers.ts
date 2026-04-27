@@ -176,15 +176,16 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
   }
 
   let prismaTx: any = null;
-  
+
   try {
     const { type, data, id: eventId } = event;
+    const dodoSubId = data.subscription_id || data.id;
     console.log(`[WEBHOOK] Received ${type} (ID: ${eventId})`, {
-      subscriptionId: data?.subscription_id || data?.id,
-      sessionId: data?.session_id,
-      customerId: data?.customer_id,
-      metadata: data?.metadata,
-      status: data?.status,
+      subscriptionId: dodoSubId,
+      sessionId: data.session_id,
+      customerId: data.customer_id,
+      metadata: data.metadata,
+      status: data.status,
     });
 
     if (!eventId) {
@@ -201,30 +202,83 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       }
     }
 
-    const { updateSubscriptionFromWebhook, handleCheckoutCompleted: finalizeCheckout } = await import("../services/subscriptionService");
+    const { updateSubscriptionFromWebhook, handleCheckoutCompleted: finalizeCheckout, activateSubscriptionFromPayment } = await import("../services/subscriptionService");
 
-    if (type.startsWith("subscription.")) {
-      const subscriptionId = data.subscription_id || data.id;
-      console.log(`[WEBHOOK] Processing subscription event: ${type}`, {
-        subscriptionId,
-        status: data.status,
-        periodEnd: data.current_period_end,
-        trialEnd: data.trial_period_end,
-      });
-      
-      await updateSubscriptionFromWebhook(subscriptionId, {
-        status: data.status,
-        currentPeriodStart: parseDodoDate(data.current_period_start),
-        currentPeriodEnd: parseDodoDate(data.current_period_end),
-        cancelAtPeriodEnd: data.cancel_at_next_billing_date,
-        trialEnd: parseDodoDate(data.trial_period_end) || null,
+    if (type === "payment.succeeded") {
+      const userId = data.metadata?.userId;
+      const sessionId = data.session_id;
+      const dodoSubscriptionId = data.subscription_id;
+      const customerId = data.customer_id;
+      const paymentId = data.id || data.payment_id;
+
+      console.log(`[WEBHOOK] Processing payment.succeeded`, {
+        userId,
+        sessionId,
+        dodoSubscriptionId,
+        customerId,
+        paymentId,
+        metadata: data.metadata,
       });
 
-      await logPaymentAuditEvent(
-        "subscription." + type.replace("subscription.", ""),
-        subscriptionId,
-        { status: data.status, periodEnd: data.current_period_end }
-      );
+      if (!userId) {
+        console.error("[WEBHOOK] CRITICAL: No userId in payment metadata!", data);
+
+        if (customerId) {
+          const existingSub = await prisma.subscription.findFirst({
+            where: { dodoCustomerId: customerId },
+            include: { user: true },
+          });
+
+          if (existingSub) {
+            console.log(`[WEBHOOK] Found user ${existingSub.userId} via customer ID mapping`);
+          }
+        }
+
+        await logPaymentAuditEvent("payment.succeeded.error", paymentId || sessionId, {
+          error: "No userId in metadata",
+          customerId,
+        });
+
+        res.status(400).json({ error: "Missing userId in metadata" });
+        return;
+      }
+
+      await activateSubscriptionFromPayment(userId, dodoSubscriptionId, customerId, sessionId, paymentId);
+
+      await logPaymentAuditEvent("payment.succeeded", userId, {
+        sessionId,
+        dodoSubscriptionId,
+        customerId,
+        paymentId,
+      });
+    } else if (type === "subscription.active" || type === "subscription.updated" || type === "subscription.renewed") {
+      if (!dodoSubId) {
+        console.warn(`[WEBHOOK] ${type} event missing subscription ID, skipping subscription update`);
+      } else {
+        await updateSubscriptionFromWebhook(dodoSubId, {
+          status: data.status,
+          currentPeriodStart: parseDodoDate(data.previous_billing_date),
+          currentPeriodEnd: parseDodoDate(data.next_billing_date),
+          cancelAtPeriodEnd: data.cancel_at_next_billing_date,
+        });
+
+        await logPaymentAuditEvent("subscription." + type.replace("subscription.", ""), dodoSubId, {
+          status: data.status,
+        });
+      }
+    } else if (type === "subscription.cancelled" || type === "subscription.expired" || type === "subscription.failed" || type === "subscription.on_hold") {
+      if (dodoSubId) {
+        await updateSubscriptionFromWebhook(dodoSubId, {
+          status: data.status,
+          currentPeriodStart: parseDodoDate(data.previous_billing_date),
+          currentPeriodEnd: parseDodoDate(data.next_billing_date),
+          cancelAtPeriodEnd: data.cancel_at_next_billing_date,
+        });
+
+        await logPaymentAuditEvent("subscription." + type.replace("subscription.", ""), dodoSubId, {
+          status: data.status,
+        });
+      }
     } else if (type === "checkout.session.completed" || type === "checkout.completed") {
       const userId = data.metadata?.userId;
       const sessionId = data.session_id;
@@ -241,33 +295,32 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
       if (!userId) {
         console.error("[WEBHOOK] CRITICAL: No userId in checkout metadata!", data);
-        
+
         if (customerId) {
-          console.log("[WEBHOOK] Attempting to find user by customer ID...");
           const existingSub = await prisma.subscription.findFirst({
             where: { dodoCustomerId: customerId },
             include: { user: true },
           });
-          
+
           if (existingSub) {
             console.log(`[WEBHOOK] Found user ${existingSub.userId} via customer ID mapping`);
           } else {
             console.error("[WEBHOOK] No subscription found for customer ID either");
           }
         }
-        
-        await logPaymentAuditEvent("checkout.completed.error", sessionId, { 
+
+        await logPaymentAuditEvent("checkout.completed.error", sessionId, {
           error: "No userId in metadata",
           customerId,
           data: JSON.stringify(data),
         });
-        
+
         res.status(400).json({ error: "Missing userId in metadata" });
         return;
       }
 
       await finalizeCheckout(sessionId, userId, dodoSubscriptionId, customerId);
-      
+
       await logPaymentAuditEvent("checkout.completed", userId, {
         sessionId,
         dodoSubscriptionId,

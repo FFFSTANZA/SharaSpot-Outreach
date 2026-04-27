@@ -195,10 +195,12 @@ export async function updateSubscriptionFromWebhook(
 
   const statusMap: Record<string, SubscriptionStatus> = {
     active: SubscriptionStatus.ACTIVE,
+    pending: SubscriptionStatus.ACTIVE,
     past_due: SubscriptionStatus.PAST_DUE,
     cancelled: SubscriptionStatus.CANCELLED,
     expired: SubscriptionStatus.EXPIRED,
     on_hold: SubscriptionStatus.ON_HOLD,
+    failed: SubscriptionStatus.PAST_DUE,
   };
 
   const previousStatus = subscription.status;
@@ -227,7 +229,7 @@ export async function updateSubscriptionFromWebhook(
   if (subscription.userId) {
     await redis.del(`${PREMIUM_CACHE_PREFIX}${subscription.userId}`).catch(() => { });
   }
-  
+
   console.log(`[WEBHOOK] Updated subscription ${dodoSubscriptionId}: ${previousStatus} -> ${newStatus || previousStatus}`);
 }
 
@@ -250,9 +252,46 @@ export async function handleCheckoutCompleted(
     throw new Error(`User ${userId} not found`);
   }
 
-  const periodStart = new Date();
-  const periodEnd = new Date();
-  periodEnd.setMonth(periodEnd.getMonth() + 1);
+  let dodoSubData: any = null;
+
+  if (dodoSubscriptionId && dodoSubscriptionId !== "sub_test_premium_demo") {
+    try {
+      dodoSubData = await dodo.subscriptions.retrieve(dodoSubscriptionId);
+      console.log(`[SUBSCRIPTION-SYNC] Fetched Dodo subscription ${dodoSubscriptionId}:`, {
+        status: dodoSubData?.status,
+        nextBillingDate: dodoSubData?.next_billing_date,
+        trialPeriodDays: dodoSubData?.trial_period_days,
+      });
+    } catch (err: any) {
+      console.warn(`[SUBSCRIPTION-SYNC] Could not fetch Dodo subscription ${dodoSubscriptionId}:`, err.message);
+    }
+  }
+
+  const now = new Date();
+  let periodStart: Date;
+  let periodEnd: Date;
+
+  if (dodoSubData?.previous_billing_date) {
+    periodStart = new Date(dodoSubData.previous_billing_date);
+  } else if (dodoSubData?.next_billing_date) {
+    periodStart = new Date(dodoSubData.next_billing_date);
+    periodStart.setMonth(periodStart.getMonth() - 1);
+  } else {
+    periodStart = now;
+  }
+
+  if (dodoSubData?.next_billing_date) {
+    periodEnd = new Date(dodoSubData.next_billing_date);
+  } else {
+    periodEnd = new Date();
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
+  }
+
+  let trialEnd: Date | null = null;
+  if (dodoSubData?.trial_period_days && dodoSubData.trial_period_days > 0) {
+    trialEnd = new Date(periodStart);
+    trialEnd.setDate(trialEnd.getDate() + dodoSubData.trial_period_days);
+  }
 
   await prisma.$transaction(async (tx) => {
     const existing = await tx.subscription.findUnique({ where: { userId } });
@@ -262,10 +301,10 @@ export async function handleCheckoutCompleted(
       status: SubscriptionStatus.ACTIVE,
       dodoCustomerId: dodoCustomerId || existing?.dodoCustomerId || null,
       dodoSubscriptionId: dodoSubscriptionId || existing?.dodoSubscriptionId || null,
-      currentPeriodStart: existing?.currentPeriodStart || periodStart,
-      currentPeriodEnd: existing?.currentPeriodEnd || periodEnd,
-      cancelAtPeriodEnd: existing?.cancelAtPeriodEnd ?? false,
-      trialEnd: existing?.trialEnd || null,
+      currentPeriodStart: periodStart,
+      currentPeriodEnd: periodEnd,
+      cancelAtPeriodEnd: false, // Reset on new checkout/activation
+      trialEnd: trialEnd,
     };
 
     if (existing) {
@@ -292,20 +331,103 @@ export async function handleCheckoutCompleted(
           dodoCustomerId,
           periodStart,
           periodEnd,
+          trialEnd,
         },
       },
     });
   });
 
   await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`).catch(() => { });
-  
+
   await logPaymentAuditEvent("subscription.created", userId, {
     sessionId,
     dodoSubscriptionId,
     dodoCustomerId,
   });
-  
+
   console.log(`[SUBSCRIPTION-SYNC] Success for user ${userId}`);
+}
+
+export async function activateSubscriptionFromPayment(
+  userId: string,
+  dodoSubscriptionId?: string,
+  dodoCustomerId?: string,
+  sessionId?: string,
+  paymentId?: string
+): Promise<void> {
+  console.log(`[SUBSCRIPTION-ACTIVATE] Activating for user ${userId}, subId: ${dodoSubscriptionId}, paymentId: ${paymentId}`);
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  let dodoSubData: any = null;
+
+  if (dodoSubscriptionId && dodoSubscriptionId !== "sub_test_premium_demo") {
+    try {
+      dodoSubData = await dodo.subscriptions.retrieve(dodoSubscriptionId);
+    } catch (err: any) {
+      console.warn(`[SUBSCRIPTION-ACTIVATE] Could not fetch Dodo subscription ${dodoSubscriptionId}:`, err.message);
+    }
+  }
+
+  const now = new Date();
+  let periodStart: Date;
+  let periodEnd: Date;
+
+  if (dodoSubData?.previous_billing_date) {
+    periodStart = new Date(dodoSubData.previous_billing_date);
+  } else if (dodoSubData?.next_billing_date) {
+    periodStart = new Date(dodoSubData.next_billing_date);
+    periodStart.setMonth(periodStart.getMonth() - 1);
+  } else {
+    periodStart = now;
+  }
+
+  if (dodoSubData?.next_billing_date) {
+    periodEnd = new Date(dodoSubData.next_billing_date);
+  } else {
+    periodEnd = new Date();
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
+  }
+
+  let trialEnd: Date | null = null;
+  if (dodoSubData?.trial_period_days && dodoSubData.trial_period_days > 0) {
+    trialEnd = new Date(periodStart);
+    trialEnd.setDate(trialEnd.getDate() + dodoSubData.trial_period_days);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.subscription.findUnique({ where: { userId } });
+
+    const subscriptionData = {
+      userId,
+      status: SubscriptionStatus.ACTIVE,
+      dodoCustomerId: dodoCustomerId || existing?.dodoCustomerId || null,
+      dodoSubscriptionId: dodoSubscriptionId || existing?.dodoSubscriptionId || null,
+      currentPeriodStart: periodStart,
+      currentPeriodEnd: periodEnd,
+      cancelAtPeriodEnd: false, // Reset on activation
+      trialEnd: trialEnd,
+    };
+
+    if (existing) {
+      await tx.subscription.update({
+        where: { userId },
+        data: subscriptionData,
+      });
+      console.log(`[SUBSCRIPTION-ACTIVATE] Updated subscription for ${userId}`);
+    } else {
+      await tx.subscription.create({
+        data: subscriptionData,
+      });
+      console.log(`[SUBSCRIPTION-ACTIVATE] Created subscription for ${userId}`);
+    }
+  });
+
+  await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`).catch(() => { });
+
+  console.log(`[SUBSCRIPTION-ACTIVATE] Success for user ${userId}`);
 }
 
 
@@ -324,12 +446,12 @@ export async function getSubscriptionStatus(
   const currentPeriodEnd = subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null;
   const trialEnd = subscription.trialEnd ? new Date(subscription.trialEnd) : null;
 
-  const isActiveStatus = subscription.status === SubscriptionStatus.ACTIVE || subscription.status === SubscriptionStatus.CANCELLED;
+  const isActiveStatus = subscription.status === SubscriptionStatus.ACTIVE || subscription.status === SubscriptionStatus.ON_HOLD;
   const hasValidPeriod = currentPeriodEnd && currentPeriodEnd > now;
   const isSubscriptionActive = isActiveStatus && hasValidPeriod;
   const isTrialActive = trialEnd && trialEnd > now;
-  
-const isPremium = isSubscriptionActive || isTrialActive;
+
+  const isPremium = isSubscriptionActive || isTrialActive;
 
   return { isPremium: !!isPremium, subscription };
 }
@@ -346,7 +468,7 @@ export async function syncSubscriptionFromDodo(userId: string): Promise<{ synced
   try {
     const dodoSubRaw = await dodo.subscriptions.retrieve(subscription.dodoSubscriptionId);
     const dodoSub = dodoSubRaw as any;
-    
+
     if (!dodoSub) {
       console.warn(`[SYNC] No Dodo subscription found for ${subscription.dodoSubscriptionId}`);
       return { synced: false, subscription };
@@ -354,24 +476,27 @@ export async function syncSubscriptionFromDodo(userId: string): Promise<{ synced
 
     const statusMap: Record<string, SubscriptionStatus> = {
       active: SubscriptionStatus.ACTIVE,
+      pending: SubscriptionStatus.ACTIVE,
       past_due: SubscriptionStatus.PAST_DUE,
       cancelled: SubscriptionStatus.CANCELLED,
       expired: SubscriptionStatus.EXPIRED,
       on_hold: SubscriptionStatus.ON_HOLD,
+      failed: SubscriptionStatus.PAST_DUE,
     };
 
     let currentPeriodStart: Date | undefined;
     let currentPeriodEnd: Date | undefined;
     let trialEnd: Date | null = null;
 
-    if (dodoSub.current_period_start) {
-      currentPeriodStart = new Date(dodoSub.current_period_start < 10000000000 ? dodoSub.current_period_start * 1000 : dodoSub.current_period_start);
+    if (dodoSub.previous_billing_date) {
+      currentPeriodStart = new Date(dodoSub.previous_billing_date);
     }
-    if (dodoSub.current_period_end) {
-      currentPeriodEnd = new Date(dodoSub.current_period_end < 10000000000 ? dodoSub.current_period_end * 1000 : dodoSub.current_period_end);
+    if (dodoSub.next_billing_date) {
+      currentPeriodEnd = new Date(dodoSub.next_billing_date);
     }
-    if (dodoSub.trial_period_end) {
-      trialEnd = new Date(dodoSub.trial_period_end < 10000000000 ? dodoSub.trial_period_end * 1000 : dodoSub.trial_period_end);
+    if (dodoSub.trial_period_days && dodoSub.trial_period_days > 0) {
+      trialEnd = new Date();
+      trialEnd.setDate(trialEnd.getDate() + dodoSub.trial_period_days);
     }
 
     await prisma.subscription.update({
@@ -393,7 +518,7 @@ export async function syncSubscriptionFromDodo(userId: string): Promise<{ synced
     });
 
     console.log(`[SYNC] Successfully synced subscription for user ${userId}: ${dodoSub.status}`);
-    
+
     const updatedSub = await prisma.subscription.findUnique({ where: { userId } });
     return { synced: true, subscription: updatedSub };
   } catch (err: any) {
