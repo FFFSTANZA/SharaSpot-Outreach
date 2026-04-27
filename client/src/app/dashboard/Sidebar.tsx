@@ -100,7 +100,6 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
     {
       title: "Account",
       links: [
-        { label: "Billing", href: "/dashboard/settings/billing", icon: <CreditCard size={18} /> },
         { label: "Settings", href: "/dashboard/settings", icon: <Settings size={18} /> },
       ]
     }

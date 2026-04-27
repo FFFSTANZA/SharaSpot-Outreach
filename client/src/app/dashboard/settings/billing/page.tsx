@@ -56,30 +56,12 @@ export default function BillingPage() {
     const { user } = useAuth();
     const router = useRouter();
 
-    return (
-        <AuthGuard>
-            <SidebarProvider>
-                <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
-                    <Sidebar
-                        currentLabel="Billing"
-                        setLabel={() => { }}
-                        items={[]}
-                        profile={{
-                            name: user?.name ?? "User",
-                            email: user?.email ?? "",
-                            avatarUrl: user?.avatarUrl ?? "",
-                        }}
-                    />
+    useEffect(() => {
+        // Hide billing page and redirect to dashboard
+        router.replace("/dashboard");
+    }, [router]);
 
-                    <main className="flex-1 flex flex-col min-w-0 overflow-hidden px-10 py-12">
-                        <div className="max-w-4xl mx-auto w-full">
-                            <PremiumCard />
-                        </div>
-                    </main>
-                </div>
-            </SidebarProvider>
-        </AuthGuard>
-    );
+    return null;
 }
 
 function PremiumCard() {
@@ -104,11 +86,11 @@ function PremiumCard() {
                 setSubscription(data.subscription);
                 setIsPremium(data.isPremium);
                 setRegion((data.region as "global" | "india") || "global");
-                
+
                 if (isSuccessRedirect && !data.isPremium) {
                     setTimeout(() => refreshUser(), 1500);
                 }
-                
+
                 if (isCancelledRedirect) {
                     addToast("info", "Payment was cancelled. You can try again when ready.");
                 }
@@ -225,7 +207,7 @@ function PremiumCard() {
                         >
                             Get Started Now
                         </button>
-                        
+
                         <p className="text-center text-xs text-slate-400 mt-4">
                             30-day money-back guarantee • Cancel anytime
                         </p>
@@ -265,7 +247,7 @@ function PremiumCard() {
                                 <span className="text-lg font-normal">/mo</span>
                             </div>
                             <p className="text-indigo-100 text-sm">
-                                {isTrialing 
+                                {isTrialing
                                     ? `Trial ends: ${trialEnd?.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`
                                     : `Next billing: ${periodEnd?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
                                 }
@@ -362,7 +344,7 @@ function PremiumCard() {
                             </div>
                         </div>
                         <p className="text-slate-600 mb-6">
-                            Your subscription will remain active until <strong>{periodEnd?.toLocaleDateString()}</strong>. 
+                            Your subscription will remain active until <strong>{periodEnd?.toLocaleDateString()}</strong>.
                             After that, you'll lose access to all premium features.
                         </p>
                         <div className="flex gap-4">
