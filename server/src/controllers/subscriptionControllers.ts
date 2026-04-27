@@ -160,24 +160,28 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     try {
       const body = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
       const headers = {
-        "svix-id": req.headers["svix-id"] as string,
-        "svix-timestamp": req.headers["svix-timestamp"] as string,
-        "svix-signature": req.headers["svix-signature"] as string,
+        "svix-id": (req.headers["webhook-id"] || req.headers["svix-id"]) as string,
+        "svix-timestamp": (req.headers["webhook-timestamp"] || req.headers["svix-timestamp"]) as string,
+        "svix-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"]) as string,
       };
 
-      console.log("[WEBHOOK-DEBUG] Incoming Svix Headers:", headers);
-      console.log("[WEBHOOK-DEBUG] Body Type:", typeof body, "Length:", body?.length);
-      console.log("[WEBHOOK-DEBUG] RawBody Type:", typeof rawBody, "Length:", rawBody?.length);
+      console.log("[WEBHOOK-DEBUG] Incoming Headers (Mapped to Svix shape):", {
+        id: !!headers["svix-id"],
+        timestamp: !!headers["svix-timestamp"],
+        signature: !!headers["svix-signature"],
+      });
+      console.log("[WEBHOOK-DEBUG] Header Keys received:", Object.keys(req.headers).filter(k => k.includes("webhook") || k.includes("svix")));
 
       if (!headers["svix-id"] || !headers["svix-signature"]) {
-        console.warn("[WEBHOOK-DEBUG] Missing critical Svix headers!");
+        console.warn("[WEBHOOK-DEBUG] Missing critical webhook/svix headers!");
+        console.log("[WEBHOOK-DEBUG] Full headers for diagnosis:", JSON.stringify(req.headers));
       }
 
       event = dodo.webhooks.unwrap(body, { headers, key: secret });
     } catch (error: any) {
       console.error("[WEBHOOK] Auth Failed:", error.message);
       // Log more context on failure
-      console.error("[WEBHOOK-DEBUG] Secret length:", secret.length);
+      console.error("[WEBHOOK-DEBUG] Secret length:", secret?.length);
       res.status(401).json({ error: "Unauthorized", details: error.message });
       return;
     }
