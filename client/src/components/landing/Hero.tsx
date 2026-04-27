@@ -52,7 +52,7 @@ export default function Hero() {
     }, []);
 
     return (
-        <section className="relative pt-24 pb-32 lg:pt-36 lg:pb-48 overflow-hidden bg-[#f4f7f9]">
+        <section className="relative pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-36 lg:pb-48 overflow-hidden bg-[#f4f7f9]">
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-brand/10 blur-[150px] rounded-full opacity-60" />
                 <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-brand/5 blur-[150px] rounded-full opacity-60" />
@@ -101,8 +101,8 @@ export default function Hero() {
                     <div className="absolute -inset-16 bg-gradient-to-b from-brand/20 via-brand/10 to-transparent blur-[140px] opacity-50 -z-10 rounded-[80px]" />
 
                     {/* The "App" Frame */}
-                    <div className="bg-slate-200/50 backdrop-blur-3xl border border-slate-300/60 rounded-[48px] p-4 shadow-[0_120px_240px_-40px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.08)] ring-2 ring-white/30 overflow-hidden transition-all duration-700 group-hover/dashboard:scale-[1.01] group-hover/dashboard:shadow-[0_140px_300px_-50px_rgba(0,0,0,0.35)]">
-                        <div className="bg-white rounded-[36px] border border-slate-200 flex h-[740px] overflow-hidden text-left relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+                    <div className="bg-slate-200/50 backdrop-blur-3xl border border-slate-300/60 rounded-[48px] p-2 sm:p-4 shadow-[0_120px_240px_-40px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.08)] ring-2 ring-white/30 overflow-hidden transition-all duration-700 group-hover/dashboard:scale-[1.01] group-hover/dashboard:shadow-[0_140px_300px_-50px_rgba(0,0,0,0.35)]">
+                        <div className="bg-white rounded-[36px] border border-slate-200 flex h-[480px] sm:h-[600px] md:h-[740px] overflow-x-auto overflow-y-hidden text-left relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
 
                             {/* Pro Sidebar */}
                             <div className="w-60 bg-[#f8fafc] border-r border-border-light flex flex-col py-8 px-4">

@@ -127,15 +127,12 @@ const Dashboard = () => {
 
     fetchGlobalStats();
 
-    // Stable polling interval
+    // Polling only for stats, not the email list - prevents UI blinking
     const pollInterval = setInterval(() => {
-      // Only poll if tab is visible. 
-      // We check isLoading at the time of execution, not as a dependency.
       if (document.visibilityState === "visible") {
-        refresh();
         fetchGlobalStats();
       }
-    }, 30_000); // Increased to 30s to reduce load
+    }, 30_000);
 
     return () => clearInterval(pollInterval);
   }, []); // Only run once on mount

@@ -8,7 +8,6 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { X, Megaphone, LogOut, FileText, Plus, Settings, CreditCard, Users, Mail, Inbox, HelpCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { TrialBanner } from "@/components/TrialBanner";
 import { logout, getUnreadCount, getSenders } from "@/lib/apis";
 import { cn } from "@/lib/utils";
 import Button from "@/components/Button";
@@ -113,8 +112,6 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
           <Logo size="md" />
         </Link>
       </div>
-
-      <TrialBanner />
 
       <div className="mb-8 shrink-0">
         <Button

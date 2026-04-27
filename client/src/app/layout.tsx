@@ -159,6 +159,9 @@ const jsonLd = {
 
 import { AuthProvider } from "@/context/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "";
 
 export default function RootLayout({
   children,
@@ -176,6 +179,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleAnalytics gaId={GA_ID} />
         <ErrorBoundary>
           <ToastProvider>
             <AuthProvider>

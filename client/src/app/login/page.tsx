@@ -44,6 +44,13 @@ const LoginPage = () => {
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+
+  const handleGoogleLogin = () => {
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -52,7 +59,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId || !window.google || (window as any).googleSdkInitialized) return;
+    if (!clientId || !sdkLoaded || !window.google || (window as any).googleSdkInitialized) return;
 
     try {
       window.google.accounts.id.initialize({
@@ -99,6 +106,7 @@ const LoginPage = () => {
       });
 
       (window as any).googleSdkInitialized = true;
+      setGoogleReady(true);
 
       // Render the standard button into the container
       window.google.accounts.id.renderButton(
@@ -216,6 +224,7 @@ const LoginPage = () => {
             />
 
             <button
+              onClick={handleGoogleLogin}
               className={`w-full h-12 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 flex items-center justify-center gap-2.5 transition-all shadow-sm
                 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-gray-300'}`}
             >
