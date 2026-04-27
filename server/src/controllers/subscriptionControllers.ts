@@ -158,24 +158,44 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
   if (secret) {
     try {
-      const body = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
+      // Robustly extract the raw body string
+      const body = Buffer.isBuffer(rawBody)
+        ? rawBody.toString("utf8")
+        : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
+
       const headers = {
-        "webhook-id": (req.headers["webhook-id"] || req.headers["svix-id"]) as string,
-        "webhook-timestamp": (req.headers["webhook-timestamp"] || req.headers["svix-timestamp"]) as string,
-        "webhook-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"]) as string,
-        "svix-id": (req.headers["webhook-id"] || req.headers["svix-id"]) as string,
-        "svix-timestamp": (req.headers["webhook-timestamp"] || req.headers["svix-timestamp"]) as string,
-        "svix-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"]) as string,
+        "svix-id": (req.headers["webhook-id"] || req.headers["svix-id"] || "") as string,
+        "svix-timestamp": (req.headers["webhook-timestamp"] || req.headers["svix-timestamp"] || "") as string,
+        "svix-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"] || "") as string,
       };
 
-      if (!headers["svix-id"] || !headers["svix-signature"]) {
-        console.error("[WEBHOOK] Missing critical webhook/svix headers. headers received:", Object.keys(req.headers).filter(k => k.includes("webhook") || k.includes("svix")));
-      }
+      // Also include standard webhook headers if the SDK has been updated
+      const svixHeaders: any = { ...headers };
+      if (req.headers["webhook-id"]) svixHeaders["webhook-id"] = req.headers["webhook-id"];
+      if (req.headers["webhook-timestamp"]) svixHeaders["webhook-timestamp"] = req.headers["webhook-timestamp"];
+      if (req.headers["webhook-signature"]) svixHeaders["webhook-signature"] = req.headers["webhook-signature"];
 
-      event = dodo.webhooks.unwrap(body, { headers, key: secret });
+      try {
+        event = dodo.webhooks.unwrap(body, { headers: svixHeaders, key: secret });
+      } catch (firstErr: any) {
+        console.warn("[WEBHOOK] Primary unwrap failed, trying fallback with raw headers:", firstErr.message);
+        // Fallback: try passing the original request headers directly
+        event = dodo.webhooks.unwrap(body, { headers: req.headers as any, key: secret });
+      }
     } catch (error: any) {
-      console.error("[WEBHOOK] Auth Failed:", error.message);
-      res.status(401).json({ error: "Unauthorized", details: error.message });
+      const bodyStr = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : "NOT_A_BUFFER";
+      console.error("[WEBHOOK] Auth Failed Final:", error.message);
+      console.error("[WEBHOOK-DIAGNOSIS]", {
+        bodyLength: bodyStr.length,
+        bodyStart: bodyStr.substring(0, 20),
+        secretPrefix: secret.substring(0, 10),
+        headerKeys: Object.keys(req.headers).filter(k => k.toLowerCase().includes("webhook") || k.toLowerCase().includes("svix")),
+      });
+      res.status(401).json({
+        error: "Unauthorized",
+        details: error.message,
+        hint: "Check signature and secret integrity"
+      });
       return;
     }
   } else {
