@@ -7,17 +7,16 @@ if (!apiKey && isProduction) {
   throw new Error("DODO_PAYMENTS_API_KEY is missing in production");
 }
 
-const isLiveKey = !!(apiKey && !apiKey.startsWith("sk_test_") && !apiKey.startsWith("aeh4"));
-const envFromVar = process.env.DODO_ENVIRONMENT;
+const isLiveKey = !!(apiKey && !apiKey.startsWith("sk_test_"));
 
 export const dodo = new DodoPayments({
   bearerToken: apiKey || "",
-  environment: (envFromVar === "live_mode" || envFromVar === "test_mode")
-    ? envFromVar
+  environment: (process.env.DODO_ENVIRONMENT === "live_mode" || process.env.DODO_ENVIRONMENT === "test_mode")
+    ? process.env.DODO_ENVIRONMENT
     : (isLiveKey ? "live_mode" : "test_mode"),
 });
 
-console.log(`[DODO-BOOT] Initialized in ${isLiveKey ? "LIVE_MODE" : "TEST_MODE"}`);
+console.log(`[DODO-BOOT] Mode: ${isLiveKey ? "LIVE" : "TEST"} (Prefix: ${apiKey?.substring(0, 4)}...)`);
 
 export const DODO_WEBHOOK_SECRET = process.env.DODO_WEBHOOK_SECRET || "";
 
