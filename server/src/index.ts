@@ -82,6 +82,7 @@ const globalLimiter = rateLimit({
   max: process.env.NODE_ENV === "development" ? 99999 : 10000, // Increased to 10,000
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
 });
 
 const authLimiter = rateLimit({
@@ -91,6 +92,7 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   message: { message: "Too many login attempts, please try again later" },
+  validate: { xForwardedForHeader: false },
 });
 
 app.use("/api", globalLimiter);
