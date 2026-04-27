@@ -7,7 +7,7 @@ if (!apiKey && isProduction) {
   throw new Error("DODO_PAYMENTS_API_KEY is missing in production");
 }
 
-const isLiveKey = !!(apiKey && (apiKey.startsWith("sk_live_") || (apiKey.includes(".") && !apiKey.startsWith("sk_test_"))));
+const isLiveKey = !!(apiKey && apiKey.startsWith("sk_live_"));
 
 export const dodo = new DodoPayments({
   bearerToken: apiKey || "",
