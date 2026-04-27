@@ -160,6 +160,9 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     try {
       const body = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
       const headers = {
+        "webhook-id": (req.headers["webhook-id"] || req.headers["svix-id"]) as string,
+        "webhook-timestamp": (req.headers["webhook-timestamp"] || req.headers["svix-timestamp"]) as string,
+        "webhook-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"]) as string,
         "svix-id": (req.headers["webhook-id"] || req.headers["svix-id"]) as string,
         "svix-timestamp": (req.headers["webhook-timestamp"] || req.headers["svix-timestamp"]) as string,
         "svix-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"]) as string,
