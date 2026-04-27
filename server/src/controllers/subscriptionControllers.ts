@@ -165,23 +165,13 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         "svix-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"]) as string,
       };
 
-      console.log("[WEBHOOK-DEBUG] Incoming Headers (Mapped to Svix shape):", {
-        id: !!headers["svix-id"],
-        timestamp: !!headers["svix-timestamp"],
-        signature: !!headers["svix-signature"],
-      });
-      console.log("[WEBHOOK-DEBUG] Header Keys received:", Object.keys(req.headers).filter(k => k.includes("webhook") || k.includes("svix")));
-
       if (!headers["svix-id"] || !headers["svix-signature"]) {
-        console.warn("[WEBHOOK-DEBUG] Missing critical webhook/svix headers!");
-        console.log("[WEBHOOK-DEBUG] Full headers for diagnosis:", JSON.stringify(req.headers));
+        console.error("[WEBHOOK] Missing critical webhook/svix headers. headers received:", Object.keys(req.headers).filter(k => k.includes("webhook") || k.includes("svix")));
       }
 
       event = dodo.webhooks.unwrap(body, { headers, key: secret });
     } catch (error: any) {
       console.error("[WEBHOOK] Auth Failed:", error.message);
-      // Log more context on failure
-      console.error("[WEBHOOK-DEBUG] Secret length:", secret?.length);
       res.status(401).json({ error: "Unauthorized", details: error.message });
       return;
     }
