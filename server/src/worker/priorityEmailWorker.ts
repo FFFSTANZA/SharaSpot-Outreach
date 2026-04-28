@@ -6,7 +6,7 @@ import { collectSmtpTiming } from "../utils/signalCollector";
 import { evaluateTiming } from "../utils/timingEngine";
 import { performSafetyChecks, incrementPriorityQuota, incrementDomainRate } from "../utils/prioritySafetyLimits";
 import { calculateRetryDelay, shouldRetry, MAX_PRIORITY_RETRIES } from "../utils/priorityRetry";
-import { processEmailJob } from "./emailWorker";
+import { processEmailJob, checkCampaignCompletion } from "./emailWorker";
 import { extractDomain } from "../utils/emailThreading";
 
 /**
@@ -139,6 +139,9 @@ export async function processPriorityJob(job: Job): Promise<void> {
           where: { id: emailJobId },
           data: { status: "FAILED", error: "Priority Mail: Max retries exceeded" },
         });
+
+        // Trigger completion check
+        await checkCampaignCompletion(emailJob.campaignId);
       }
       
       return;
@@ -209,6 +212,15 @@ export async function processPriorityJob(job: Job): Promise<void> {
           statusMessage: error.message,
         },
       });
+
+      // Trigger completion check
+      const jobRecord = await prisma.emailJob.findUnique({
+        where: { id: emailJobId },
+        select: { campaignId: true }
+      });
+      if (jobRecord) {
+        await checkCampaignCompletion(jobRecord.campaignId);
+      }
     }
   }
 }

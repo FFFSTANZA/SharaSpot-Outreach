@@ -769,7 +769,7 @@ export async function processEmailJob(job: Job): Promise<void> {
  * For sequence campaigns, it leaves the status as SENDING so the scheduler
  * can handle follow-up steps.
  */
-async function checkCampaignCompletion(campaignId: string): Promise<void> {
+export async function checkCampaignCompletion(campaignId: string): Promise<void> {
   try {
     const campaign = await prisma.emailCampaign.findUnique({
       where: { id: campaignId },
