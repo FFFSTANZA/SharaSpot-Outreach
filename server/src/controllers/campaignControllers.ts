@@ -534,6 +534,7 @@ export const createCampaign = async (
       senderPool,
     });
   } catch (error: unknown) {
+    console.error("Error in createCampaign:", error);
     res.status(500).json({
       message: "Error creating campaign",
     });
@@ -638,6 +639,7 @@ export const pauseCampaign = async (
 
     res.status(200).json({ ...campaign, status: "PAUSED" });
   } catch (error: any) {
+    console.error("Error in pauseCampaign:", error);
     res.status(500).json({ message: "Error pausing campaign" });
   }
 };
@@ -727,6 +729,7 @@ export const resumeCampaign = async (
 
     res.status(200).json({ ...campaign, status: "SENDING" });
   } catch (error: any) {
+    console.error("Error in resumeCampaign:", error);
     res.status(500).json({ message: "Error resuming campaign" });
   }
 };
@@ -777,6 +780,7 @@ export const cancelCampaign = async (
 
     res.status(200).json({ ...campaign, status: "CANCELLED" });
   } catch (error: any) {
+    console.error("Error in cancelCampaign:", error);
     res.status(500).json({ message: "Error cancelling campaign" });
   }
 };
@@ -890,6 +894,7 @@ export const getCampaignById = async (
       estimatedCompletionTime,
     });
   } catch (error: any) {
+    console.error("Error in getCampaignById:", error);
     res.status(500).json({ message: "Error fetching campaign" });
   }
 };
