@@ -821,6 +821,41 @@ export const getCampaignById = async (
       cancelled: campaign.emails.filter((e) => e.status === "CANCELLED").length,
     };
 
+    // --- AUTO-COMPLETION FIX ---
+    // If we're viewing a SENDING/SCHEDULED campaign but all jobs are terminal,
+    // update it to COMPLETED immediately so the user doesn't see "Loading/Sending"
+    // when they know it's done.
+    if (
+      (campaign.status === "SENDING" || campaign.status === "SCHEDULED") &&
+      _count.pending === 0 &&
+      _count.sending === 0
+    ) {
+      // For sequence campaigns, we also need to check if there are any active sequence states
+      let shouldComplete = true;
+      const sequenceStepsCount = await prisma.sequenceStep.count({ where: { campaignId: id } });
+      
+      if (sequenceStepsCount > 0) {
+        const activeStatesCount = await prisma.recipientSequenceState.count({
+          where: {
+            campaignId: id,
+            completed: false,
+            paused: false,
+            replied: false,
+          },
+        });
+        if (activeStatesCount > 0) shouldComplete = false;
+      }
+
+      if (shouldComplete) {
+        await prisma.emailCampaign.update({
+          where: { id },
+          data: { status: "COMPLETED" },
+        });
+        campaign.status = "COMPLETED";
+        console.log(`[getCampaignById] Auto-completed campaign ${id}`);
+      }
+    }
+
     // Build senderPool from campaignSenders
     let senderPool = campaign.campaignSenders.map(cs => ({
       senderId: cs.sender.id,

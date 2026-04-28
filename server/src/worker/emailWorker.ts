@@ -337,13 +337,13 @@ export async function processEmailJob(job: Job): Promise<void> {
 
   if (!sender) {
     // Sender was deleted mid-campaign — mark FAILED
-    await markFailed(emailJobId, "Sender not found");
+    await markFailed(emailJobId, "Sender not found", campaign.id);
     return;
   }
 
   if (!sender.isVerified) {
     // Sender exists but SMTP credentials were never verified
-    await markFailed(emailJobId, "Sender not verified for SMTP");
+    await markFailed(emailJobId, "Sender not verified for SMTP", campaign.id);
     return;
   }
 
@@ -472,12 +472,11 @@ export async function processEmailJob(job: Job): Promise<void> {
   // Decrypt sender credentials
   // ---------------------------------------------------------------------------
 
-  let decryptedPassword: string;
   try {
     decryptedPassword = decrypt(sender.appPassword);
   } catch (err) {
     // Corrupted ciphertext or key mismatch — permanent failure
-    await markFailed(emailJobId, "Failed to decrypt sender credentials");
+    await markFailed(emailJobId, "Failed to decrypt sender credentials", campaign.id);
     return;
   }
 
@@ -522,6 +521,7 @@ export async function processEmailJob(job: Job): Promise<void> {
         await markFailed(
           emailJobId,
           `Failed to download attachment: ${attachment.filename}`,
+          campaign.id,
         );
         return;
       }
@@ -728,7 +728,7 @@ export async function processEmailJob(job: Job): Promise<void> {
     evictExpiredSmtpEntries();
 
     // Permanent SMTP failure — mark FAILED with error message
-    await markFailed(emailJobId, smtpError.message || "SMTP send failed");
+    await markFailed(emailJobId, smtpError.message || "SMTP send failed", campaign.id);
 
     // Update RecipientSequenceState on failure
     if (emailJob.sequenceStepId) {
@@ -818,13 +818,18 @@ async function checkCampaignCompletion(campaignId: string): Promise<void> {
 // (e.g., DB connection lost), we log the error but don't crash the worker.
 // ---------------------------------------------------------------------------
 
-async function markFailed(emailJobId: string, errorMessage: string): Promise<void> {
+async function markFailed(emailJobId: string, errorMessage: string, campaignId?: string): Promise<void> {
   try {
     await prisma.emailJob.update({
       where: { id: emailJobId },
       data: { status: "FAILED", error: errorMessage },
     });
     console.log(`EmailJob ${emailJobId} marked FAILED: ${errorMessage}`);
+    
+    // If we have a campaignId, check if this failure finishes the campaign
+    if (campaignId) {
+      await checkCampaignCompletion(campaignId);
+    }
   } catch (err) {
     // If marking FAILED itself throws (e.g., DB connection lost), log but don't crash.
     // The job will remain in SENDING state and be recovered by the startup sweep.
@@ -883,7 +888,13 @@ emailWorker.on('failed', async (job, err) => {
 
   console.error(`[DLQ] Job ${job.id} (${emailJobId}) failed permanently:`, err.message);
 
-  await markFailed(emailJobId, errorMessage);
+  // Fetch campaignId to ensure we check for completion
+  const jobRecord = await prisma.emailJob.findUnique({
+    where: { id: emailJobId },
+    select: { campaignId: true }
+  });
+
+  await markFailed(emailJobId, errorMessage, jobRecord?.campaignId);
 
   // Log to SystemAuditLog
   await sysLog.error("INFRASTRUCTURE", `EmailJob ${emailJobId} failed permanently in queue.`, {
