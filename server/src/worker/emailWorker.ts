@@ -472,6 +472,7 @@ export async function processEmailJob(job: Job): Promise<void> {
   // Decrypt sender credentials
   // ---------------------------------------------------------------------------
 
+  let decryptedPassword: string;
   try {
     decryptedPassword = decrypt(sender.appPassword);
   } catch (err) {
