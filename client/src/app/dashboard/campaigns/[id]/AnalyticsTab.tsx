@@ -14,7 +14,7 @@ interface TrackingTabProps {
   campaignId: string;
 }
 
-function StatCard({ label, val, icon: Icon, color, bg }: { label: string; val: string | number; icon: any; color: string; bg: string }) {
+function StatCard({ label, val, icon: Icon, color, bg }: { label: string; val: string | number; icon: React.ElementType; color: string; bg: string }) {
   return (
     <div className="flex flex-col gap-2 p-5 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:border-brand/10">
       <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", bg)}>
@@ -296,7 +296,7 @@ export default function AnalyticsTab({ campaignId }: TrackingTabProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {sortedEmails.map((email, i) => (
+              {sortedEmails.map((email) => (
                 <tr
                   key={email.emailJobId}
                   className="hover:bg-gray-50/50 transition-colors group"

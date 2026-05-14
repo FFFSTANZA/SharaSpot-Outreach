@@ -104,6 +104,7 @@ jest.mock("../../utils/prioritySafetyLimits", () => ({
 
 jest.mock("../../worker/emailWorker", () => ({
   processEmailJob: jest.fn().mockResolvedValue(undefined),
+  checkCampaignCompletion: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock("../../utils/emailThreading", () => ({

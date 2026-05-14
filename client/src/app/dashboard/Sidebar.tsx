@@ -1,12 +1,11 @@
 "use client";
 
-import { useRef, useCallback, useState, useEffect } from "react";
-import { SidebarItem } from "@/components/SidebarItem";
+import { useCallback, useState, useEffect } from "react";
 import { SidebarProps } from "@/types";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { X, Megaphone, LogOut, FileText, Plus, Settings, CreditCard, Users, Mail, Inbox, HelpCircle } from "lucide-react";
+import { X, LogOut, FileText, Plus, Settings, Users, Mail, Inbox } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { logout, getUnreadCount, getSenders } from "@/lib/apis";
 import { cn } from "@/lib/utils";
@@ -18,8 +17,6 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
   const { isOpen, close } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
-  const touchStartX = useRef(0);
-
   useEffect(() => {
     getSenders().then(senders => {
       if (senders[0]?.id) {
@@ -31,7 +28,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
   }, []);
 
   const handleNavClick = useCallback(
-    (item: any) => {
+    (item: { label: string; onClick?: () => void; href?: string }) => {
       if (item.onClick) {
         item.onClick();
         close();
@@ -47,9 +44,11 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
       // Default dashboard filtering behavior
       if (pathname !== "/dashboard" && !pathname.startsWith("/dashboard?")) {
         const queryParams = new URLSearchParams();
-        if (item.label === "Scheduled") queryParams.set("status", "PENDING");
-        if (item.label === "Sent") queryParams.set("status", "SENT");
-        if (item.label === "Starred") queryParams.set("starred", "true");
+        if (item.label === "Scheduled") queryParams.set("status", "SCHEDULED");
+        if (item.label === "Sending") queryParams.set("status", "SENDING");
+        if (item.label === "Paused") queryParams.set("status", "PAUSED");
+        if (item.label === "Completed") queryParams.set("status", "COMPLETED");
+        if (item.label === "Cancelled") queryParams.set("status", "CANCELLED");
 
         const qs = queryParams.toString();
         router.push(qs ? `/dashboard?${qs}` : "/dashboard");
@@ -130,7 +129,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
               {group.title}
             </h3>
             <div className="space-y-1">
-              {group.links.map((link: any, idx) => {
+              {group.links.map((link: { label: string; href?: string; onClick?: () => void; isActive?: boolean; icon?: React.ReactNode; count?: number }) => {
                 const isActive = link.isActive !== undefined ? link.isActive : pathname === link.href;
 
                 if (link.onClick) {
@@ -166,7 +165,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
                 return (
                   <Link
                     key={link.label}
-                    href={link.href}
+                    href={link.href!}
                     onClick={close}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all group",

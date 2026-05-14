@@ -2,9 +2,7 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import Link from "@tiptap/extension-link";
 import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Highlight from "@tiptap/extension-highlight";
@@ -21,7 +19,7 @@ import {
   List, ListOrdered, Quote, Code, Undo2, Redo2,
   Link as LinkIcon, Unlink, Highlighter, Minus, Type,
   Heading1, Heading2, Heading3, RemoveFormatting, Table as TableIcon,
-  ClipboardPaste, Calendar, Trash2, Sparkles, ChevronDown,
+  ClipboardPaste, Calendar, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -215,7 +213,6 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
         heading: { levels: [1, 2, 3] },
         bulletList: { keepMarks: true },
         orderedList: { keepMarks: true },
-        // @ts-ignore - StarterKit 3.x includes Link
         link: {
           openOnClick: false,
           HTMLAttributes: { class: "text-emerald-600 underline cursor-pointer" },
@@ -392,7 +389,11 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
                 {FONT_COLORS.map((c) => (
                   <button key={c.label} type="button" title={c.label}
                     onClick={() => {
-                      c.value ? editor.chain().focus().setColor(c.value).run() : editor.chain().focus().unsetColor().run();
+                      if (c.value) {
+                        editor.chain().focus().setColor(c.value).run();
+                      } else {
+                        editor.chain().focus().unsetColor().run();
+                      }
                       setShowColorPicker(false);
                     }}
                     className="h-7 w-7 md:h-6 md:w-6 rounded-full border border-gray-200 hover:scale-110 active:scale-95 transition-transform"

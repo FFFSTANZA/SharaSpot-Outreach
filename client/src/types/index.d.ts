@@ -88,6 +88,13 @@ export interface Campaign {
     name: string | null;
     isVerified: boolean;
   };
+  emailCounts?: {
+    pending: number;
+    sending: number;
+    sent: number;
+    failed: number;
+    cancelled: number;
+  };
 }
 
 // Campaign detail with email jobs and status counts
@@ -169,6 +176,25 @@ export interface EmailRowProps {
 export interface EmailListProps {
   emails?: EmailRowProps[];
   onToggleStar?: (emailId: string) => void;
+}
+
+// CampaignRow component props — for dashboard campaign list
+export interface CampaignRowProps {
+  campaign?: Campaign & {
+    emailCounts?: {
+      pending: number;
+      sending: number;
+      sent: number;
+      failed: number;
+      cancelled: number;
+    };
+  };
+  searchQuery?: string;
+}
+
+// CampaignList component props
+export interface CampaignListProps {
+  campaigns?: CampaignRowProps[];
 }
 
 // ComposeForm component props — receives lifted state from parent

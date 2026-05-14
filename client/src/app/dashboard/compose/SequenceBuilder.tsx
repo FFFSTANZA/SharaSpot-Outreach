@@ -374,7 +374,7 @@ function AIFollowUpButton({ onAIFollowUps, disabled, subject = "", body = "" }: 
       const result = await generateAIFollowUps("", subject, body);
       
       if (result.followUps && result.followUps.length > 0) {
-        const steps: SequenceStepInput[] = result.followUps.map((f: any) => ({
+        const steps: SequenceStepInput[] = result.followUps.map((f: { subject: string; body: string; waitDays: number }) => ({
           subject: f.subject,
           body: f.body,
           waitDays: f.waitDays,

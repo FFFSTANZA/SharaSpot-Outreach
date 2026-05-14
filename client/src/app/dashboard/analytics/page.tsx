@@ -2,8 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import {
   getAnalyticsOverview,
   getAnalyticsLinks,
@@ -15,14 +14,13 @@ import type {
   AnalyticsOverview,
   AnalyticsLink,
   SenderHealthRecord,
-  ActivityLogEntry,
   ActivityLogsResponse
 } from "@/types";
 import {
   Eye, MousePointerClick, Send, MessageSquare, TrendingUp,
-  BarChart3, Clock, Link2, RefreshCw, AlertTriangle, Trophy,
-  ExternalLink, Inbox, Star, ArrowLeft, ShieldCheck, Activity,
-  ChevronLeft, ChevronRight, Search, Monitor, Smartphone, Bot
+  BarChart3, Link2, RefreshCw, AlertTriangle,
+  Inbox, ShieldCheck, Activity,
+  ChevronLeft, ChevronRight, Monitor, Smartphone, Bot
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AuthGuard } from "@/components/AuthGuard";
@@ -30,8 +28,8 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { Sidebar } from "../Sidebar";
 import { TopBar } from "../Topbar";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend, AreaChart, Area
+  XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, AreaChart, Area
 } from "recharts";
 
 // ─── Analytics Page ───
@@ -41,7 +39,6 @@ type TabType = "overview" | "logs" | "health" | "links";
 
 function AnalyticsPageContent() {
   const { user } = useAuth();
-  const router = useRouter();
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [links, setLinks] = useState<AnalyticsLink[]>([]);
   const [health, setHealth] = useState<SenderHealthRecord[]>([]);
@@ -266,7 +263,7 @@ function AnalyticsPageContent() {
                                   <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
                                     <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Platforms</h3>
                                     <div className="space-y-3">
-                                      {overview.platformBreakdown.map((p, i) => (
+                                      {overview.platformBreakdown.map((p) => (
                                         <div key={p.platform} className="flex items-center gap-3">
                                           <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
                                             {p.platform === 'iOS' || p.platform === 'macOS' ? (
@@ -359,7 +356,7 @@ function AnalyticsPageContent() {
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-50">
-                                {logs.logs.map(log => (
+                                {logs.logs.map((log) => (
                                   <tr key={log.id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                       <span className={cn(
@@ -456,7 +453,7 @@ export default function AnalyticsPage() {
   );
 }
 
-function TabButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) {
+function TabButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: React.ElementType; label: string }) {
   return (
     <button
       onClick={onClick}
@@ -471,7 +468,7 @@ function TabButton({ active, onClick, icon: Icon, label }: { active: boolean; on
   );
 }
 
-function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: "green" | "indigo" | "blue" | "amber" | "rose" }) {
+function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string; color: "green" | "indigo" | "blue" | "amber" | "rose" }) {
   const colors = {
     green: "bg-green-50 text-green-600",
     indigo: "bg-indigo-50 text-indigo-600",

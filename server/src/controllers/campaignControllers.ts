@@ -1085,16 +1085,41 @@ export const searchCampaigns = async (
 
     if (where.AND.length === 0) delete where.AND;
 
-    const [results, total] = await Promise.all([
+    const [campaigns, total] = await Promise.all([
       prisma.emailCampaign.findMany({
         where,
         include: {
           sender: { select: { id: true, email: true, name: true, isVerified: true } },
+          _count: { select: { emails: true } },
         },
         orderBy: { createdAt: "desc" },
       }),
       prisma.emailCampaign.count({ where }),
     ]);
+
+    const campaignIds = campaigns.map(c => c.id);
+    const emailCounts = campaignIds.length > 0 ? await prisma.emailJob.groupBy({
+      by: ["campaignId", "status"],
+      where: { campaignId: { in: campaignIds } },
+      _count: { _all: true },
+    }) : [];
+
+    const countMap: Record<string, Record<string, number>> = {};
+    for (const c of emailCounts) {
+      if (!countMap[c.campaignId]) countMap[c.campaignId] = {};
+      countMap[c.campaignId][c.status] = c._count._all;
+    }
+
+    const results = campaigns.map(c => ({
+      ...c,
+      emailCounts: {
+        pending: countMap[c.id]?.PENDING ?? 0,
+        sending: countMap[c.id]?.SENDING ?? 0,
+        sent: countMap[c.id]?.SENT ?? 0,
+        failed: countMap[c.id]?.FAILED ?? 0,
+        cancelled: countMap[c.id]?.CANCELLED ?? 0,
+      },
+    }));
 
     res.status(200).json({
       results,

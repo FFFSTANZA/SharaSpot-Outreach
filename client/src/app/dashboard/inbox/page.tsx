@@ -7,21 +7,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { InlineLoader } from "@/components/PageLoader";
 import {
     Inbox,
     Search,
     Filter,
     MoreHorizontal,
-    User,
-    Clock,
-    CheckCircle2,
     MessageSquare,
     Archive,
     Star,
     Trash2,
-    Reply,
-    Forward,
     MoreVertical,
     MailOpen,
     Send,
@@ -89,8 +83,19 @@ export default function InboxPage() {
             // Build thread list from threads OR emails
             let mappedThreads: Thread[] = [];
 
+            interface RawThread {
+                id: string; subject?: string; fromName?: string; fromEmail?: string;
+                snippet?: string; lastMessageAt?: string; receivedAt?: string;
+                unreadCount?: number; isStarred?: boolean; status?: string;
+            }
+            interface RawEmail {
+                id: string; subject: string | null; fromName: string | null; fromEmail: string | null;
+                snippet: string | null; bodyText: string | null; bodyHtml: string | null;
+                receivedAt: string | null; isRead: boolean | null; isStarred: boolean | null;
+            }
+
             if (threadsRes.threads && threadsRes.threads.length > 0) {
-                mappedThreads = threadsRes.threads.map((t: any) => ({
+                mappedThreads = threadsRes.threads.map((t: RawThread) => ({
                     id: t.id,
                     subject: t.subject || "No subject",
                     fromName: t.fromName || t.fromEmail || "Unknown",
@@ -103,7 +108,7 @@ export default function InboxPage() {
                 }));
             } else if (emailsRes.emails && emailsRes.emails.length > 0) {
                 // Use emails to create thread list
-                mappedThreads = emailsRes.emails.map((e: any) => ({
+                mappedThreads = emailsRes.emails.map((e: RawEmail) => ({
                     id: e.id,
                     subject: e.subject || "No subject",
                     fromName: e.fromName || e.fromEmail || "Unknown",
@@ -122,7 +127,7 @@ export default function InboxPage() {
             }
 
             if (emailsRes.emails && emailsRes.emails.length > 0) {
-                const mappedEmails = emailsRes.emails.map((e: any) => ({
+                const mappedEmails = emailsRes.emails.map((e: RawEmail) => ({
                     id: e.id,
                     subject: e.subject || "No subject",
                     fromName: e.fromName || e.fromEmail || "Unknown",
@@ -155,7 +160,7 @@ export default function InboxPage() {
             console.log("[Inbox] Sync result:", result);
             addToast("success", "Inbox synced successfully");
             await fetchInboxData();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("[Inbox] Sync error:", error);
             addToast("error", "Failed to sync inbox");
         } finally {

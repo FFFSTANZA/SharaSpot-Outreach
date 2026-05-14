@@ -6,7 +6,7 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { createSender, verifySender } from "@/lib/apis";
 import { SenderModalProps } from "@/types";
-import { Loader2, AlertCircle, ExternalLink, Settings, Globe, Reply } from "lucide-react";
+import { AlertCircle, ExternalLink, Settings, Globe, Reply } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
@@ -89,8 +89,9 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
       addToast("success", isVerifyMode ? `Sender updated` : `Sender added: ${email}`);
       onSuccess(sender);
       onClose();
-    } catch (err: any) {
-      const message = err?.response?.data?.message || "Something went wrong. Please try again.";
+    } catch (err: unknown) {
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      const message = apiErr.response?.data?.message || "Something went wrong. Please try again.";
       setError(message);
       addToast("error", `Failed: ${message}`);
     } finally {

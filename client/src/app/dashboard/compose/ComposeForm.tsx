@@ -28,9 +28,6 @@ export function ComposeForm({
   scheduledAt,
   setScheduledAt,
   uploadedAttachments,
-  onFilesSelected,
-  onRemoveAttachment,
-  isUploading,
   onSubmit,
   submitTrigger,
   isSubmitting,
@@ -158,6 +155,7 @@ export function ComposeForm({
   useEffect(() => {
     if (!submitTrigger) return;
     handleFormSubmit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitTrigger]);
 
   const toggleSender = (senderId: string) => {

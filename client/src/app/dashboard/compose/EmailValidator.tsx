@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { validateEmails, BatchValidationResponse } from "@/lib/apis";
-import { ShieldCheck, ShieldAlert, Loader2, X, Check, Trash2 } from "lucide-react";
+import { ShieldCheck, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
@@ -18,11 +18,6 @@ export function EmailValidator({ emails, onRemoveEmail, onValidationComplete }: 
   const [validationResult, setValidationResult] = useState<BatchValidationResponse | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState<"all" | "invalid" | "risky" | "valid">("all");
-
-  const openModal = () => {
-    setFilter("all");
-    setShowModal(true);
-  };
 
   const closeModal = () => {
     setShowModal(false);

@@ -1,6 +1,9 @@
 
 process.env.ENCRYPTION_KEY = "a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1";
 process.env.JWT_ACCESS_SECRET = "7c4e9a2b5f8d1c3e6a9b2d5f8c1e4a7b0d3f6c9e2a5b8d1f4c7e0a3b6d9f2c5";
+process.env.JWT_REFRESH_SECRET = "2b5d8f1e4a7c0d3f6b9e2c5a8d1f4e7b0c3a6d9f2e5b8c1d4f7a0e3b6d9f2c5";
+process.env.ACCESS_TOKEN_EXPIRES = "1h";
+process.env.REFRESH_TOKEN_EXPIRES = "7d";
 
 import request from "supertest";
 import { app } from "../../index";
@@ -12,6 +15,14 @@ import { encrypt } from "../../utils/encryption";
 import * as signalCollector from "../../utils/signalCollector";
 import { priorityQueue } from "../../queues/priorityQueue";
 import { SubscriptionStatus } from "@prisma/client";
+
+if (!process.env.DATABASE_URL) {
+  describe("Priority Mail Flow Integration Test", () => {
+    it("skipped — DATABASE_URL not set", () => {
+      console.warn("[SKIP] Priority mail integration test requires DATABASE_URL");
+    });
+  });
+} else {
 
 // Mock ioredis before anything else
 jest.mock("ioredis", () => {
@@ -333,3 +344,4 @@ describe("Priority Mail Flow Integration Test", () => {
     expect(updatedPriorityRecord?.statusMessage).toContain("Daily priority quota exceeded");
   });
 });
+}

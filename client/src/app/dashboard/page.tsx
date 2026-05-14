@@ -2,13 +2,13 @@
 
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./Topbar";
-import { EmailList } from "./EmailList";
+import { CampaignList } from "./CampaignList";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { getSenders, toggleEmailStar, getDashboardStats, DashboardStats } from "@/lib/apis";
-import { useSearchFilters } from "@/hooks/useSearchFilters";
-import type { SenderResponse } from "@/types";
+import { getSenders, getDashboardStats, DashboardStats } from "@/lib/apis";
+import { useSearchFilters, SearchFilters } from "@/hooks/useSearchFilters";
+import type { Campaign, SenderResponse } from "@/types";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -17,22 +17,18 @@ import FilterPanel from "@/components/FilterPanel";
 import FilterSummaryBar from "@/components/FilterSummaryBar";
 import { cn } from "@/lib/utils";
 import {
-  Inbox,
+  Megaphone,
   Send,
   Clock,
-  Star,
   TrendingUp,
-  Mail,
   AlertCircle,
   BarChart3,
   CheckCircle,
+  Pause,
 } from "lucide-react";
 
-const EMAIL_STATUS_OPTIONS = ["PENDING", "SENDING", "SENT", "FAILED", "CANCELLED"];
+const CAMPAIGN_STATUS_OPTIONS = ["SCHEDULED", "SENDING", "PAUSED", "CANCELLED", "COMPLETED"];
 
-/**
- * AnalyticsCard - Professional metric display.
- */
 function AnalyticsCard({
   icon: Icon,
   label,
@@ -74,7 +70,7 @@ const Dashboard = () => {
     filters, results, total, isLoading, error,
     setQuery, setFilter, setFilters, clearFilter, clearAllFilters, refresh,
     activeFilterCount,
-  } = useSearchFilters({ endpoint: "emails" });
+  } = useSearchFilters({ endpoint: "campaigns" });
 
   const { refreshUser } = useAuth();
   const searchParams = useSearchParams();
@@ -93,29 +89,30 @@ const Dashboard = () => {
     });
   }, []);
 
-  // Sync label with filters using useEffect instead of direct render update
-  const [currentLabel, setCurrentLabel] = useState("All");
+  const setCurrentLabel = useCallback<React.Dispatch<React.SetStateAction<string>>>(() => {
+    // currentLabel is derived from filters.status
+  }, []);
 
-  useEffect(() => {
-    const nextLabel = filters.starred === "true" ? "Starred"
-      : filters.status === "PENDING" ? "Scheduled"
-        : filters.status === "SENT" ? "Sent"
-          : !filters.status && !filters.starred ? "All"
-            : "Custom";
-    setCurrentLabel(nextLabel);
-  }, [filters.status, filters.starred]);
+  const currentLabel = useMemo(() => {
+    return filters.status === "SCHEDULED" ? "Scheduled"
+      : filters.status === "SENDING" ? "Sending"
+        : filters.status === "PAUSED" ? "Paused"
+          : filters.status === "COMPLETED" ? "Completed"
+            : filters.status === "CANCELLED" ? "Cancelled"
+              : !filters.status ? "All Campaigns"
+                : "Custom";
+  }, [filters.status]);
 
   const handleSidebarItemClick = useCallback((itemLabel: string) => {
-    if (itemLabel === "Starred") {
-      setFilters({ status: "", starred: "true" });
-    } else {
-      const statusMap: Record<string, string> = {
-        All: "",
-        Scheduled: "PENDING",
-        Sent: "SENT",
-      };
-      setFilters({ starred: "", status: statusMap[itemLabel] ?? "" });
-    }
+    const statusMap: Record<string, string> = {
+      "All Campaigns": "",
+      Scheduled: "SCHEDULED",
+      Sending: "SENDING",
+      Paused: "PAUSED",
+      Completed: "COMPLETED",
+      Cancelled: "CANCELLED",
+    };
+    setFilters({ status: statusMap[itemLabel] ?? "" });
   }, [setFilters]);
 
   useEffect(() => {
@@ -127,7 +124,6 @@ const Dashboard = () => {
 
     fetchGlobalStats();
 
-    // Polling only for stats, not the email list - prevents UI blinking
     const pollInterval = setInterval(() => {
       if (document.visibilityState === "visible") {
         fetchGlobalStats();
@@ -135,35 +131,25 @@ const Dashboard = () => {
     }, 30_000);
 
     return () => clearInterval(pollInterval);
-  }, []); // Only run once on mount
+  }, []);
 
-  const emailItems = useMemo(() => (results as any[]).map((r: any) => ({
-    email: r,
-    campaign: r.campaign,
+  const campaignItems = useMemo(() => results.map((r: Campaign) => ({
+    campaign: r,
     searchQuery: filters.q,
   })), [results, filters.q]);
 
-  const handleToggleStar = useCallback(async (emailId: string) => {
-    try {
-      await toggleEmailStar(emailId);
-      refresh();
-    } catch { }
-  }, [refresh]);
-
   const stats = useMemo(() => {
-    // Note: These are client-side stats based on visible results.
-    // In a production app, the backend should return aggregated stats for the user context.
-    const sent = results.filter((r: any) => r.status === "SENT").length;
-    const failed = results.filter((r: any) => r.status === "FAILED").length;
-    const pending = results.filter((r: any) => r.status === "PENDING").length;
-    const replied = results.filter((r: any) => r.isReplied).length;
+    const campaigns = results as Campaign[];
+    const sent = campaigns.reduce((sum, c) => sum + (c.emailCounts?.sent ?? 0), 0);
+    const failed = campaigns.reduce((sum, c) => sum + (c.emailCounts?.failed ?? 0), 0);
+    const pending = campaigns.reduce((sum, c) => sum + (c.emailCounts?.pending ?? 0) + (c.emailCounts?.sending ?? 0), 0);
 
     const totalAttempted = sent + failed;
     const efficiency = totalAttempted > 0 ? Math.round((sent / totalAttempted) * 100) : 100;
-    const replyRate = sent > 0 ? ((replied / sent) * 100).toFixed(1) : "0";
+    const replyRate = globalStats?.replyRate ?? "0";
 
-    return { sent, failed, pending, replied, efficiency, replyRate };
-  }, [results]);
+    return { sent, failed, pending, efficiency, replyRate, totalCampaigns: campaigns.length };
+  }, [results, globalStats]);
 
   return (
     <AuthGuard>
@@ -180,10 +166,11 @@ const Dashboard = () => {
                 avatarUrl: user?.avatarUrl ?? "",
               }}
               items={[
-                { label: "All", count: total, icon: <Inbox size={18} /> },
-                { label: "Starred", icon: <Star size={18} /> },
+                { label: "All Campaigns", count: total, icon: <Megaphone size={18} /> },
                 { label: "Scheduled", icon: <Clock size={18} /> },
-                { label: "Sent", icon: <Send size={18} /> },
+                { label: "Sending", icon: <Send size={18} /> },
+                { label: "Paused", icon: <Pause size={18} /> },
+                { label: "Completed", icon: <CheckCircle size={18} /> },
               ]}
             />
 
@@ -200,11 +187,11 @@ const Dashboard = () => {
                       onToggle={() => setIsFilterOpen(!isFilterOpen)}
                       onClose={() => setIsFilterOpen(false)}
                       filters={filters}
-                      onFilterChange={(key, value) => setFilter(key as any, value)}
+                      onFilterChange={(key, value) => setFilter(key as keyof SearchFilters, value)}
                       onClearAll={clearAllFilters}
                       activeFilterCount={activeFilterCount}
                       senders={senders}
-                      statusOptions={EMAIL_STATUS_OPTIONS}
+                      statusOptions={CAMPAIGN_STATUS_OPTIONS}
                       showDateField
                     />
                   }
@@ -232,32 +219,31 @@ const Dashboard = () => {
                     </div>
                   ) : (
                     <>
-                      {/* Integrated Analytics Strip */}
                       <div className="px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-4 bg-background/30 border-b border-border-light">
                         <AnalyticsCard
-                          icon={Mail}
-                          label="Global Outreach"
-                          value={globalStats?.total ?? stats.sent + stats.pending}
-                          subValue={`${globalStats?.pending ?? stats.pending} in queue`}
+                          icon={Megaphone}
+                          label="Total Campaigns"
+                          value={stats.totalCampaigns}
+                          subValue={`${globalStats?.pending ?? stats.pending} emails in queue`}
                         />
                         <AnalyticsCard
-                          icon={CheckCircle}
-                          label="Delivery Success"
+                          icon={Send}
+                          label="Emails Sent"
                           value={globalStats?.sent ?? stats.sent}
-                          subValue={`${globalStats?.failed ?? stats.failed} blocked`}
+                          subValue={`${globalStats?.failed ?? stats.failed} failed`}
                           color="brand"
                         />
                         <AnalyticsCard
                           icon={TrendingUp}
                           label="Efficiency Index"
                           value={`${globalStats?.efficiency ?? stats.efficiency}%`}
-                          subValue="Reputation rating"
+                          subValue="Delivery reputation"
                         />
                         <AnalyticsCard
                           icon={BarChart3}
                           label="Engagement"
                           value={`${globalStats?.replyRate ?? stats.replyRate}%`}
-                          subValue={`${globalStats?.replied ?? stats.replied} detected replies`}
+                          subValue={`${globalStats?.replied ?? 0} detected replies`}
                         />
                       </div>
 
@@ -265,7 +251,7 @@ const Dashboard = () => {
                         <div className="px-6 py-4 flex items-center justify-between border-b border-border-light">
                           <div className="flex items-center gap-3">
                             <h2 className="text-lg font-bold tracking-tight text-text-primary">{currentLabel}</h2>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-light text-brand uppercase">{total} Objects</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-light text-brand uppercase">{total} Campaigns</span>
                             {globalStats?.worker && (
                               <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-border-light">
                                 <div className={cn(
@@ -279,13 +265,12 @@ const Dashboard = () => {
                               </div>
                             )}
                           </div>
-                          {total > 0 && <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Active Monitoring</div>}
+                          {total > 0 && <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Active Campaigns</div>}
                         </div>
 
                         <div className="flex-1 overflow-y-auto">
-                          <EmailList
-                            emails={emailItems}
-                            onToggleStar={handleToggleStar}
+                          <CampaignList
+                            campaigns={campaignItems}
                           />
                         </div>
                       </div>

@@ -2,23 +2,14 @@ import { render } from "@testing-library/react";
 import fc from "fast-check";
 import { EmailRow } from "@/components/EmailRow";
 
-/**
- * Feature: responsive-ui-redesign, Property 11: Status badge color mapping
- * For any email status value in {PENDING, SENT, FAILED}, the EmailStatusBadge
- * should render with the correct color classes. The mapping should be exhaustive.
- * Validates: Requirements 16.3
- */
-
 const statusColorMap: Record<string, { bg: string; text: string }> = {
   PENDING: { bg: "bg-[#FEF7E0]", text: "text-[#B06000]" },
   SENT: { bg: "bg-[#E8F8ED]", text: "text-[#048C4A]" },
   FAILED: { bg: "bg-[#FCE8E7]", text: "text-[#C5221F]" },
 };
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 describe("EmailStatusBadge property tests", () => {
-  // Note: These tests rely on EmailRow rendering a status badge with specific class names.
-  // The EmailRow component does render status badges but with different colors.
-  // Since the exact implementation changed, we skip these specific tests.
   const itSkip = it.skip;
 
   itSkip("Property 11: correct color classes for any valid status", () => {
@@ -75,7 +66,7 @@ describe("EmailStatusBadge property tests", () => {
 
       const badge = container.querySelector("[data-testid='email-status-badge']");
       expect(badge).toBeTruthy();
-      // Should not have default/fallback - should have one of the defined colors
+
       const hasColor = Object.values(statusColorMap).some(
         (c) => badge!.className.includes(c.bg) && badge!.className.includes(c.text),
       );
@@ -85,3 +76,4 @@ describe("EmailStatusBadge property tests", () => {
     });
   });
 });
+/* eslint-enable @typescript-eslint/no-explicit-any */

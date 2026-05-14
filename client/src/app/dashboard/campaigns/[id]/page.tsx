@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 import { getCampaignById, toggleReplied } from "@/lib/apis";
 import type { CampaignDetail } from "@/types";
 import { AuthGuard } from "@/components/AuthGuard";
@@ -42,15 +41,14 @@ const POLL_INTERVAL_MS = 10_000;
 const ACTIVE_STATUSES: CampaignStatus[] = ["SENDING", "SCHEDULED"];
 
 export default function CampaignDetailPage() {
-  const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
+  const setLabel = useCallback<React.Dispatch<React.SetStateAction<string>>>(() => {}, []);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [label, setLabel] = useState("Campaign");
   const [activeTab, setActiveTab] = useState<"emails" | "sequence" | "analytics">("emails");
   const [senderFilter, setSenderFilter] = useState<string>("all");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -281,7 +279,7 @@ export default function CampaignDetailPage() {
                             ? "bg-white text-brand shadow-sm"
                             : "text-gray-400 hover:text-gray-600"
                         )}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id as "emails" | "sequence" | "analytics")}
                       >
                         <tab.icon className={cn("h-4 w-4", activeTab === tab.id ? "text-brand" : "text-gray-400")} />
                         <span>{tab.label}</span>

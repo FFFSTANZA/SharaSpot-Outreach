@@ -64,6 +64,11 @@ jest.mock("../../config/redis", () => ({
     },
 }));
 
+jest.mock("../../utils/geoUtils", () => ({
+    getCountryFromIp: jest.fn().mockResolvedValue("IN"),
+    isIndia: jest.fn((code: string | null) => code === "IN"),
+}));
+
 describe("Subscription Flow - Complete Payment System", () => {
     const userId = "user_123";
     const userEmail = "user@example.com";
@@ -74,6 +79,8 @@ describe("Subscription Flow - Complete Payment System", () => {
     });
 
     describe("createCheckoutSession", () => {
+        jest.setTimeout(10000);
+
         it("should create checkout session with correct product for India IP", async () => {
             (prisma.subscription.findUnique as jest.Mock).mockResolvedValue(null);
             (dodo.checkoutSessions.create as jest.Mock).mockResolvedValue({
@@ -242,7 +249,7 @@ describe("Subscription Flow - Complete Payment System", () => {
             const mockReq = {
                 body: {
                     id: "evt_past_due",
-                    type: "subscription.payment_failed",
+                    type: "subscription.failed",
                     data: {
                         subscription_id: "sub_456",
                         status: "past_due",

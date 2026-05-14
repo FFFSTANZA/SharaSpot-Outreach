@@ -18,7 +18,7 @@ function ComposeContent() {
   const [uploadedAttachments, setUploadedAttachments] = useState<UploadedAttachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitTrigger, setSubmitTrigger] = useState(0);
+  const [submitTrigger] = useState(0);
   const [initialEmails, setInitialEmails] = useState<string[]>([]);
 
   useEffect(() => {
