@@ -560,11 +560,56 @@ export const getAllCampaigns = async (
             isVerified: true,
           },
         },
+        _count: {
+          select: {
+            emails: {
+              where: {
+                status: {
+                  in: ["PENDING", "SENDING"]
+                }
+              }
+            }
+          }
+        },
+        sequenceSteps: {
+          select: { id: true }
+        }
       },
       orderBy: { createdAt: "desc" },
     });
 
-    res.status(200).json(campaigns);
+    const enrichedCampaigns = await Promise.all(campaigns.map(async (c) => {
+      // Auto-complete if stuck in SENDING/SCHEDULED but no jobs remain
+      if ((c.status === "SENDING" || c.status === "SCHEDULED") && c._count.emails === 0) {
+        let shouldComplete = true;
+        
+        if (c.sequenceSteps.length > 0) {
+          const activeStatesCount = await prisma.recipientSequenceState.count({
+            where: {
+              campaignId: c.id,
+              completed: false,
+              paused: false,
+              replied: false,
+            },
+          });
+          if (activeStatesCount > 0) shouldComplete = false;
+        }
+
+        if (shouldComplete) {
+          await prisma.emailCampaign.update({
+            where: { id: c.id },
+            data: { status: "COMPLETED" },
+          });
+          c.status = "COMPLETED";
+        }
+      }
+
+      // Remove internal properties before sending to client
+      const { _count, sequenceSteps, ...campaignData } = c;
+      return campaignData;
+    }));
+
+    res.status(200).json(enrichedCampaigns);
   } catch (error: any) {
     res.status(500).json({
       message: "An error occurred while fetching campaigns",
