@@ -14,8 +14,8 @@ export const PREMIUM_FEATURES = {
 } as const;
 
 
-export const DODO_PRODUCT_ID_GLOBAL = process.env.DODO_PRODUCT_ID_GLOBAL || "pdt_0NdSUs666T4IaNYC5YQGO";
-export const DODO_PRODUCT_ID_INDIA = process.env.DODO_PRODUCT_ID_INDIA || "pdt_0NdSW8L98BDmeuwfx4dj6";
+export const DODO_PRODUCT_ID_GLOBAL = process.env.DODO_PRODUCT_ID_GLOBAL || "pdt_0NesslSmaZuTHTIur4hvR";
+export const DODO_PRODUCT_ID_INDIA = process.env.DODO_PRODUCT_ID_INDIA || "pdt_0Nessoj6QwLKHWh0YaGYG";
 
 export const getReturnUrl = (userId: string): string => {
   const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";

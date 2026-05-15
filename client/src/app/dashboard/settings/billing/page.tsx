@@ -31,13 +31,13 @@ const PRICING = {
         currency: "USD",
         symbol: "$",
         price: 29,
-        productId: "pdt_0NdSUs666T4IaNYC5YQGO",
+        productId: "pdt_0NesslSmaZuTHTIur4hvR",
     },
     india: {
         currency: "INR",
         symbol: "₹",
         price: 499,
-        productId: "pdt_0NdSW8L98BDmeuwfx4dj6",
+        productId: "pdt_0Nessoj6QwLKHWh0YaGYG",
     },
 };
 
