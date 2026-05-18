@@ -36,7 +36,7 @@ const PRICING = {
     india: {
         currency: "INR",
         symbol: "₹",
-        price: 499,
+        price: 999,
         productId: "pdt_0Nessoj6QwLKHWh0YaGYG",
     },
 };
@@ -221,7 +221,7 @@ function PremiumCard() {
                     </div>
                     <div className="flex items-center gap-2">
                         <Globe className="w-4 h-4" />
-                        <span>{region === "india" ? "India pricing (₹499/mo)" : "Global pricing ($29/mo)"}</span>
+                        <span>{region === "india" ? "India pricing (₹999/mo)" : "Global pricing ($29/mo)"}</span>
                     </div>
                 </div>
             </div>

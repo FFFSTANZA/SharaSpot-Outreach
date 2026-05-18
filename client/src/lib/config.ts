@@ -17,7 +17,7 @@ export const BRAND_CONFIG = {
             symbol: "$",
         },
         india: {
-            amount: 499,
+            amount: 999,
             currency: "INR",
             symbol: "₹",
         },

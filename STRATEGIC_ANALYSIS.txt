@@ -11,7 +11,7 @@ This analysis breaks down why the pivot to Founder/Investor, Sales, and HR outre
 
 2. WHY "B2C-STYLE" SELLING WORKS FOR THIS B2B TOOL
 --------------------------------------------------
-*   Frictionless Price Point: At $19/mo or ₹499/mo, the cost is below the "Manager Approval" threshold for most companies. It can be put on a personal or team credit card instantly.
+*   Frictionless Price Point: At $19/mo or ₹999/mo, the cost is below the "Manager Approval" threshold for most companies. It can be put on a personal or team credit card instantly.
 *   The "Silver Bullet" Effect: Outreach is frustrating. People want a magic fix for spam. SharaSpot is positioned as that technical "fix" rather than a complex enterprise software.
 *   Low Implementation Cost: Syncing an email and uploading a CSV takes 5 minutes. The "Time to Value" is near-zero.
 
