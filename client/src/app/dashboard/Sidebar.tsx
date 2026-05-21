@@ -5,7 +5,7 @@ import { SidebarProps } from "@/types";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { X, LogOut, FileText, Plus, Settings, Users, Mail, Inbox } from "lucide-react";
+import { X, LogOut, FileText, Plus, Settings, Users, Mail, Inbox, Megaphone, Clock, Send, Pause, CheckCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { logout, getUnreadCount, getSenders } from "@/lib/apis";
 import { cn } from "@/lib/utils";
@@ -77,14 +77,40 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
     router.push("/login");
   };
 
+  const defaultItems = [
+    { label: "All Campaigns", icon: <Megaphone size={18} /> },
+    { label: "Scheduled", icon: <Clock size={18} /> },
+    { label: "Sending", icon: <Send size={18} /> },
+    { label: "Paused", icon: <Pause size={18} /> },
+    { label: "Completed", icon: <CheckCircle size={18} /> },
+  ];
+
   const menuGroups = groups || [
     {
       title: "Navigation",
-      links: items.map(item => ({
-        ...item,
-        isActive: currentLabel === item.label,
-        onClick: () => handleNavClick(item)
-      }))
+      links: defaultItems.map(item => {
+        let isActive = false;
+        if (pathname === "/dashboard") {
+          const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+          const statusParam = searchParams?.get("status");
+          if (item.label === "All Campaigns") {
+            isActive = !statusParam;
+          } else if (item.label === "Scheduled") {
+            isActive = statusParam === "SCHEDULED";
+          } else if (item.label === "Sending") {
+            isActive = statusParam === "SENDING";
+          } else if (item.label === "Paused") {
+            isActive = statusParam === "PAUSED";
+          } else if (item.label === "Completed") {
+            isActive = statusParam === "COMPLETED";
+          }
+        }
+        return {
+          ...item,
+          isActive,
+          onClick: () => handleNavClick(item)
+        };
+      })
     },
     {
       title: "Outreach",
@@ -130,7 +156,9 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
             </h3>
             <div className="space-y-1">
               {group.links.map((link: { label: string; href?: string; onClick?: () => void; isActive?: boolean; icon?: React.ReactNode; count?: number }) => {
-                const isActive = link.isActive !== undefined ? link.isActive : pathname === link.href;
+                const isActive = link.isActive !== undefined 
+                  ? link.isActive 
+                  : (link.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(link.href!));
 
                 if (link.onClick) {
                   return (
