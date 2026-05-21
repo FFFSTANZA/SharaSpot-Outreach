@@ -52,16 +52,50 @@ const FEATURES = [
     { icon: Sparkles, label: "Custom Templates", desc: "Create and save your templates" },
 ];
 
+import { TopBar } from "../../Topbar";
+import { Inbox, Star, Clock, Send } from "lucide-react";
+
 export default function BillingPage() {
     const { user } = useAuth();
-    const router = useRouter();
 
-    useEffect(() => {
-        // Hide billing page and redirect to dashboard
-        router.replace("/dashboard");
-    }, [router]);
+    return (
+        <AuthGuard requirePremium={true}>
+            <SidebarProvider>
+                <div className="flex h-screen bg-background font-sans text-text-primary">
+                    <Sidebar
+                        currentLabel="Settings"
+                        setLabel={() => { }}
+                        items={[
+                            { label: "All", icon: <Inbox size={18} /> },
+                            { label: "Starred", icon: <Star size={18} /> },
+                            { label: "Scheduled", icon: <Clock size={18} /> },
+                            { label: "Sent", icon: <Send size={18} /> },
+                        ]}
+                        profile={{
+                            name: user?.name ?? "User",
+                            email: user?.email ?? "",
+                            avatarUrl: user?.avatarUrl ?? "",
+                        }}
+                    />
 
-    return null;
+                    <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-interactive-hover/40 p-4 lg:p-6">
+                        <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col grow overflow-hidden">
+                            <TopBar placeholder="Search settings..." />
+
+                            <div className="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full custom-scrollbar">
+                                <div className="mb-10">
+                                    <h1 className="text-2xl font-bold text-text-primary tracking-tight">Billing</h1>
+                                    <p className="text-sm font-medium text-text-secondary mt-1">Manage your premium plan and payments</p>
+                                </div>
+
+                                <PremiumCard />
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </SidebarProvider>
+        </AuthGuard>
+    );
 }
 
 function PremiumCard() {

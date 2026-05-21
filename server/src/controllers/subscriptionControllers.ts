@@ -10,7 +10,7 @@ import {
   syncSubscriptionFromDodo,
 } from "../services/subscriptionService";
 import { getCountryFromIp, isIndia } from "../utils/geoUtils";
-import { SUBSCRIPTION_PRICE_USD, SUBSCRIPTION_INTERVAL } from "../config/subscription";
+import { SUBSCRIPTION_PRICE_USD, SUBSCRIPTION_PRICE_INR, SUBSCRIPTION_INTERVAL } from "../config/subscription";
 import { dodo } from "../config/dodo";
 
 export async function getSubscription(req: Request, res: Response): Promise<void> {
@@ -57,9 +57,9 @@ export async function getSubscription(req: Request, res: Response): Promise<void
         }
         : null,
       pricing: {
-        amount: SUBSCRIPTION_PRICE_USD,
+        amount: region === "india" ? SUBSCRIPTION_PRICE_INR : SUBSCRIPTION_PRICE_USD,
         interval: SUBSCRIPTION_INTERVAL,
-        currency: "USD",
+        currency: region === "india" ? "INR" : "USD",
       },
     });
   } catch (error) {

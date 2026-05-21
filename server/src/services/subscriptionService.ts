@@ -67,6 +67,27 @@ export async function createCheckoutSession(
 
   logger.info({ userId, productId, countryCode }, "[CHECKOUT] Creating session");
 
+  // Local development fallback with placeholder API keys
+  const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+  if (process.env.NODE_ENV !== "production" && (!apiKey || apiKey.startsWith("local_placeholder") || apiKey.includes("placeholder"))) {
+    logger.info({ userId }, "[CHECKOUT] Using local mock checkout session");
+    const mockSessionId = `sess_mock_${Math.random().toString(36).substring(2, 15)}`;
+    // Simulate webhook payment completion in the background in development
+    setTimeout(async () => {
+      try {
+        await handleCheckoutCompleted(mockSessionId, userId, "sub_test_premium_demo", "cust_mock_123");
+        logger.info({ userId }, "[MOCK-PAYMENT] Successfully activated local premium");
+      } catch (err) {
+        logger.error({ err }, "[MOCK-PAYMENT] Failed to activate local premium");
+      }
+    }, 1000);
+
+    return {
+      checkoutUrl: `${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard?subscription=success&userId=${userId}`,
+      sessionId: mockSessionId,
+    };
+  }
+
   const session = await dodo.checkoutSessions.create({
     product_cart: [
       {
