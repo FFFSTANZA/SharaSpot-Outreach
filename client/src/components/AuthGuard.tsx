@@ -8,15 +8,33 @@ import { PageLoader } from "@/components/PageLoader";
 import { AuthGuardProps } from "@/types";
 
 export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) {
-  const { user, isLoading, refreshUser } = useAuth();
+  const { user, isLoading, refreshUser, logout } = useAuth();
   const router = useRouter();
   const checkoutAttemptedRef = useRef(false);
 
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const isSuccessRedirect = searchParams?.get("subscription") === "success";
+  const isCancelledRedirect = searchParams?.get("subscription") === "cancelled";
+
+  useEffect(() => {
+    if (isCancelledRedirect) {
+      const performCancelLogout = async () => {
+        try {
+          await logout();
+        } catch (e) {
+          console.error("Cancel logout failed", e);
+        } finally {
+          router.replace("/login?cancelled=true");
+        }
+      };
+      performCancelLogout();
+    }
+  }, [isCancelledRedirect, logout, router]);
 
   useEffect(() => {
     const hasToken = typeof window !== "undefined" && !!localStorage.getItem("accessToken");
+
+    if (isCancelledRedirect) return;
 
     if (!isLoading && !user) {
       if (hasToken) return;

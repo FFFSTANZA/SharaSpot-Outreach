@@ -53,6 +53,14 @@ const LoginComponent = () => {
   };
 
   useEffect(() => {
+    const isCancelled = searchParams?.get("cancelled") === "true";
+    if (isCancelled) {
+      addToast("info", "Checkout cancelled. You have been safely logged out.");
+      router.replace("/login");
+    }
+  }, [searchParams, addToast, router]);
+
+  useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) router.replace("/dashboard");
   }, [router]);
