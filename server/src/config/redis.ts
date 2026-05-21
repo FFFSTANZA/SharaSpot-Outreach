@@ -17,6 +17,9 @@ function parseRedisUrl(): { host: string; port: number; password?: string } {
   const redisUrl = process.env.REDIS_URL;
 
   if (!redisUrl) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("[redis] CRITICAL: REDIS_URL is not set. This is required in production.");
+    }
     return { host: "localhost", port: 6379 };
   }
 

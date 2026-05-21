@@ -15,7 +15,7 @@ interface SequenceBuilderProps {
   body?: string;
 }
 
-const MAX_FOLLOW_UPS = 8;
+const MAX_FOLLOW_UPS = 5;
 
 const CONDITION_OPTIONS: { value: SequenceConditionType; label: string; icon: typeof Eye; color: string; description: string }[] = [
   { value: "none", label: "After delay", icon: Clock, color: "gray", description: "Send after waiting" },
@@ -72,7 +72,7 @@ function TimelineNode({
   onRemove: () => void;
   onUpdate: (field: keyof SequenceStepInput, value: string | number | SequenceStepInput["condition"] | undefined) => void;
 }) {
-  const conditionOption = CONDITION_OPTIONS.find(o => o.value === step.condition?.type) || CONDITION_OPTIONS[0];
+  const conditionOption = CONDITION_OPTIONS.find(o => o.value === (step.condition?.type || "none")) || CONDITION_OPTIONS[0];
   const isInitial = index === -1;
   const stepNumber = isInitial ? 1 : index + 2;
 
@@ -84,7 +84,7 @@ function TimelineNode({
   return (
     <div className="relative">
       {/* Connector line */}
-      {!isInitial && <TimelineConnector hasBranch={step.condition?.type !== "none" && step.condition?.type !== undefined} />}
+      {!isInitial && <TimelineConnector hasBranch={step.condition?.type !== "none" && !!step.condition?.type} />}
 
       <div className={cn(
         "rounded-xl border transition-all duration-200 overflow-hidden bg-white",
@@ -153,10 +153,10 @@ function TimelineNode({
                 {CONDITION_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
-                    onClick={() => onUpdate("condition", opt.value === "none" ? undefined : { type: opt.value })}
+                    onClick={() => onUpdate("condition", opt.value === "none" ? "none" : opt.value)}
                     className={cn(
                       "flex flex-col gap-2 p-4 rounded-xl border text-left transition-all",
-                      step.condition?.type === opt.value || (!step.condition?.type && opt.value === "none")
+                      (step.condition?.type === opt.value) || (!step.condition?.type && opt.value === "none")
                         ? "bg-brand text-white border-brand shadow-sm"
                         : "bg-white border-gray-100 text-gray-500 hover:bg-gray-50"
                     )}
@@ -179,7 +179,7 @@ function TimelineNode({
                   onChange={(e) => onUpdate("waitDays", parseInt(e.target.value) || 1)}
                   className="h-8 w-14 rounded-lg border border-gray-200 bg-white text-center text-sm font-bold text-gray-900 outline-none focus:border-brand transition-all"
                 />
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Days</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Business Days</span>
               </div>
 
               {step.condition?.type && step.condition.type !== "none" && (
@@ -223,7 +223,7 @@ export default function SequenceBuilder({ steps, onChange, subject = "", body = 
 
   const addStep = () => {
     if (steps.length >= MAX_FOLLOW_UPS) return;
-    onChange([...steps, { subject: "", body: "", waitDays: 3 }]);
+    onChange([...steps, { subject: "", body: "", waitDays: 3, condition: undefined }]);
     setExpandedStep(steps.length);
   };
 
@@ -236,10 +236,15 @@ export default function SequenceBuilder({ steps, onChange, subject = "", body = 
     const updated = steps.map((s, i) => {
       if (i !== index) return s;
 
-      if (field === "condition" && typeof value !== "undefined") {
+      if (field === "condition") {
+        const condType = value as string;
+        if (condType === "none" || condType === undefined) {
+          const { condition: _, ...rest } = s;
+          return rest as SequenceStepInput;
+        }
         return {
           ...s,
-          condition: value as SequenceStepInput["condition"]
+          condition: { type: condType as SequenceConditionType }
         };
       }
 

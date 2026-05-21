@@ -468,7 +468,7 @@ export default function PriorityPage() {
                                 </div>
                                 <div className="text-left">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-loose font-sans">
-                                        7-day trial <span className="mx-2 text-slate-700">•</span> No card required
+                                        Cancel anytime <span className="mx-2 text-slate-700">•</span> No hidden fees
                                     </p>
                                 </div>
                             </div>

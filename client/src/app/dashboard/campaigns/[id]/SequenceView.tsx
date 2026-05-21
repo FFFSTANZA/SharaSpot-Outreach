@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getSequence, pauseRecipientSequence, resumeRecipientSequence, stopRecipientSequence, pauseAllSequence, resumeAllSequence, stopAllSequence } from "@/lib/apis";
-import type { SequenceResponse, StepStatusType } from "@/types";
+import type { SequenceResponse, StepStatusType, StepAnalyticsType } from "@/types";
 import Button from "@/components/Button";
 import { Pause, Play, Square, ChevronDown, CheckCircle2, Clock, XCircle, AlertCircle, SkipForward, MessageSquare, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [expandedRecipient, setExpandedRecipient] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [stepAnalytics, setStepAnalytics] = useState<StepAnalyticsType[]>([]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -40,6 +41,7 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
     try {
       const res = await getSequence(campaignId);
       setData(res);
+      setStepAnalytics(res.stepAnalytics || []);
     } catch {
       setError("Failed to load sequence data.");
     } finally {
@@ -111,6 +113,47 @@ export default function SequenceView({ campaignId }: SequenceViewProps) {
 
   return (
     <div className="space-y-4">
+      {/* Step Analytics Summary */}
+      {stepAnalytics.length > 0 && (
+        <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
+          <h3 className="text-sm font-bold text-gray-900 mb-4">Follow-Up Performance</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {stepAnalytics.map((step) => {
+              const isInitial = step.stepNumber === 0;
+              return (
+                <div key={step.stepNumber} className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={cn(
+                      "inline-flex items-center justify-center h-5 w-5 rounded-md text-[10px] font-bold text-white",
+                      isInitial ? "bg-gray-900" : "bg-brand"
+                    )}>
+                      {step.stepNumber + 1}
+                    </span>
+                    <span className="text-xs font-bold text-gray-700 truncate">
+                      {isInitial ? "Initial" : `Step ${step.stepNumber}`}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-gray-500 font-medium">Sent</span>
+                      <span className="text-gray-900 font-bold">{step.sentCount}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-gray-500 font-medium">Replies</span>
+                      <span className="text-brand font-bold">{step.repliedCount}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-gray-200">
+                      <span className="text-gray-500 font-medium">Reply Rate</span>
+                      <span className="text-gray-900 font-bold">{step.replyRate}%</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Bulk controls */}
       <div className="flex items-center gap-2">
         <Button variant="secondary" className="w-auto px-3 py-1.5 rounded-lg text-[11px] font-bold gap-1"

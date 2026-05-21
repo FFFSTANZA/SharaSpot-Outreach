@@ -1,24 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/context/ToastContext";
 import { PageLoader } from "@/components/PageLoader";
 
 import { AuthGuardProps } from "@/types";
 
-/**
- * AuthGuard - Protects routes from unauthenticated access.
- *
- * WHY branded loader: Instead of a generic spinner, we show the SharaSpot logo
- * with a breathing animation. This reinforces the brand during the brief
- * auth check and prevents the flash of protected content.
- */
 export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) {
   const { user, isLoading, refreshUser } = useAuth();
   const router = useRouter();
-  const { addToast } = useToast();
+  const checkoutAttemptedRef = useRef(false);
 
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const isSuccessRedirect = searchParams?.get("subscription") === "success";
@@ -32,17 +24,17 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
       return;
     }
 
-    if (!isLoading && user && requirePremium && !(user as any).isPremium) {
-      // If we just came back from a successful payment, try to proactively refresh
+    if (!isLoading && user && requirePremium && !user.isPremium) {
       if (isSuccessRedirect) {
-        console.log("AuthGuard: Payment success detected. Proactively refreshing user state...");
         const timer = setTimeout(() => {
           refreshUser().catch(() => { });
-        }, 1500); // 1.5s delay to allow webhook a head start
+        }, 1500);
         return () => clearTimeout(timer);
       }
 
-      console.log("AuthGuard: Premium required but user is not premium. Initiating checkout redirect...");
+      if (checkoutAttemptedRef.current) return;
+      checkoutAttemptedRef.current = true;
+
       const initiateCheckout = async () => {
         try {
           const { createSubscription } = await import("@/lib/apis");
@@ -52,8 +44,7 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
           } else {
             router.replace("/login");
           }
-        } catch (err) {
-          console.error("AuthGuard: Checkout initiation failed", err);
+        } catch {
           router.replace("/login");
         }
       };
@@ -65,12 +56,11 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
     return <PageLoader message="Verifying session..." />;
   }
 
-  // Show a special loader if we are waiting for a success sync
-  if (isSuccessRedirect && user && !(user as any).isPremium) {
+  if (isSuccessRedirect && user && !user.isPremium) {
     return <PageLoader message="Synchronizing Pro Access..." />;
   }
 
-  if (!user || (requirePremium && !(user as any).isPremium)) {
+  if (!user || (requirePremium && !user.isPremium)) {
     return null;
   }
 

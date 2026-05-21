@@ -30,7 +30,7 @@ export default function TermsPage() {
     {
       icon: Scale,
       title: "Subscription and Billing",
-      content: "SharaSpot offers a 7-day free trial for new users. After the trial period, a mandatory subscription of $20/month is required to continue using the service. Subscriptions are billed monthly and can be cancelled at any time through the billing dashboard.",
+      content: "SharaSpot requires a premium subscription to access the services. The global subscription price is $19/month and the local Indian price is ₹999/month. Subscriptions are billed monthly via Dodo Payments and can be cancelled at any time through the billing dashboard.",
     },
     {
       icon: RefreshCw,

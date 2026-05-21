@@ -53,7 +53,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                             onClick={() => router.push("/login")}
                             className="bg-brand text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand/90 transition-colors"
                         >
-                            Start for free
+                            Get Started
                         </button>
                     </div>
 
@@ -83,7 +83,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                                 onClick={() => router.push("/login")}
                                 className="w-full bg-brand text-white font-semibold py-3 rounded-lg text-sm mt-2"
                             >
-                                Start for free
+                                Get Started
                             </button>
                         </div>
                     </div>

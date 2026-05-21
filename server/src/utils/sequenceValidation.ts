@@ -2,6 +2,7 @@ export interface SequenceStepInput {
   subject: string;
   body: string;
   waitDays: number;
+  condition?: string;
 }
 
 export interface ValidationResult {
@@ -37,8 +38,8 @@ export function validateSequenceSteps(steps: SequenceStepInput[]): ValidationRes
       return { valid: false, message: `${label}: Body is required` };
     }
 
-    if (typeof step.waitDays !== "number" || !Number.isInteger(step.waitDays) || step.waitDays < 1) {
-      return { valid: false, message: `${label}: Wait period must be a whole number of days (minimum 1)` };
+    if (typeof step.waitDays !== "number" || !Number.isInteger(step.waitDays) || step.waitDays < 1 || step.waitDays > 30) {
+      return { valid: false, message: `${label}: Wait period must be a whole number between 1 and 30 days` };
     }
   }
 

@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { redis } from "../config/redis";
 import { getEffectiveProviderLimits } from "./providerProfile";
 import { getWarmupDayLimit } from "./warmupEvaluator";
 import {
@@ -225,6 +226,13 @@ export async function recordSendResult(
   if (!success) {
     await recordConsecutiveError(senderId);
   } else {
+    // Increment daily cache in Redis
+    const now = new Date();
+    const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const dateStr = dayStart.toISOString().split("T")[0];
+    const cacheKey = `sender:${senderId}:daily_count:${dateStr}`;
+    await redis.incr(cacheKey);
+
     await resetConsecutiveErrors(senderId);
   }
 }
@@ -339,4 +347,47 @@ export async function getEarliestResumeTime(
   }
 
   return earliestResume;
+}
+
+// ─── Task 6.6: checkDomainRateCap ────────────────────────────────────────────
+
+const DOMAIN_CAPS: Record<string, { perHour: number }> = {
+  "gmail.com": { perHour: 30 },
+  "googlemail.com": { perHour: 30 },
+  "yahoo.com": { perHour: 25 },
+  "ymail.com": { perHour: 25 },
+  "outlook.com": { perHour: 25 },
+  "hotmail.com": { perHour: 25 },
+  "icloud.com": { perHour: 20 },
+  "me.com": { perHour: 20 },
+  "mac.com": { perHour: 20 },
+};
+
+export async function checkDomainRateCap(
+  senderId: string,
+  recipientEmail: string
+): Promise<{ allowed: boolean; retryAfterMs?: number }> {
+  const domain = recipientEmail.split("@")[1]?.toLowerCase();
+  if (!domain) return { allowed: true };
+
+  const cap = DOMAIN_CAPS[domain];
+  if (!cap) return { allowed: true };
+
+  const hourKey = Math.floor(Date.now() / 3600000);
+  const redisKey = `domain_rate:${senderId}:${domain}:${hourKey}`;
+  
+  const currentCountStr = await redis.get(redisKey);
+  const currentCount = currentCountStr ? parseInt(currentCountStr, 10) : 0;
+  
+  if (currentCount >= cap.perHour) {
+    const nextHourMs = (hourKey + 1) * 3600000 - Date.now();
+    return { allowed: false, retryAfterMs: nextHourMs };
+  }
+  
+  const count = await redis.incr(redisKey);
+  if (count === 1) {
+    await redis.expire(redisKey, 7200);
+  }
+  
+  return { allowed: true };
 }

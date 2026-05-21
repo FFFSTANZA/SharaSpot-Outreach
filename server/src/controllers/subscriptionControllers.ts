@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
+import { logger } from "../utils/logger";
 import {
   createCheckoutSession,
   cancelSubscription,
@@ -14,7 +15,7 @@ import { dodo } from "../config/dodo";
 
 export async function getSubscription(req: Request, res: Response): Promise<void> {
   try {
-    const userId = (req as any).user?.id;
+    const userId = req.user!.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
@@ -34,10 +35,10 @@ export async function getSubscription(req: Request, res: Response): Promise<void
           const refreshed = await getSubscriptionStatus(userId);
           isPremium = refreshed.isPremium;
           subscription = refreshed.subscription;
-          console.log(`[SYNC-FAILSAFE] Synced ${userId} from Dodo API`);
+          logger.info({ userId }, "[SYNC-FAILSAFE] Synced from Dodo API");
         }
       } catch (syncErr) {
-        console.warn("[SYNC-FAILSAFE] Background sync failed:", syncErr);
+        logger.warn({ err: syncErr }, "[SYNC-FAILSAFE] Background sync failed");
       }
     }
 
@@ -62,14 +63,14 @@ export async function getSubscription(req: Request, res: Response): Promise<void
       },
     });
   } catch (error) {
-    console.error("Error fetching subscription:", error);
+    logger.error({ err: error }, "Error fetching subscription");
     res.status(500).json({ message: "Failed to fetch subscription status" });
   }
 }
 
 export async function createSubscription(req: Request, res: Response): Promise<void> {
   try {
-    const userId = (req as any).user?.id;
+    const userId = req.user!.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
@@ -99,7 +100,7 @@ export async function createSubscription(req: Request, res: Response): Promise<v
 
     res.json({ checkoutUrl, sessionId });
   } catch (error: any) {
-    console.error("Error creating checkout session:", error);
+    logger.error({ err: error }, "Error creating checkout session");
     res.status(500).json({
       message: "Failed to create checkout session",
       error: process.env.NODE_ENV === "development" ? error.message : undefined
@@ -109,7 +110,7 @@ export async function createSubscription(req: Request, res: Response): Promise<v
 
 export async function cancelUserSubscription(req: Request, res: Response): Promise<void> {
   try {
-    const userId = (req as any).user?.id;
+    const userId = req.user!.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
@@ -118,14 +119,14 @@ export async function cancelUserSubscription(req: Request, res: Response): Promi
     await cancelSubscription(userId);
     res.json({ message: "Subscription will be cancelled at end of billing period" });
   } catch (error) {
-    console.error("Error cancelling subscription:", error);
+    logger.error({ err: error }, "Error cancelling subscription");
     res.status(500).json({ message: "Failed to cancel subscription" });
   }
 }
 
 export async function reactivateUserSubscription(req: Request, res: Response): Promise<void> {
   try {
-    const userId = (req as any).user?.id;
+    const userId = req.user!.id;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
@@ -134,7 +135,7 @@ export async function reactivateUserSubscription(req: Request, res: Response): P
     await reactivateSubscription(userId);
     res.json({ message: "Subscription reactivated" });
   } catch (error) {
-    console.error("Error reactivating subscription:", error);
+    logger.error({ err: error }, "Error reactivating subscription");
     res.status(500).json({ message: "Failed to reactivate subscription" });
   }
 }
@@ -154,7 +155,7 @@ function parseDodoDate(dateInput: any): Date | undefined {
 export async function handleWebhook(req: Request, res: Response): Promise<void> {
   const secret = process.env.DODO_WEBHOOK_SECRET?.trim();
   let event: any;
-  const rawBody = (req as any).rawBody;
+  const rawBody = req.rawBody;
 
   if (secret) {
     try {
@@ -178,19 +179,18 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       try {
         event = dodo.webhooks.unwrap(body, { headers: svixHeaders, key: secret });
       } catch (firstErr: any) {
-        console.warn("[WEBHOOK] Primary unwrap failed, trying fallback with raw headers:", firstErr.message);
-        // Fallback: try passing the original request headers directly
+        logger.warn({ err: firstErr }, "[WEBHOOK] Primary unwrap failed, trying fallback with raw headers");
         event = dodo.webhooks.unwrap(body, { headers: req.headers as any, key: secret });
       }
     } catch (error: any) {
       const bodyStr = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : "NOT_A_BUFFER";
-      console.error("[WEBHOOK] Auth Failed Final:", error.message);
-      console.error("[WEBHOOK-DIAGNOSIS]", {
+      logger.error({ err: error }, "[WEBHOOK] Auth Failed Final");
+      logger.error({
         bodyLength: bodyStr.length,
         bodyStart: bodyStr.substring(0, 20),
         secretPrefix: secret.substring(0, 10),
         headerKeys: Object.keys(req.headers).filter(k => k.toLowerCase().includes("webhook") || k.toLowerCase().includes("svix")),
-      });
+      }, "[WEBHOOK-DIAGNOSIS]");
       res.status(401).json({
         error: "Unauthorized",
         details: error.message,
@@ -207,23 +207,27 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
   try {
     const { type, data, id: eventId } = event;
     const dodoSubId = data.subscription_id || data.id;
-    console.log(`[WEBHOOK] Received ${type} (ID: ${eventId})`, {
+    logger.info({
+      type, eventId,
       subscriptionId: dodoSubId,
       sessionId: data.session_id,
       customerId: data.customer_id,
-      metadata: data.metadata,
       status: data.status,
-    });
+    }, `[WEBHOOK] Received ${type}`);
 
     if (!eventId) {
-      console.warn("[WEBHOOK] Missing event ID, processing anyway");
+      logger.warn("[WEBHOOK] Missing event ID, processing anyway");
     } else {
-      const alreadyProcessed = await prisma.processedWebhook.findUnique({
-        where: { eventId },
-      });
+      const existing = await prisma.$transaction(async (tx) => {
+        const alreadyProcessed = await tx.processedWebhook.findUnique({
+          where: { eventId },
+        });
+        if (alreadyProcessed) return alreadyProcessed;
+        return null;
+      }, { isolationLevel: "Serializable" });
 
-      if (alreadyProcessed) {
-        console.log(`[WEBHOOK] Event ${eventId} already processed. Skipping.`);
+      if (existing) {
+        logger.info({ eventId }, "[WEBHOOK] Event already processed. Skipping.");
         res.json({ success: true, duplicated: true });
         return;
       }
@@ -238,17 +242,15 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       const customerId = data.customer_id;
       const paymentId = data.id || data.payment_id;
 
-      console.log(`[WEBHOOK] Processing payment.succeeded`, {
-        userId,
-        sessionId,
+      logger.info({
+        userId, sessionId,
         dodoSubscriptionId,
         customerId,
         paymentId,
-        metadata: data.metadata,
-      });
+      }, "[WEBHOOK] Processing payment.succeeded");
 
       if (!userId) {
-        console.error("[WEBHOOK] CRITICAL: No userId in payment metadata!", data);
+        logger.error({ data }, "[WEBHOOK] CRITICAL: No userId in payment metadata");
 
         if (customerId) {
           const existingSub = await prisma.subscription.findFirst({
@@ -257,7 +259,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
           });
 
           if (existingSub) {
-            console.log(`[WEBHOOK] Found user ${existingSub.userId} via customer ID mapping`);
+            logger.info({ userId: existingSub.userId }, "[WEBHOOK] Found user via customer ID mapping");
           }
         }
 
@@ -280,7 +282,7 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       });
     } else if (type === "subscription.active" || type === "subscription.updated" || type === "subscription.renewed") {
       if (!dodoSubId) {
-        console.warn(`[WEBHOOK] ${type} event missing subscription ID, skipping subscription update`);
+        logger.warn({ type }, `[WEBHOOK] ${type} event missing subscription ID, skipping subscription update`);
       } else {
         await updateSubscriptionFromWebhook(dodoSubId, {
           status: data.status,
@@ -312,16 +314,14 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       const dodoSubscriptionId = data.subscription_id;
       const customerId = data.customer_id;
 
-      console.log(`[WEBHOOK] Processing checkout completed`, {
-        userId,
-        sessionId,
+      logger.info({
+        userId, sessionId,
         dodoSubscriptionId,
         customerId,
-        metadata: data.metadata,
-      });
+      }, "[WEBHOOK] Processing checkout completed");
 
       if (!userId) {
-        console.error("[WEBHOOK] CRITICAL: No userId in checkout metadata!", data);
+        logger.error({ data }, "[WEBHOOK] CRITICAL: No userId in checkout metadata");
 
         if (customerId) {
           const existingSub = await prisma.subscription.findFirst({
@@ -330,9 +330,9 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
           });
 
           if (existingSub) {
-            console.log(`[WEBHOOK] Found user ${existingSub.userId} via customer ID mapping`);
+            logger.info({ userId: existingSub.userId }, "[WEBHOOK] Found user via customer ID mapping");
           } else {
-            console.error("[WEBHOOK] No subscription found for customer ID either");
+            logger.error("[WEBHOOK] No subscription found for customer ID either");
           }
         }
 
@@ -356,17 +356,19 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     }
 
     if (eventId) {
-      await prisma.processedWebhook.create({
-        data: {
+      await prisma.processedWebhook.upsert({
+        where: { eventId },
+        create: {
           eventId,
           eventType: type,
         },
+        update: {},
       });
     }
 
     res.json({ success: true });
   } catch (error: any) {
-    console.error("[WEBHOOK] Error processing webhook:", error.message, error.stack);
+    logger.error({ err: error }, "[WEBHOOK] Error processing webhook");
     res.status(500).json({ error: "Webhook failure", message: error.message });
   }
 }

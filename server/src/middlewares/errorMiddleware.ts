@@ -6,8 +6,12 @@ import { Request, Response, NextFunction } from "express";
  * Catches all unhandled errors and returns a sanitized JSON response.
  * Prevents stack traces from leaking to the client in production.
  */
+interface ErrorWithStatusCode extends Error {
+    statusCode?: number;
+}
+
 export const errorMiddleware = (
-    err: any,
+    err: ErrorWithStatusCode,
     req: Request,
     res: Response,
     next: NextFunction

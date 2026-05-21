@@ -2,6 +2,7 @@ import { Worker, Job } from "bullmq";
 import { prisma } from "../config/prisma";
 import { redisConnection, redis } from "../config/redis";
 import { priorityQueue, PRIORITY_QUEUE_NAME } from "../queues/priorityQueue";
+import { logger } from "../utils/logger";
 import { collectSmtpTiming } from "../utils/signalCollector";
 import { evaluateTiming } from "../utils/timingEngine";
 import { performSafetyChecks, incrementPriorityQuota, incrementDomainRate } from "../utils/prioritySafetyLimits";
@@ -38,7 +39,7 @@ export async function processPriorityJob(job: Job): Promise<void> {
   });
 
   if (!priorityRecord) {
-    console.warn(`[PRIORITY] No priority record found for ${emailJobId}, falling back to normal processing`);
+    logger.warn(`[PRIORITY] No priority record found for ${emailJobId}, falling back to normal processing`);
     // Fall back to normal email queue
     await processEmailJob({ data: { emailJobId } } as any);
     return;
@@ -124,7 +125,7 @@ export async function processPriorityJob(job: Job): Promise<void> {
           { jobId: `priority-${emailJobId}`, delay: delayMs }
         );
         
-        console.log(`[PRIORITY] Delaying ${emailJobId} by ${delayMs}ms (retry ${retryCount})`);
+        logger.info(`[PRIORITY] Delaying ${emailJobId} by ${delayMs}ms (retry ${retryCount})`);
       } else {
         // Max retries exceeded, fail
         await prisma.priorityQueueJob.update({
@@ -166,7 +167,7 @@ export async function processPriorityJob(job: Job): Promise<void> {
         data: { status: "SENT", statusMessage: "Sent successfully" },
       });
 
-      console.log(`[PRIORITY] Email ${emailJobId} sent successfully`);
+      logger.info(`[PRIORITY] Email ${emailJobId} sent successfully`);
     } else if (finalEmailJob?.status === "FAILED") {
       // Permanent failure in email worker
       await prisma.priorityQueueJob.update({
@@ -176,14 +177,14 @@ export async function processPriorityJob(job: Job): Promise<void> {
           statusMessage: finalEmailJob.error || "Email delivery failed" 
         },
       });
-      console.error(`[PRIORITY] Email ${emailJobId} failed: ${finalEmailJob.error}`);
+      logger.error(`[PRIORITY] Email ${emailJobId} failed: ${finalEmailJob.error}`);
     } else {
       // Status might be PENDING or SENDING (if it was throttled or something else)
       // We'll treat this as a failure for the priority queue attempt and let the catch block handle retry
       throw new Error(`Email delivery not completed (status: ${finalEmailJob?.status || "unknown"})`);
     }
   } catch (error: any) {
-    console.error(`[PRIORITY] Error processing ${emailJobId}:`, error);
+    logger.error({ error }, `[PRIORITY] Error processing ${emailJobId}`);
     
     const retryCount = priorityRecord.retryCount + 1;
     
@@ -264,7 +265,7 @@ export const priorityWorker = new Worker(
 
 // Graceful shutdown
 async function gracefulShutdown(signal: string): Promise<void> {
-  console.log(`[PRIORITY] Received ${signal}, shutting down...`);
+  logger.info(`[PRIORITY] Received ${signal}, shutting down...`);
   await priorityWorker.close();
   await prisma.$disconnect();
   await redis.quit();
@@ -274,6 +275,6 @@ async function gracefulShutdown(signal: string): Promise<void> {
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-console.log("[PRIORITY] Priority email worker started");
+logger.info("[PRIORITY] Priority email worker started");
 
 export default {};

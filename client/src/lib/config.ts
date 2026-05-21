@@ -12,7 +12,7 @@ export const BRAND_CONFIG = {
     supportUrl: "https://tally.so/r/aQee69",
     pricing: {
         global: {
-            amount: 29,
+            amount: 19,
             currency: "USD",
             symbol: "$",
         },
@@ -21,7 +21,7 @@ export const BRAND_CONFIG = {
             currency: "INR",
             symbol: "₹",
         },
-        trialDays: 7,
+        trialDays: 0,
     },
     features: [
         {

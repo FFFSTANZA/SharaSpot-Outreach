@@ -5,9 +5,17 @@ import { SubscriptionStatus, CampaignStatus, EmailStatus, TrackingEventType } fr
 
 const router = Router();
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET_KEY || "admin_secret_change_me";
+if (!process.env.ADMIN_SECRET_KEY) {
+  console.error("[ADMIN] CRITICAL: ADMIN_SECRET_KEY environment variable is not set. Admin endpoints are disabled.");
+}
+
+const ADMIN_SECRET = process.env.ADMIN_SECRET_KEY;
 
 function verifyAdminSecret(req: any, res: any, next: any) {
+  if (!ADMIN_SECRET) {
+    return res.status(503).json({ error: "Admin interface not configured" });
+  }
+
   const secret = req.headers["x-admin-secret"];
 
   if (!secret || secret !== ADMIN_SECRET) {

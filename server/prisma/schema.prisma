@@ -13,7 +13,7 @@ model User {
   name          String?
   avatarUrl     String?
   createdAt     DateTime        @default(now())
-  updatedAt     DateTime       @updatedAt
+  updatedAt     DateTime        @updatedAt
   campaigns     EmailCampaign[]
   templates     EmailTemplate[]
   refreshTokens RefreshToken[]
@@ -23,6 +23,7 @@ model User {
   contacts      Contact[]
   contactLists  ContactList[]
   mcpApiKeys    McpApiKey[]
+  bounceList    BounceList[]
 }
 
 model Subscription {
@@ -46,36 +47,36 @@ model Subscription {
 }
 
 model Sender {
-  id                String           @id @default(cuid())
-  userId            String
-  email             String
-  name              String?
-  appPassword       String           @default("")
-  smtpHost          String           @default("smtp.gmail.com")
-  smtpPort          Int              @default(465)
-  replyTo           String?
-  isVerified        Boolean          @default(false)
-  dailyLimit        Int              @default(500)
-  hourlyLimit       Int?
-  accessToken       String?
-  refreshToken      String?
-  tokenExpiresAt    DateTime?
-  connectionType    InboxConnectionType @default(IMAP)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  providerProfileId String?
-  campaignSenders   CampaignSender[]
-  campaigns         EmailCampaign[]
-  emailJobs         EmailJob[]
-  providerProfile   ProviderProfile? @relation(fields: [providerProfileId], references: [id])
-  user              User             @relation(fields: [userId], references: [id])
-  cooldown          SenderCooldown?
-  warmupSchedule    WarmupSchedule?
+  id                 String              @id @default(cuid())
+  userId             String
+  email              String
+  name               String?
+  appPassword        String              @default("")
+  smtpHost           String              @default("smtp.gmail.com")
+  smtpPort           Int                 @default(465)
+  replyTo            String?
+  isVerified         Boolean             @default(false)
+  dailyLimit         Int                 @default(500)
+  hourlyLimit        Int?
+  accessToken        String?
+  refreshToken       String?
+  tokenExpiresAt     DateTime?
+  connectionType     InboxConnectionType @default(IMAP)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  providerProfileId  String?
+  campaignSenders    CampaignSender[]
+  campaigns          EmailCampaign[]
+  emailJobs          EmailJob[]
+  providerProfile    ProviderProfile?    @relation(fields: [providerProfileId], references: [id])
+  user               User                @relation(fields: [userId], references: [id])
+  cooldown           SenderCooldown?
+  warmupSchedule     WarmupSchedule?
   analyticsSnapshots AnalyticsSnapshot[]
   dailyHealth        DailySenderHealth[]
-  inboxEmails       InboxEmail[]
-  inboxThreads      InboxThread[]
-  inboxSyncJobs    InboxSyncJob[]
+  inboxEmails        InboxEmail[]
+  inboxThreads       InboxThread[]
+  inboxSyncJobs      InboxSyncJob[]
 
   @@unique([userId, email])
   @@index([userId])
@@ -158,11 +159,11 @@ model CampaignSender {
 }
 
 model RateLimitCounter {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   senderId     String
   hourWindow   DateTime
-  count        Int       @default(0)
-  createdAt    DateTime  @default(now())
+  count        Int      @default(0)
+  createdAt    DateTime @default(now())
   minuteWindow DateTime @default(now())
 
   @@unique([senderId, hourWindow])
@@ -215,6 +216,7 @@ model SequenceStep {
   subject    String
   body       String
   waitDays   Int
+  condition  String?
   emailJobs  EmailJob[]
   campaign   EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
@@ -275,21 +277,21 @@ model SenderCooldown {
 model TrackingEvent {
   id            String            @id @default(cuid())
   emailJobId    String
-  eventType    TrackingEventType
-  url          String?
-  ipAddress    String?
-  userAgent    String?
-  platform     String?
-  browser      String?
-  isMobile     Boolean?
-  isDesktop   Boolean?
-  isBot        Boolean?
+  eventType     TrackingEventType
+  url           String?
+  ipAddress     String?
+  userAgent     String?
+  platform      String?
+  browser       String?
+  isMobile      Boolean?
+  isDesktop     Boolean?
+  isBot         Boolean?
   trackingToken String?
-  utmSource    String?
-  utmMedium    String?
-  utmCampaign  String?
-  createdAt    DateTime          @default(now())
-  emailJob     EmailJob          @relation(fields: [emailJobId], references: [id])
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  createdAt     DateTime          @default(now())
+  emailJob      EmailJob          @relation(fields: [emailJobId], references: [id])
 
   @@index([emailJobId])
   @@index([eventType])
@@ -314,8 +316,6 @@ enum CampaignStatus {
   CANCELLED
   COMPLETED
 }
-
-
 
 model PriorityQueueJob {
   emailJobId      String         @id
@@ -405,8 +405,8 @@ model Contact {
   company    String?
   jobTitle   String?
   stage      String            @default("COLD")
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   activities ContactActivity[]
   notes      Note[]
@@ -458,20 +458,20 @@ model ContactList {
 }
 
 model AnalyticsSnapshot {
-  id          String   @id @default(cuid())
-  campaignId  String?
-  senderId    String?
-  timestamp   DateTime @default(now())
-  type        SnapshotType @default(HOURLY)
-  
-  sentCount   Int      @default(0)
-  openCount   Int      @default(0)
-  clickCount  Int      @default(0)
-  replyCount  Int      @default(0)
-  bounceCount Int      @default(0)
+  id         String       @id @default(cuid())
+  campaignId String?
+  senderId   String?
+  timestamp  DateTime     @default(now())
+  type       SnapshotType @default(HOURLY)
 
-  campaign    EmailCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  sender      Sender?        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  sentCount   Int @default(0)
+  openCount   Int @default(0)
+  clickCount  Int @default(0)
+  replyCount  Int @default(0)
+  bounceCount Int @default(0)
+
+  campaign EmailCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  sender   Sender?        @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@unique([campaignId, senderId, timestamp, type])
   @@index([campaignId])
@@ -487,16 +487,16 @@ enum SnapshotType {
 }
 
 model DailySenderHealth {
-  id          String   @id @default(cuid())
-  senderId    String
-  date        DateTime @default(now())
-  
-  successCount Int      @default(0)
-  errorCount   Int      @default(0)
-  bounceCount  Int      @default(0)
+  id       String   @id @default(cuid())
+  senderId String
+  date     DateTime @default(now())
+
+  successCount Int   @default(0)
+  errorCount   Int   @default(0)
+  bounceCount  Int   @default(0)
   errorDetails Json?
 
-  sender      Sender   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  sender Sender @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, date])
   @@index([senderId])
@@ -518,15 +518,15 @@ enum TrackingEventType {
 }
 
 model Webhook {
-  id          String          @id @default(cuid())
-  userId      String
-  url         String
-  name        String?
-  events     String[]
-  secret     String?
-  isActive   Boolean         @default(true)
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  name      String?
+  events    String[]
+  secret    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([isActive])
@@ -534,16 +534,16 @@ model Webhook {
 }
 
 model WebhookDelivery {
-  id           String    @id @default(cuid())
-  webhookId    String
-  eventType    String
-  payload     Json
+  id             String    @id @default(cuid())
+  webhookId      String
+  eventType      String
+  payload        Json
   responseStatus Int?
-  responseBody  String?
-  errorMessage  String?
-  attempts    Int       @default(0)
-  deliveredAt  DateTime?
-  createdAt   DateTime  @default(now())
+  responseBody   String?
+  errorMessage   String?
+  attempts       Int       @default(0)
+  deliveredAt    DateTime?
+  createdAt      DateTime  @default(now())
 
   @@index([webhookId])
   @@index([createdAt])
@@ -556,29 +556,29 @@ enum InboxConnectionType {
 }
 
 model InboxEmail {
-  id              String            @id @default(cuid())
-  senderId        String
-  messageId       String
-  inReplyTo       String?
-  references      String?
-  threadId        String?
-  fromName        String?
-  fromEmail       String
-  toName          String?
-  toEmail         String
-  subject         String
-  bodyText        String?
-  bodyHtml        String?
-  snippet         String            @db.Text
-  isRead          Boolean          @default(false)
-  isStarred       Boolean          @default(false)
-  isArchived      Boolean          @default(false)
-  isDeleted       Boolean          @default(false)
-  folder          String           @default("INBOX")
-  receivedAt      DateTime
-  syncedAt        DateTime         @default(now())
-  syncedBy        String?
-  sender          Sender           @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  senderId   String
+  messageId  String
+  inReplyTo  String?
+  references String?
+  threadId   String?
+  fromName   String?
+  fromEmail  String
+  toName     String?
+  toEmail    String
+  subject    String
+  bodyText   String?
+  bodyHtml   String?
+  snippet    String   @db.Text
+  isRead     Boolean  @default(false)
+  isStarred  Boolean  @default(false)
+  isArchived Boolean  @default(false)
+  isDeleted  Boolean  @default(false)
+  folder     String   @default("INBOX")
+  receivedAt DateTime
+  syncedAt   DateTime @default(now())
+  syncedBy   String?
+  sender     Sender   @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, messageId])
   @@index([senderId])
@@ -590,7 +590,7 @@ model InboxEmail {
 }
 
 model InboxThread {
-  id              String           @id @default(cuid())
+  id              String   @id @default(cuid())
   senderId        String
   threadId        String
   subject         String
@@ -598,9 +598,9 @@ model InboxThread {
   lastMessageAt   DateTime
   lastSnippet     String?
   lastSenderEmail String?
-  unreadCount     Int              @default(0)
-  hasAttachments Boolean         @default(false)
-  sender          Sender           @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  unreadCount     Int      @default(0)
+  hasAttachments  Boolean  @default(false)
+  sender          Sender   @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, threadId])
   @@index([senderId])
@@ -616,16 +616,16 @@ enum InboxSyncStatus {
 }
 
 model InboxSyncJob {
-  id          String          @id @default(cuid())
-  senderId    String
-  status      InboxSyncStatus @default(PENDING)
-  messagesProcessed Int          @default(0)
-  startedAt   DateTime?
-  completedAt DateTime?
-  error       String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  sender      Sender         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  id                String          @id @default(cuid())
+  senderId          String
+  status            InboxSyncStatus @default(PENDING)
+  messagesProcessed Int             @default(0)
+  startedAt         DateTime?
+  completedAt       DateTime?
+  error             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  sender            Sender          @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([senderId])
   @@index([status])
@@ -634,15 +634,15 @@ model InboxSyncJob {
 model McpApiKey {
   id          String    @id @default(cuid())
   userId      String
-  name       String
-  keyHash    String    @unique
-  permissions Json     @default("{}")
+  name        String
+  keyHash     String    @unique
+  permissions Json      @default("{}")
   lastUsedAt  DateTime?
-  expiresAt  DateTime?
-  isActive   Boolean   @default(true)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, name])
   @@index([userId])
@@ -652,7 +652,7 @@ model McpApiKey {
 model SystemAuditLog {
   id        String   @id @default(cuid())
   level     LogLevel @default(INFO)
-  category  String   // e.g. "INFRASTRUCTURE", "CAMPAIGN", "SENDER"
+  category  String // e.g. "INFRASTRUCTURE", "CAMPAIGN", "SENDER"
   message   String
   metadata  Json?
   createdAt DateTime @default(now())
@@ -676,4 +676,18 @@ model ProcessedWebhook {
   createdAt DateTime @default(now())
 
   @@index([eventId])
+}
+
+model BounceList {
+  id         String   @id @default(cuid())
+  userId     String
+  email      String
+  bouncedAt  DateTime @default(now())
+  bounceCode String?
+  reason     String?
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@index([email])
 }

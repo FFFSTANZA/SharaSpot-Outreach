@@ -44,28 +44,3 @@ export function stripHtml(html: string): string {
     .replace(/\s+/g, " ")
     .trim();
 }
-
-/** Resolves template variables like {{Name}} using columnData. Case-insensitive. */
-export function resolveVariables(
-  content: string,
-  columnData: Record<string, string> = {},
-  options?: { email?: string }
-): string {
-  if (!content) return "";
-  
-  // Create lowercase map for case-insensitive lookup
-  const lowerMap: Record<string, string> = {};
-  Object.keys(columnData).forEach(key => {
-    lowerMap[key.toLowerCase()] = columnData[key];
-  });
-
-  // Always add email if provided
-  if (options?.email) {
-    lowerMap["email"] = options.email;
-  }
-
-  return content.replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (match, varName) => {
-    const value = lowerMap[varName.toLowerCase()];
-    return value !== undefined ? value : match;
-  });
-}

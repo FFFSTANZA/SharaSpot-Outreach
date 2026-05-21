@@ -7,13 +7,14 @@ import { emailQueue } from "../queues/emailQueue";
 import { decrypt } from "../utils/encryption";
 import { sysLog } from "../utils/systemLogger";
 import { hasDailyCapacity, findAvailableSender } from "../utils/dailyLimitTracker";
-import { canSend, recordSendResult, computeJitteredDelay, getEffectiveLimits } from "../utils/throttleEngine";
-import { preprocessEmailHtml } from "../utils/emailPreprocessor";
+import { canSend, recordSendResult, computeJitteredDelay, getEffectiveLimits, checkDomainRateCap } from "../utils/throttleEngine";
+import { preprocessEmailHtml, htmlToPlainText } from "../utils/emailPreprocessor";
 import { resolveForRecipient } from "../utils/variableResolver";
 import { isWithinBusinessHours, getDelayUntilBusinessHours } from "../utils/businessHours";
 import { buildThreadingHeaders, extractDomain } from "../utils/emailThreading";
 import { logContactActivityByEmail, updateContactStageByEmail } from "../utils/contactService";
 import { quickSpamScore } from "../utils/spamDetector";
+import { checkAndCompleteCampaign } from "../utils/campaignCompletion";
 
 // ---------------------------------------------------------------------------
 // Helper: Truncate a Date to the start of its hour
@@ -348,6 +349,34 @@ export async function processEmailJob(job: Job): Promise<void> {
   }
 
   // ---------------------------------------------------------------------------
+  // Bounce suppression pre-flight check
+  // ---------------------------------------------------------------------------
+  // Never re-send to an address that previously hard-bounced for this user.
+  // Hard bounces (5xx) are permanent — re-sending destroys sender reputation.
+  // ---------------------------------------------------------------------------
+  const bounceRecord = await prisma.bounceList.findUnique({
+    where: { userId_email: { userId: campaign.userId, email: emailJob.toEmail } },
+  });
+  if (bounceRecord) {
+    await markFailed(emailJobId, "suppressed-bounce", campaign.id);
+    return;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Minimum inter-send gap (4–8 seconds, randomised)
+  // ---------------------------------------------------------------------------
+  // Prevents consecutive emails from the same sender firing within milliseconds
+  // of each other, which looks bot-like to ISP spam filters.
+  // ---------------------------------------------------------------------------
+  const lastSentKey = `sender:${sender.id}:last_sent_at`;
+  const lastSent = await redis.get(lastSentKey);
+  const minGapMs = 4000 + Math.random() * 4000;
+  if (lastSent && Date.now() - parseInt(lastSent) < minGapMs) {
+    await new Promise(resolve => setTimeout(resolve, minGapMs - (Date.now() - parseInt(lastSent))));
+  }
+  await redis.set(lastSentKey, Date.now().toString(), "EX", 3600);
+
+  // ---------------------------------------------------------------------------
   // Daily limit enforcement
   // ---------------------------------------------------------------------------
   // Before sending, check if the assigned sender has remaining daily capacity.
@@ -401,6 +430,35 @@ export async function processEmailJob(job: Job): Promise<void> {
       console.warn(`Sender ${sender.id} at daily limit, no pool available for campaign ${campaign.id}`);
       return;
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Per-Domain Rate Cap
+  // ---------------------------------------------------------------------------
+  const domainDecision = await checkDomainRateCap(sender.id, emailJob.toEmail);
+  if (!domainDecision.allowed) {
+    await prisma.emailJob.update({
+      where: { id: emailJobId },
+      data: { status: "PENDING" },
+    });
+
+    const baseDelayMs = domainDecision.retryAfterMs ?? 3600_000;
+    const delay = Math.max(0, baseDelayMs);
+
+    await emailQueue.add(
+      "send-email",
+      { emailJobId },
+      {
+        jobId: `${emailJobId}-${crypto.randomUUID()}`,
+        delay,
+      },
+    );
+
+    const domain = emailJob.toEmail.split("@")[1]?.toLowerCase();
+    console.log(
+      `[DOMAIN-CAP] ${sender.email} → ${domain} (cap reached this hour), delaying emailJob ${emailJobId} by ${Math.round(delay/60000)}min`,
+    );
+    return;
   }
 
   // ---------------------------------------------------------------------------
@@ -627,13 +685,46 @@ export async function processEmailJob(job: Job): Promise<void> {
         emailJobId,
         trackingBaseUrl,
         trackOpens: (campaign as any).trackOpens ?? true,
-        trackClicks: (campaign as any).trackClicks ?? true,
+        // trackClicks defaults to FALSE — link rewriting signals "bulk mail" to spam filters
+        trackClicks: (campaign as any).trackClicks === true,
       }
     ) : emailBody; // Skip tracking injection if no safe URL is available
 
-    // Strip HTML tags to create a plain text version for SpamAssassin
-    // Spam filters heavily penalize HTML-only emails without a text fallback
-    const plainTextBody = emailBody.replace(/<[^>]*>?/gm, '');
+    // Generate clean plain text from HTML for the text/plain MIME part.
+    // SpamAssassin penalises HTML-only emails with no plain-text alternative.
+    // htmlToPlainText preserves paragraph breaks and bullet structure.
+    const plainTextBody = htmlToPlainText(emailBody);
+
+    // Pre-send reply check for follow-ups: if the recipient has replied since
+    // this job was enqueued, cancel the job to avoid sending after a reply.
+    if (emailJob.sequenceStepId) {
+      const recentReply = await prisma.trackingEvent.findFirst({
+        where: {
+          eventType: "REPLY",
+          emailJob: { campaignId: campaign.id, toEmail: emailJob.toEmail },
+          createdAt: { gt: emailJob.createdAt },
+        },
+        select: { id: true },
+      });
+
+      if (recentReply) {
+        await prisma.emailJob.update({
+          where: { id: emailJobId },
+          data: { status: "CANCELLED" },
+        });
+
+        // Also update the sequence state
+        await prisma.recipientSequenceState.updateMany({
+          where: { campaignId: campaign.id, recipientEmail: emailJob.toEmail },
+          data: { replied: true },
+        });
+
+        console.log(
+          `[EmailWorker] Cancelled follow-up for ${emailJob.toEmail} — reply detected after enqueue`
+        );
+        return;
+      }
+    }
 
     await transporter.sendMail({
       from: sender.name ? `"${sender.name}" <${sender.email}>` : sender.email,
@@ -646,6 +737,8 @@ export async function processEmailJob(job: Job): Promise<void> {
       ...(messageId ? { messageId } : {}),
       ...(inReplyTo ? { inReplyTo } : {}),
       ...(references ? { references } : {}),
+      // Remove default X-Mailer header by setting a custom non-Nodemailer brand
+      headers: { "X-Mailer": "SharaSpot Outreach" },
     });
 
     // ---------------------------------------------------------------------------
@@ -723,6 +816,16 @@ export async function processEmailJob(job: Job): Promise<void> {
     });
     if (isBounce) {
       await updateContactStageByEmail(campaign.userId, emailJob.toEmail, "BOUNCED");
+      // Add to BounceList to permanently suppress this address for this user
+      try {
+        await prisma.bounceList.upsert({
+          where: { userId_email: { userId: campaign.userId, email: emailJob.toEmail } },
+          update: { bouncedAt: new Date(), reason: smtpError.message || "SMTP bounce" },
+          create: { userId: campaign.userId, email: emailJob.toEmail, reason: smtpError.message || "SMTP bounce" },
+        });
+      } catch (bounceErr) {
+        console.error(`Failed to add ${emailJob.toEmail} to BounceList:`, bounceErr);
+      }
     }
 
     releaseSmtpTransporter(sender);
@@ -772,39 +875,7 @@ export async function processEmailJob(job: Job): Promise<void> {
  */
 export async function checkCampaignCompletion(campaignId: string): Promise<void> {
   try {
-    const campaign = await prisma.emailCampaign.findUnique({
-      where: { id: campaignId },
-      include: { sequenceSteps: true },
-    });
-
-    if (!campaign) return;
-
-    // Skip completion detection for PAUSED or CANCELLED campaigns
-    if (campaign.status === "PAUSED" || campaign.status === "CANCELLED" || campaign.status === "COMPLETED") {
-      return;
-    }
-
-    // IMPORTANT: If this is a sequence campaign, the worker should NOT mark it completed.
-    // The sequenceScheduler handles marking sequence campaigns as COMPLETED after all
-    // recipients have finished all steps.
-    if (campaign.sequenceSteps.length > 0) {
-      return;
-    }
-
-    const nonTerminalCount = await prisma.emailJob.count({
-      where: {
-        campaignId: campaignId,
-        status: { notIn: ["SENT", "FAILED", "CANCELLED"] },
-      },
-    });
-
-    if (nonTerminalCount === 0) {
-      await prisma.emailCampaign.updateMany({
-        where: { id: campaignId, status: { in: ["SENDING", "SCHEDULED"] } },
-        data: { status: "COMPLETED" },
-      });
-      console.log(`Campaign ${campaignId} completed — all jobs terminal`);
-    }
+    await checkAndCompleteCampaign(campaignId, { skipSequences: true });
   } catch (err) {
     console.error(`Error checking campaign completion for ${campaignId}:`, err);
   }

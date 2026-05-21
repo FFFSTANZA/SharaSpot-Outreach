@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma";
+import { logger } from "./logger";
 
 export enum LogLevel {
     INFO = "INFO",
@@ -11,23 +13,16 @@ export interface LogEntry {
     level: LogLevel;
     category: "INFRASTRUCTURE" | "CAMPAIGN" | "SENDER" | "SECURITY" | "SUBSCRIPTION";
     message: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 }
 
-/**
- * System Logger — writes critical infrastructure and application events
- * to the SystemAuditLog table in PostgreSQL.
- * 
- * WHY use this: Standard console logs are ephemeral and hard to query at scale.
- * Persisting key events in the DB allows for building monitoring dashboards
- * and automated alert triggers.
- */
 export async function systemLog(entry: LogEntry): Promise<void> {
     const { level, category, message, metadata } = entry;
 
-    // Always log to console first for immediate visibility
-    const consoleMethod = level === LogLevel.ERROR || level === LogLevel.CRITICAL ? "error" : "log";
-    console[consoleMethod](`[SYSTEM][${category}][${level}] ${message}`, metadata || "");
+    const logFn = level === LogLevel.ERROR || level === LogLevel.CRITICAL
+      ? (msg: string, meta?: unknown) => logger.error({ category, ...(meta as Record<string, unknown>) }, msg)
+      : (msg: string, meta?: unknown) => logger.info({ category, ...(meta as Record<string, unknown>) }, msg);
+    logFn(`[${category}] ${message}`, metadata);
 
     try {
         await prisma.systemAuditLog.create({
@@ -35,26 +30,24 @@ export async function systemLog(entry: LogEntry): Promise<void> {
                 level,
                 category,
                 message,
-                metadata: metadata || {},
+                metadata: metadata as Prisma.InputJsonValue,
             },
         });
     } catch (err) {
-        // Fail-safe: if logging to the DB fails (e.g. DB is down), don't crash the application
-        console.error("[CRITICAL] Failed to write to SystemAuditLog:", err);
+        logger.error({ err }, "Failed to write to SystemAuditLog");
     }
 }
 
-// Convenience helpers
 export const sysLog = {
-    info: (category: LogEntry["category"], message: string, metadata?: Record<string, any>) =>
+    info: (category: LogEntry["category"], message: string, metadata?: Record<string, unknown>) =>
         systemLog({ level: LogLevel.INFO, category, message, metadata }),
 
-    warn: (category: LogEntry["category"], message: string, metadata?: Record<string, any>) =>
+    warn: (category: LogEntry["category"], message: string, metadata?: Record<string, unknown>) =>
         systemLog({ level: LogLevel.WARN, category, message, metadata }),
 
-    error: (category: LogEntry["category"], message: string, metadata?: Record<string, any>) =>
+    error: (category: LogEntry["category"], message: string, metadata?: Record<string, unknown>) =>
         systemLog({ level: LogLevel.ERROR, category, message, metadata }),
 
-    critical: (category: LogEntry["category"], message: string, metadata?: Record<string, any>) =>
+    critical: (category: LogEntry["category"], message: string, metadata?: Record<string, unknown>) =>
         systemLog({ level: LogLevel.CRITICAL, category, message, metadata }),
 };

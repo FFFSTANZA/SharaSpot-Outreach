@@ -125,14 +125,15 @@ export default function Hero() {
                                         <h3 className="px-3 mb-3 text-[9px] font-bold text-text-muted uppercase tracking-[0.2em]">Navigation</h3>
                                         <div className="space-y-1">
                                             {[
-                                                { icon: Inbox, label: "All Campaigns", active: true },
-                                                { icon: Star, label: "Starred" },
-                                                { icon: Clock, label: "Scheduled" },
-                                                { icon: Send, label: "Sent" },
-                                            ].map((item, i) => (
+                                                { icon: Inbox, label: "All Campaigns", active: true, id: "nav-all" },
+                                                { icon: Star, label: "Starred", id: "nav-starred" },
+                                                { icon: Clock, label: "Scheduled", id: "nav-scheduled" },
+                                                { icon: Send, label: "Sent", id: "nav-sent" },
+                                            ].map((item) => (
                                                 <button
-                                                    key={i}
+                                                    key={item.id}
                                                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${item.active ? 'bg-brand/10 text-brand' : 'text-text-secondary hover:bg-slate-200/50 hover:text-text-primary'}`}
+                                                    aria-label={item.label}
                                                 >
                                                     <item.icon size={18} />
                                                     <span className="text-[12px]">{item.label}</span>
@@ -186,18 +187,21 @@ export default function Hero() {
                                 {/* Dashboard Tabs */}
                                 <div className="px-8 border-b border-border-light flex items-center gap-8 bg-white">
                                     {[
-                                        { label: "Monitoring", active: true },
-                                        { label: "Inbox", active: false },
-                                        { label: "Billing", active: false },
-                                        { label: "Account", active: false },
-                                        { label: "Settings", active: false },
-                                    ].map((tab, i) => (
+                                        { label: "Monitoring", active: true, id: "tab-monitoring" },
+                                        { label: "Inbox", active: false, id: "tab-inbox" },
+                                        { label: "Billing", active: false, id: "tab-billing" },
+                                        { label: "Account", active: false, id: "tab-account" },
+                                        { label: "Settings", active: false, id: "tab-settings" },
+                                    ].map((tab) => (
                                         <div
-                                            key={i}
+                                            key={tab.id}
                                             className={`py-4 text-[11px] font-black uppercase tracking-[0.2em] cursor-pointer transition-all border-b-2 -mb-px ${tab.active
                                                 ? "border-brand text-brand"
                                                 : "border-transparent text-text-muted/60 hover:text-text-primary"
                                                 }`}
+                                            role="tab"
+                                            aria-selected={tab.active}
+                                            tabIndex={0}
                                         >
                                             {tab.label}
                                         </div>
@@ -207,12 +211,12 @@ export default function Hero() {
                                 {/* App Analytics */}
                                 <div className="px-8 py-6 grid grid-cols-4 gap-4 bg-[#fcfcfc] border-b border-border-light">
                                     {[
-                                        { icon: Mail, label: "Visible Batch", val: stats.sent.toLocaleString(), sub: "Last 24h", trend: "+1.2%" },
-                                        { icon: CheckCircle2, label: "Success Rate", val: "96%", color: "text-brand", sub: "Priority Node", trend: "Stable" },
-                                        { icon: TrendingUp, label: "Reputation", val: stats.index, sub: "Level 4 State", trend: "Peak" },
-                                        { icon: BarChart3, label: "Engagement", val: `${stats.replies}%`, sub: "Replies Detected", trend: "+0.4%" },
-                                    ].map((s, i) => (
-                                        <div key={i} className="bg-white rounded-xl border border-border-light p-4 shadow-sm hover:border-brand/40 hover:shadow-md transition-all cursor-default group/card">
+                                        { icon: Mail, label: "Visible Batch", val: stats.sent.toLocaleString(), sub: "Last 24h", trend: "+1.2%", id: "stat-batch" },
+                                        { icon: CheckCircle2, label: "Success Rate", val: "96%", color: "text-brand", sub: "Priority Node", trend: "Stable", id: "stat-success" },
+                                        { icon: TrendingUp, label: "Reputation", val: stats.index, sub: "Level 4 State", trend: "Peak", id: "stat-rep" },
+                                        { icon: BarChart3, label: "Engagement", val: `${stats.replies}%`, sub: "Replies Detected", trend: "+0.4%", id: "stat-engagement" },
+                                    ].map((s) => (
+                                        <div key={s.id} className="bg-white rounded-xl border border-border-light p-4 shadow-sm hover:border-brand/40 hover:shadow-md transition-all cursor-default group/card">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="p-1.5 rounded-lg bg-slate-50 group-hover/card:bg-brand/5 transition-colors">
                                                     <s.icon size={16} className={s.color || "text-text-muted"} />
@@ -244,12 +248,12 @@ export default function Hero() {
                                     {/* Actionable Table */}
                                     <div className="space-y-3 relative">
                                         {[
-                                            { to: "Sam Altman", initials: "SA", color: "bg-orange-100 text-orange-600", sub: "Strategic Inquiry: SharaSpot Delivery Engine", status: "SENT", time: "Just now", badge: "REPLIED", signal: 98 },
-                                            { to: "Naval Ravikant", initials: "NR", color: "bg-blue-100 text-blue-600", sub: "Outreach: Precision Scaling Infrastructure", status: "SENT", time: "4m ago", badge: "DELIVERED", signal: 99 },
-                                            { to: "Marc Andreessen", initials: "MA", color: "bg-purple-100 text-purple-600", sub: "Private Invitation: SharaSpot Protocol V2", status: sending ? "SENDING" : "SENT", time: sending ? "Syncing..." : "12m ago", badge: sending ? "ACTIVE" : "DELIVERED", signal: sending ? 45 : 97 },
-                                            { to: "Jensen Huang", initials: "JH", color: "bg-green-100 text-green-600", sub: "NVIDIA Partnership: SharaSpot Integration", status: "SENT", time: "31m ago", badge: "DELIVERED", signal: 100 },
-                                        ].map((row, i) => (
-                                            <div key={i} className={`p-4 rounded-2xl border bg-white flex items-center justify-between transition-all group/row ${row.status === 'SENDING' ? 'border-brand shadow-[0_0_40px_rgba(0,166,62,0.12)] ring-1 ring-brand/20' : 'border-border-light hover:border-brand/40 hover:shadow-lg shadow-sm'}`}>
+                                            { to: "Sam Altman", initials: "SA", id: "row-sam", color: "bg-orange-100 text-orange-600", sub: "Strategic Inquiry: SharaSpot Delivery Engine", status: "SENT", time: "Just now", badge: "REPLIED", signal: 98 },
+                                            { to: "Naval Ravikant", initials: "NR", id: "row-naval", color: "bg-blue-100 text-blue-600", sub: "Outreach: Precision Scaling Infrastructure", status: "SENT", time: "4m ago", badge: "DELIVERED", signal: 99 },
+                                            { to: "Marc Andreessen", initials: "MA", id: "row-marc", color: "bg-purple-100 text-purple-600", sub: "Private Invitation: SharaSpot Protocol V2", status: sending ? "SENDING" : "SENT", time: sending ? "Syncing..." : "12m ago", badge: sending ? "ACTIVE" : "DELIVERED", signal: sending ? 45 : 97 },
+                                            { to: "Jensen Huang", initials: "JH", id: "row-jensen", color: "bg-green-100 text-green-600", sub: "NVIDIA Partnership: SharaSpot Integration", status: "SENT", time: "31m ago", badge: "DELIVERED", signal: 100 },
+                                        ].map((row) => (
+                                            <div key={row.id} className={`p-4 rounded-2xl border bg-white flex items-center justify-between transition-all group/row ${row.status === 'SENDING' ? 'border-brand shadow-[0_0_40px_rgba(0,166,62,0.12)] ring-1 ring-brand/20' : 'border-border-light hover:border-brand/40 hover:shadow-lg shadow-sm'}`}>
                                                 <div className="flex items-center gap-4 flex-1">
                                                     <div className={`w-10 h-10 rounded-xl ${row.color} flex items-center justify-center text-[12px] font-black border border-white shadow-sm flex-shrink-0 group-hover/row:scale-105 transition-transform`}>
                                                         {row.initials}

@@ -24,7 +24,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
         // Create a default sender for the user
         senders: { create: { email, name, appPassword: "" } },
         // No subscription created on signup — user must go through Dodo Payments.
-        // Dodo handles the 7-day trial as part of the checkout flow.
+        // Dodo handles the subscription as part of the checkout flow.
         tags: {
           create: [
             { name: "Investor", color: "#ef4444" },

@@ -7,6 +7,7 @@ export interface SpamAnalysisResult {
   metrics: {
     capsRatio: number;
     punctuationDensity: number;
+    linkRatio: number;
   };
 }
 
@@ -43,6 +44,31 @@ export function analyzeSpamScore(subject: string, body: string): SpamAnalysisRes
   if (punctuationDensity > 0.05) score += 15;
   if (/[!]{3,}/.test(combined)) score += 10;
 
+  // 4. Outreach-specific checks
+  // Link ratio
+  const bodyText = body.replace(/<[^>]+>/g, "");
+  const linkTextMatches = body.match(/<a[^>]*>(.*?)<\/a>/gi) || [];
+  const linkText = linkTextMatches.map(a => a.replace(/<[^>]+>/g, "")).join("");
+  const linkRatio = bodyText.length > 0 ? linkText.length / bodyText.length : 0;
+  
+  if (linkRatio > 0.4) {
+    score += 20;
+    triggers.push("high-link-ratio");
+  }
+  
+  // Image-only check
+  const hasImages = /<img[^>]+>/i.test(body);
+  if (hasImages && bodyText.trim().length < 50) {
+    score += 25;
+    triggers.push("image-only");
+  }
+  
+  // HTML layout check
+  if (/max-width:\s*600px/i.test(body) && /margin:\s*0\s+auto/i.test(body)) {
+    score += 15;
+    triggers.push("marketing-template-layout");
+  }
+
   const finalScore = Math.min(100, score);
   const level = finalScore > 60 ? "high_risk" : finalScore > 25 ? "warning" : "safe";
 
@@ -53,6 +79,7 @@ export function analyzeSpamScore(subject: string, body: string): SpamAnalysisRes
     metrics: {
       capsRatio,
       punctuationDensity,
+      linkRatio,
     },
   };
 }

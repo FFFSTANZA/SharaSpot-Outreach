@@ -38,11 +38,10 @@ describe("Spam Detector", () => {
     });
 
     it("should detect spam trigger words", () => {
-        const subject = "Earn money from home";
-        const body = "Make money now! Free offer!";
+        const subject = "Urgent: work from home";
+        const body = "Make money now! Free! offer";
 
         const result = analyzeSpamScore(subject, body);
-        // Assuming "money" or "free" are in SPAM_TRIGGERS
         expect(result.triggers.length).toBeGreaterThan(0);
         expect(result.score).toBeGreaterThan(0);
     });

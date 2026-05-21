@@ -19,9 +19,9 @@ for (const varName of requiredVars) {
   }
 }
 
-const supabaseUrl = process.env.SUPABASE_URL ?? "";
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-const bucketName = process.env.SUPABASE_BUCKET_NAME ?? "sharaspot-attachments";
+const supabaseUrl = process.env.SUPABASE_URL || "https://placeholder-project.supabase.co";
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key-for-local-dev-only";
+const bucketName = process.env.SUPABASE_BUCKET_NAME || "sharaspot-attachments";
 
 export const supabase = createClient(supabaseUrl, serviceRoleKey);
 

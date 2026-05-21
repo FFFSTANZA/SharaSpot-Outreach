@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
-export const dynamic = 'force-dynamic';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
+import { BRAND_CONFIG } from "@/lib/config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -87,7 +87,7 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
   verification: {
-    google: "yv_v_Z_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v", // Placeholder: User should update this
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",
   },
   alternates: {
     canonical: siteUrl,
@@ -128,8 +128,8 @@ const jsonLd = {
       "description": "Professional cold outreach platform with multi-sender rotation and AI follow-up generation.",
       "offers": {
         "@type": "Offer",
-        "price": "29.00",
-        "priceCurrency": "USD"
+        "price": BRAND_CONFIG.pricing.global.amount.toFixed(2),
+        "priceCurrency": BRAND_CONFIG.pricing.global.currency
       }
     },
     {
@@ -173,7 +173,7 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
         />
       </head>
       <body

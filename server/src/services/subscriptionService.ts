@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { dodo } from "../config/dodo";
+import { logger } from "../utils/logger";
 import {
   DODO_PRODUCT_ID_GLOBAL,
   DODO_PRODUCT_ID_INDIA,
@@ -46,7 +47,7 @@ export async function logPaymentAuditEvent(
       },
     });
   } catch (err) {
-    console.error("[AUDIT] Failed to log payment event:", err);
+    logger.error({ err }, "[AUDIT] Failed to log payment event");
   }
 }
 
@@ -64,7 +65,7 @@ export async function createCheckoutSession(
   const countryCode = ipAddress ? await getCountryFromIp(ipAddress) : null;
   const productId = isIndia(countryCode) ? DODO_PRODUCT_ID_INDIA : DODO_PRODUCT_ID_GLOBAL;
 
-  console.log(`[CHECKOUT] Creating session for user ${userId}, product: ${productId}, country: ${countryCode}`);
+  logger.info({ userId, productId, countryCode }, "[CHECKOUT] Creating session");
 
   const session = await dodo.checkoutSessions.create({
     product_cart: [
@@ -88,11 +89,11 @@ export async function createCheckoutSession(
   const checkoutUrl = session.checkout_url || "";
 
   if (!sessionId) {
-    console.error("[CHECKOUT] CRITICAL: No session_id returned from Dodo!", session);
+    logger.error({ session }, "[CHECKOUT] No session_id returned from Dodo");
     throw new Error("Payment provider failed to create checkout session");
   }
 
-  console.log(`[CHECKOUT] Session created: ${sessionId} for user ${userId}`);
+  logger.info({ userId, sessionId }, "[CHECKOUT] Session created");
 
   return {
     checkoutUrl,
@@ -117,7 +118,7 @@ export async function cancelSubscription(userId: string): Promise<void> {
         cancel_at_next_billing_date: true,
       });
     } catch (err: any) {
-      console.error("[SUBSCRIPTION] Dodo cancelation failed:", err.message);
+      logger.error({ err }, "[SUBSCRIPTION] Dodo cancelation failed");
       throw new Error(`Failed to cancel subscription via payment provider: ${err.message}`);
     }
   }
@@ -148,7 +149,7 @@ export async function reactivateSubscription(userId: string): Promise<void> {
         cancel_at_next_billing_date: false,
       });
     } catch (err: any) {
-      console.error("[SUBSCRIPTION] Dodo reactivation failed:", err.message);
+      logger.error({ err }, "[SUBSCRIPTION] Dodo reactivation failed");
       throw new Error(`Failed to reactivate subscription: ${err.message}`);
     }
   }
@@ -176,7 +177,7 @@ export async function updateSubscriptionFromWebhook(
   }
 ): Promise<void> {
   if (!dodoSubscriptionId) {
-    console.error("[WEBHOOK] updateSubscriptionFromWebhook called with no subscription ID");
+    logger.error("[WEBHOOK] updateSubscriptionFromWebhook called with no subscription ID");
     return;
   }
 
@@ -185,7 +186,7 @@ export async function updateSubscriptionFromWebhook(
   });
 
   if (!subscription) {
-    console.warn(`[WEBHOOK] Subscription ${dodoSubscriptionId} not found in local DB.`);
+    logger.warn({ dodoSubscriptionId }, "[WEBHOOK] Subscription not found in local DB");
     await logPaymentAuditEvent("subscription.update.failed", dodoSubscriptionId, {
       reason: "subscription_not_found",
       dodoSubscriptionId,
@@ -230,7 +231,7 @@ export async function updateSubscriptionFromWebhook(
     await redis.del(`${PREMIUM_CACHE_PREFIX}${subscription.userId}`).catch(() => { });
   }
 
-  console.log(`[WEBHOOK] Updated subscription ${dodoSubscriptionId}: ${previousStatus} -> ${newStatus || previousStatus}`);
+  logger.info({ dodoSubscriptionId, previousStatus, newStatus }, "[WEBHOOK] Updated subscription");
 }
 
 export async function handleCheckoutCompleted(
@@ -239,16 +240,16 @@ export async function handleCheckoutCompleted(
   dodoSubscriptionId?: string,
   dodoCustomerId?: string
 ): Promise<void> {
-  console.log(`[SUBSCRIPTION-SYNC] Finalizing checkout for user ${userId}, session ${sessionId}, subId: ${dodoSubscriptionId}`);
+  logger.info({ userId, sessionId, dodoSubscriptionId }, "[SUBSCRIPTION-SYNC] Finalizing checkout");
 
   if (!userId) {
-    console.error("[SUBSCRIPTION-SYNC] CRITICAL: No userId provided!");
+    logger.error("[SUBSCRIPTION-SYNC] No userId provided");
     throw new Error("User ID is required for checkout completion");
   }
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
-    console.error(`[SUBSCRIPTION-SYNC] CRITICAL: User ${userId} not found!`);
+    logger.error({ userId }, "[SUBSCRIPTION-SYNC] User not found");
     throw new Error(`User ${userId} not found`);
   }
 
@@ -257,13 +258,9 @@ export async function handleCheckoutCompleted(
   if (dodoSubscriptionId && dodoSubscriptionId !== "sub_test_premium_demo") {
     try {
       dodoSubData = await dodo.subscriptions.retrieve(dodoSubscriptionId);
-      console.log(`[SUBSCRIPTION-SYNC] Fetched Dodo subscription ${dodoSubscriptionId}:`, {
-        status: dodoSubData?.status,
-        nextBillingDate: dodoSubData?.next_billing_date,
-        trialPeriodDays: dodoSubData?.trial_period_days,
-      });
+      logger.info({ dodoSubscriptionId, status: dodoSubData?.status }, "[SUBSCRIPTION-SYNC] Fetched Dodo subscription");
     } catch (err: any) {
-      console.warn(`[SUBSCRIPTION-SYNC] Could not fetch Dodo subscription ${dodoSubscriptionId}:`, err.message);
+      logger.warn({ err, dodoSubscriptionId }, "[SUBSCRIPTION-SYNC] Could not fetch Dodo subscription");
     }
   }
 
@@ -312,12 +309,12 @@ export async function handleCheckoutCompleted(
         where: { userId },
         data: subscriptionData,
       });
-      console.log(`[SUBSCRIPTION-SYNC] Updated existing subscription for ${userId}`);
+      logger.info({ userId }, "[SUBSCRIPTION-SYNC] Updated existing subscription");
     } else {
       await tx.subscription.create({
         data: subscriptionData,
       });
-      console.log(`[SUBSCRIPTION-SYNC] Created new subscription for ${userId}`);
+      logger.info({ userId }, "[SUBSCRIPTION-SYNC] Created new subscription");
     }
 
     await tx.systemAuditLog.create({
@@ -345,7 +342,7 @@ export async function handleCheckoutCompleted(
     dodoCustomerId,
   });
 
-  console.log(`[SUBSCRIPTION-SYNC] Success for user ${userId}`);
+  logger.info({ userId }, "[SUBSCRIPTION-SYNC] Success");
 }
 
 export async function activateSubscriptionFromPayment(
@@ -355,7 +352,7 @@ export async function activateSubscriptionFromPayment(
   sessionId?: string,
   paymentId?: string
 ): Promise<void> {
-  console.log(`[SUBSCRIPTION-ACTIVATE] Activating for user ${userId}, subId: ${dodoSubscriptionId}, paymentId: ${paymentId}`);
+  logger.info({ userId, dodoSubscriptionId, paymentId }, "[SUBSCRIPTION-ACTIVATE] Activating");
 
   if (!userId) {
     throw new Error("User ID is required");
@@ -367,7 +364,7 @@ export async function activateSubscriptionFromPayment(
     try {
       dodoSubData = await dodo.subscriptions.retrieve(dodoSubscriptionId);
     } catch (err: any) {
-      console.warn(`[SUBSCRIPTION-ACTIVATE] Could not fetch Dodo subscription ${dodoSubscriptionId}:`, err.message);
+      logger.warn({ err, dodoSubscriptionId }, "[SUBSCRIPTION-ACTIVATE] Could not fetch Dodo subscription");
     }
   }
 
@@ -416,18 +413,18 @@ export async function activateSubscriptionFromPayment(
         where: { userId },
         data: subscriptionData,
       });
-      console.log(`[SUBSCRIPTION-ACTIVATE] Updated subscription for ${userId}`);
+      logger.info({ userId }, "[SUBSCRIPTION-ACTIVATE] Updated subscription");
     } else {
       await tx.subscription.create({
         data: subscriptionData,
       });
-      console.log(`[SUBSCRIPTION-ACTIVATE] Created subscription for ${userId}`);
+      logger.info({ userId }, "[SUBSCRIPTION-ACTIVATE] Created subscription");
     }
   });
 
   await redis.del(`${PREMIUM_CACHE_PREFIX}${userId}`).catch(() => { });
 
-  console.log(`[SUBSCRIPTION-ACTIVATE] Success for user ${userId}`);
+  logger.info({ userId }, "[SUBSCRIPTION-ACTIVATE] Success");
 }
 
 
@@ -470,7 +467,7 @@ export async function syncSubscriptionFromDodo(userId: string): Promise<{ synced
     const dodoSub = dodoSubRaw as any;
 
     if (!dodoSub) {
-      console.warn(`[SYNC] No Dodo subscription found for ${subscription.dodoSubscriptionId}`);
+      logger.warn({ dodoSubId: subscription.dodoSubscriptionId }, "[SYNC] No Dodo subscription found");
       return { synced: false, subscription };
     }
 
@@ -517,12 +514,12 @@ export async function syncSubscriptionFromDodo(userId: string): Promise<{ synced
       newStatus: dodoSub.status,
     });
 
-    console.log(`[SYNC] Successfully synced subscription for user ${userId}: ${dodoSub.status}`);
+    logger.info({ userId, status: dodoSub.status }, "[SYNC] Successfully synced subscription");
 
     const updatedSub = await prisma.subscription.findUnique({ where: { userId } });
     return { synced: true, subscription: updatedSub };
   } catch (err: any) {
-    console.error(`[SYNC] Failed to sync subscription for user ${userId}:`, err.message);
+    logger.error({ err, userId }, "[SYNC] Failed to sync subscription");
     return { synced: false, subscription };
   }
 }

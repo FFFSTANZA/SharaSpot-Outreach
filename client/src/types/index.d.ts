@@ -50,13 +50,21 @@ export interface CreateCampaignPayload {
   bccEmails?: string[];
   replyTo?: string;
   attachments?: UploadedAttachment[];
-  steps?: SequenceStepInput[];
+  steps?: SequenceStepInputForApi[];
   trackOpens?: boolean;
   trackClicks?: boolean;
   timezone?: string;
   businessStartHour?: number | null;
   businessEndHour?: number | null;
   isPriority?: boolean;
+}
+
+// Serialized version of SequenceStepInput for API requests (condition as string, not object)
+export interface SequenceStepInputForApi {
+  subject: string;
+  body: string;
+  waitDays: number;
+  condition?: SequenceConditionType;
 }
 
 // POST /attachments/upload response item — metadata for an uploaded file
@@ -307,6 +315,7 @@ export interface SequenceStepType {
   subject: string;
   body: string;
   waitDays: number;
+  condition?: string;
 }
 
 export interface StepStatusType {
@@ -334,6 +343,15 @@ export interface SequenceResponse {
   steps: SequenceStepType[];
   recipients: RecipientSequenceStateType[];
   hasSequence: boolean;
+  stepAnalytics?: StepAnalyticsType[];
+}
+
+export interface StepAnalyticsType {
+  stepNumber: number;
+  subject: string;
+  sentCount: number;
+  repliedCount: number;
+  replyRate: number;
 }
 
 // Sequence step input for campaign creation

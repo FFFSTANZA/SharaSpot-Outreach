@@ -2,6 +2,7 @@ import { prisma } from "../config/prisma";
 import { syncInboxForSender } from "../utils/inboxService";
 import { Job } from "bullmq";
 import { inboxQueue } from "../queues/inboxQueue";
+import { logger } from "../utils/logger";
 
 const INBOX_SYNC_INTERVAL_MS = parseInt(
   process.env.INBOX_SYNC_INTERVAL_MS || "300000",
@@ -27,12 +28,12 @@ export async function processInboxSyncJob(job: Job<InboxSyncJobData>): Promise<v
     const { requirePremium } = await import("../utils/premiumCheck");
     const premiumCheck = await requirePremium(senderRecord.userId, "Inbox Sync");
     if (!premiumCheck.allowed) {
-      console.warn(`Premium check failed for user ${senderRecord.userId}. Skipping inbox sync for sender ${senderId}.`);
+      logger.warn(`Premium check failed for user ${senderRecord.userId}. Skipping inbox sync for sender ${senderId}.`);
       return;
     }
   }
 
-  console.log(`[InboxWorker] Starting sync for sender: ${senderId}`);
+  logger.info(`[InboxWorker] Starting sync for sender: ${senderId}`);
 
   const syncJobRecord = await prisma.inboxSyncJob.create({
     data: {
@@ -55,7 +56,7 @@ export async function processInboxSyncJob(job: Job<InboxSyncJobData>): Promise<v
       },
     });
 
-    console.log(`[InboxWorker] Synced ${result.synced} emails for sender: ${senderId}`);
+    logger.info(`[InboxWorker] Synced ${result.synced} emails for sender: ${senderId}`);
   } catch (err: any) {
     await prisma.inboxSyncJob.update({
       where: { id: syncJobRecord.id },
@@ -66,7 +67,7 @@ export async function processInboxSyncJob(job: Job<InboxSyncJobData>): Promise<v
       },
     });
 
-    console.error(`[InboxWorker] Sync failed for sender ${senderId}:`, err);
+    logger.error({ err }, `[InboxWorker] Sync failed for sender ${senderId}`);
     throw err;
   }
 }
@@ -109,5 +110,5 @@ export async function syncAllInboxes(): Promise<void> {
     );
   }
 
-  console.log(`[InboxWorker] Queued inbox sync for ${senders.length} senders`);
+  logger.info(`[InboxWorker] Queued inbox sync for ${senders.length} senders`);
 }

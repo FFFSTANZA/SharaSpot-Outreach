@@ -19,14 +19,41 @@ export interface PreprocessOptions {
 }
 
 function extractUtmParams(href: string): { utmSource?: string; utmMedium?: string; utmCampaign?: string; utmContent?: string; utmTerm?: string } {
-  const url = new URL(href);
-  return {
-    utmSource: url.searchParams.get("utm_source") || undefined,
-    utmMedium: url.searchParams.get("utm_medium") || undefined,
-    utmCampaign: url.searchParams.get("utm_campaign") || undefined,
-    utmContent: url.searchParams.get("utm_content") || undefined,
-    utmTerm: url.searchParams.get("utm_term") || undefined,
-  };
+  try {
+    const url = new URL(href);
+    return {
+      utmSource: url.searchParams.get("utm_source") || undefined,
+      utmMedium: url.searchParams.get("utm_medium") || undefined,
+      utmCampaign: url.searchParams.get("utm_campaign") || undefined,
+      utmContent: url.searchParams.get("utm_content") || undefined,
+      utmTerm: url.searchParams.get("utm_term") || undefined,
+    };
+  } catch (e) {
+    return {};
+  }
+}
+
+/**
+ * Converts HTML email body to clean plain text.
+ * Preserves paragraph structure and handles common HTML entities.
+ * Used as the text/plain alternative — SpamAssassin penalises HTML-only emails.
+ */
+export function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function buildTrackingUrl(options: PreprocessOptions, originalUrl: string, utmParams?: ReturnType<typeof extractUtmParams>): string {
@@ -52,7 +79,7 @@ function buildTrackingUrl(options: PreprocessOptions, originalUrl: string, utmPa
  * The actual pixel is served by the /track/open endpoint.
  */
 const TRACKING_PIXEL_TEMPLATE = (src: string) =>
-  `<img src="${src}" width="1" height="1" style="display:block!important;width:1px!important;height:1px!important;border:0!important;margin:0!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;position:absolute!important" alt="" />`;
+  `<img src="${src}" width="1" height="1" style="display:none" alt="">`;
 
 /**
  * Regex to match <a href="..."> tags.

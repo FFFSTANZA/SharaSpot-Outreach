@@ -3,7 +3,7 @@
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./Topbar";
 import { CampaignList } from "./CampaignList";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getSenders, getDashboardStats, DashboardStats } from "@/lib/apis";
@@ -60,7 +60,7 @@ function AnalyticsCard({
   );
 }
 
-const Dashboard = () => {
+const DashboardComponent = () => {
   const { user } = useAuth();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -152,7 +152,7 @@ const Dashboard = () => {
   }, [results, globalStats]);
 
   return (
-    <AuthGuard>
+    <AuthGuard requirePremium={true}>
       <ErrorBoundary>
         <SidebarProvider>
           <div className="flex h-screen bg-background font-sans">
@@ -286,4 +286,10 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default function Dashboard() {
+  return (
+    <Suspense fallback={<InlineLoader message="Synchronizing dashboard..." />}>
+      <DashboardComponent />
+    </Suspense>
+  );
+}

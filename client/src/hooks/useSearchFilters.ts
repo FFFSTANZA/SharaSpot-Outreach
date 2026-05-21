@@ -118,12 +118,14 @@ export function useSearchFilters({ endpoint, defaultDateField = "createdAt" }: U
     }
   }, [endpoint]);
 
-  // Initial fetch and URL sync
+  // Initial fetch and URL sync (only on mount)
+  // Filter changes are handled directly by setFilter/setQuery/setMultipleFilters
   useEffect(() => {
     syncUrl(filters);
     fetchResults(filters);
     return () => abortRef.current?.abort();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const setQuery = useCallback((q: string) => {
     if (filters.q === q) return;

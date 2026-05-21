@@ -13,24 +13,26 @@ import { errorMiddleware } from "./middlewares/errorMiddleware";
 import { rateLimit } from "express-rate-limit";
 import { prisma } from "./config/prisma";
 import { redis } from "./config/redis";
+import { logger } from "./utils/logger";
+import { loadConfig } from "./config/env";
+import { trackingBuffer } from "./services/trackingBufferService";
 
-console.log("[SHARASPOT-BOOT] Starting Gateway...");
-console.log("[SHARASPOT-BOOT] NODE_ENV:", process.env.NODE_ENV);
-console.log("[SHARASPOT-BOOT] PORT:", process.env.PORT);
+const config = loadConfig();
+logger.info({ env: config.NODE_ENV, port: config.PORT }, "Starting Gateway");
 
 // Ensure uploads directory exists
-const uploadsDir = path.join(process.cwd(), "uploads");
+const uploadsDir = path.join(process.cwd(), config.UPLOAD_DIR);
 if (!fs.existsSync(uploadsDir)) {
-  console.log("[SHARASPOT-BOOT] Creating uploads directory...");
+  logger.debug("Creating uploads directory");
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("[CRITICAL] Unhandled Rejection:", reason);
+process.on("unhandledRejection", (reason) => {
+  logger.error({ reason }, "[CRITICAL] Unhandled Rejection");
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("[CRITICAL] Uncaught Exception:", err);
+  logger.error({ err }, "[CRITICAL] Uncaught Exception");
 });
 
 /* ROUTE IMPORTS */
@@ -46,7 +48,6 @@ import trackingRoutes from "./routes/trackingRoutes";
 import trackingMetricsRoutes from "./routes/trackingMetricsRoutes";
 import replyRoutes from "./routes/replyRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes";
-import { startTrackingBuffer, stopTrackingBuffer } from "./controllers/trackingControllers";
 import subscriptionRoutes, { webhookRouter } from "./routes/subscriptionRoutes";
 import validationRoutes from "./routes/validationRoutes";
 import premiumRoutes from "./routes/premiumRoutes";
@@ -67,19 +68,19 @@ export { app };
 app.set("trust proxy", 1);
 
 /* CORE MIDDLEWARE */
-if (process.env.NODE_ENV !== "development") {
+if (config.NODE_ENV !== "development") {
   app.use(helmet());
   app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 }
 app.use(morgan("common"));
 app.use(cors(corsOptions));
 app.use(cookieParser());
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), config.UPLOAD_DIR)));
 
 // Rate Limiting - Global & Auth specific
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === "development" ? 99999 : 10000, // Increased to 10,000
+  max: config.NODE_ENV === "development" ? 99999 : 10000,
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
@@ -87,7 +88,7 @@ const globalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === "development" ? 99999 : 5000,
+  max: config.NODE_ENV === "development" ? 99999 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
@@ -108,10 +109,15 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: false, limit: "2mb" }));
 
 /* PUBLIC ROUTES */
+interface HealthStatus {
+  status: string; env: string; time: string;
+  services: { api: string; database: string; redis: string; worker: string };
+}
+
 app.get("/health", async (req, res) => {
-  const health: any = {
+  const health: HealthStatus = {
     status: "optimal",
-    env: process.env.NODE_ENV,
+    env: config.NODE_ENV,
     time: new Date().toISOString(),
     services: {
       api: "up",
@@ -152,7 +158,7 @@ app.get("/health", async (req, res) => {
 });
 app.use("/track", trackingRoutes);
 app.use("/auth", authRoutes);
-app.use("/api/subscription/webhook", webhookRouter); // Special public route for Stripe
+app.use("/api/subscription/webhook", webhookRouter);
 
 /* MCP Portal - Dedicated Auth supports API Keys & JWT */
 app.use("/api/mcp", mcpRoutes);
@@ -188,56 +194,40 @@ app.use("/api", api);
 /* GLOBAL ERROR HANDLER */
 app.use(errorMiddleware);
 
-/* ENV VALIDATION */
-const requiredEnvs = [
-  "DATABASE_URL",
-  "REDIS_URL",
-  "JWT_ACCESS_SECRET",
-  "JWT_REFRESH_SECRET",
-  "ENCRYPTION_KEY",
-];
-
-const missingEnvs = requiredEnvs.filter((e) => !process.env[e]);
-if (missingEnvs.length > 0 && process.env.NODE_ENV !== "test") {
-  console.error(`[CRITICAL] Missing required environment variables: ${missingEnvs.join(", ")}`);
-  process.exit(1);
-}
-
 /* SERVER INITIALIZATION */
-const port = Number(process.env.PORT) || 8000;
-let server: any;
+let server: ReturnType<typeof app.listen>;
 
-if (process.env.NODE_ENV !== "test") {
+if (config.NODE_ENV !== "test") {
   // Initialize tracking event buffer flusher
-  startTrackingBuffer();
+  trackingBuffer.start();
 
   // Initialize MCP Server
   initializeMCP();
 
-  server = app.listen(port, "0.0.0.0", () => {
-    console.log(`[SHARASPOT] Gateway initialized on port ${port}`);
+  server = app.listen(config.PORT, "0.0.0.0", () => {
+    logger.info({ port: config.PORT }, "[SHARASPOT] Gateway initialized");
   });
 }
 
 /* GRACEFUL SHUTDOWN */
 async function gracefulShutdown(signal: string) {
-  console.log(`\n[SHARASPOT] Received ${signal}, shutting down gracefully...`);
+  logger.info({ signal }, "[SHARASPOT] Shutting down gracefully");
 
   if (server) {
     server.close(() => {
-      console.log("[SHARASPOT] HTTP server closed");
+      logger.info("[SHARASPOT] HTTP server closed");
     });
   }
 
   try {
     await prisma.$disconnect();
-    console.log("[SHARASPOT] Prisma disconnected");
-    stopTrackingBuffer();
+    logger.info("[SHARASPOT] Prisma disconnected");
+    trackingBuffer.stop();
     await redis.quit();
-    console.log("[SHARASPOT] Redis disconnected");
+    logger.info("[SHARASPOT] Redis disconnected");
     process.exit(0);
   } catch (err) {
-    console.error("[SHARASPOT] Error during graceful shutdown:", err);
+    logger.error({ err }, "[SHARASPOT] Error during graceful shutdown");
     process.exit(1);
   }
 }

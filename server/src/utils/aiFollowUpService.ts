@@ -12,6 +12,7 @@ interface GeneratedFollowUp {
   body: string;
   waitDays: number;
   contextSnippet?: string;
+  condition?: string;
 }
 
 async function callAI(prompt: string, systemPrompt: string): Promise<string> {

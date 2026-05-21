@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Script from "next/script";
 import { loginWithGoogle } from "../../lib/apis";
@@ -35,7 +35,7 @@ declare global {
   }
 }
 
-const LoginPage = () => {
+const LoginComponent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isSubscriptionSuccess = searchParams?.get("subscription") === "success";
@@ -254,4 +254,10 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-500 font-semibold">Loading secure gateway...</div></div>}>
+      <LoginComponent />
+    </Suspense>
+  );
+}

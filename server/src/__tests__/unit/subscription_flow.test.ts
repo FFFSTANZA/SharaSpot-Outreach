@@ -22,7 +22,7 @@ jest.mock("../../config/prisma", () => ({
         },
         processedWebhook: {
             findUnique: jest.fn(),
-            create: jest.fn(),
+            upsert: jest.fn().mockResolvedValue({ id: "wh_1" }),
         },
         user: {
             findUnique: jest.fn(),
@@ -30,11 +30,14 @@ jest.mock("../../config/prisma", () => ({
         systemAuditLog: {
             create: jest.fn(),
         },
-        $transaction: jest.fn((cb) => cb({
+        $transaction: jest.fn().mockImplementation((cb) => cb({
             subscription: {
                 findUnique: jest.fn().mockResolvedValue(null),
                 create: jest.fn().mockResolvedValue({ id: "new_sub" }),
                 update: jest.fn(),
+            },
+            processedWebhook: {
+                findUnique: jest.fn().mockResolvedValue(null),
             },
             systemAuditLog: {
                 create: jest.fn(),
@@ -145,14 +148,15 @@ describe("Subscription Flow - Complete Payment System", () => {
                 status: jest.fn().mockReturnThis(),
             } as any;
 
-            (prisma.processedWebhook.findUnique as jest.Mock).mockResolvedValue(null);
             (prisma.subscription.findUnique as jest.Mock).mockResolvedValue(null);
             (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: userId, email: userEmail });
 
             await handleWebhook(mockReq, mockRes);
 
-            expect(prisma.processedWebhook.create).toHaveBeenCalledWith({
-                data: { eventId: "evt_checkout_1", eventType: "checkout.session.completed" },
+            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
+                where: { eventId: "evt_checkout_1" },
+                create: { eventId: "evt_checkout_1", eventType: "checkout.session.completed" },
+                update: {},
             });
             expect(mockRes.json).toHaveBeenCalledWith({ success: true });
         });
@@ -177,8 +181,6 @@ describe("Subscription Flow - Complete Payment System", () => {
                 status: jest.fn().mockReturnThis(),
             } as any;
 
-            (prisma.processedWebhook.findUnique as jest.Mock).mockResolvedValue(null);
-
             await handleWebhook(mockReq, mockRes);
 
             expect(mockRes.status).toHaveBeenCalledWith(400);
@@ -196,7 +198,11 @@ describe("Subscription Flow - Complete Payment System", () => {
                 status: jest.fn().mockReturnThis(),
             } as any;
 
-            (prisma.processedWebhook.findUnique as jest.Mock).mockResolvedValue({ id: "marker_1" });
+            (prisma.$transaction as jest.Mock).mockImplementationOnce((cb) => cb({
+                processedWebhook: {
+                    findUnique: jest.fn().mockResolvedValue({ id: "marker_1" }),
+                },
+            }));
 
             await handleWebhook(mockReq, mockRes);
 
@@ -225,7 +231,6 @@ describe("Subscription Flow - Complete Payment System", () => {
                 status: jest.fn().mockReturnThis(),
             } as any;
 
-            (prisma.processedWebhook.findUnique as jest.Mock).mockResolvedValue(null);
             (prisma.subscription.findFirst as jest.Mock).mockResolvedValue({
                 id: "sub_db_1",
                 userId,
@@ -263,7 +268,6 @@ describe("Subscription Flow - Complete Payment System", () => {
                 status: jest.fn().mockReturnThis(),
             } as any;
 
-            (prisma.processedWebhook.findUnique as jest.Mock).mockResolvedValue(null);
             (prisma.subscription.findFirst as jest.Mock).mockResolvedValue({
                 id: "sub_db_2",
                 userId,

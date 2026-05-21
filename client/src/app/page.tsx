@@ -54,10 +54,10 @@ export default function LandingPage() {
                     onClick={() => router.push("/login")}
                     className="w-full sm:w-auto bg-brand text-white text-sm font-semibold px-8 py-3.5 rounded-lg hover:bg-brand/90 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group shadow-xl shadow-brand/10"
                   >
-                    Start for free
+                    Get Started Now
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
-                  <p className="text-xs text-text-muted">7-day free trial. No credit card required.</p>
+                  <p className="text-xs text-text-muted">Instant setup • 100% secure payment via Dodo</p>
                 </div>
               </div>
 

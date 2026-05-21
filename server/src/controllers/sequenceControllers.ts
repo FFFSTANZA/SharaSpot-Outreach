@@ -25,10 +25,69 @@ export const getSequence = async (
       orderBy: { recipientEmail: "asc" },
     });
 
+    // Compute per-step analytics
+    const stepAnalytics = steps.map((step) => {
+      const stepNum = step.stepNumber;
+      let sentCount = 0;
+      let repliedCount = 0;
+
+      for (const r of recipients) {
+        const statuses = r.stepStatuses as any[];
+        const stepStatus = statuses[stepNum];
+        if (!stepStatus) continue;
+
+        if (stepStatus.status === "SENT") {
+          sentCount++;
+          // Count reply only if this specific step's email job was replied to
+          if (stepStatus.emailJobId) {
+            // We'll batch-fetch reply events below
+          }
+        }
+      }
+
+      return {
+        stepNumber: stepNum,
+        subject: step.subject,
+        sentCount,
+        repliedCount: 0, // Will be filled by batch query
+        replyRate: 0,
+      };
+    });
+
+    // Batch fetch reply events for all step email jobs
+    const stepEmailJobIds = new Map<number, string[]>();
+    for (const r of recipients) {
+      const statuses = r.stepStatuses as any[];
+      for (const step of steps) {
+        const stepStatus = statuses[step.stepNumber];
+        if (stepStatus?.status === "SENT" && stepStatus.emailJobId) {
+          if (!stepEmailJobIds.has(step.stepNumber)) {
+            stepEmailJobIds.set(step.stepNumber, []);
+          }
+          stepEmailJobIds.get(step.stepNumber)!.push(stepStatus.emailJobId);
+        }
+      }
+    }
+
+    for (const [stepNum, jobIds] of stepEmailJobIds) {
+      const replyCount = await prisma.trackingEvent.count({
+        where: {
+          emailJobId: { in: jobIds },
+          eventType: "REPLY",
+        },
+      });
+      const analytics = stepAnalytics.find((a) => a.stepNumber === stepNum);
+      if (analytics) {
+        analytics.repliedCount = replyCount;
+        analytics.replyRate = analytics.sentCount > 0 ? Math.round((replyCount / analytics.sentCount) * 100) : 0;
+      }
+    }
+
     res.status(200).json({
       steps,
       recipients,
       hasSequence: steps.length > 0,
+      stepAnalytics,
     });
   } catch (error) {
     res.status(500).json({ message: "An error occurred" });

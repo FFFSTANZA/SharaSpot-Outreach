@@ -111,7 +111,7 @@ export default function GuidePage() {
             ))}
           </div>
           <Button className="hidden md:block w-auto px-5 py-2 rounded-lg text-sm font-semibold" onClick={() => router.push("/login")}>
-            Start Free
+            Get Started
           </Button>
           <button className="md:hidden p-2" onClick={() => setMobileNav(!mobileNav)}>
             {mobileNav ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -122,7 +122,7 @@ export default function GuidePage() {
             {navItems.map((item) => (
               <a key={item.href} href={item.href} className="block text-sm font-medium text-slate-600 py-2" onClick={() => setMobileNav(false)}>{item.label}</a>
             ))}
-            <Button className="w-full rounded-lg mt-2" onClick={() => router.push("/login")}>Start Free</Button>
+            <Button className="w-full rounded-lg mt-2" onClick={() => router.push("/login")}>Get Started</Button>
           </div>
         )}
       </nav>
@@ -564,10 +564,10 @@ export default function GuidePage() {
         {/* CTA */}
         <div className="rounded-2xl bg-slate-900 p-8 text-center">
           <h3 className="text-xl font-bold text-white mb-2">Ready to start?</h3>
-          <p className="text-sm text-slate-400 mb-6">Create your free account and send your first campaign today.</p>
+          <p className="text-sm text-slate-400 mb-6">Activate your outreach today and send your first campaign.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button className="w-full sm:w-auto" onClick={() => router.push("/login")}>
-              Get Started Free
+              Get Started
             </Button>
             <Button variant="secondary" className="w-full sm:w-auto" onClick={() => router.push("/faq")}>
               Read FAQ
