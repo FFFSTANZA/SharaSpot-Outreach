@@ -112,7 +112,7 @@ export default function ContactListsSidebar({
                     </h3>
                     <button
                         onClick={() => setIsCreating(true)}
-                        className="p-1 hover:bg-gray-100 rounded-md text-gray-400 hover:text-amber-500 transition-all"
+                        className="p-1 hover:bg-gray-100 rounded-md text-gray-400 hover:text-brand transition-all"
                         title="Create New List"
                     >
                         <FolderPlus className="h-4 w-4" />
@@ -127,25 +127,25 @@ export default function ContactListsSidebar({
                         placeholder="Search lists..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-transparent rounded-lg text-xs font-medium focus:bg-white focus:border-amber-200 outline-none transition-all"
+                        className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-transparent rounded-lg text-xs font-medium focus:bg-white focus:border-brand-muted outline-none transition-all"
                     />
                 </div>
 
                 {/* Create Input */}
                 {isCreating && (
                     <form onSubmit={handleCreate} className="animate-in slide-in-from-top-2 duration-200">
-                        <div className="flex items-center gap-1 bg-amber-50 p-1.5 rounded-xl border border-amber-100">
+                        <div className="flex items-center gap-1 bg-brand-light p-1.5 rounded-xl border border-brand-muted">
                             <input
                                 autoFocus
                                 type="text"
                                 value={newListName}
                                 onChange={(e) => setNewListName(e.target.value)}
                                 placeholder="List name..."
-                                className="flex-1 bg-transparent border-none outline-none text-xs font-semibold text-amber-900 placeholder:text-amber-300"
+                                className="flex-1 bg-transparent border-none outline-none text-xs font-semibold text-gray-800 placeholder:text-brand-muted"
                             />
                             <button
                                 type="submit"
-                                className="p-1 text-amber-600 hover:bg-amber-100 rounded-lg"
+                                className="p-1 text-brand hover:bg-brand-muted rounded-lg"
                                 disabled={!newListName.trim()}
                             >
                                 <Check className="h-3.5 w-3.5" />
@@ -153,7 +153,7 @@ export default function ContactListsSidebar({
                             <button
                                 type="button"
                                 onClick={() => setIsCreating(false)}
-                                className="p-1 text-gray-400 hover:bg-amber-100 rounded-lg"
+                                className="p-1 text-gray-400 hover:bg-brand-muted rounded-lg"
                             >
                                 <X className="h-3.5 w-3.5" />
                             </button>
@@ -189,16 +189,16 @@ export default function ContactListsSidebar({
                         filteredLists.map((list) => (
                             <div key={list.id} className="group relative">
                                 {editingId === list.id ? (
-                                    <div className="flex items-center gap-1 bg-amber-50 p-1 rounded-xl border border-amber-100 mx-1">
+                                    <div className="flex items-center gap-1 bg-brand-light p-1 rounded-xl border border-brand-muted mx-1">
                                         <input
                                             autoFocus
                                             type="text"
                                             value={editName}
                                             onChange={(e) => setEditName(e.target.value)}
                                             onKeyDown={(e) => e.key === "Enter" && handleRename(list.id)}
-                                            className="flex-1 bg-transparent border-none outline-none text-xs font-semibold text-amber-900"
+                                            className="flex-1 bg-transparent border-none outline-none text-xs font-semibold text-gray-800"
                                         />
-                                        <button onClick={() => handleRename(list.id)} className="p-1 text-amber-600 hover:bg-amber-100 rounded-lg">
+                                        <button onClick={() => handleRename(list.id)} className="p-1 text-brand hover:bg-brand-muted rounded-lg">
                                             <Check className="h-3.5 w-3.5" />
                                         </button>
                                     </div>
@@ -208,19 +208,19 @@ export default function ContactListsSidebar({
                                         className={cn(
                                             "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all",
                                             selectedListId === list.id
-                                                ? "bg-amber-50 text-amber-700 shadow-sm border border-amber-100/50"
+                                                ? "bg-brand-light text-brand shadow-sm border border-brand-muted"
                                                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                         )}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <Folder className={cn("h-4 w-4", selectedListId === list.id ? "text-amber-500" : "text-gray-300")} />
+                                            <Folder className={cn("h-4 w-4", selectedListId === list.id ? "text-brand" : "text-gray-300")} />
                                             <span className="truncate max-w-[120px]">{list.name}</span>
                                         </div>
 
                                         <div className="flex items-center gap-2">
                                             <span className={cn(
                                                 "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-colors",
-                                                selectedListId === list.id ? "bg-amber-100 text-amber-600" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-500"
+                                                selectedListId === list.id ? "bg-brand-muted text-brand" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-500"
                                             )}>
                                                 {list._count?.contacts || 0}
                                             </span>
@@ -228,7 +228,7 @@ export default function ContactListsSidebar({
                                             <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5">
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); setEditingId(list.id); setEditName(list.name); }}
-                                                    className="p-1 hover:bg-amber-100 rounded-md text-amber-400 hover:text-amber-600 transition-colors"
+                                                    className="p-1 hover:bg-brand-muted rounded-md text-brand hover:text-brand transition-colors"
                                                 >
                                                     <Edit3 className="h-3.5 w-3.5" />
                                                 </button>

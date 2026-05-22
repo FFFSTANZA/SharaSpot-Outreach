@@ -72,6 +72,7 @@ export function ComposeForm({
   const setCsvError = useComposeStore((s) => s.setCsvError);
   const setRecipientColumnData = useComposeStore((s) => s.setRecipientColumnData);
   const setSequenceSteps = useComposeStore((s) => s.setSequenceSteps);
+  const resetStore = useComposeStore((s) => s.reset);
 
   const [senders, setSenders] = useState<SenderResponse[]>([]);
   const [isSenderLoading, setIsSenderLoading] = useState(true);
@@ -619,7 +620,7 @@ export function ComposeForm({
                       />
                     </div>
                     <button
-                      onClick={() => window.history.back()}
+                      onClick={() => { resetStore(); window.history.back(); }}
                       className="h-10 w-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                       title="Discard draft"
                     >

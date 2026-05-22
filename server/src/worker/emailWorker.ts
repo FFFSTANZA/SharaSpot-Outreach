@@ -52,7 +52,7 @@ const SMTP_POOL_REUSE_MS = parseInt(
 interface SmtpPoolEntry {
   transporter: Transporter;
   expiresAt: number;
-  inUse: boolean;
+  activeCount: number;
 }
 
 const smtpPool = new Map<string, SmtpPoolEntry>();
@@ -81,14 +81,10 @@ function acquireSmtpTransporter(sender: {
   const key = getSmtpPoolKey(sender);
   const existing = smtpPool.get(key);
 
-  if (existing && !existing.inUse && Date.now() < existing.expiresAt) {
-    existing.inUse = true;
-    return existing.transporter;
-  }
-
   if (existing) {
-    existing.transporter.close();
-    smtpPool.delete(key);
+    existing.activeCount++;
+    existing.expiresAt = Date.now() + SMTP_POOL_REUSE_MS;
+    return existing.transporter;
   }
 
   const transporter = createSmtpTransporter(sender);
@@ -96,7 +92,7 @@ function acquireSmtpTransporter(sender: {
   smtpPool.set(key, {
     transporter,
     expiresAt: Date.now() + SMTP_POOL_REUSE_MS,
-    inUse: true,
+    activeCount: 1,
   });
 
   return transporter;
@@ -110,14 +106,15 @@ function releaseSmtpTransporter(sender: {
   const key = getSmtpPoolKey(sender);
   const entry = smtpPool.get(key);
   if (entry) {
-    entry.inUse = false;
+    entry.activeCount = Math.max(0, entry.activeCount - 1);
+    entry.expiresAt = Date.now() + SMTP_POOL_REUSE_MS;
   }
 }
 
 function evictExpiredSmtpEntries(): void {
   const now = Date.now();
   for (const [key, entry] of smtpPool.entries()) {
-    if (!entry.inUse && now >= entry.expiresAt) {
+    if (entry.activeCount === 0 && now >= entry.expiresAt) {
       entry.transporter.close();
       smtpPool.delete(key);
     }
@@ -146,6 +143,8 @@ export function createSmtpTransporter(sender: {
   const isSecure = sender.smtpPort === 465;
 
   return nodemailer.createTransport({
+    pool: true,
+    maxConnections: 5,
     host: sender.smtpHost,
     port: sender.smtpPort,
     secure: isSecure,
@@ -582,6 +581,8 @@ export async function processEmailJob(job: Job): Promise<void> {
           `Failed to download attachment: ${attachment.filename}`,
           campaign.id,
         );
+        releaseSmtpTransporter(sender);
+        evictExpiredSmtpEntries();
         return;
       }
     }
@@ -722,6 +723,8 @@ export async function processEmailJob(job: Job): Promise<void> {
         console.log(
           `[EmailWorker] Cancelled follow-up for ${emailJob.toEmail} — reply detected after enqueue`
         );
+        releaseSmtpTransporter(sender);
+        evictExpiredSmtpEntries();
         return;
       }
     }
