@@ -1,8 +1,17 @@
 import api from "../axios";
-import type { Contact, Note, Tag } from "@/types";
+import type { Contact, Note, Tag, PaginatedContacts } from "@/types";
 import type { ContactList } from "./contactLists";
 
-export const getContacts = async (params: { search?: string; stage?: string; tag?: string; listId?: string | null } = {}): Promise<Contact[]> => {
+export const getContacts = async (params: {
+  search?: string;
+  stage?: string;
+  tag?: string;
+  listId?: string | null;
+  segmentId?: string;
+  invalidOnly?: boolean;
+  page?: number;
+  limit?: number;
+} = {}): Promise<PaginatedContacts> => {
   const cleanParams: Record<string, string> = {};
   for (const [key, val] of Object.entries(params)) {
     if (val !== null && val !== undefined && val !== "") cleanParams[key] = String(val);
@@ -37,6 +46,27 @@ export const bulkUpdateContacts = async (ids: string[], data: { stage?: string; 
 
 export const bulkDeleteContacts = async (ids: string[]): Promise<void> => {
   await api.post("/api/contacts/bulk-delete", { ids });
+};
+
+export const exportContacts = async (params: {
+  search?: string;
+  stage?: string;
+  tag?: string;
+  listId?: string | null;
+  segmentId?: string;
+} = {}): Promise<void> => {
+  const cleanParams: Record<string, string> = {};
+  for (const [key, val] of Object.entries(params)) {
+    if (val !== null && val !== undefined && val !== "") cleanParams[key] = String(val);
+  }
+  const qs = new URLSearchParams(cleanParams).toString();
+  const res = await api.get(`/api/contacts/export?${qs}`, { responseType: "blob" });
+  const url = window.URL.createObjectURL(new Blob([res.data]));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `contacts-export-${Date.now()}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
 };
 
 export const importContacts = async (file: File, mapping: Record<string, string>): Promise<{ message: string; count: number; errors?: any[] }> => {

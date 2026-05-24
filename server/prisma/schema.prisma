@@ -24,6 +24,84 @@ model User {
   contactLists  ContactList[]
   mcpApiKeys    McpApiKey[]
   bounceList    BounceList[]
+  prmSegments   PrmSegment[]
+  prmBulkActionLogs PrmBulkActionLog[]
+  callTasks     CallTask[]
+  callingEnabled Boolean @default(false)
+  callProviderConnections CallProviderConnection[]
+  callSessions CallSession[]
+  organizationMemberships OrganizationMember[]
+  ownedOrganizations     Organization[]       @relation("OrganizationOwner")
+  activeOrganizationId   String?
+  activeOrganization     Organization?        @relation("ActiveOrganization", fields: [activeOrganizationId], references: [id])
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ownerId   String
+  owner     User     @relation("OrganizationOwner", fields: [ownerId], references: [id])
+  users     User[]   @relation("ActiveOrganization")
+  members   OrganizationMember[]
+  invites   OrganizationInvite[]
+  campaigns     EmailCampaign[]
+  contacts      Contact[]
+  senders       Sender[]
+  templates     EmailTemplate[]
+  contactLists  ContactList[]
+  tags          Tag[]
+  callTasks     CallTask[]
+  prmSegments   PrmSegment[]
+  webhooks      Webhook[]
+  mcpApiKeys    McpApiKey[]
+  bounceList    BounceList[]
+  inboxEmails   InboxEmail[]
+  inboxThreads  InboxThread[]
+
+  @@index([ownerId])
+}
+
+model OrganizationMember {
+  id             String          @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrgMemberRole   @default(MEMBER)
+  invitedBy      String?
+  joinedAt       DateTime        @default(now())
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+enum OrgMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model OrganizationInvite {
+  id             String        @id @default(cuid())
+  organizationId String
+  email          String
+  role           OrgMemberRole @default(MEMBER)
+  tokenHash      String        @unique
+  invitedBy      String
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, email])
+  @@index([organizationId, expiresAt])
+  @@index([organizationId, acceptedAt, revokedAt])
 }
 
 model Subscription {
@@ -49,6 +127,7 @@ model Subscription {
 model Sender {
   id                 String              @id @default(cuid())
   userId             String
+  organizationId     String?
   email              String
   name               String?
   appPassword        String              @default("")
@@ -70,6 +149,7 @@ model Sender {
   emailJobs          EmailJob[]
   providerProfile    ProviderProfile?    @relation(fields: [providerProfileId], references: [id])
   user               User                @relation(fields: [userId], references: [id])
+  organization       Organization?       @relation(fields: [organizationId], references: [id])
   cooldown           SenderCooldown?
   warmupSchedule     WarmupSchedule?
   analyticsSnapshots AnalyticsSnapshot[]
@@ -80,11 +160,13 @@ model Sender {
 
   @@unique([userId, email])
   @@index([userId])
+  @@index([organizationId])
 }
 
 model EmailCampaign {
   id                      String                   @id @default(cuid())
   userId                  String
+  organizationId          String?
   senderId                String?
   subject                 String
   body                    String
@@ -106,12 +188,15 @@ model EmailCampaign {
   campaignSenders         CampaignSender[]
   sender                  Sender?                  @relation(fields: [senderId], references: [id])
   user                    User                     @relation(fields: [userId], references: [id])
+  organization            Organization?            @relation(fields: [organizationId], references: [id])
   emails                  EmailJob[]
   recipientSequenceStates RecipientSequenceState[]
   sequenceSteps           SequenceStep[]
   analyticsSnapshots      AnalyticsSnapshot[]
+  callTasks               CallTask[]
 
   @@index([userId])
+  @@index([organizationId])
   @@index([senderId])
 }
 
@@ -196,17 +281,20 @@ model Attachment {
 }
 
 model EmailTemplate {
-  id        String   @id @default(cuid())
-  userId    String?
-  name      String
-  subject   String
-  body      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User?    @relation(fields: [userId], references: [id])
+  id              String   @id @default(cuid())
+  userId          String?
+  organizationId  String?
+  name            String
+  subject         String
+  body            String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User?           @relation(fields: [userId], references: [id])
+  organization    Organization?   @relation(fields: [organizationId], references: [id])
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([organizationId])
 }
 
 model SequenceStep {
@@ -383,41 +471,182 @@ model DomainRateLimit {
 }
 
 model Tag {
-  id        String    @id @default(cuid())
-  userId    String
-  name      String
-  color     String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contacts  Contact[] @relation("ContactToTag")
+  id              String      @id @default(cuid())
+  userId          String
+  organizationId  String?
+  name            String
+  color           String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+  contacts        Contact[]   @relation("ContactToTag")
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([organizationId])
 }
 
 model Contact {
-  id         String            @id @default(cuid())
-  userId     String
-  email      String
-  firstName  String?
-  lastName   String?
-  company    String?
-  jobTitle   String?
-  stage      String            @default("COLD")
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activities ContactActivity[]
-  notes      Note[]
-  tags       Tag[]             @relation("ContactToTag")
-  lists      ContactList[]     @relation("ContactToContactList")
+  id              String            @id @default(cuid())
+  userId          String
+  organizationId  String?
+  email           String
+  firstName       String?
+  lastName        String?
+  company         String?
+  phone           String?
+  jobTitle        String?
+  stage           String            @default("COLD")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization?     @relation(fields: [organizationId], references: [id])
+  activities      ContactActivity[]
+  notes           Note[]
+  tags            Tag[]             @relation("ContactToTag")
+  lists           ContactList[]     @relation("ContactToContactList")
+  segmentMemberships PrmSegmentContact[]
+  callTasks           CallTask[]
+  callSessions        CallSession[]
 
   @@unique([userId, email])
   @@index([userId])
+  @@index([organizationId])
   @@index([email])
   @@index([userId, email])
   @@index([userId, stage])
+}
+
+model CallTask {
+  id          String         @id @default(cuid())
+  userId      String
+  organizationId String?
+  contactId   String
+  status      CallTaskStatus @default(PENDING)
+  priority    Int            @default(0)
+  dueAt       DateTime
+  lastOutcome String?
+  lastDisposition String?
+  lastNote    String?
+  campaignId String?
+  contactListId String?
+  prmSegmentId String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  contact     Contact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  campaign    EmailCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  contactList ContactList?   @relation(fields: [contactListId], references: [id], onDelete: SetNull)
+  prmSegment  PrmSegment?    @relation(fields: [prmSegmentId], references: [id], onDelete: SetNull)
+  callSessions CallSession[]
+
+  @@index([userId, status, dueAt])
+  @@index([organizationId])
+  @@index([contactId])
+  @@index([userId, dueAt])
+  @@index([campaignId])
+  @@index([contactListId])
+  @@index([prmSegmentId])
+}
+
+model CallProviderConnection {
+  id                String             @id @default(cuid())
+  userId            String
+  type              CallProviderType   @default(SIP_WEBRTC)
+  name              String
+  sipUsernameEnc    String
+  sipPasswordEnc    String
+  sipDomain         String
+  websocketUrl      String
+  displayName       String?
+  vendorMetadata    Json?
+  status            CallProviderStatus @default(REQUIRES_ATTENTION)
+  lastCheckedAt     DateTime?
+  lastError         String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  callSessions      CallSession[]
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model CallSession {
+  id                   String          @id @default(cuid())
+  userId               String
+  contactId            String?
+  taskId               String?
+  providerConnectionId String?
+  mode                 CallSessionMode @default(MANUAL)
+  direction            CallDirection   @default(OUTBOUND)
+  providerCallId       String?
+  outcome              String?
+  note                 String?
+  startedAt            DateTime        @default(now())
+  endedAt              DateTime?
+  durationSeconds      Int?
+  metadata             Json?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact              Contact?             @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  task                 CallTask?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  providerConnection   CallProviderConnection? @relation(fields: [providerConnectionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([taskId])
+  @@index([providerConnectionId])
+  @@index([userId, startedAt])
+}
+
+model PrmSegment {
+  id              String      @id @default(cuid())
+  userId          String
+  organizationId  String?
+  name            String
+  expression      Json
+  isAdhoc         Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+  contacts        PrmSegmentContact[]
+  callTasks       CallTask[]
+
+  @@index([userId])
+  @@index([organizationId])
+  @@unique([userId, name])
+}
+
+model PrmSegmentContact {
+  id         String   @id @default(cuid())
+  segmentId  String
+  contactId  String
+  createdAt  DateTime @default(now())
+  segment    PrmSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  contact    Contact    @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([segmentId, contactId])
+  @@index([segmentId])
+  @@index([contactId])
+}
+
+model PrmBulkActionLog {
+  id            String   @id @default(cuid())
+  userId        String
+  actionType    String
+  payload       Json
+  affectedCount Int
+  undoToken     String?  @unique
+  undoneAt      DateTime?
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model Note {
@@ -445,16 +674,20 @@ model ContactActivity {
 }
 
 model ContactList {
-  id        String    @id @default(cuid())
-  userId    String
-  name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contacts  Contact[] @relation("ContactToContactList")
+  id              String      @id @default(cuid())
+  userId          String
+  organizationId  String?
+  name            String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+  contacts        Contact[]   @relation("ContactToContactList")
+  callTasks       CallTask[]
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([organizationId])
 }
 
 model AnalyticsSnapshot {
@@ -518,17 +751,20 @@ enum TrackingEventType {
 }
 
 model Webhook {
-  id        String   @id @default(cuid())
-  userId    String
-  url       String
-  name      String?
-  events    String[]
-  secret    String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String      @id @default(cuid())
+  userId          String
+  organizationId  String?
+  url             String
+  name            String?
+  events          String[]
+  secret          String?
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  organization    Organization? @relation(fields: [organizationId], references: [id])
 
   @@index([userId])
+  @@index([organizationId])
   @@index([isActive])
   @@index([userId, isActive])
 }
@@ -555,33 +791,63 @@ enum InboxConnectionType {
   MICROSOFT_GRAPH
 }
 
+enum CallTaskStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+
+enum CallProviderType {
+  SIP_WEBRTC
+}
+
+enum CallProviderStatus {
+  CONNECTED
+  FAILED
+  REQUIRES_ATTENTION
+  DISCONNECTED
+}
+
+enum CallSessionMode {
+  MANUAL
+  CONNECTED
+}
+
+enum CallDirection {
+  OUTBOUND
+  INBOUND
+}
+
 model InboxEmail {
-  id         String   @id @default(cuid())
-  senderId   String
-  messageId  String
-  inReplyTo  String?
-  references String?
-  threadId   String?
-  fromName   String?
-  fromEmail  String
-  toName     String?
-  toEmail    String
-  subject    String
-  bodyText   String?
-  bodyHtml   String?
-  snippet    String   @db.Text
-  isRead     Boolean  @default(false)
-  isStarred  Boolean  @default(false)
-  isArchived Boolean  @default(false)
-  isDeleted  Boolean  @default(false)
-  folder     String   @default("INBOX")
-  receivedAt DateTime
-  syncedAt   DateTime @default(now())
-  syncedBy   String?
-  sender     Sender   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  id              String      @id @default(cuid())
+  senderId        String
+  organizationId  String?
+  messageId       String
+  inReplyTo       String?
+  references      String?
+  threadId        String?
+  fromName        String?
+  fromEmail       String
+  toName          String?
+  toEmail         String
+  subject         String
+  bodyText        String?
+  bodyHtml        String?
+  snippet         String      @db.Text
+  isRead          Boolean     @default(false)
+  isStarred       Boolean     @default(false)
+  isArchived      Boolean     @default(false)
+  isDeleted       Boolean     @default(false)
+  folder          String      @default("INBOX")
+  receivedAt      DateTime
+  syncedAt        DateTime    @default(now())
+  syncedBy        String?
+  sender          Sender      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation(fields: [organizationId], references: [id])
 
   @@unique([senderId, messageId])
   @@index([senderId])
+  @@index([organizationId])
   @@index([threadId])
   @@index([receivedAt])
   @@index([toEmail])
@@ -590,20 +856,23 @@ model InboxEmail {
 }
 
 model InboxThread {
-  id              String   @id @default(cuid())
+  id              String      @id @default(cuid())
   senderId        String
+  organizationId  String?
   threadId        String
   subject         String
   participants    String[]
   lastMessageAt   DateTime
   lastSnippet     String?
   lastSenderEmail String?
-  unreadCount     Int      @default(0)
-  hasAttachments  Boolean  @default(false)
-  sender          Sender   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  unreadCount     Int         @default(0)
+  hasAttachments  Boolean     @default(false)
+  sender          Sender      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation(fields: [organizationId], references: [id])
 
   @@unique([senderId, threadId])
   @@index([senderId])
+  @@index([organizationId])
   @@index([lastMessageAt])
   @@index([senderId, lastMessageAt])
 }
@@ -632,20 +901,23 @@ model InboxSyncJob {
 }
 
 model McpApiKey {
-  id          String    @id @default(cuid())
-  userId      String
-  name        String
-  keyHash     String    @unique
-  permissions Json      @default("{}")
-  lastUsedAt  DateTime?
-  expiresAt   DateTime?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String      @id @default(cuid())
+  userId          String
+  organizationId  String?
+  name            String
+  keyHash         String      @unique
+  permissions     Json        @default("{}")
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation(fields: [organizationId], references: [id])
 
   @@unique([userId, name])
   @@index([userId])
+  @@index([organizationId])
   @@index([keyHash])
 }
 
@@ -679,15 +951,18 @@ model ProcessedWebhook {
 }
 
 model BounceList {
-  id         String   @id @default(cuid())
-  userId     String
-  email      String
-  bouncedAt  DateTime @default(now())
-  bounceCode String?
-  reason     String?
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String      @id @default(cuid())
+  userId          String
+  organizationId  String?
+  email           String
+  bouncedAt       DateTime    @default(now())
+  bounceCode      String?
+  reason          String?
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation(fields: [organizationId], references: [id])
 
   @@unique([userId, email])
   @@index([userId])
+  @@index([organizationId])
   @@index([email])
 }

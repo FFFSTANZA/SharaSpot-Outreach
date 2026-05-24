@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
+import { getOrgScope, orgCreateData } from "../utils/orgScope";
 
 /**
  * POST /api/templates — Create a new email template for the authenticated user.
@@ -36,12 +37,12 @@ export const createTemplate = async (
     }
 
     const template = await prisma.emailTemplate.create({
-      data: {
+      data: orgCreateData(req, {
         userId: req.user!.id,
         name: name.trim(),
         subject,
         body,
-      },
+      }),
     });
 
     res.status(201).json({ ...template, isSystem: false });
@@ -67,9 +68,10 @@ export const getTemplates = async (
   res: Response
 ): Promise<void> => {
   try {
+    const scope = getOrgScope(req);
     const [userTemplates, systemTemplates] = await Promise.all([
       prisma.emailTemplate.findMany({
-        where: { userId: req.user!.id },
+        where: { ...scope },
         orderBy: { updatedAt: "desc" },
       }),
       prisma.emailTemplate.findMany({
@@ -100,16 +102,12 @@ export const updateTemplate = async (
   try {
     const id = req.params.id as string;
     const { name, subject, body } = req.body;
+    const scope = getOrgScope(req);
 
-    const existing = await prisma.emailTemplate.findUnique({ where: { id } });
+    const existing = await prisma.emailTemplate.findFirst({ where: { id, ...scope } });
 
     if (!existing) {
       res.status(404).json({ message: "Template not found" });
-      return;
-    }
-
-    if (existing.userId !== req.user!.id) {
-      res.status(403).json({ message: "Forbidden" });
       return;
     }
 
@@ -149,8 +147,9 @@ export const deleteTemplate = async (
 ): Promise<void> => {
   try {
     const id = req.params.id as string;
+    const scope = getOrgScope(req);
 
-    const existing = await prisma.emailTemplate.findUnique({ where: { id } });
+    const existing = await prisma.emailTemplate.findFirst({ where: { id, ...scope } });
 
     if (!existing) {
       res.status(404).json({ message: "Template not found" });
@@ -159,11 +158,6 @@ export const deleteTemplate = async (
 
     if (existing.userId === null) {
       res.status(403).json({ message: "System templates cannot be deleted" });
-      return;
-    }
-
-    if (existing.userId !== req.user!.id) {
-      res.status(403).json({ message: "Forbidden" });
       return;
     }
 

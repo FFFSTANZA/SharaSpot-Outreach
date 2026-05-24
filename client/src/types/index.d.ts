@@ -4,11 +4,13 @@
 // GET /users response — the authenticated user's profile
 export interface User {
   id: string;
-  googleId: string;
+  googleId?: string;
   email: string;
   name: string;
   avatarUrl: string | null;
   isPremium: boolean;
+  callingEnabled?: boolean;
+  activeOrganizationId?: string | null;
   createdAt: string;
 }
 
@@ -23,6 +25,7 @@ export interface SenderResponse {
   currentDailyCount?: number;
   smtpHost: string;
   smtpPort: number;
+  providerKey?: "gmail" | "outlook" | "zoho" | "yahoo" | "custom";
   replyTo?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -33,6 +36,10 @@ export interface CreateSenderPayload {
   name: string;
   email: string;
   appPassword: string;
+  smtpHost?: string;
+  smtpPort?: number;
+  providerKey?: "gmail" | "outlook" | "zoho" | "yahoo" | "custom";
+  replyTo?: string;
   skipWarmup?: boolean;
 }
 
@@ -707,11 +714,13 @@ export interface Contact {
   firstName: string | null;
   lastName: string | null;
   company: string | null;
+  phone?: string | null;
   jobTitle: string | null;
   stage: string;
   createdAt: string;
   updatedAt: string;
   engagementScore?: number;
+  lastContactedAt?: string | null;
   notes?: Note[];
   activities?: ContactActivity[];
   tags?: Tag[];
@@ -722,6 +731,99 @@ export interface Contact {
     emailsClicked: number;
     emailsReplied: number;
   };
+}
+
+export interface PaginatedContacts {
+  contacts: Contact[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export type CallTaskStatus = "PENDING" | "COMPLETED" | "SKIPPED";
+
+export interface CallTask {
+  id: string;
+  userId: string;
+  contactId: string;
+  status: CallTaskStatus;
+  priority: number;
+  dueAt: string;
+  lastOutcome: string | null;
+  lastDisposition?: string | null;
+  lastNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CallQueueItem extends CallTask {
+  contact: Pick<Contact, "id" | "email" | "firstName" | "lastName" | "company" | "phone" | "stage" | "updatedAt">;
+}
+
+export interface CallQueueResponse {
+  tasks: CallQueueItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface LogCallPayload {
+  contactId: string;
+  outcome: string;
+  note?: string;
+  nextAction?: string;
+  nextCallAt?: string;
+  taskId?: string;
+}
+
+export type CallProviderStatus = "CONNECTED" | "FAILED" | "REQUIRES_ATTENTION" | "DISCONNECTED";
+
+export interface CallProviderConnection {
+  id: string;
+  userId: string;
+  type: "SIP_WEBRTC";
+  name: string;
+  sipDomain: string;
+  websocketUrl: string;
+  displayName: string | null;
+  vendorMetadata: any;
+  status: CallProviderStatus;
+  lastCheckedAt: string | null;
+  lastError: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PrmQualitySummary {
+  totalContacts: number;
+  duplicateContacts: number;
+  missingRequiredFields: number;
+  invalidEmails: number;
+  launchBlocked: number;
+}
+
+export interface PrmCondition {
+  field: "tags" | "stage" | "lastActivity" | "campaignStatus" | "replyState" | "openState";
+  operator: "equals" | "notEquals" | "contains" | "inLastDays" | "is";
+  value: string | string[] | number | boolean;
+}
+
+export interface PrmSegmentExpression {
+  op: "AND" | "OR";
+  conditions: PrmCondition[];
+}
+
+export interface PrmSegment {
+  id: string;
+  userId: string;
+  name: string;
+  expression: PrmSegmentExpression;
+  isAdhoc: boolean;
+  previewCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface InboxThread {
@@ -759,4 +861,43 @@ export interface InboxEmail {
   folder: string;
   receivedAt: string;
   syncedAt: string;
+}
+
+// ─── Organization / Team Collaboration Types ───
+
+export type OrgMemberRole = "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+
+export interface OrgMember {
+  id: string;
+  userId: string;
+  name: string | null;
+  email: string;
+  avatarUrl: string | null;
+  role: OrgMemberRole;
+  joinedAt: string;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  ownerId: string;
+  role: OrgMemberRole;
+  members: OrgMember[];
+  createdAt: string;
+}
+
+export interface OrganizationSummary {
+  id: string;
+  name: string;
+  role: OrgMemberRole;
+  createdAt: string;
+}
+
+export interface OrganizationInvite {
+  id: string;
+  email: string;
+  role: OrgMemberRole;
+  createdAt: string;
+  expiresAt: string;
+  inviteLink?: string;
 }

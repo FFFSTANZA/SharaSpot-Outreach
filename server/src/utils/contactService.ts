@@ -10,18 +10,21 @@ export const upsertContact = async (
     firstName?: string;
     lastName?: string;
     company?: string;
+    phone?: string;
     jobTitle?: string;
     stage?: string;
     tags?: string[];
+    organizationId?: string | null;
   },
   db: DbClient = prisma
 ) => {
-  const { tags, stage, ...rest } = data;
+  const { tags, stage, organizationId, ...rest } = data;
   return db.contact.upsert({
     where: { userId_email: { userId, email } },
     update: {
       ...rest,
       stage: stage || undefined,
+      ...(organizationId ? { organizationId } : {}),
       tags: tags ? { set: tags.map((tagId: string) => ({ id: tagId })) } : undefined,
     },
     create: {
@@ -29,6 +32,7 @@ export const upsertContact = async (
       email,
       ...rest,
       stage: stage || "COLD",
+      ...(organizationId ? { organizationId } : {}),
       tags: tags ? { connect: tags.map((tagId: string) => ({ id: tagId })) } : undefined,
     },
     include: { tags: true },

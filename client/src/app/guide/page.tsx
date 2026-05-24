@@ -150,7 +150,7 @@ export default function GuidePage() {
           <SectionHeader icon={Rocket} title="Getting Started" description="Set up your first campaign in 5 minutes" />
           <div className="space-y-3">
             <StepCard step="1" title="Sign in with Google" desc="Click 'Continue with Google' on the login page. We'll create a placeholder sender using your Gmail." />
-            <StepCard step="2" title="Add your sender" desc="Go to Senders, click Add, enter your Gmail and a Google App Password (from myaccount.google.com/apppasswords)." />
+            <StepCard step="2" title="Add your sender" desc="Go to Senders, choose your provider (Gmail, Outlook, Zoho, Yahoo, or Company/Custom), then add your app password." />
             <StepCard step="3" title="Create a campaign" desc="Click Compose, add recipients manually or import a CSV, write your email, and hit send." />
           </div>
           <InfoBox title="App Password" icon={Lock}>
@@ -195,7 +195,7 @@ export default function GuidePage() {
 
         {/* Email Providers */}
         <Section id="providers">
-          <SectionHeader icon={Shield} title="Connecting Other Email Providers" description="Gmail, Google Workspace, and custom domains" />
+          <SectionHeader icon={Shield} title="Connecting Email Providers" description="Gmail, Outlook, Zoho, Yahoo, and company SMTP" />
 
           <div className="space-y-6">
             <p className="text-sm text-slate-600 leading-relaxed">
@@ -275,7 +275,7 @@ export default function GuidePage() {
                     <h3 className="text-sm font-bold text-slate-900">Custom SMTP / Other Providers</h3>
                     <p className="text-xs text-slate-500">Outlook, Proton, iCloud, custom mail servers</p>
                   </div>
-                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">Advanced</span>
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">Guided setup</span>
                 </div>
                 <div className="p-5 space-y-3">
                   <div className="flex items-start gap-2">
@@ -299,7 +299,7 @@ export default function GuidePage() {
                     <p className="text-xs text-slate-600">Enable TLS/SSL based on provider requirements</p>
                   </div>
                   <InfoBox title="Note" icon={AlertTriangle}>
-                    Some providers (Outlook, iCloud) require app-specific passwords. Check your provider's security settings.
+                    Outlook, Zoho, Yahoo, and many company mailboxes require app passwords. Keep your provider's SMTP host/port handy if you use Company/Custom.
                   </InfoBox>
                 </div>
               </div>

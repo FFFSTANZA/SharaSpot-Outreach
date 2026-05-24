@@ -1,14 +1,52 @@
 import api from "../axios";
 import type { InboxThread, InboxEmail } from "@/types";
 
-export const getInboxThreads = async (senderId?: string, page = 1, limit = 20): Promise<{ threads: InboxThread[]; total: number }> => {
-  const qs = new URLSearchParams({ ...(senderId && { senderId }), page: page.toString(), limit: limit.toString() }).toString();
+interface InboxQueryOptions {
+  page?: number;
+  limit?: number;
+  unreadOnly?: boolean;
+  starredOnly?: boolean;
+  archivedOnly?: boolean;
+  search?: string;
+}
+
+interface InboxEmailQueryOptions extends InboxQueryOptions {
+  folder?: string;
+  threadId?: string;
+}
+
+export const getInboxThreads = async (
+  senderId?: string,
+  options: InboxQueryOptions = {}
+): Promise<{ threads: InboxThread[]; total: number }> => {
+  const qs = new URLSearchParams({
+    ...(senderId && { senderId }),
+    page: String(options.page ?? 1),
+    limit: String(options.limit ?? 20),
+    ...(options.unreadOnly ? { unreadOnly: "true" } : {}),
+    ...(options.starredOnly ? { starredOnly: "true" } : {}),
+    ...(options.archivedOnly ? { archivedOnly: "true" } : {}),
+    ...(options.search ? { search: options.search } : {}),
+  }).toString();
   const res = await api.get(`/api/inbox/threads?${qs}`);
   return res.data;
 };
 
-export const getInboxEmails = async (senderId?: string, folder = "INBOX", page = 1, limit = 20): Promise<{ emails: InboxEmail[]; total: number }> => {
-  const qs = new URLSearchParams({ ...(senderId && { senderId }), folder, page: page.toString(), limit: limit.toString() }).toString();
+export const getInboxEmails = async (
+  senderId?: string,
+  options: InboxEmailQueryOptions = {}
+): Promise<{ emails: InboxEmail[]; total: number }> => {
+  const qs = new URLSearchParams({
+    ...(senderId && { senderId }),
+    folder: options.folder ?? "INBOX",
+    page: String(options.page ?? 1),
+    limit: String(options.limit ?? 20),
+    ...(options.threadId ? { threadId: options.threadId } : {}),
+    ...(options.unreadOnly ? { unreadOnly: "true" } : {}),
+    ...(options.starredOnly ? { starredOnly: "true" } : {}),
+    ...(options.archivedOnly ? { archivedOnly: "true" } : {}),
+    ...(options.search ? { search: options.search } : {}),
+  }).toString();
   const res = await api.get(`/api/inbox/emails?${qs}`);
   return res.data;
 };

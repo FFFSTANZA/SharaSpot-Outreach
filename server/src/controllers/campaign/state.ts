@@ -4,6 +4,7 @@ import { prisma } from "../../config/prisma";
 import { logger } from "../../utils/logger";
 import { isValidTransition } from "../../utils/campaignStateMachine";
 import { emailQueue } from "../../queues/emailQueue";
+import { getOrgScope } from "../../utils/orgScope";
 
 export const pauseCampaign = async (
   req: Request,
@@ -12,13 +13,12 @@ export const pauseCampaign = async (
   try {
     const id = req.params.id as string;
 
-    const campaign = await prisma.emailCampaign.findUnique({
-      where: { id },
+    const campaign = await prisma.emailCampaign.findFirst({
+      where: { id, ...getOrgScope(req) },
       include: { sender: { select: { id: true, email: true, name: true, isVerified: true } } },
     });
 
     if (!campaign) { res.status(404).json({ message: "Campaign not found" }); return; }
-    if (campaign.userId !== req.user!.id) { res.status(403).json({ message: "Forbidden" }); return; }
     if (!isValidTransition(campaign.status, "PAUSED")) {
       res.status(409).json({ message: `Cannot pause campaign in ${campaign.status} state` });
       return;
@@ -65,8 +65,8 @@ export const resumeCampaign = async (
   try {
     const id = req.params.id as string;
 
-    const campaign = await prisma.emailCampaign.findUnique({
-      where: { id },
+    const campaign = await prisma.emailCampaign.findFirst({
+      where: { id, ...getOrgScope(req) },
       include: {
         sender: { select: { id: true, email: true, name: true, isVerified: true } },
         emails: true,
@@ -74,7 +74,6 @@ export const resumeCampaign = async (
     });
 
     if (!campaign) { res.status(404).json({ message: "Campaign not found" }); return; }
-    if (campaign.userId !== req.user!.id) { res.status(403).json({ message: "Forbidden" }); return; }
     if (campaign.status !== "PAUSED") {
       res.status(409).json({ message: "Only paused campaigns can be resumed" });
       return;
@@ -146,13 +145,12 @@ export const cancelCampaign = async (
   try {
     const id = req.params.id as string;
 
-    const campaign = await prisma.emailCampaign.findUnique({
-      where: { id },
+    const campaign = await prisma.emailCampaign.findFirst({
+      where: { id, ...getOrgScope(req) },
       include: { sender: { select: { id: true, email: true, name: true, isVerified: true } } },
     });
 
     if (!campaign) { res.status(404).json({ message: "Campaign not found" }); return; }
-    if (campaign.userId !== req.user!.id) { res.status(403).json({ message: "Forbidden" }); return; }
     if (!isValidTransition(campaign.status, "CANCELLED")) {
       res.status(409).json({ message: `Cannot cancel campaign in ${campaign.status} state` });
       return;

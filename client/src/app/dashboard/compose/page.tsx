@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ComposeForm } from "./ComposeForm";
 import { createCampaign, uploadAttachments, deleteAttachment } from "@/lib/apis";
+import { getContacts } from "@/lib/apis";
 import type { CreateCampaignPayload, UploadedAttachment } from "@/types";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -22,11 +23,24 @@ function ComposeContent() {
   const [initialEmails, setInitialEmails] = useState<string[]>([]);
 
   useEffect(() => {
-    const emails = searchParams.get("emails");
-    if (emails) {
-      setInitialEmails(emails.split(","));
-    }
-  }, [searchParams]);
+    const resolveRecipients = async () => {
+      const emails = searchParams.get("emails");
+      if (emails) {
+        setInitialEmails(emails.split(","));
+        return;
+      }
+
+      const segmentId = searchParams.get("segmentId");
+      if (!segmentId) return;
+      try {
+        const contacts = await getContacts({ segmentId });
+        setInitialEmails(contacts.contacts.map((c) => c.email));
+      } catch {
+        addToast("error", "Failed to load segment recipients");
+      }
+    };
+    resolveRecipients();
+  }, [searchParams, addToast]);
 
   const handleFilesSelected = useCallback(async (files: File[]) => {
     setIsUploading(true);

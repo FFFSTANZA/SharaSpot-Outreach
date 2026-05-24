@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
     X,
     Folder,
     Check,
     Loader2,
-    Plus,
     ArrowRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,22 +31,24 @@ export default function AddToListModal({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedListId, setSelectedListId] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchLists();
-        }
-    }, [isOpen]);
-
-    const fetchLists = async () => {
+    const fetchLists = useCallback(async () => {
         try {
             const data = await getContactLists();
             setLists(data);
-        } catch (err) {
+        } catch {
             addToast("error", "Failed to load lists");
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [addToast]);
+
+    useEffect(() => {
+        if (isOpen) {
+            setIsLoading(true);
+            setSelectedListId(null);
+            fetchLists();
+        }
+    }, [isOpen, fetchLists]);
 
     const handleAdd = async () => {
         if (!selectedListId) return;
@@ -57,7 +58,7 @@ export default function AddToListModal({
             addToast("success", `Added ${selectedContactIds.length} contacts to the list`);
             onSuccess();
             onClose();
-        } catch (err) {
+        } catch {
             addToast("error", "Failed to add contacts to list");
         } finally {
             setIsSubmitting(false);

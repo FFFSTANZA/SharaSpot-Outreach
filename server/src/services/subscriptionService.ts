@@ -456,22 +456,53 @@ export async function getSubscriptionStatus(
     where: { userId },
   });
 
-  if (!subscription) {
-    return { isPremium: false, subscription: null };
+  if (subscription) {
+    const now = new Date();
+    const currentPeriodEnd = subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null;
+    const trialEnd = subscription.trialEnd ? new Date(subscription.trialEnd) : null;
+
+    const isActiveStatus = subscription.status === SubscriptionStatus.ACTIVE || subscription.status === SubscriptionStatus.ON_HOLD;
+    const hasValidPeriod = currentPeriodEnd && currentPeriodEnd > now;
+    const isSubscriptionActive = isActiveStatus && hasValidPeriod;
+    const isTrialActive = trialEnd && trialEnd > now;
+
+    if (isSubscriptionActive || isTrialActive) {
+      return { isPremium: true, subscription };
+    }
   }
 
-  const now = new Date();
-  const currentPeriodEnd = subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null;
-  const trialEnd = subscription.trialEnd ? new Date(subscription.trialEnd) : null;
+  // Workspace-level premium inheritance: if the user's active org owner is premium,
+  // the user inherits premium access without needing their own subscription.
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { activeOrganizationId: true },
+  });
 
-  const isActiveStatus = subscription.status === SubscriptionStatus.ACTIVE || subscription.status === SubscriptionStatus.ON_HOLD;
-  const hasValidPeriod = currentPeriodEnd && currentPeriodEnd > now;
-  const isSubscriptionActive = isActiveStatus && hasValidPeriod;
-  const isTrialActive = trialEnd && trialEnd > now;
+  if (user?.activeOrganizationId) {
+    const org = await prisma.organization.findUnique({
+      where: { id: user.activeOrganizationId },
+      select: { ownerId: true },
+    });
 
-  const isPremium = isSubscriptionActive || isTrialActive;
+    if (org && org.ownerId !== userId) {
+      const ownerSub = await prisma.subscription.findUnique({
+        where: { userId: org.ownerId },
+      });
 
-  return { isPremium: !!isPremium, subscription };
+      if (ownerSub) {
+        const now = new Date();
+        const ownerPeriodEnd = ownerSub.currentPeriodEnd ? new Date(ownerSub.currentPeriodEnd) : null;
+        const ownerIsActive = ownerSub.status === SubscriptionStatus.ACTIVE || ownerSub.status === SubscriptionStatus.ON_HOLD;
+        const ownerHasValidPeriod = ownerPeriodEnd && ownerPeriodEnd > now;
+
+        if (ownerIsActive && ownerHasValidPeriod) {
+          return { isPremium: true, subscription: null };
+        }
+      }
+    }
+  }
+
+  return { isPremium: false, subscription: subscription || null };
 }
 
 export async function syncSubscriptionFromDodo(userId: string): Promise<{ synced: boolean; subscription: any | null }> {

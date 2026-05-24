@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
 import { redis } from "../config/redis";
+import { getOrgScope } from "../utils/orgScope";
 import os from "os";
 
 interface PlatformBreakdown {
@@ -148,8 +149,9 @@ export const getAnalyticsOverview = async (req: Request, res: Response): Promise
     const since = new Date();
     since.setDate(since.getDate() - dayCount);
 
+    const scope = getOrgScope(req);
     const campaigns = await prisma.emailCampaign.findMany({
-      where: { userId },
+      where: { ...scope },
       select: { id: true, trackOpens: true, trackClicks: true, subject: true },
     });
     const campaignIds = campaigns.map((c) => c.id);
@@ -198,7 +200,7 @@ export const getAnalyticsOverview = async (req: Request, res: Response): Promise
     const engagementScore = await getEngagementScore(totalSent, totalOpens, totalClicks, totalReplied);
 
     const topCampaigns = await prisma.emailCampaign.findMany({
-      where: { userId },
+      where: { ...scope },
       orderBy: { createdAt: "desc" },
       take: 10,
       select: {
@@ -277,8 +279,9 @@ export const getAnalyticsLinks = async (req: Request, res: Response): Promise<vo
     const userId = await verifyUser(req, res);
     if (!userId) return;
 
+    const scope = getOrgScope(req);
     const campaigns = await prisma.emailCampaign.findMany({
-      where: { userId },
+      where: { ...scope },
       select: { id: true },
     });
     const campaignIds = campaigns.map((c) => c.id);
@@ -328,8 +331,9 @@ export const getSenderHealth = async (req: Request, res: Response): Promise<void
     const userId = await verifyUser(req, res);
     if (!userId) return;
 
+    const scope = getOrgScope(req);
     const health = await prisma.dailySenderHealth.findMany({
-      where: { sender: { userId } },
+      where: { sender: { ...scope } },
       include: {
         sender: {
           select: { email: true, name: true }
@@ -357,9 +361,10 @@ export const getActivityLogs = async (req: Request, res: Response): Promise<void
     const { page = 1, limit = 50 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
+    const scope = getOrgScope(req);
     const logs = await prisma.trackingEvent.findMany({
       where: {
-        emailJob: { campaign: { userId } }
+        emailJob: { campaign: { ...scope } }
       },
       include: {
         emailJob: {
@@ -375,7 +380,7 @@ export const getActivityLogs = async (req: Request, res: Response): Promise<void
     });
 
     const total = await prisma.trackingEvent.count({
-      where: { emailJob: { campaign: { userId } } }
+      where: { emailJob: { campaign: { ...scope } } }
     });
 
     res.json({
@@ -402,9 +407,9 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
     const userId = await verifyUser(req, res);
     if (!userId) return;
 
-    // 1. Get User's Campaigns to scope the query
+    const scope = getOrgScope(req);
     const campaigns = await prisma.emailCampaign.findMany({
-      where: { userId },
+      where: { ...scope },
       select: { id: true }
     });
     const campaignIds = campaigns.map(c => c.id);

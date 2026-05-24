@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
     Folder,
     FolderPlus,
-    MoreVertical,
     Edit3,
     Trash2,
     Check,
     X,
     Search,
-    ChevronRight,
     Hash
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,13 +24,13 @@ import { useToast } from "@/context/ToastContext";
 interface ContactListsSidebarProps {
     selectedListId: string | null;
     onSelectList: (id: string | null) => void;
-    onRefresh?: () => void;
+    refreshKey?: number;
 }
 
 export default function ContactListsSidebar({
     selectedListId,
     onSelectList,
-    onRefresh
+    refreshKey
 }: ContactListsSidebarProps) {
     const { addToast } = useToast();
     const [lists, setLists] = useState<ContactList[]>([]);
@@ -43,20 +41,28 @@ export default function ContactListsSidebar({
     const [editName, setEditName] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
-    const fetchLists = async () => {
+    const fetchLists = useCallback(async () => {
         try {
             const data = await getContactLists();
             setLists(data);
-        } catch (err) {
+        } catch {
             addToast("error", "Failed to load lists");
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [addToast]);
 
     useEffect(() => {
         fetchLists();
-    }, []);
+    }, [fetchLists]);
+
+    const prevRefreshKey = useRef(refreshKey);
+    useEffect(() => {
+        if (refreshKey !== undefined && refreshKey !== prevRefreshKey.current) {
+            prevRefreshKey.current = refreshKey;
+            fetchLists();
+        }
+    }, [fetchLists, refreshKey]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,8 +73,12 @@ export default function ContactListsSidebar({
             setIsCreating(false);
             fetchLists();
             addToast("success", "List created");
-        } catch (err: any) {
-            addToast("error", err.response?.data?.message || "Failed to create list");
+        } catch (error: unknown) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to create list";
+            addToast("error", message);
         }
     };
 
@@ -82,8 +92,12 @@ export default function ContactListsSidebar({
             setEditingId(null);
             fetchLists();
             addToast("success", "List renamed");
-        } catch (err: any) {
-            addToast("error", err.response?.data?.message || "Failed to rename list");
+        } catch (error: unknown) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to rename list";
+            addToast("error", message);
         }
     };
 
@@ -94,7 +108,7 @@ export default function ContactListsSidebar({
             if (selectedListId === id) onSelectList(null);
             fetchLists();
             addToast("success", "List deleted");
-        } catch (err) {
+        } catch {
             addToast("error", "Failed to delete list");
         }
     };
@@ -127,6 +141,7 @@ export default function ContactListsSidebar({
                         placeholder="Search lists..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        aria-label="Search lists"
                         className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-transparent rounded-lg text-xs font-medium focus:bg-white focus:border-brand-muted outline-none transition-all"
                     />
                 </div>

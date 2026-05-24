@@ -1,17 +1,18 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
+import { getOrgScope } from "../utils/orgScope";
 
 /**
  * Helper: verify campaign exists and is owned by the authenticated user.
  */
 async function verifyCampaignOwnership(req: Request, res: Response): Promise<{ id: string; trackOpens: boolean; trackClicks: boolean } | null> {
   const campaignId = req.params.campaignId as string;
-  const campaign = await prisma.emailCampaign.findUnique({
-    where: { id: campaignId },
-    select: { id: true, userId: true, trackOpens: true, trackClicks: true },
+  const scope = getOrgScope(req);
+  const campaign = await prisma.emailCampaign.findFirst({
+    where: { id: campaignId, ...scope },
+    select: { id: true, trackOpens: true, trackClicks: true },
   });
   if (!campaign) { res.status(404).json({ message: "Campaign not found" }); return null; }
-  if (campaign.userId !== req.user!.id) { res.status(403).json({ message: "Forbidden" }); return null; }
   return campaign;
 }
 

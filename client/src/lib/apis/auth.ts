@@ -5,13 +5,13 @@ const getAuthUrl = (path: string) => {
   return `${base}${path}`;
 };
 
-export const loginWithGoogle = async (idToken: string) => {
+export const loginWithGoogle = async (idToken: string, inviteToken?: string) => {
   const url = getAuthUrl("/auth/google");
   try {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify({ idToken, ...(inviteToken ? { inviteToken } : {}) }),
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
@@ -34,5 +34,10 @@ export const logout = async (): Promise<void> => {
 
 export const getUser = async (): Promise<import("@/types").User> => {
   const res = await api.get("/api/users");
+  return res.data;
+};
+
+export const updateUserSettings = async (payload: { callingEnabled: boolean }): Promise<import("@/types").User> => {
+  const res = await api.patch("/api/users/settings", payload);
   return res.data;
 };

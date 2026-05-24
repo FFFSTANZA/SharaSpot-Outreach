@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma";
+import { getOrgScope } from "../utils/orgScope";
 
 // ---------------------------------------------------------------------------
 // WHY generic error messages: Internal error details (DB connection strings,
@@ -11,11 +13,13 @@ export const toggleStar = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = req.user?.id;
     const emailId = req.params.emailId as string;
 
     const email = await prisma.emailJob.findFirst({
-      where: { id: emailId, campaign: { userId } },
+      where: {
+        id: emailId,
+        campaign: getOrgScope(req),
+      },
     });
 
     if (!email) {
@@ -39,14 +43,13 @@ export const scheduledEmails = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = req.user?.id;
     const take = Math.min(parseInt(req.query.limit as string) || 50, 200);
     const skip = parseInt(req.query.offset as string) || 0;
 
     const emails = await prisma.emailJob.findMany({
       where: {
         status: "PENDING",
-        campaign: { userId },
+        campaign: getOrgScope(req),
       },
       orderBy: { scheduledAt: "asc" },
       include: {
@@ -75,14 +78,13 @@ export const sentEmails = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = req.user?.id;
     const take = Math.min(parseInt(req.query.limit as string) || 50, 200);
     const skip = parseInt(req.query.offset as string) || 0;
 
     const emails = await prisma.emailJob.findMany({
       where: {
         status: "SENT",
-        campaign: { userId },
+        campaign: getOrgScope(req),
       },
       orderBy: { sentAt: "desc" },
       include: {
@@ -111,15 +113,12 @@ export const getEmailsBySender = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = req.user?.id;
     const senderId = req.params.senderId as string;
 
     const emails = await prisma.emailJob.findMany({
       where: {
         senderId,
-        campaign: {
-          userId,
-        },
+        campaign: getOrgScope(req),
       },
       select: {
         id: true,
@@ -160,11 +159,10 @@ export const toggleReplied = async (
   res: Response
 ): Promise<void> => {
   try {
-    const userId = req.user?.id;
     const emailId = req.params.emailId as string;
 
     const email = await prisma.emailJob.findFirst({
-      where: { id: emailId, campaign: { userId } },
+      where: { id: emailId, campaign: getOrgScope(req) },
       include: { campaign: { select: { id: true } } },
     });
 
@@ -222,7 +220,7 @@ export const searchEmails = async (
   res: Response
 ): Promise<void> => {
   try {
-    const userId = req.user?.id;
+    const scope = getOrgScope(req);
     const q = req.query.q as string | undefined;
     const status = req.query.status as string | undefined;
     const senderId = req.query.senderId as string | undefined;
@@ -246,7 +244,7 @@ export const searchEmails = async (
 
     // Verify sender ownership if provided
     if (senderId) {
-      const sender = await prisma.sender.findFirst({ where: { id: senderId, userId } });
+      const sender = await prisma.sender.findFirst({ where: { id: senderId, ...scope } });
       if (!sender) {
         const exists = await prisma.sender.findUnique({ where: { id: senderId } });
         res.status(exists ? 403 : 404).json({ message: exists ? "Forbidden" : "Sender not found" });
@@ -256,7 +254,7 @@ export const searchEmails = async (
 
     // Build where clause
     const where: any = {
-      campaign: { userId },
+      campaign: scope,
       AND: [] as any[],
     };
 
@@ -264,11 +262,15 @@ export const searchEmails = async (
       // Use raw SQL to cleanly search within the JSON columnData as text,
       // as well as the standard toEmail, subject, and body fields, avoiding HTML false positives if possible, 
       // but primarily ensuring we find deeply nested data like "ACME".
+      const userFilter = scope.organizationId
+        ? Prisma.sql`c."organizationId" = ${scope.organizationId}`
+        : Prisma.sql`c."userId" = ${scope.userId}`;
+
       const rawMatches = await prisma.$queryRaw<{ id: string }[]>`
         SELECT j."id"
         FROM "EmailJob" j
         JOIN "EmailCampaign" c ON j."campaignId" = c."id"
-        WHERE c."userId" = ${userId}
+        WHERE ${userFilter}
         AND (
           j."toEmail" ILIKE ${'%' + q + '%'}
           OR (j."columnData")::text ILIKE ${'%' + q + '%'}

@@ -678,12 +678,12 @@ export function ComposeForm({
       </div>
 
       {/* Modals outside main layout */}
-      {selectedSender && (
+      {isSenderModalOpen && (
         <SenderModal
           isOpen={isSenderModalOpen}
           onClose={() => setIsSenderModalOpen(false)}
           onSuccess={handleSenderUpdated}
-          existingSender={!selectedSender.isVerified ? selectedSender : null}
+          existingSender={selectedSender && !selectedSender.isVerified ? selectedSender : null}
         />
       )}
 

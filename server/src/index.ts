@@ -10,6 +10,8 @@ import morgan from "morgan";
 import corsOptions from "./utils/corsOptions";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
+import { requireOrgWriteAccess } from "./middlewares/orgRoleMiddleware";
+import { orgScopeMiddleware } from "./utils/orgScope";
 import { rateLimit } from "express-rate-limit";
 import { prisma } from "./config/prisma";
 import { redis } from "./config/redis";
@@ -59,6 +61,9 @@ import mcpRoutes from "./mcp/routes";
 import mcpApiKeyRoutes from "./routes/mcpApiKeyRoutes";
 import { initializeMCP } from "./mcp";
 import adminRoutes from "./routes/adminRoutes";
+import prmRoutes from "./routes/prmRoutes";
+import callRoutes from "./routes/callRoutes";
+import organizationRoutes, { publicOrganizationInviteRouter } from "./routes/organizationRoutes";
 
 
 const app = express();
@@ -159,6 +164,7 @@ app.get("/health", async (req, res) => {
 app.use("/track", trackingRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/subscription/webhook", webhookRouter);
+app.use("/api/organizations/invites", publicOrganizationInviteRouter);
 
 /* MCP Portal - Dedicated Auth supports API Keys & JWT */
 app.use("/api/mcp", mcpRoutes);
@@ -169,6 +175,8 @@ app.use("/api/admin", adminRoutes);
 /* PROTECTED API ROUTES - Unified Prefix */
 const api = express.Router();
 api.use(authMiddleware);
+api.use(orgScopeMiddleware);
+api.use(requireOrgWriteAccess);
 
 api.use("/users", userRoutes);
 api.use("/senders", senderRoutes);
@@ -187,6 +195,9 @@ api.use("/tags", tagRoutes);
 api.use("/contact-lists", contactListRoutes);
 api.use("/inbox", inboxRoutes);
 api.use("/mcp-keys", mcpApiKeyRoutes);
+api.use("/prm", prmRoutes);
+api.use("/calls", callRoutes);
+api.use("/organizations", organizationRoutes);
 
 
 app.use("/api", api);

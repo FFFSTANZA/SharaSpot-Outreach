@@ -9,6 +9,7 @@ import Button from "@/components/Button";
 import {
   User,
   Mail,
+  Phone,
   Building2,
   Briefcase,
   ChevronDown
@@ -32,6 +33,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
     lastName: "",
     company: "",
     jobTitle: "",
+    phone: "",
     stage: "COLD",
     selectedTags: [] as string[],
   });
@@ -44,6 +46,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
         lastName: contact.lastName || "",
         company: contact.company || "",
         jobTitle: contact.jobTitle || "",
+        phone: contact.phone || "",
         stage: contact.stage,
         selectedTags: contact.tags?.map(t => t.id) || [],
       });
@@ -54,6 +57,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
         lastName: "",
         company: "",
         jobTitle: "",
+        phone: "",
         stage: "COLD",
         selectedTags: [],
       });
@@ -183,6 +187,20 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
             </div>
 
             <div className="space-y-2">
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Phone Number</label>
+              <div className="relative group">
+                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full bg-background border border-border-light rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none transition-all"
+                  placeholder="+1 555 123 4567"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Pipeline Stage</label>
               <div className="relative">
                 <select
@@ -195,6 +213,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
                   <option value="HOT">HOT</option>
                   <option value="REPLIED">REPLIED</option>
                   <option value="CONVERTED">CONVERTED</option>
+                  <option value="BOUNCED">BOUNCED</option>
                 </select>
                 <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               </div>

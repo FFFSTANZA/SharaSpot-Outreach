@@ -19,6 +19,7 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
     res.json({
       ...user,
       isPremium,
+      activeOrganizationId: user.activeOrganizationId,
     });
   } catch (error: any) {
     res.status(500).json({ message: "An error occurred while retrieving user" });
@@ -63,5 +64,27 @@ export const getUserEmails = async (
     res.status(500).json({
       message: "An error occurred while fetching emails",
     });
+  }
+};
+
+export const updateUserSettings = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { callingEnabled } = req.body as { callingEnabled?: boolean };
+
+    if (typeof callingEnabled !== "boolean") {
+      res.status(400).json({ message: "callingEnabled must be a boolean" });
+      return;
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { callingEnabled },
+    });
+
+    const { isPremium } = await checkPremiumStatus(userId);
+    res.json({ ...user, isPremium, activeOrganizationId: user.activeOrganizationId });
+  } catch (error: any) {
+    res.status(500).json({ message: "An error occurred while updating user settings" });
   }
 };

@@ -1,24 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { createSender, verifySender } from "@/lib/apis";
-import { SenderModalProps } from "@/types";
-import { AlertCircle, ExternalLink, Settings, Globe, Reply } from "lucide-react";
+import { SenderModalProps, SenderResponse } from "@/types";
+import { AlertCircle, CheckCircle2, Mail, Settings, Reply } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
+import {
+  getConnectionSecurityHint,
+  getProviderConfig,
+  inferProviderFromHost,
+  SENDER_PROVIDERS,
+  SenderProviderConfig,
+  SenderProviderKey,
+} from "@/lib/senderProviders";
 
-/**
- * SenderModal - Add a new sender or verify an existing unverified sender.
- * Supports custom SMTP (Host/Port) and default Reply-To.
- */
+function deriveSenderName(rawEmail: string): string {
+  const localPart = rawEmail.split("@")[0]?.trim();
+  if (!localPart) return "Sender";
+  const normalized = localPart.replace(/[._-]+/g, " ").replace(/\s+/g, " ").trim();
+  return normalized
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: SenderModalProps) {
+  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [appPassword, setAppPassword] = useState("");
+  const [providerKey, setProviderKey] = useState<SenderProviderKey>("gmail");
   const [smtpHost, setSmtpHost] = useState("");
   const [smtpPort, setSmtpPort] = useState("465");
   const [replyTo, setReplyTo] = useState("");
@@ -26,74 +43,120 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
   const [skipWarmup, setSkipWarmup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<"idle" | "passed">("idle");
+  const [connectedSender, setConnectedSender] = useState<{ email: string; provider: SenderProviderConfig } | null>(null);
+  const [savedSender, setSavedSender] = useState<SenderResponse | null>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const { addToast } = useToast();
 
   const isVerifyMode = !!existingSender;
+  const selectedProvider = getProviderConfig(providerKey);
 
-  // Pre-fill fields
   useEffect(() => {
-    if (existingSender && isOpen) {
+    if (!isOpen) return;
+
+    if (existingSender) {
+      const inferredProvider = inferProviderFromHost(existingSender.smtpHost);
+      setStep(2);
       setName(existingSender.name || "");
       setEmail(existingSender.email);
+      setProviderKey(inferredProvider);
       setSmtpHost(existingSender.smtpHost || "");
       setSmtpPort(existingSender.smtpPort?.toString() || "465");
       setReplyTo(existingSender.replyTo || "");
       setAppPassword("");
       setSkipWarmup(false);
+      setShowAdvanced(inferredProvider === "custom");
       setError(null);
-    } else if (!existingSender && isOpen) {
-      setName("");
-      setEmail("");
-      setSmtpHost("");
-      setSmtpPort("465");
-      setReplyTo("");
-      setAppPassword("");
-      setSkipWarmup(false);
-      setError(null);
+      setTestResult("idle");
+      setConnectedSender(null);
+      setSavedSender(null);
+      return;
     }
+
+    setStep(1);
+    setName("");
+    setEmail("");
+    setProviderKey("gmail");
+    setSmtpHost("");
+    setSmtpPort("465");
+    setReplyTo("");
+    setAppPassword("");
+    setSkipWarmup(false);
+    setShowAdvanced(false);
+    setError(null);
+    setTestResult("idle");
+    setConnectedSender(null);
+    setSavedSender(null);
   }, [existingSender, isOpen]);
 
-  const isFormValid = isVerifyMode
-    ? appPassword.trim() !== ""
-    : name.trim() !== "" && email.trim() !== "" && appPassword.trim() !== "";
+  useEffect(() => {
+    const provider = getProviderConfig(providerKey);
+    if (providerKey !== "custom") {
+      setSmtpHost(provider.smtpHost);
+      setSmtpPort(String(provider.smtpPort));
+    } else if (!smtpHost) {
+      setSmtpPort("587");
+    }
+    if (providerKey === "custom") {
+      setShowAdvanced(true);
+    }
+  }, [providerKey, smtpHost]);
+
+  const isStep2Valid = useMemo(() => {
+    const hasRequired = appPassword.trim() !== "" && email.trim() !== "";
+    if (providerKey !== "custom" && !showAdvanced) return hasRequired;
+    return hasRequired && smtpHost.trim() !== "" && smtpPort.trim() !== "";
+  }, [appPassword, email, providerKey, showAdvanced, smtpHost, smtpPort]);
 
   const handleSubmit = async () => {
-    if (!isFormValid || isSubmitting) return;
+    if (!isStep2Valid || isSubmitting) return;
 
     setIsSubmitting(true);
     setError(null);
+    setTestResult("idle");
 
     try {
-      let sender;
-      const payload = {
-        name,
-        email,
-        appPassword,
-        smtpHost: smtpHost.trim() || undefined,
-        smtpPort: smtpPort ? parseInt(smtpPort) : undefined,
-        replyTo: replyTo.trim() || undefined,
-        skipWarmup: skipWarmup || undefined,
-      };
+      const parsedPort = smtpPort ? parseInt(smtpPort, 10) : undefined;
+      const resolvedName = name.trim() || deriveSenderName(email);
 
+      let sender;
       if (isVerifyMode) {
         sender = await verifySender(existingSender.id, {
-          name: name.trim() || undefined,
+          name: resolvedName,
           appPassword,
+          providerKey,
+          smtpHost: showAdvanced || providerKey === "custom" ? smtpHost.trim() || undefined : undefined,
+          smtpPort: showAdvanced || providerKey === "custom" ? parsedPort : undefined,
+          replyTo: replyTo.trim() || undefined,
           skipWarmup: skipWarmup || undefined,
         });
       } else {
-        sender = await createSender(payload);
+        sender = await createSender({
+          name: resolvedName,
+          email,
+          appPassword,
+          providerKey,
+          smtpHost: showAdvanced || providerKey === "custom" ? smtpHost.trim() || undefined : undefined,
+          smtpPort: showAdvanced || providerKey === "custom" ? parsedPort : undefined,
+          replyTo: replyTo.trim() || undefined,
+          skipWarmup: skipWarmup || undefined,
+        });
       }
 
-      addToast("success", isVerifyMode ? `Sender updated` : `Sender added: ${email}`);
-      onSuccess(sender);
-      onClose();
+      setStep(3);
+      setTestResult("passed");
+      setSavedSender(sender);
+      setConnectedSender({
+        email: sender.email,
+        provider: getProviderConfig(sender.providerKey || providerKey),
+      });
+      addToast("success", isVerifyMode ? "Connection verified and sender updated" : `Sender connected: ${email}`);
     } catch (err: unknown) {
       const apiErr = err as { response?: { data?: { message?: string } } };
-      const message = apiErr.response?.data?.message || "Something went wrong. Please try again.";
+      const message = apiErr.response?.data?.message || "Connection failed. Please check settings and try again.";
       setError(message);
-      addToast("error", `Failed: ${message}`);
+      addToast("error", message);
     } finally {
       setIsSubmitting(false);
     }
@@ -106,20 +169,19 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
     }
   };
 
+  const securityHint = getConnectionSecurityHint(Number(smtpPort || 0));
+  const handleFinish = () => {
+    if (!connectedSender || !savedSender) return;
+    onSuccess(savedSender);
+    onClose();
+  };
+
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      variant={isMobile ? "bottom-sheet" : "center"}
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} variant={isMobile ? "bottom-sheet" : "center"}>
       <div className="p-8 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar bg-white">
         <div>
-          <h2 className="text-xl font-bold text-text-primary tracking-tight">
-            {isVerifyMode ? "Configure Sender" : "Add Sender Account"}
-          </h2>
-          <p className="text-sm font-medium text-text-secondary mt-1">
-            Connect any SMTP provider or Google account.
-          </p>
+          <h2 className="text-xl font-bold text-text-primary tracking-tight">{isVerifyMode ? "Verify Sender" : "Connect Sender"}</h2>
+          <p className="text-sm font-medium text-text-secondary mt-1">Step {step} of 3: Provider, credentials, then test connection.</p>
         </div>
 
         {error && (
@@ -129,137 +191,171 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {!isVerifyMode && step === 1 && (
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-[0.1em] text-text-muted">Choose Email Provider</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {SENDER_PROVIDERS.map((provider) => (
+                <button
+                  key={provider.key}
+                  type="button"
+                  onClick={() => {
+                    setProviderKey(provider.key);
+                    setStep(2);
+                  }}
+                  className="text-left rounded-xl border border-border-light p-4 hover:border-brand hover:bg-interactive-hover transition-colors"
+                >
+                  <p className="font-bold text-sm text-text-primary">{provider.label}</p>
+                  <p className="text-xs text-text-secondary mt-1">{provider.smtpHost || "Use your own SMTP host/port"}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(isVerifyMode || step >= 2) && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-xl border border-border-light bg-interactive-hover/30 px-4 py-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted">Provider</p>
+                <p className="text-sm font-bold text-text-primary">{selectedProvider.label}</p>
+              </div>
+              {!isVerifyMode && (
+                <button type="button" onClick={() => setStep(1)} className="text-xs font-bold text-brand">
+                  Change
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">Sender Name (Optional)</label>
+                <Input
+                  type="text"
+                  placeholder={email ? deriveSenderName(email) : "e.g. Sales Team"}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">Email Address</label>
+                <Input
+                  type="email"
+                  placeholder="e.g. sales@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting || isVerifyMode}
+                />
+              </div>
+            </div>
+
             <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">Sender Name</label>
+              <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">App Password / SMTP Password</label>
               <Input
-                type="text"
-                placeholder="e.g. Sales Team"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                type="password"
+                placeholder="Your app password"
+                value={appPassword}
+                onChange={(e) => setAppPassword(e.target.value)}
                 disabled={isSubmitting}
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">Email Address</label>
-              <Input
-                type="email"
-                placeholder="e.g. sales@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isSubmitting || isVerifyMode}
-              />
+            <div className="rounded-xl border border-border-light bg-interactive-hover/30 p-4">
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.1em] mb-2">Setup Checklist</p>
+              <ul className="space-y-1.5">
+                {selectedProvider.instructions.map((instruction) => (
+                  <li key={instruction} className="text-xs text-text-secondary flex items-start gap-2">
+                    <Mail className="h-3.5 w-3.5 mt-0.5 shrink-0 text-text-muted" />
+                    <span>{instruction}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">
-              App Password / SMTP Password
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center gap-2 text-xs font-bold text-brand hover:text-brand-dark transition-colors"
+              >
+                <Settings className={cn("h-3.5 w-3.5 transition-transform duration-300", showAdvanced && "rotate-90")} />
+                {showAdvanced ? "Hide SMTP Settings" : "Edit SMTP Settings"}
+              </button>
+            </div>
+
+            {showAdvanced && (
+              <div className="space-y-4 pt-3 border-t border-border-light animate-in">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 space-y-1.5">
+                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">SMTP Host</label>
+                    <Input type="text" placeholder="smtp.example.com" value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} disabled={isSubmitting} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em] text-center">Port</label>
+                    <Input
+                      type="number"
+                      placeholder="587"
+                      value={smtpPort}
+                      onChange={(e) => setSmtpPort(e.target.value)}
+                      className="text-center"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-text-muted font-semibold">{securityHint}</p>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">
+                <Reply className="inline h-3 w-3 mr-1.5" /> Default Reply-To
+              </label>
+              <Input type="email" placeholder="e.g. founders@company.com" value={replyTo} onChange={(e) => setReplyTo(e.target.value)} disabled={isSubmitting} />
+            </div>
+
+            <label className="flex items-start gap-4 cursor-pointer p-4 rounded-xl border border-border-light bg-interactive-hover/30 hover:bg-interactive-hover transition-colors">
+              <input
+                type="checkbox"
+                checked={skipWarmup}
+                onChange={(e) => setSkipWarmup(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-border-medium text-brand focus:ring-brand/20 transition-all"
+                disabled={isSubmitting}
+              />
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold text-text-primary">Skip Provider Warmup</span>
+                <p className="text-[10px] text-text-secondary font-medium leading-relaxed">Send at full volume immediately. Recommended only for trusted mailboxes.</p>
+              </div>
             </label>
-            <Input
-              type="password"
-              placeholder="Your 16-character app password"
-              value={appPassword}
-              onChange={(e) => setAppPassword(e.target.value)}
-              disabled={isSubmitting}
-            />
-            <p className="mt-2 text-[10px] font-semibold text-text-muted leading-relaxed flex items-center gap-1.5">
-              <ExternalLink className="h-3 w-3" />
-              For Gmail, use a Google App Password.{" "}
-              <a href="https://myaccount.google.com/apppasswords" target="_blank" className="text-brand hover:underline">Generate here</a>
+          </div>
+        )}
+
+        {step === 3 && testResult === "passed" && connectedSender && (
+          <div className="rounded-xl border border-brand/20 bg-brand-light p-4 space-y-2">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-brand" />
+              <p className="text-sm font-semibold text-brand">Connection test passed. Sender is ready.</p>
+            </div>
+            <p className="text-xs text-brand/90 font-medium">
+              Connected: {connectedSender.email} ({connectedSender.provider.label})
             </p>
           </div>
-
-          {/* Advanced Settings Toggle */}
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center gap-2 text-xs font-bold text-brand hover:text-brand-dark transition-colors"
-            >
-              <Settings className={cn("h-3.5 w-3.5 transition-transform duration-300", showAdvanced && "rotate-90")} />
-              {showAdvanced ? "Hide SMTP Settings" : "Configure Custom SMTP"}
-            </button>
-          </div>
-
-          {showAdvanced && (
-            <div className="space-y-4 pt-4 border-t border-border-light animate-in">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="col-span-2 space-y-1.5">
-                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">
-                    <Globe className="inline h-3 w-3 mr-1.5" /> SMTP Host
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="smtp.gmail.com"
-                    value={smtpHost}
-                    onChange={(e) => setSmtpHost(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em] text-center">Port</label>
-                  <Input
-                    type="number"
-                    placeholder="465"
-                    value={smtpPort}
-                    onChange={(e) => setSmtpPort(e.target.value)}
-                    className="text-center"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">
-                  <Reply className="inline h-3 w-3 mr-1.5" /> Default Reply-To
-                </label>
-                <Input
-                  type="email"
-                  placeholder="e.g. founders@company.com"
-                  value={replyTo}
-                  onChange={(e) => setReplyTo(e.target.value)}
-                />
-                <p className="mt-1.5 text-[10px] text-text-muted font-semibold">
-                  Replies will be routed here instead of the sender address.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <label className="flex items-start gap-4 cursor-pointer p-4 rounded-xl border border-border-light bg-interactive-hover/30 hover:bg-interactive-hover transition-colors">
-            <input
-              type="checkbox"
-              checked={skipWarmup}
-              onChange={(e) => setSkipWarmup(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-border-medium text-brand focus:ring-brand/20 transition-all"
-            />
-            <div className="space-y-0.5">
-              <span className="text-xs font-bold text-text-primary">Skip Provider Warmup</span>
-              <p className="text-[10px] text-text-secondary font-medium leading-relaxed">
-                Send at full volume immediately. Only recommended for established accounts with good reputation.
-              </p>
-            </div>
-          </label>
-        </div>
+        )}
 
         <div className="flex items-center justify-end gap-3 pt-6 border-t border-border-light">
-          <Button
-            variant="ghost"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            className="px-6"
-          >
+          <Button variant="ghost" onClick={handleClose} disabled={isSubmitting} className="px-6">
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            isLoading={isSubmitting}
-            disabled={!isFormValid}
-            className="px-8"
-          >
-            {isVerifyMode ? "Update Account" : "Connect Account"}
-          </Button>
+          {(isVerifyMode || step >= 2) && step < 3 && (
+            <Button onClick={handleSubmit} isLoading={isSubmitting} disabled={!isStep2Valid} className="px-8">
+              Test Connection & Save
+            </Button>
+          )}
+          {step === 3 && (
+            <Button onClick={handleFinish} className="px-8">
+              Done
+            </Button>
+          )}
         </div>
       </div>
     </Modal>

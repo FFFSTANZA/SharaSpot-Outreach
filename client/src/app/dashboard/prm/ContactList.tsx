@@ -4,22 +4,24 @@ import { Contact } from "@/types";
 import { cn } from "@/lib/utils";
 import {
   Mail,
-  MoreVertical,
   Edit2,
   Trash2,
-  Building2,
-  Briefcase,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
   MousePointer2,
   MessageSquare,
   Eye,
-  Send
+  Send,
+  Clock
 } from "lucide-react";
-import StatusBadge from "@/components/StatusBadge";
-import { useState } from "react";
 import Link from "next/link";
+
+type ContactWithExtras = Contact & {
+  _count?: {
+    emailsSent?: number;
+    emailsOpened?: number;
+    emailsClicked?: number;
+    emailsReplied?: number;
+  };
+};
 
 interface ContactListProps {
   contacts: Contact[];
@@ -29,6 +31,21 @@ interface ContactListProps {
   onDelete: (id: string) => void;
   selectedIds: Set<string>;
   setSelectedIds: (ids: Set<string>) => void;
+}
+
+function timeAgo(dateStr: string | null | undefined): string {
+  if (!dateStr) return "—";
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffMs = now - then;
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  return new Date(dateStr).toLocaleDateString();
 }
 
 export function ContactList({
@@ -46,17 +63,6 @@ export function ContactList({
     } else {
       setSelectedIds(new Set(contacts.map((c) => c.id)));
     }
-  };
-
-  const toggleSelect = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedIds(newSelected);
   };
 
   if (contacts.length === 0) {
@@ -90,11 +96,15 @@ export function ContactList({
             <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-left">Company</th>
             <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-center">Engagement</th>
             <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-center">Stats</th>
+            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-center">Last Contacted</th>
             <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-right"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border-light">
-          {contacts.map((contact) => (
+          {contacts.map((contact) => {
+            const counts = (contact as ContactWithExtras)._count;
+
+            return (
             <tr
               key={contact.id}
               onClick={() => onSelect(contact.id)}
@@ -120,11 +130,11 @@ export function ContactList({
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-semibold shrink-0 border border-brand/5">
-                    {contact.firstName?.[0] || contact.email[0].toUpperCase()}
+                    {(contact.firstName?.[0] || contact.email?.[0] || "?").toUpperCase()}
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-text-primary truncate">
-                      {contact.firstName ? `${contact.firstName} ${contact.lastName || ''}` : contact.email.split('@')[0]}
+                      {(contact.firstName || contact.lastName) ? `${contact.firstName || ""} ${contact.lastName || ""}`.trim() : contact.email.split('@')[0]}
                     </div>
                     <div className="text-xs text-text-muted font-medium truncate flex items-center gap-1">
                       {contact.email}
@@ -175,27 +185,40 @@ export function ContactList({
               <td className="px-6 py-4">
                 <div className="flex items-center justify-center gap-3">
                   <div className="flex flex-col items-center" title="Sent">
-                    <span className="text-[10px] font-bold text-text-primary">{(contact as any)._count?.emailsSent || 0}</span>
+                    <span className="text-[10px] font-bold text-text-primary">{counts?.emailsSent || 0}</span>
                     <Mail size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Opened">
-                    <span className="text-[10px] font-bold text-text-primary">{(contact as any)._count?.emailsOpened || 0}</span>
+                    <span className="text-[10px] font-bold text-text-primary">{counts?.emailsOpened || 0}</span>
                     <Eye size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Clicked">
-                    <span className="text-[10px] font-bold text-text-primary">{(contact as any)._count?.emailsClicked || 0}</span>
+                    <span className="text-[10px] font-bold text-text-primary">{counts?.emailsClicked || 0}</span>
                     <MousePointer2 size={12} className="text-text-muted" />
                   </div>
                   <div className="flex flex-col items-center" title="Replied">
-                    <span className="text-[10px] font-bold text-text-primary">{(contact as any)._count?.emailsReplied || 0}</span>
+                    <span className="text-[10px] font-bold text-text-primary">{counts?.emailsReplied || 0}</span>
                     <MessageSquare size={12} className="text-text-muted" />
                   </div>
+                </div>
+              </td>
+              <td className="px-6 py-4 text-center">
+                <div className="flex flex-col items-center gap-0.5" title={contact.lastContactedAt || undefined}>
+                  <Clock size={12} className={cn(
+                    contact.lastContactedAt ? "text-text-secondary" : "text-text-muted"
+                  )} />
+                  <span className={cn(
+                    "text-[10px] font-medium",
+                    contact.lastContactedAt ? "text-text-primary" : "text-text-muted"
+                  )}>
+                    {timeAgo(contact.lastContactedAt)}
+                  </span>
                 </div>
               </td>
               <td className="px-6 py-4 text-right">
                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link
-                    href={`/dashboard/compose?emails=${contact.email}`}
+                    href={`/dashboard/compose?emails=${encodeURIComponent(contact.email)}`}
                     onClick={(e) => e.stopPropagation()}
                     className="p-1.5 text-text-muted hover:text-brand hover:bg-brand/10 rounded-md transition-all"
                     title="Compose Email"
@@ -217,7 +240,8 @@ export function ContactList({
                 </div>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

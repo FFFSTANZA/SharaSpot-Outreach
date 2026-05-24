@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import multer from "multer";
 import { prisma } from "../config/prisma";
+import { getOrgScope } from "../utils/orgScope";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
@@ -143,13 +144,13 @@ export const deleteAttachment = async (req: Request, res: Response): Promise<voi
       return;
     }
 
+    const scope = getOrgScope(req);
     const attachment = await prisma.attachment.findFirst({
-      where: { url },
-      include: { campaign: { select: { userId: true } } },
+      where: { url, campaign: { ...scope } },
     });
 
-    if (attachment && attachment.campaign.userId !== (req as any).user!.id) {
-      res.status(403).json({ message: "Forbidden" });
+    if (!attachment) {
+      res.status(404).json({ message: "Attachment not found" });
       return;
     }
 

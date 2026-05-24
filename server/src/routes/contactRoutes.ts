@@ -7,6 +7,7 @@ import {
   deleteContact,
   bulkUpdateContacts,
   bulkDeleteContacts,
+  exportContacts,
   importContacts,
 } from "../controllers/contactControllers";
 import { createNote, updateNote, deleteNote } from "../controllers/noteControllers";
@@ -18,6 +19,7 @@ const upload = multer({ dest: "uploads/" });
 const router = Router();
 
 router.get("/", getContacts);
+router.get("/export", exportContacts);
 router.post("/bulk-update", bulkUpdateContacts);
 router.post("/bulk-delete", bulkDeleteContacts);
 router.get("/:id", getContactById);

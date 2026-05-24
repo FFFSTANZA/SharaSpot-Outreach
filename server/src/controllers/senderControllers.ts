@@ -1,12 +1,19 @@
 import { Request, Response } from "express";
 import nodemailer from "nodemailer";
 import { prisma } from "../config/prisma";
+import { getOrgScope, orgCreateData } from "../utils/orgScope";
 import { encrypt } from "../utils/encryption";
 import { detectProvider } from "../utils/providerProfile";
 import { DEFAULT_WARMUP_DAILY_LIMITS, isInWarmup } from "../utils/warmupEvaluator";
 import { getEffectiveLimits } from "../utils/throttleEngine";
 import { getAdaptiveState } from "../utils/adaptiveThrottle";
 import { getSentCountToday } from "../utils/dailyLimitTracker";
+import {
+  classifySmtpError,
+  inferProviderKeyFromHost,
+  isSenderProviderKey,
+  resolveProviderSmtp,
+} from "../utils/senderProvider";
 
 // ---------------------------------------------------------------------------
 // WHY SMTP verify before save: Verifying credentials upfront prevents storing
@@ -47,6 +54,7 @@ export const createSender = async (
     }
 
     const { name, email, appPassword, smtpHost, smtpPort, replyTo } = req.body;
+    const providerKey = isSenderProviderKey(req.body.providerKey) ? req.body.providerKey : undefined;
 
     // Validate all required fields are present and non-empty
     const missingFields: string[] = [];
@@ -67,9 +75,8 @@ export const createSender = async (
       return;
     }
 
-    // Use provided SMTP settings or default to Gmail
-    const host = smtpHost || "smtp.gmail.com";
-    const port = smtpPort || 465;
+    // Use explicit settings or provider presets with Gmail fallback.
+    const { smtpHost: host, smtpPort: port } = resolveProviderSmtp(providerKey, smtpHost, smtpPort);
     const isSecure = port === 465;
 
     // Create SMTP transporter and verify credentials before saving
@@ -89,7 +96,7 @@ export const createSender = async (
       await transporter.verify();
     } catch (err: any) {
       res.status(400).json({
-        message: `SMTP Verification failed: ${err.message || "Invalid credentials"}`,
+        message: classifySmtpError(err),
       });
       return;
     }
@@ -98,7 +105,8 @@ export const createSender = async (
     const encryptedPassword = encrypt(appPassword);
 
     const sender = await prisma.sender.create({
-      data: {
+      data: orgCreateData(req, {
+        userId: req.user.id,
         name,
         email,
         appPassword: encryptedPassword,
@@ -106,8 +114,7 @@ export const createSender = async (
         smtpPort: port,
         replyTo: replyTo || null,
         isVerified: true,
-        userId: req.user.id,
-      },
+      }),
     });
 
     // Auto-detect provider from SMTP host and associate the profile
@@ -168,15 +175,16 @@ export const verifySender = async (
 
     const id = req.params.id as string;
     const { name, appPassword, smtpHost, smtpPort, replyTo } = req.body;
+    const providerKey = isSenderProviderKey(req.body.providerKey) ? req.body.providerKey : undefined;
 
     if (!appPassword || (typeof appPassword === "string" && appPassword.trim() === "")) {
       res.status(400).json({ message: "App password is required" });
       return;
     }
 
-    // Verify the sender belongs to the authenticated user
+    const scope = getOrgScope(req);
     const existingSender = await prisma.sender.findFirst({
-      where: { id, userId: req.user.id },
+      where: { id, ...scope },
     });
 
     if (!existingSender) {
@@ -184,9 +192,14 @@ export const verifySender = async (
       return;
     }
 
-    // Use provided SMTP settings, fall back to existing stored values, or default to Gmail
-    const host = smtpHost || existingSender.smtpHost || "smtp.gmail.com";
-    const port = smtpPort || existingSender.smtpPort || 465;
+    // Use explicit settings or provider presets, with existing sender as fallback.
+    const { smtpHost: host, smtpPort: port } = resolveProviderSmtp(
+      providerKey,
+      smtpHost,
+      smtpPort,
+      existingSender.smtpHost || "smtp.gmail.com",
+      existingSender.smtpPort || 465
+    );
     const isSecure = port === 465;
 
     // Test SMTP connection with the provided credentials
@@ -206,7 +219,7 @@ export const verifySender = async (
       await transporter.verify();
     } catch (err: any) {
       res.status(400).json({
-        message: `SMTP Verification failed: ${err.message || "Invalid credentials"}`,
+        message: classifySmtpError(err),
       });
       return;
     }
@@ -271,8 +284,9 @@ export const getSenders = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const scope = getOrgScope(req);
     const senders = await prisma.sender.findMany({
-      where: { userId: req.user!.id },
+      where: { ...scope },
       select: {
         id: true,
         userId: true,
@@ -295,6 +309,7 @@ export const getSenders = async (
         const currentDailyCount = await getSentCountToday(sender.id);
         return {
           ...sender,
+          providerKey: inferProviderKeyFromHost(sender.smtpHost),
           currentDailyCount,
         };
       })
@@ -313,9 +328,9 @@ export const getSenderEmails = async (
   res: Response,
 ): Promise<void> => {
   try {
-    // Only select the email field — no appPassword leak possible
+    const scope = getOrgScope(req);
     const senders = await prisma.sender.findMany({
-      where: { userId: req.user!.id },
+      where: { ...scope },
       select: { email: true },
     });
 
@@ -348,8 +363,9 @@ export const getSenderById = async (
 
     const id = req.params.id as string;
 
+    const scope = getOrgScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id, userId: req.user.id },
+      where: { id, ...scope },
       select: {
         id: true,
         userId: true,
@@ -402,6 +418,7 @@ export const getSenderById = async (
 
     res.status(200).json({
       ...sender,
+      providerKey: inferProviderKeyFromHost(sender.smtpHost),
       currentHourlyCount,
       currentDailyCount: dailyCount,
       effectiveDailyLimit: limits.perDay,
@@ -433,9 +450,9 @@ export const deleteSender = async (
 
     const id = req.params.id as string;
 
-    // Check if sender exists and belongs to user
+    const scope = getOrgScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id, userId: req.user.id }
+      where: { id, ...scope }
     });
 
     if (!sender) {

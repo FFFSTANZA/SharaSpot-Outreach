@@ -1,35 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "../utils/jwt";
-import { JwtPayload } from "jsonwebtoken";
+import { prisma } from "../config/prisma";
+import "../types/express";
 
-interface DecodedToken extends JwtPayload {
+interface DecodedToken {
   id: string;
   email: string;
+  activeOrganizationId?: string | null;
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        email: string;
-      };
-    }
-  }
-}
-
-/**
- * Auth middleware — verifies JWT Bearer token and sets req.user.
- *
- * WHY early return on each failure: Express 5 doesn't stop execution after
- * res.json() — without return, the code falls through to next() and tries
- * to set headers twice, crashing with "Cannot set headers after sent".
- */
-export const authMiddleware = (
+export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction,
-): void => {
+): Promise<void> => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -46,10 +30,41 @@ export const authMiddleware = (
 
   try {
     const decoded = verifyAccessToken(token) as DecodedToken;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, activeOrganizationId: true },
+    });
+
+    if (!user) {
+      res.status(401).json({ message: "Invalid or expired token" });
+      return;
+    }
+
+    let activeOrganizationId = user.activeOrganizationId;
+    if (activeOrganizationId) {
+      const membership = await prisma.organizationMember.findUnique({
+        where: {
+          organizationId_userId: {
+            organizationId: activeOrganizationId,
+            userId: user.id,
+          },
+        },
+        select: { userId: true },
+      });
+
+      if (!membership) {
+        activeOrganizationId = null;
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { activeOrganizationId: null },
+        });
+      }
+    }
 
     req.user = {
-      id: decoded.id,
-      email: decoded.email,
+      id: user.id,
+      email: user.email,
+      activeOrganizationId,
     };
 
     next();

@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Script from "next/script";
-import { loginWithGoogle } from "../../lib/apis";
+import { acceptInvite, loginWithGoogle } from "../../lib/apis";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Zap, Send, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 declare global {
   interface Window {
+    googleSdkInitialized?: boolean;
     google?: {
       accounts: {
         id: {
@@ -39,12 +40,12 @@ const LoginComponent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isSubscriptionSuccess = searchParams?.get("subscription") === "success";
+  const inviteToken = searchParams?.get("inviteToken") || undefined;
 
   const { addToast } = useToast();
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
-  const [googleReady, setGoogleReady] = useState(false);
 
   const handleGoogleLogin = () => {
     if (window.google?.accounts?.id) {
@@ -62,12 +63,29 @@ const LoginComponent = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    if (token) router.replace("/dashboard");
-  }, [router]);
+    if (!token) return;
+    if (!inviteToken) {
+      router.replace("/dashboard");
+      return;
+    }
+
+    (async () => {
+      try {
+        const result = await acceptInvite(inviteToken);
+        localStorage.setItem("accessToken", result.accessToken);
+        await refreshUser();
+        addToast("success", `Joined ${result.organizationName}`);
+      } catch {
+        // no-op; if token invalid we still move forward to dashboard
+      } finally {
+        router.replace("/dashboard");
+      }
+    })();
+  }, [router, inviteToken, addToast, refreshUser]);
 
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId || !sdkLoaded || !window.google || (window as any).googleSdkInitialized) return;
+    if (!clientId || !sdkLoaded || !window.google || window.googleSdkInitialized) return;
 
     try {
       window.google.accounts.id.initialize({
@@ -75,7 +93,7 @@ const LoginComponent = () => {
         callback: async (response: { credential: string }) => {
           setIsLoading(true);
           try {
-            const data = await loginWithGoogle(response.credential);
+            const data = await loginWithGoogle(response.credential, inviteToken);
             localStorage.setItem("accessToken", data.accessToken);
 
             // 1. Refresh state to get latest isPremium from server
@@ -97,7 +115,7 @@ const LoginComponent = () => {
                   window.location.href = checkout.checkoutUrl;
                   return;
                 }
-              } catch (subErr) {
+              } catch (subErr: unknown) {
                 console.error("[Login] Checkout redirect failed:", subErr);
               }
             }
@@ -113,9 +131,7 @@ const LoginComponent = () => {
         use_fedcm_for_prompt: true, // Addressing FedCM warning
       });
 
-      (window as any).googleSdkInitialized = true;
-      setGoogleReady(true);
-
+      window.googleSdkInitialized = true;
       // Render the standard button into the container
       window.google.accounts.id.renderButton(
         document.getElementById("googleButtonContainer"),
@@ -134,7 +150,7 @@ const LoginComponent = () => {
     } catch (error) {
       console.error("Initialization error", error);
     }
-  }, [router, addToast, sdkLoaded]);
+  }, [router, addToast, sdkLoaded, inviteToken, isSubscriptionSuccess, refreshUser]);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-gray-50 to-[#E8F8ED]">

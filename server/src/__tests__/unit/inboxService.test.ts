@@ -240,13 +240,38 @@ describe("InboxService", () => {
 
   describe("getInboxThreads", () => {
     it("should fetch threads for a sender", async () => {
-      const mockThreads = [
-        { id: "thread-1", subject: "Thread 1", unreadCount: 2 },
-        { id: "thread-2", subject: "Thread 2", unreadCount: 0 },
+      const mockEmails = [
+        {
+          id: "email-1",
+          senderId: "sender-1",
+          threadId: "thr-1",
+          fromEmail: "prospect-1@acme.com",
+          toEmail: "owner@team.com",
+          subject: "Thread 1",
+          snippet: "A",
+          bodyText: "A",
+          isRead: false,
+          isStarred: false,
+          isArchived: false,
+          receivedAt: new Date("2026-01-01T10:00:00.000Z"),
+        },
+        {
+          id: "email-2",
+          senderId: "sender-1",
+          threadId: "thr-2",
+          fromEmail: "prospect-2@acme.com",
+          toEmail: "owner@team.com",
+          subject: "Thread 2",
+          snippet: "B",
+          bodyText: "B",
+          isRead: true,
+          isStarred: true,
+          isArchived: false,
+          receivedAt: new Date("2026-01-01T09:00:00.000Z"),
+        },
       ];
 
-      (prisma.inboxThread.findMany as jest.Mock).mockResolvedValue(mockThreads);
-      (prisma.inboxThread.count as jest.Mock).mockResolvedValue(2);
+      (prisma.inboxEmail.findMany as jest.Mock).mockResolvedValue(mockEmails);
 
       const result = await getInboxThreads("sender-1", { page: 1, limit: 20 });
 

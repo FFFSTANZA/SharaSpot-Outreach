@@ -119,24 +119,13 @@ export function ContactDetails({ contactId, onClose, onUpdate }: ContactDetailsP
   };
 
   const handleDeleteNote = async (noteId: string) => {
+    if (!confirm("Delete this note?")) return;
     try {
       await deleteNote(noteId);
       fetchContact();
       addToast("success", "Note deleted");
     } catch (error) {
       addToast("error", "Failed to delete note");
-    }
-  };
-
-  const handleStageChange = async (newStage: string) => {
-    if (!contact) return;
-    try {
-      await updateContact(contact.id, { stage: newStage });
-      fetchContact();
-      onUpdate();
-      addToast("success", `Stage updated to ${newStage}`);
-    } catch (error) {
-      addToast("error", "Failed to update stage");
     }
   };
 

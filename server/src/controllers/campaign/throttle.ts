@@ -5,6 +5,7 @@ import { getEffectiveLimits } from "../../utils/throttleEngine";
 import { isInWarmup } from "../../utils/warmupEvaluator";
 import { getAdaptiveState } from "../../utils/adaptiveThrottle";
 import { getSentCountToday } from "../../utils/dailyLimitTracker";
+import { getOrgScope } from "../../utils/orgScope";
 
 export const getCampaignThrottleStatus = async (
   req: Request,
@@ -13,8 +14,8 @@ export const getCampaignThrottleStatus = async (
   try {
     const id = req.params.id as string;
 
-    const campaign = await prisma.emailCampaign.findUnique({
-      where: { id },
+    const campaign = await prisma.emailCampaign.findFirst({
+      where: { id, ...getOrgScope(req) },
       include: {
         campaignSenders: {
           orderBy: { rotationOrder: "asc" },
@@ -29,10 +30,6 @@ export const getCampaignThrottleStatus = async (
 
     if (!campaign) {
       res.status(404).json({ message: "Campaign not found" });
-      return;
-    }
-    if (campaign.userId !== req.user!.id) {
-      res.status(403).json({ message: "Forbidden" });
       return;
     }
 

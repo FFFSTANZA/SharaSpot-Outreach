@@ -28,6 +28,7 @@ import {
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 import Button from "@/components/Button";
+import { getProviderConfig, inferProviderFromHost } from "@/lib/senderProviders";
 
 export default function SendersPage() {
     const { user } = useAuth();
@@ -42,7 +43,7 @@ export default function SendersPage() {
         try {
             const data = await getSenders();
             setSenders(data);
-        } catch (error) {
+        } catch {
             addToast("error", "Failed to fetch sender accounts");
         } finally {
             setIsLoading(false);
@@ -59,7 +60,7 @@ export default function SendersPage() {
             await deleteSender(id);
             addToast("success", "Sender removed successfully");
             fetchSenders();
-        } catch (error) {
+        } catch {
             addToast("error", "Failed to remove sender");
         }
     };
@@ -173,7 +174,10 @@ export default function SendersPage() {
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
-                                            {senders.map((sender) => (
+                                            {senders.map((sender) => {
+                                                const providerKey = sender.providerKey || inferProviderFromHost(sender.smtpHost);
+                                                const providerLabel = getProviderConfig(providerKey).label;
+                                                return (
                                                 <div
                                                     key={sender.id}
                                                     className={cn(
@@ -193,6 +197,9 @@ export default function SendersPage() {
                                                             <div className="min-w-0">
                                                                 <h3 className="font-bold text-text-primary truncate">{sender.name || "Default Sender"}</h3>
                                                                 <p className="text-xs font-semibold text-text-muted truncate">{sender.email}</p>
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-interactive-hover text-[10px] font-bold uppercase tracking-wider text-text-muted mt-1">
+                                                                    {providerLabel}
+                                                                </span>
                                                             </div>
                                                         </div>
 
@@ -254,7 +261,8 @@ export default function SendersPage() {
                                                         </Button>
                                                     </div>
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>

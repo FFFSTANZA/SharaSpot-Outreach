@@ -12,3 +12,6 @@ export * from "./apis/premium";
 export * from "./apis/contacts";
 export * from "./apis/contactLists";
 export * from "./apis/inbox";
+export * from "./apis/prm";
+export * from "./apis/calls";
+export * from "./apis/organizations";

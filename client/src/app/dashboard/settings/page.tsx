@@ -7,9 +7,27 @@ import { Sidebar } from "../Sidebar";
 import { TopBar } from "../Topbar";
 import { User, Inbox, Star, Clock, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { updateUserSettings } from "@/lib/apis";
+import { useToast } from "@/context/ToastContext";
 
 export default function SettingsPage() {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
+    const { addToast } = useToast();
+    const [savingCalling, setSavingCalling] = useState(false);
+
+    const onToggleCalling = async (enabled: boolean) => {
+        setSavingCalling(true);
+        try {
+            await updateUserSettings({ callingEnabled: enabled });
+            await refreshUser();
+            addToast("success", enabled ? "Calling workspace enabled" : "Calling workspace disabled");
+        } catch {
+            addToast("error", "Failed to update calling setting");
+        } finally {
+            setSavingCalling(false);
+        }
+    };
 
     return (
         <AuthGuard requirePremium={true}>
@@ -67,6 +85,27 @@ export default function SettingsPage() {
                                                 <div className="min-w-0">
                                                     <p className="text-lg font-bold text-text-primary truncate">{user?.name || "Administrator"}</p>
                                                     <p className="text-sm text-text-muted font-semibold truncate">{user?.email}</p>
+                                                </div>
+                                            </div>
+                                        </Section>
+
+                                        <Section title="Communications Workspace">
+                                            <div className="p-6 bg-white rounded-2xl border border-border-light shadow-sm">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <p className="text-sm font-bold text-text-primary">Enable Calling Workspace</p>
+                                                        <p className="text-xs text-text-muted mt-1">Keep this off for email-only mode. Turn on to show Calls and BYOK provider setup.</p>
+                                                    </div>
+                                                    <button
+                                                        disabled={savingCalling}
+                                                        onClick={() => onToggleCalling(!(user?.callingEnabled ?? false))}
+                                                        className={cn(
+                                                            "h-9 px-3 rounded-lg text-sm font-semibold border",
+                                                            user?.callingEnabled ? "bg-brand text-white border-brand" : "bg-white border-border-light text-text-secondary"
+                                                        )}
+                                                    >
+                                                        {savingCalling ? "Saving..." : user?.callingEnabled ? "Enabled" : "Disabled"}
+                                                    </button>
                                                 </div>
                                             </div>
                                         </Section>

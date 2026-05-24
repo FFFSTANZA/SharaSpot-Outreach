@@ -1,22 +1,28 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { SidebarProps } from "@/types";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { X, LogOut, FileText, Plus, Settings, Users, Mail, Inbox, Megaphone, Clock, Send, Pause, CheckCircle } from "lucide-react";
+import { X, LogOut, FileText, Plus, Settings, Users, Mail, Inbox, Megaphone, Clock, Send, Pause, CheckCircle, PhoneCall, UserPlus, ChevronDown, Building2, PlusCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { logout, getUnreadCount, getSenders } from "@/lib/apis";
+import { logout, getUnreadCount, getSenders, getOrganizations, switchOrganization, createOrganization } from "@/lib/apis";
 import { cn } from "@/lib/utils";
 import Button from "@/components/Button";
+import { useAuth } from "@/hooks/useAuth";
+import type { OrganizationSummary } from "@/types";
 
 export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], groups }: SidebarProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [orgs, setOrgs] = useState<OrganizationSummary[]>([]);
+  const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
+  const orgDropdownRef = useRef<HTMLDivElement>(null);
   const { isOpen, close } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
+  const { user, refreshUser } = useAuth();
   useEffect(() => {
     getSenders().then(senders => {
       if (senders[0]?.id) {
@@ -26,6 +32,54 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
       }
     }).catch(() => { });
   }, []);
+
+  useEffect(() => {
+    getOrganizations().then(setOrgs).catch(() => { });
+  }, [user?.activeOrganizationId]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (orgDropdownRef.current && !orgDropdownRef.current.contains(e.target as Node)) {
+        setOrgDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const currentOrg = orgs.find(o => o.id === user?.activeOrganizationId);
+  const userOwnsOrg = orgs.some(o => o.role === "OWNER");
+
+  const handleSwitchOrg = async (orgId: string) => {
+    try {
+      const { accessToken } = await switchOrganization(orgId);
+      localStorage.setItem("accessToken", accessToken);
+      await refreshUser();
+      setOrgs(prev => prev.map(o => ({ ...o, isActive: o.id === orgId })));
+      setOrgDropdownOpen(false);
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to switch org:", e);
+    }
+  };
+
+  const handleCreateOrg = async () => {
+    const name = window.prompt(
+      "Enter organization name:\n\nNote: A subscription is required to access SharaSpot in your own workspace."
+    );
+    if (!name?.trim()) return;
+    try {
+      const org = await createOrganization(name.trim());
+      if (org.accessToken) {
+        localStorage.setItem("accessToken", org.accessToken);
+      }
+      await refreshUser();
+      setOrgDropdownOpen(false);
+      router.refresh();
+    } catch (e) {
+      console.error("Failed to create org:", e);
+    }
+  };
 
   const handleNavClick = useCallback(
     (item: { label: string; onClick?: () => void; href?: string }) => {
@@ -117,6 +171,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
       links: [
         { label: "Inbox", href: "/dashboard/inbox", icon: <Inbox size={18} />, count: unreadCount },
         { label: "Contacts", href: "/dashboard/prm", icon: <Users size={18} /> },
+        ...(user?.callingEnabled ? [{ label: "Calls", href: "/dashboard/calls", icon: <PhoneCall size={18} /> }] : []),
         { label: "Accounts", href: "/dashboard/senders", icon: <Mail size={18} /> },
         { label: "Templates", href: "/dashboard/templates", icon: <FileText size={18} /> },
       ]
@@ -124,6 +179,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
     {
       title: "Account",
       links: [
+        { label: "Team", href: "/dashboard/team", icon: <UserPlus size={18} /> },
         { label: "Settings", href: "/dashboard/settings", icon: <Settings size={18} /> },
       ]
     }
@@ -132,10 +188,56 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      <div className="mb-10 px-2 shrink-0">
-        <Link href="/dashboard" onClick={close} className="inline-block hover:opacity-80 transition-opacity">
+      <div className="mb-6 px-2 shrink-0">
+        <Link href="/dashboard" onClick={close} className="inline-block hover:opacity-80 transition-opacity mb-3">
           <Logo size="md" />
         </Link>
+
+        {/* Org Switcher */}
+        <div className="relative" ref={orgDropdownRef}>
+          <button
+            onClick={() => setOrgDropdownOpen(!orgDropdownOpen)}
+            className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-text-secondary hover:bg-interactive-hover hover:text-text-primary transition-colors"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Building2 size={16} className="shrink-0 text-text-muted" />
+              <span className="truncate">{currentOrg?.name || (orgs.length > 0 ? "Select Organization" : "Personal")}</span>
+            </div>
+            <ChevronDown size={14} className={`shrink-0 text-text-muted transition-transform ${orgDropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {orgDropdownOpen && (
+            <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-border-light rounded-lg shadow-premium-lg z-50 py-1 max-h-48 overflow-y-auto">
+              {orgs.map(org => (
+                <button
+                  key={org.id}
+                  onClick={() => handleSwitchOrg(org.id)}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors text-left",
+                    org.id === user?.activeOrganizationId
+                      ? "bg-brand/10 text-brand font-semibold"
+                      : "text-text-secondary hover:bg-interactive-hover hover:text-text-primary"
+                  )}
+                >
+                  <Building2 size={14} className="shrink-0" />
+                  <span className="truncate">{org.name}</span>
+                </button>
+              ))}
+              {!userOwnsOrg && (
+                <>
+                  <div className="border-t border-border-light my-1" />
+                  <button
+                    onClick={handleCreateOrg}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:bg-interactive-hover hover:text-text-primary transition-colors"
+                  >
+                    <PlusCircle size={14} className="shrink-0" />
+                    <span>Create Organization</span>
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="mb-8 shrink-0">
@@ -156,8 +258,8 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
             </h3>
             <div className="space-y-1">
               {group.links.map((link: { label: string; href?: string; onClick?: () => void; isActive?: boolean; icon?: React.ReactNode; count?: number }) => {
-                const isActive = link.isActive !== undefined 
-                  ? link.isActive 
+                const isActive = link.isActive !== undefined
+                  ? link.isActive
                   : (link.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(link.href!));
 
                 if (link.onClick) {

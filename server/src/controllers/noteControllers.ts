@@ -1,17 +1,18 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { logContactActivity } from "../utils/contactService";
+import { getOrgScope, orgCreateData } from "../utils/orgScope";
 
 const prisma = new PrismaClient();
 
 export const createNote = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const scope = getOrgScope(req);
     const { contactId, content } = req.body;
 
-    // Verify contact belongs to user
+    // Verify contact belongs to user's scope
     const contact = await (prisma as any).contact.findFirst({
-      where: { id: contactId, userId },
+      where: { id: contactId, ...scope },
     });
 
     if (!contact) {
@@ -35,7 +36,7 @@ export const createNote = async (req: Request, res: Response) => {
 
 export const updateNote = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const scope = getOrgScope(req);
     const id = req.params.id as string;
     const { content } = req.body;
 
@@ -44,9 +45,13 @@ export const updateNote = async (req: Request, res: Response) => {
       include: { contact: true },
     });
 
-    if (!note || note.contact.userId !== userId) {
-      return res.status(404).json({ message: "Note not found" });
-    }
+    if (!note) return res.status(404).json({ message: "Note not found" });
+
+    const scopedContact = await (prisma as any).contact.findFirst({
+      where: { id: note.contactId, ...scope },
+      select: { id: true },
+    });
+    if (!scopedContact) return res.status(404).json({ message: "Note not found" });
 
     const updatedNote = await (prisma as any).note.update({
       where: { id },
@@ -61,7 +66,7 @@ export const updateNote = async (req: Request, res: Response) => {
 
 export const deleteNote = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const scope = getOrgScope(req);
     const id = req.params.id as string;
 
     const note = await (prisma as any).note.findUnique({
@@ -69,9 +74,13 @@ export const deleteNote = async (req: Request, res: Response) => {
       include: { contact: true },
     });
 
-    if (!note || note.contact.userId !== userId) {
-      return res.status(404).json({ message: "Note not found" });
-    }
+    if (!note) return res.status(404).json({ message: "Note not found" });
+
+    const scopedContact = await (prisma as any).contact.findFirst({
+      where: { id: note.contactId, ...scope },
+      select: { id: true },
+    });
+    if (!scopedContact) return res.status(404).json({ message: "Note not found" });
 
     await (prisma as any).note.delete({
       where: { id },

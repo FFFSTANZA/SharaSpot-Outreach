@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
+import { getOrgScope } from "../utils/orgScope";
 import {
   syncInboxForSender as syncService,
   getInboxEmails as getEmailsService,
@@ -18,15 +19,26 @@ function extractString(val: any): string {
   return String(val);
 }
 
+function extractBoolean(val: any): boolean {
+  const str = extractString(val).toLowerCase();
+  return str === "1" || str === "true" || str === "yes";
+}
+
+function extractPositiveInt(val: any, fallback: number): number {
+  const parsed = parseInt(extractString(val), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+}
+
 export const getInboxThreads = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const scope = getOrgScope(req);
     const query = req.query as any;
     let senderId = extractString(query.senderId);
 
     if (!senderId) {
       const senders = await prisma.sender.findMany({
-        where: { userId },
+        where: { ...scope },
         select: { id: true },
         take: 1,
       });
@@ -38,19 +50,30 @@ export const getInboxThreads = async (req: Request, res: Response): Promise<void
       senderId = senders[0].id;
     }
 
-    const sender = await prisma.sender.findUnique({
-      where: { id: senderId },
+    const sender = await prisma.sender.findFirst({
+      where: { id: senderId, ...scope },
       select: { userId: true },
     });
 
-    if (!sender || sender.userId !== userId) {
+    if (!sender) {
       res.status(403).json({ message: "Forbidden" });
       return;
     }
 
-    const page = parseInt(extractString(query.page)) || 1;
-    const limit = parseInt(extractString(query.limit)) || 20;
-    const result = await getThreadsService(senderId, { page, limit });
+    const page = extractPositiveInt(query.page, 1);
+    const limit = Math.min(extractPositiveInt(query.limit, 20), 100);
+    const unreadOnly = extractBoolean(query.unreadOnly);
+    const starredOnly = extractBoolean(query.starredOnly);
+    const archivedOnly = extractBoolean(query.archivedOnly);
+    const search = extractString(query.search);
+    const result = await getThreadsService(senderId, {
+      page,
+      limit,
+      unreadOnly,
+      starredOnly,
+      archivedOnly,
+      search,
+    });
     res.status(200).json(result);
   } catch (error) {
     console.error("[Inbox] getInboxThreads error:", error);
@@ -60,13 +83,13 @@ export const getInboxThreads = async (req: Request, res: Response): Promise<void
 
 export const getInboxEmails = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const scope = getOrgScope(req);
     const query = req.query as any;
     let senderId = extractString(query.senderId);
 
     if (!senderId) {
       const senders = await prisma.sender.findMany({
-        where: { userId },
+        where: { ...scope },
         select: { id: true },
         take: 1,
       });
@@ -78,20 +101,34 @@ export const getInboxEmails = async (req: Request, res: Response): Promise<void>
       senderId = senders[0].id;
     }
 
-    const sender = await prisma.sender.findUnique({
-      where: { id: senderId },
+    const sender = await prisma.sender.findFirst({
+      where: { id: senderId, ...scope },
       select: { userId: true },
     });
 
-    if (!sender || sender.userId !== userId) {
+    if (!sender) {
       res.status(403).json({ message: "Forbidden" });
       return;
     }
 
     const folder = extractString(query.folder) || "INBOX";
-    const page = parseInt(extractString(query.page)) || 1;
-    const limit = parseInt(extractString(query.limit)) || 20;
-    const result = await getEmailsService(senderId, { folder, page, limit });
+    const page = extractPositiveInt(query.page, 1);
+    const limit = Math.min(extractPositiveInt(query.limit, 20), 100);
+    const unreadOnly = extractBoolean(query.unreadOnly);
+    const starredOnly = extractBoolean(query.starredOnly);
+    const archivedOnly = extractBoolean(query.archivedOnly);
+    const threadId = extractString(query.threadId);
+    const search = extractString(query.search);
+    const result = await getEmailsService(senderId, {
+      folder,
+      page,
+      limit,
+      unreadOnly,
+      starredOnly,
+      archivedOnly,
+      threadId: threadId || undefined,
+      search,
+    });
     res.status(200).json(result);
   } catch (error) {
     console.error("[Inbox] getInboxEmails error:", error);
@@ -101,7 +138,6 @@ export const getInboxEmails = async (req: Request, res: Response): Promise<void>
 
 export const syncInboxForSender = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
     const body = req.body as any;
     const senderId = extractString(body.senderId);
 
@@ -110,12 +146,13 @@ export const syncInboxForSender = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const sender = await prisma.sender.findUnique({
-      where: { id: senderId },
-      select: { userId: true, email: true, appPassword: true, connectionType: true, smtpHost: true },
+    const scope = getOrgScope(req);
+    const sender = await prisma.sender.findFirst({
+      where: { id: senderId, ...scope },
+      select: { email: true, appPassword: true, connectionType: true, smtpHost: true },
     });
 
-    if (!sender || sender.userId !== userId) {
+    if (!sender) {
       res.status(403).json({ message: "Forbidden" });
       return;
     }
@@ -131,7 +168,6 @@ export const syncInboxForSender = async (req: Request, res: Response): Promise<v
 
 export const sendInboxReply = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
     const body = req.body as any;
     const senderId = extractString(body.senderId);
     const toEmail = extractString(body.toEmail);
@@ -145,17 +181,22 @@ export const sendInboxReply = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const sender = await prisma.sender.findUnique({
-      where: { id: senderId },
+    const scope = getOrgScope(req);
+    const sender = await prisma.sender.findFirst({
+      where: { id: senderId, ...scope },
       select: { userId: true },
     });
 
-    if (!sender || sender.userId !== userId) {
+    if (!sender) {
       res.status(403).json({ message: "Forbidden" });
       return;
     }
 
     const result = await replyService(senderId, toEmail, subject, bodyText, inReplyToMessageId, threadId);
+    if (!result.success) {
+      res.status(400).json({ message: result.error || "Failed to send reply" });
+      return;
+    }
     res.status(200).json(result);
   } catch (error) {
     console.error("[Inbox] sendInboxReply error:", error);
@@ -165,7 +206,6 @@ export const sendInboxReply = async (req: Request, res: Response): Promise<void>
 
 export const markInboxEmailRead = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
     const emailId = extractString(req.params.emailId);
 
     const email = await prisma.inboxEmail.findUnique({
@@ -177,8 +217,9 @@ export const markInboxEmailRead = async (req: Request, res: Response): Promise<v
       return;
     }
 
+    const scope = getOrgScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: email.senderId, userId },
+      where: { id: email.senderId, ...scope },
     });
 
     if (!sender) {
@@ -196,7 +237,6 @@ export const markInboxEmailRead = async (req: Request, res: Response): Promise<v
 
 export const toggleInboxEmailStar = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
     const emailId = extractString(req.params.emailId);
 
     const email = await prisma.inboxEmail.findUnique({
@@ -208,8 +248,9 @@ export const toggleInboxEmailStar = async (req: Request, res: Response): Promise
       return;
     }
 
+    const scope = getOrgScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: email.senderId, userId },
+      where: { id: email.senderId, ...scope },
     });
 
     if (!sender) {
@@ -227,7 +268,6 @@ export const toggleInboxEmailStar = async (req: Request, res: Response): Promise
 
 export const archiveInboxEmail = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
     const emailId = extractString(req.params.emailId);
 
     const email = await prisma.inboxEmail.findUnique({
@@ -239,8 +279,9 @@ export const archiveInboxEmail = async (req: Request, res: Response): Promise<vo
       return;
     }
 
+    const scope = getOrgScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: email.senderId, userId },
+      where: { id: email.senderId, ...scope },
     });
 
     if (!sender) {
@@ -258,7 +299,6 @@ export const archiveInboxEmail = async (req: Request, res: Response): Promise<vo
 
 export const deleteInboxEmail = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
     const emailId = extractString(req.params.emailId);
 
     const email = await prisma.inboxEmail.findUnique({
@@ -270,8 +310,9 @@ export const deleteInboxEmail = async (req: Request, res: Response): Promise<voi
       return;
     }
 
+    const scope = getOrgScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: email.senderId, userId },
+      where: { id: email.senderId, ...scope },
     });
 
     if (!sender) {
@@ -289,13 +330,13 @@ export const deleteInboxEmail = async (req: Request, res: Response): Promise<voi
 
 export const getUnreadCount = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const scope = getOrgScope(req);
     const query = req.query as any;
     let senderId = extractString(query.senderId);
 
     if (!senderId) {
       const senders = await prisma.sender.findMany({
-        where: { userId },
+        where: { ...scope },
         select: { id: true },
         take: 1,
       });
@@ -307,12 +348,12 @@ export const getUnreadCount = async (req: Request, res: Response): Promise<void>
       senderId = senders[0].id;
     }
 
-    const sender = await prisma.sender.findUnique({
-      where: { id: senderId },
+    const sender = await prisma.sender.findFirst({
+      where: { id: senderId, ...scope },
       select: { userId: true },
     });
 
-    if (!sender || sender.userId !== userId) {
+    if (!sender) {
       res.status(403).json({ message: "Forbidden" });
       return;
     }

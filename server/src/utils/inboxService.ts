@@ -343,20 +343,57 @@ export async function getInboxEmails(
   options: {
     folder?: string;
     unreadOnly?: boolean;
+    starredOnly?: boolean;
+    archivedOnly?: boolean;
+    threadId?: string;
+    search?: string;
     page?: number;
     limit?: number;
   } = {}
 ): Promise<{ emails: any[]; total: number }> {
-  const { folder = "INBOX", unreadOnly = false, page = 1, limit = 20 } = options;
+  const {
+    folder = "INBOX",
+    unreadOnly = false,
+    starredOnly = false,
+    archivedOnly = false,
+    threadId,
+    search,
+    page = 1,
+    limit = 20,
+  } = options;
 
   const where: any = {
     senderId,
-    folder,
     isDeleted: false,
   };
 
+  if (threadId) {
+    where.threadId = threadId;
+  } else if (!archivedOnly) {
+    where.folder = folder;
+  }
+
   if (unreadOnly) {
     where.isRead = false;
+  }
+  if (starredOnly) {
+    where.isStarred = true;
+  }
+  if (archivedOnly) {
+    where.isArchived = true;
+  } else {
+    where.isArchived = false;
+  }
+  if (search && search.trim().length > 0) {
+    const q = search.trim();
+    where.OR = [
+      { subject: { contains: q, mode: "insensitive" } },
+      { fromName: { contains: q, mode: "insensitive" } },
+      { fromEmail: { contains: q, mode: "insensitive" } },
+      { toEmail: { contains: q, mode: "insensitive" } },
+      { snippet: { contains: q, mode: "insensitive" } },
+      { bodyText: { contains: q, mode: "insensitive" } },
+    ];
   }
 
   const [emails, total] = await Promise.all([
@@ -376,30 +413,85 @@ export async function getInboxThreads(
   senderId: string,
   options: {
     unreadOnly?: boolean;
+    starredOnly?: boolean;
+    archivedOnly?: boolean;
+    search?: string;
     page?: number;
     limit?: number;
   } = {}
 ): Promise<{ threads: any[]; total: number }> {
-  const { unreadOnly = false, page = 1, limit = 20 } = options;
+  const {
+    unreadOnly = false,
+    starredOnly = false,
+    archivedOnly = false,
+    search,
+    page = 1,
+    limit = 20,
+  } = options;
 
-  const where: any = {
+  const emailWhere: any = {
     senderId,
+    isDeleted: false,
+    isArchived: archivedOnly ? true : false,
   };
 
   if (unreadOnly) {
-    where.unreadCount = { gt: 0 };
+    emailWhere.isRead = false;
+  }
+  if (starredOnly) {
+    emailWhere.isStarred = true;
+  }
+  if (search && search.trim().length > 0) {
+    const q = search.trim();
+    emailWhere.OR = [
+      { subject: { contains: q, mode: "insensitive" } },
+      { fromName: { contains: q, mode: "insensitive" } },
+      { fromEmail: { contains: q, mode: "insensitive" } },
+      { toEmail: { contains: q, mode: "insensitive" } },
+      { snippet: { contains: q, mode: "insensitive" } },
+    ];
   }
 
-  const [threads, total] = await Promise.all([
-    prisma.inboxThread.findMany({
-      where,
-      orderBy: { lastMessageAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    prisma.inboxThread.count({ where }),
-  ]);
+  const emails = await prisma.inboxEmail.findMany({
+    where: emailWhere,
+    orderBy: { receivedAt: "desc" },
+    take: 300,
+  });
 
+  const grouped = new Map<string, any[]>();
+  for (const email of emails) {
+    const key = email.threadId || `${email.fromEmail.toLowerCase()}::${(email.subject || "").trim().toLowerCase()}` || email.id;
+    const bucket = grouped.get(key) || [];
+    bucket.push(email);
+    grouped.set(key, bucket);
+  }
+
+  const computedThreads = Array.from(grouped.entries()).map(([key, bucket]) => {
+    const sorted = bucket.sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime());
+    const latest = sorted[0];
+    const participants = Array.from(new Set(sorted.flatMap((e) => [e.fromEmail, e.toEmail]).filter(Boolean)));
+    return {
+      id: key,
+      senderId,
+      threadId: latest.threadId || key,
+      subject: latest.subject || "No subject",
+      participants,
+      lastMessageAt: latest.receivedAt,
+      lastSnippet: latest.snippet || latest.bodyText || "",
+      lastSenderEmail: latest.fromEmail || null,
+      unreadCount: sorted.filter((e) => !e.isRead).length,
+      hasAttachments: false,
+      isStarred: sorted.some((e) => e.isStarred),
+      fromName: latest.fromName,
+      fromEmail: latest.fromEmail,
+      snippet: latest.snippet || "",
+      status: latest.isArchived ? "ARCHIVED" : "ACTIVE",
+    };
+  });
+
+  computedThreads.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+  const total = computedThreads.length;
+  const threads = computedThreads.slice((page - 1) * limit, (page - 1) * limit + limit);
   return { threads, total };
 }
 

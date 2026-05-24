@@ -9,6 +9,7 @@ import {
   validateStatusParam,
   validateDateRange,
 } from "../../utils/searchValidation";
+import { getOrgScope } from "../../utils/orgScope";
 
 const CAMPAIGN_STATUS_VALUES = ["SCHEDULED", "SENDING", "PAUSED", "CANCELLED", "COMPLETED"];
 
@@ -21,9 +22,10 @@ export const getAllCampaigns = async (
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
     const skip = (page - 1) * limit;
 
+    const scope = getOrgScope(req);
     const [campaigns, total] = await Promise.all([
       prisma.emailCampaign.findMany({
-        where: { userId: req.user!.id },
+        where: { ...scope },
         skip,
         take: limit,
         include: {
@@ -53,7 +55,7 @@ export const getAllCampaigns = async (
         orderBy: { createdAt: "desc" },
       }),
       prisma.emailCampaign.count({
-        where: { userId: req.user!.id },
+        where: { ...scope },
       }),
     ]);
 
@@ -90,7 +92,7 @@ export const getCompletedCampaigns = async (
   try {
     const campaigns = await prisma.emailCampaign.findMany({
       where: {
-        userId: req.user!.id,
+        ...getOrgScope(req),
         status: "COMPLETED",
       },
       include: {
@@ -121,8 +123,8 @@ export const getCampaignById = async (
   try {
     const id = req.params.id as string;
 
-    const campaign = await prisma.emailCampaign.findUnique({
-      where: { id },
+    const campaign = await prisma.emailCampaign.findFirst({
+      where: { id, ...getOrgScope(req) },
       include: {
         sender: { select: { id: true, email: true, name: true, isVerified: true } },
         emails: {
@@ -137,7 +139,6 @@ export const getCampaignById = async (
     });
 
     if (!campaign) { res.status(404).json({ message: "Campaign not found" }); return; }
-    if (campaign.userId !== req.user!.id) { res.status(403).json({ message: "Forbidden" }); return; }
 
     const _count = campaign.emails.reduce((acc, e) => {
       if (e.status === "PENDING") acc.pending++;
@@ -235,7 +236,7 @@ export const searchCampaigns = async (
   res: Response
 ): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const scope = getOrgScope(req);
     const q = req.query.q as string | undefined;
     const status = req.query.status as string | undefined;
     const senderId = req.query.senderId as string | undefined;
@@ -269,7 +270,7 @@ export const searchCampaigns = async (
     if (dateFrom) conditions.push({ createdAt: { gte: new Date(dateFrom) } });
     if (dateTo) conditions.push({ createdAt: { lte: new Date(dateTo) } });
 
-    const where: Prisma.EmailCampaignWhereInput = { userId };
+    const where: Prisma.EmailCampaignWhereInput = { ...scope };
     if (conditions.length > 0) where.AND = conditions;
 
     const [campaigns, total] = await Promise.all([

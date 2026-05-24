@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { getOrgScope, orgCreateData } from "../utils/orgScope";
 
 const prisma = new PrismaClient();
 
 export const createList = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user.id;
         const { name } = req.body;
 
         if (!name) {
@@ -13,10 +13,7 @@ export const createList = async (req: Request, res: Response) => {
         }
 
         const list = await (prisma as any).contactList.create({
-            data: {
-                userId,
-                name,
-            },
+            data: orgCreateData(req, { userId: req.user!.id, name }),
         });
 
         res.status(201).json(list);
@@ -30,10 +27,10 @@ export const createList = async (req: Request, res: Response) => {
 
 export const getLists = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user.id;
+        const scope = getOrgScope(req);
 
         const lists = await (prisma as any).contactList.findMany({
-            where: { userId },
+            where: { ...scope },
             include: {
                 _count: {
                     select: { contacts: true },
@@ -50,16 +47,16 @@ export const getLists = async (req: Request, res: Response) => {
 
 export const updateList = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user.id;
+        const scope = getOrgScope(req);
         const { id } = req.params;
         const { name } = req.body;
 
-        const list = await (prisma as any).contactList.updateMany({
-            where: { id, userId },
+        const result = await (prisma as any).contactList.updateMany({
+            where: { id, ...scope },
             data: { name },
         });
 
-        if (list.count === 0) {
+        if (result.count === 0) {
             return res.status(404).json({ message: "List not found" });
         }
 
@@ -71,14 +68,14 @@ export const updateList = async (req: Request, res: Response) => {
 
 export const deleteList = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user.id;
+        const scope = getOrgScope(req);
         const { id } = req.params;
 
-        const list = await (prisma as any).contactList.deleteMany({
-            where: { id, userId },
+        const result = await (prisma as any).contactList.deleteMany({
+            where: { id, ...scope },
         });
 
-        if (list.count === 0) {
+        if (result.count === 0) {
             return res.status(404).json({ message: "List not found" });
         }
 
@@ -90,7 +87,7 @@ export const deleteList = async (req: Request, res: Response) => {
 
 export const addContactsToList = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user.id;
+        const scope = getOrgScope(req);
         const { id } = req.params; // List ID
         const { contactIds } = req.body;
 
@@ -98,9 +95,9 @@ export const addContactsToList = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "No contacts selected" });
         }
 
-        // Verify list belongs to user
+        // Verify list belongs to user's scope
         const list = await (prisma as any).contactList.findFirst({
-            where: { id, userId },
+            where: { id, ...scope },
         });
 
         if (!list) {
@@ -125,7 +122,7 @@ export const addContactsToList = async (req: Request, res: Response) => {
 
 export const removeContactsFromList = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user.id;
+        const scope = getOrgScope(req);
         const { id } = req.params; // List ID
         const { contactIds } = req.body;
 
@@ -133,9 +130,9 @@ export const removeContactsFromList = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "No contacts selected" });
         }
 
-        // Verify list belongs to user
+        // Verify list belongs to user's scope
         const list = await (prisma as any).contactList.findFirst({
-            where: { id, userId },
+            where: { id, ...scope },
         });
 
         if (!list) {

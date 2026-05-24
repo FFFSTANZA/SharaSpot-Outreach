@@ -1,13 +1,14 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { getOrgScope, orgCreateData } from "../utils/orgScope";
 
 const prisma = new PrismaClient();
 
 export const getTags = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const scope = getOrgScope(req);
     const tags = await (prisma as any).tag.findMany({
-      where: { userId },
+      where: { ...scope },
     });
     res.json(tags);
   } catch (error: any) {
@@ -17,15 +18,10 @@ export const getTags = async (req: Request, res: Response) => {
 
 export const createTag = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
     const { name, color } = req.body;
 
     const tag = await (prisma as any).tag.create({
-      data: {
-        userId,
-        name,
-        color,
-      },
+      data: orgCreateData(req, { userId: req.user!.id, name, color }),
     });
 
     res.status(201).json(tag);
@@ -36,12 +32,15 @@ export const createTag = async (req: Request, res: Response) => {
 
 export const updateTag = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const scope = getOrgScope(req);
     const id = req.params.id as string;
     const { name, color } = req.body;
 
+    const existing = await (prisma as any).tag.findFirst({ where: { id, ...scope } });
+    if (!existing) return res.status(404).json({ message: "Tag not found" });
+
     const tag = await (prisma as any).tag.update({
-      where: { id, userId },
+      where: { id },
       data: {
         name,
         color,
@@ -56,12 +55,14 @@ export const updateTag = async (req: Request, res: Response) => {
 
 export const deleteTag = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const scope = getOrgScope(req);
     const id = req.params.id as string;
 
-    await (prisma as any).tag.delete({
-      where: { id, userId },
+    const result = await (prisma as any).tag.deleteMany({
+      where: { id, ...scope },
     });
+
+    if (result.count === 0) return res.status(404).json({ message: "Tag not found" });
 
     res.json({ message: "Tag deleted successfully" });
   } catch (error: any) {

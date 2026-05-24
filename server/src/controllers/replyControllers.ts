@@ -1,6 +1,17 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
-import { verifyCampaignOwnership } from "../utils/authorization";
+import { getOrgScope } from "../utils/orgScope";
+
+async function verifyCampaignOwnership(req: Request, res: Response): Promise<{ id: string } | null> {
+  const campaignId = req.params.id as string || req.params.campaignId as string;
+  const scope = getOrgScope(req);
+  const campaign = await prisma.emailCampaign.findFirst({
+    where: { id: campaignId, ...scope },
+    select: { id: true },
+  });
+  if (!campaign) { res.status(404).json({ message: "Campaign not found" }); return null; }
+  return campaign;
+}
 
 /**
  * GET /api/replies/campaigns/:campaignId

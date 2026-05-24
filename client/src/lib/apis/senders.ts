@@ -11,7 +11,18 @@ export const createSender = async (data: CreateSenderPayload): Promise<SenderRes
   return res.data;
 };
 
-export const verifySender = async (senderId: string, data: { name?: string; appPassword: string; skipWarmup?: boolean }): Promise<SenderResponse> => {
+export const verifySender = async (
+  senderId: string,
+  data: {
+    name?: string;
+    appPassword: string;
+    smtpHost?: string;
+    smtpPort?: number;
+    providerKey?: "gmail" | "outlook" | "zoho" | "yahoo" | "custom";
+    replyTo?: string;
+    skipWarmup?: boolean;
+  },
+): Promise<SenderResponse> => {
   const res = await api.patch(`/api/senders/${senderId}/verify`, data);
   return res.data;
 };
