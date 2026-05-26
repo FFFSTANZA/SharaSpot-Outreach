@@ -16,6 +16,7 @@ model User {
   updatedAt     DateTime        @updatedAt
   campaigns     EmailCampaign[]
   templates     EmailTemplate[]
+  followUpTemplates FollowUpTemplate[]
   refreshTokens RefreshToken[]
   senders       Sender[]
   subscription  Subscription?
@@ -50,6 +51,7 @@ model Organization {
   contacts      Contact[]
   senders       Sender[]
   templates     EmailTemplate[]
+  followUpTemplates FollowUpTemplate[]
   contactLists  ContactList[]
   tags          Tag[]
   callTasks     CallTask[]
@@ -183,6 +185,7 @@ model EmailCampaign {
   businessStartHour       Int?
   businessEndHour         Int?
   isPriority              Boolean                  @default(false)
+  sequenceConfig          Json?
   createdAt               DateTime                 @default(now())
   attachments             Attachment[]
   campaignSenders         CampaignSender[]
@@ -291,6 +294,23 @@ model EmailTemplate {
   updatedAt       DateTime @updatedAt
   user            User?           @relation(fields: [userId], references: [id])
   organization    Organization?   @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([organizationId])
+}
+
+model FollowUpTemplate {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String?
+  name           String
+  description    String?
+  steps          Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User         @relation(fields: [userId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   @@unique([userId, name])
   @@index([userId])

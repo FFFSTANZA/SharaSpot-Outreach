@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
+import { mcpCreateData, mcpScopeWhere } from "../scope";
 
 async function listTemplates(
   context: MCPContext,
@@ -9,7 +10,7 @@ async function listTemplates(
   const { limit = 20, offset = 0 } = args;
 
   const templates = await prisma.emailTemplate.findMany({
-    where: { userId: context.userId },
+    where: mcpScopeWhere(context),
     take: Number(limit),
     skip: Number(offset),
     orderBy: { createdAt: "desc" },
@@ -33,7 +34,7 @@ async function getTemplate(
   const { templateId } = args;
 
   const template = await prisma.emailTemplate.findFirst({
-    where: { id: String(templateId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(templateId) }),
   });
 
   if (!template) {
@@ -56,12 +57,11 @@ async function createTemplate(
   const { name, subject, body } = args;
 
   const template = await prisma.emailTemplate.create({
-    data: {
-      userId: context.userId,
+    data: mcpCreateData(context, {
       name: String(name),
       subject: String(subject),
       body: String(body),
-    },
+    }),
   });
 
   return {
@@ -78,7 +78,7 @@ async function updateTemplate(
   const { templateId, name, subject, body } = args;
 
   const existing = await prisma.emailTemplate.findFirst({
-    where: { id: String(templateId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(templateId) }),
   });
 
   if (!existing) {
@@ -105,7 +105,7 @@ async function deleteTemplate(
   const { templateId } = args;
 
   const existing = await prisma.emailTemplate.findFirst({
-    where: { id: String(templateId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(templateId) }),
   });
 
   if (!existing) {

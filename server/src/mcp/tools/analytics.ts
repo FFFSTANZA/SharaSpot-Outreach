@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
+import { mcpScopeWhere } from "../scope";
 
 function sanitizeLimit(value: unknown, defaultVal = 30, maxVal = 365): number {
   const num = Number(value) || defaultVal;
@@ -21,7 +22,7 @@ async function getCampaignAnalytics(
   }
 
   const campaign = await prisma.emailCampaign.findFirst({
-    where: { id: campaignId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: campaignId }),
     select: { id: true, subject: true },
   });
 
@@ -67,7 +68,7 @@ async function getSenderAnalytics(
   }
 
   const sender = await prisma.sender.findFirst({
-    where: { id: senderId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: senderId }),
     select: { id: true, email: true },
   });
 
@@ -115,19 +116,19 @@ async function getOverallAnalytics(
   const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
   const [campaigns, contacts, totalEmails, sent, opened, clicked] = await Promise.all([
-    prisma.emailCampaign.count({ where: { userId: context.userId } }),
-    prisma.contact.count({ where: { userId: context.userId } }),
+    prisma.emailCampaign.count({ where: mcpScopeWhere(context) }),
+    prisma.contact.count({ where: mcpScopeWhere(context) }),
     prisma.emailJob.count({
-      where: { campaign: { userId: context.userId }, createdAt: { gte: startDate } },
+      where: { campaign: mcpScopeWhere(context), createdAt: { gte: startDate } },
     }),
     prisma.emailJob.count({
-      where: { campaign: { userId: context.userId }, status: "SENT", createdAt: { gte: startDate } },
+      where: { campaign: mcpScopeWhere(context), status: "SENT", createdAt: { gte: startDate } },
     }),
     prisma.trackingEvent.count({
-      where: { emailJob: { campaign: { userId: context.userId } }, eventType: "OPEN", createdAt: { gte: startDate } },
+      where: { emailJob: { campaign: mcpScopeWhere(context) }, eventType: "OPEN", createdAt: { gte: startDate } },
     }),
     prisma.trackingEvent.count({
-      where: { emailJob: { campaign: { userId: context.userId } }, eventType: "CLICK", createdAt: { gte: startDate } },
+      where: { emailJob: { campaign: mcpScopeWhere(context) }, eventType: "CLICK", createdAt: { gte: startDate } },
     }),
   ]);
 

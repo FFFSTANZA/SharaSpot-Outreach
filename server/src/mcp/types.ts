@@ -1,13 +1,13 @@
 export interface MCPRequest {
   jsonrpc: "2.0";
-  id: string | number;
+  id?: string | number | null;
   method: string;
   params?: Record<string, unknown>;
 }
 
 export interface MCPResponse {
   jsonrpc: "2.0";
-  id: string | number;
+  id: string | number | null;
   result?: unknown;
   error?: MCPError;
 }
@@ -22,7 +22,39 @@ export interface MCPTool {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
+  category: MCPToolCategory;
+  access: MCPToolAccess;
+  destructive: boolean;
+  requiresConfirmation: boolean;
   handler: ToolHandler;
+}
+
+export type MCPToolCategory =
+  | "contacts"
+  | "contactLists"
+  | "campaigns"
+  | "senders"
+  | "templates"
+  | "analytics"
+  | "inbox"
+  | "prm"
+  | "validation"
+  | "calls"
+  | "settings";
+
+export type MCPToolAccess = "read" | "write";
+
+export interface MCPKeyPermissions {
+  access: MCPToolAccess;
+  areas: MCPToolCategory[];
+}
+
+export interface MCPAuthInfo {
+  apiKeyId?: string;
+  isApiKey: boolean;
+  userId: string;
+  organizationId?: string | null;
+  permissions?: MCPKeyPermissions;
 }
 
 export interface MCPJSONSchema {
@@ -59,6 +91,7 @@ export type ToolHandler = (
 
 export interface MCPContext {
   userId: string;
+  organizationId?: string | null;
   sessionId?: string;
   requestId: string;
 }
@@ -105,4 +138,8 @@ export const MCP_ERROR_CODES = {
   TOOL_EXECUTION_ERROR: -32002,
   RESOURCE_NOT_FOUND: -32003,
   INVALID_TOOL_ARGUMENTS: -32004,
+  PERMISSION_DENIED: -32005,
+  CONFIRMATION_REQUIRED: -32006,
+  AUTHENTICATION_FAILED: -32050,
+  TIMEOUT: -32060,
 } as const;

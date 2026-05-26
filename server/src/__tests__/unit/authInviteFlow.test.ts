@@ -78,11 +78,13 @@ describe("auth invite flow simulation", () => {
       email: "newuser@example.com",
       activeOrganizationId: "org-personal",
     });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: "u1",
-      email: "newuser@example.com",
-      activeOrganizationId: "org-personal",
-    });
+    (prisma.user.findUnique as jest.Mock)
+      .mockResolvedValueOnce(null)  // First call: no existing user → isNewUser = true
+      .mockResolvedValue({
+        id: "u1",
+        email: "newuser@example.com",
+        activeOrganizationId: "org-personal",
+      });
     (prisma.organizationMember.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.organization.create as jest.Mock).mockResolvedValue({
       id: "org-personal",
@@ -93,11 +95,14 @@ describe("auth invite flow simulation", () => {
   });
 
   it("accepts invite during google login and sets active organization from invite", async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: "u1",
-      email: "newuser@example.com",
-      activeOrganizationId: "org-invite",
-    });
+    (prisma.user.findUnique as jest.Mock).mockReset();
+    (prisma.user.findUnique as jest.Mock)
+      .mockResolvedValueOnce(null)  // First call: no existing user
+      .mockResolvedValue({
+        id: "u1",
+        email: "newuser@example.com",
+        activeOrganizationId: "org-invite",
+      });
 
     const { req, res } = mockReqRes({ idToken: "id-token", inviteToken: "invite-token" });
     await googleLogin(req, res);
@@ -115,11 +120,14 @@ describe("auth invite flow simulation", () => {
 
   it("creates personal workspace when invite acceptance fails and no active org remains", async () => {
     (acceptOrganizationInviteForUser as jest.Mock).mockResolvedValue({ accepted: false, reason: "invalid_or_expired" });
-    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: "u1",
-      email: "newuser@example.com",
-      activeOrganizationId: null,
-    });
+    (prisma.user.findUnique as jest.Mock).mockReset();
+    (prisma.user.findUnique as jest.Mock)
+      .mockResolvedValueOnce(null)  // First call: no existing user → isNewUser = true
+      .mockResolvedValue({
+        id: "u1",
+        email: "newuser@example.com",
+        activeOrganizationId: null,
+      });
 
     const { req, res } = mockReqRes({ idToken: "id-token", inviteToken: "bad-token" });
     await googleLogin(req, res);

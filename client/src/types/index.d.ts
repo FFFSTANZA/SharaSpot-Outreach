@@ -58,12 +58,15 @@ export interface CreateCampaignPayload {
   replyTo?: string;
   attachments?: UploadedAttachment[];
   steps?: SequenceStepInputForApi[];
+  sequenceGraph?: SequenceGraphInput;
   trackOpens?: boolean;
   trackClicks?: boolean;
   timezone?: string;
   businessStartHour?: number | null;
   businessEndHour?: number | null;
   isPriority?: boolean;
+  sequenceSchedule?: SequenceScheduleConfig;
+  frequencyCaps?: FrequencyCap;
 }
 
 // Serialized version of SequenceStepInput for API requests (condition as string, not object)
@@ -72,6 +75,35 @@ export interface SequenceStepInputForApi {
   body: string;
   waitDays: number;
   condition?: SequenceConditionType;
+}
+
+export type RuleOperator = "AND" | "OR";
+export type RuleOperandType = "opened" | "clicked" | "replied";
+export interface RuleOperand {
+  type: RuleOperandType;
+  negate?: boolean;
+  withinHours?: number;
+}
+export interface RuleGroup {
+  operator: RuleOperator;
+  operands?: RuleOperand[];
+  groups?: RuleGroup[];
+}
+export interface BranchEdge {
+  onMatch?: string | null;
+  onNoMatch?: string | null;
+}
+export interface SequenceGraphNodeInput {
+  id: string;
+  subject: string;
+  body: string;
+  waitDays: number;
+  rules?: RuleGroup;
+}
+export interface SequenceGraphInput {
+  startNodeId: string;
+  nodes: SequenceGraphNodeInput[];
+  edges: Record<string, BranchEdge>;
 }
 
 // POST /attachments/upload response item — metadata for an uploaded file
@@ -367,6 +399,9 @@ export interface SequenceStepInput {
   body: string;
   waitDays: number;
   condition?: SequenceCondition;
+  altSubjects?: string[];
+  sendHour?: number;
+  waitHours?: number;
 }
 
 export type SequenceConditionType = "opened" | "clicked" | "replied" | "none";
@@ -374,8 +409,48 @@ export type SequenceConditionType = "opened" | "clicked" | "replied" | "none";
 export interface SequenceCondition {
   type: SequenceConditionType;
   waitHours?: number;
+  rules?: RuleGroup;
+  onNoMatchNodeId?: string | null;
+  onMatchNodeId?: string | null;
 }
 
+export type SequencePresetName = string;
+
+export interface SequencePreset {
+  name: SequencePresetName;
+  label: string;
+  description: string;
+  steps: Partial<SequenceStepInput>[];
+}
+
+export interface FollowUpTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  steps: Partial<SequenceStepInput>[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FollowUpTemplatePayload {
+  name: string;
+  description?: string;
+  steps: Partial<SequenceStepInput>[];
+}
+
+export interface FrequencyCap {
+  maxPerRecipient: number;
+  maxPerDay: number;
+  maxPerWeek: number;
+}
+
+export interface SequenceScheduleConfig {
+  sendHour: number;
+  allowedDaysOfWeek?: number[];
+  skipWeekends?: boolean;
+  skipHolidays?: boolean;
+  timezone?: string;
+}
 
 // ─── Priority Mail Types ─────────────────────────────────────────────────────
 

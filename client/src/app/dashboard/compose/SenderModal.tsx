@@ -14,6 +14,7 @@ import {
   getConnectionSecurityHint,
   getProviderConfig,
   inferProviderFromHost,
+  InstructionItem,
   SENDER_PROVIDERS,
   SenderProviderConfig,
   SenderProviderKey,
@@ -264,10 +265,21 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
             <div className="rounded-xl border border-border-light bg-interactive-hover/30 p-4">
               <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.1em] mb-2">Setup Checklist</p>
               <ul className="space-y-1.5">
-                {selectedProvider.instructions.map((instruction) => (
-                  <li key={instruction} className="text-xs text-text-secondary flex items-start gap-2">
+                {selectedProvider.instructions.map((instruction: InstructionItem) => (
+                  <li key={instruction.text} className="text-xs text-text-secondary flex items-start gap-2">
                     <Mail className="h-3.5 w-3.5 mt-0.5 shrink-0 text-text-muted" />
-                    <span>{instruction}</span>
+                    {instruction.href ? (
+                      <a
+                        href={instruction.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand hover:underline font-bold"
+                      >
+                        {instruction.text}
+                      </a>
+                    ) : (
+                      <span>{instruction.text}</span>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -17,6 +17,40 @@ import { quickSpamScore } from "../utils/spamDetector";
 import { checkAndCompleteCampaign } from "../utils/campaignCompletion";
 
 // ---------------------------------------------------------------------------
+// A/B Variant Selection — deterministic per recipient + step
+// ---------------------------------------------------------------------------
+// Parses the sequenceStep.condition JSON for an altSubjects array and picks
+// one variant deterministically using a hash of the recipient email + step id.
+// The original subject (index 0) is always in the pool alongside alternates.
+// ---------------------------------------------------------------------------
+
+export function pickABVariant(
+  subject: string,
+  condition: string | null,
+  key: string,
+): string {
+  if (!condition) return subject;
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = JSON.parse(condition);
+  } catch {
+    return subject;
+  }
+
+  const altSubjects = parsed.altSubjects;
+  if (!Array.isArray(altSubjects) || altSubjects.length === 0) return subject;
+
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) - hash) + key.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = Math.abs(hash) % (altSubjects.length + 1);
+  return index === 0 ? subject : String(altSubjects[index - 1]);
+}
+
+// ---------------------------------------------------------------------------
 // Helper: Truncate a Date to the start of its hour
 // ---------------------------------------------------------------------------
 // Used for rate-limit counter bucketing. All emails sent between 14:00:00
@@ -362,18 +396,22 @@ export async function processEmailJob(job: Job): Promise<void> {
   }
 
   // ---------------------------------------------------------------------------
-  // Minimum inter-send gap (4–8 seconds, randomised)
+  // Minimum inter-send gap (4–8 seconds, randomised, atomic)
   // ---------------------------------------------------------------------------
-  // Prevents consecutive emails from the same sender firing within milliseconds
-  // of each other, which looks bot-like to ISP spam filters.
+  // Uses SET NX with a TTL equal to the random gap window. Only the first
+  // worker to acquire the sentinel key proceeds; others wait for the TTL to
+  // expire. This prevents the TOCTOU race where multiple workers for the same
+  // sender all read the same last_sent_at and fire nearly simultaneously.
   // ---------------------------------------------------------------------------
-  const lastSentKey = `sender:${sender.id}:last_sent_at`;
-  const lastSent = await redis.get(lastSentKey);
+  const sentinelKey = `sender:${sender.id}:send_gap`;
   const minGapMs = 4000 + Math.random() * 4000;
-  if (lastSent && Date.now() - parseInt(lastSent) < minGapMs) {
-    await new Promise(resolve => setTimeout(resolve, minGapMs - (Date.now() - parseInt(lastSent))));
+  const acquired = await redis.set(sentinelKey, "1", "PX", minGapMs, "NX");
+  if (!acquired) {
+    const ttl = await redis.pttl(sentinelKey);
+    if (ttl > 0 && ttl < 60000) {
+      await new Promise(resolve => setTimeout(resolve, ttl + 200));
+    }
   }
-  await redis.set(lastSentKey, Date.now().toString(), "EX", 3600);
 
   // ---------------------------------------------------------------------------
   // Daily limit enforcement
@@ -588,8 +626,14 @@ export async function processEmailJob(job: Job): Promise<void> {
     }
 
     // Determine subject/body — use sequence step if this is a follow-up job
-    const rawSubject = emailJob.sequenceStep?.subject ?? campaign.subject;
+    let rawSubject = emailJob.sequenceStep?.subject ?? campaign.subject;
     const rawBody = emailJob.sequenceStep?.body ?? campaign.body;
+
+    // A/B variant selection for follow-up steps with altSubjects
+    if (emailJob.sequenceStep?.condition) {
+      const variantKey = `${emailJob.toEmail}:${emailJob.sequenceStep.id}`;
+      rawSubject = pickABVariant(rawSubject, emailJob.sequenceStep.condition, variantKey);
+    }
 
     // Resolve template variables ({{Name}}, {{Company}}, etc.) using per-recipient columnData
     const recipientColumnData = (emailJob.columnData as Record<string, string>) ?? {};

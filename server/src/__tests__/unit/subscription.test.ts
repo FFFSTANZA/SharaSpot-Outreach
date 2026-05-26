@@ -9,6 +9,9 @@ jest.mock("../../config/prisma", () => ({
         subscription: {
             findUnique: jest.fn(),
         },
+        user: {
+            findUnique: jest.fn(),
+        },
     },
 }));
 
@@ -17,6 +20,7 @@ describe("Subscription Service & Premium Checks", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        (prisma.user.findUnique as jest.Mock).mockResolvedValue({ activeOrganizationId: null });
     });
 
     describe("getSubscriptionStatus", () => {

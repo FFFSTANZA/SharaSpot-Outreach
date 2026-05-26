@@ -10,10 +10,13 @@ async function createApiKey(
   const { name, permissions = {}, expiresAt } = args;
 
   const result = await createMcpApiKey(
-    context.userId,
-    String(name),
-    permissions as Record<string, unknown>,
-    expiresAt ? new Date(String(expiresAt)) : undefined
+    {
+      userId: context.userId,
+      name: String(name),
+      scope: "personal",
+      permissions,
+      expiresAt: expiresAt ? new Date(String(expiresAt)) : undefined,
+    }
   );
 
   return {
@@ -28,7 +31,7 @@ async function listApiKeys(
   context: MCPContext,
   args: Record<string, unknown>
 ): Promise<unknown> {
-  const keys = await listMcpApiKeys(context.userId);
+  const keys = await listMcpApiKeys({ userId: context.userId, scope: "personal" });
 
   return {
     apiKeys: keys.map((k) => ({
@@ -37,6 +40,8 @@ async function listApiKeys(
       lastUsedAt: k.lastUsedAt,
       expiresAt: k.expiresAt,
       createdAt: k.createdAt,
+      isActive: k.isActive,
+      permissions: k.permissions,
     })),
     total: keys.length,
   };
@@ -48,7 +53,11 @@ async function revokeApiKey(
 ): Promise<unknown> {
   const { keyId } = args;
 
-  const success = await revokeMcpApiKey(context.userId, String(keyId));
+  const success = await revokeMcpApiKey({
+    userId: context.userId,
+    keyId: String(keyId),
+    scope: "personal",
+  });
 
   return {
     success,

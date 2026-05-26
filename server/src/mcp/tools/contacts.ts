@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
+import { mcpCreateData, mcpScopeWhere } from "../scope";
 
 function sanitizeString(value: unknown, maxLength = 500): string {
   if (typeof value !== "string") return "";
@@ -52,51 +53,54 @@ async function createContact(
     return { success: false, message: "Invalid email address" };
   }
 
-  const existing = await prisma.contact.findFirst({
-    where: { userId: context.userId, email },
-    select: { id: true },
-  });
+  const contact = await prisma.$transaction(async (tx) => {
+    const existing = await tx.contact.findFirst({
+      where: mcpScopeWhere(context, { email }),
+      select: { id: true },
+    });
 
-  if (existing) {
-    return { success: false, message: "Contact already exists", contactId: existing.id };
-  }
+    if (existing) {
+      return { success: false as const, message: "Contact already exists", contactId: existing.id };
+    }
 
-  const contact = await prisma.contact.create({
-    data: {
-      userId: context.userId,
-      email,
-      firstName: sanitizeString(args.firstName, 100),
-      lastName: sanitizeString(args.lastName, 100),
-      company: sanitizeString(args.company, 200),
-    },
-  });
+    const created = await tx.contact.create({
+      data: mcpCreateData(context, {
+        email,
+        firstName: sanitizeString(args.firstName, 100),
+        lastName: sanitizeString(args.lastName, 100),
+        company: sanitizeString(args.company, 200),
+      }),
+    });
 
-  const tags = args.tags;
-  if (Array.isArray(tags)) {
-    for (const tagName of tags.slice(0, 10)) {
-      const name = sanitizeString(tagName, 50);
-      if (!name) continue;
-      
-      let tag = await prisma.tag.findFirst({
-        where: { userId: context.userId, name },
-        select: { id: true },
-      });
-      
-      if (!tag) {
-        tag = await prisma.tag.create({
-          data: { userId: context.userId, name, color: "#6366f1" },
+    const tags = args.tags;
+    if (Array.isArray(tags)) {
+      for (const tagName of tags.slice(0, 10)) {
+        const name = sanitizeString(tagName, 50);
+        if (!name) continue;
+
+        let tag = await tx.tag.findFirst({
+          where: mcpScopeWhere(context, { name }),
           select: { id: true },
         });
-      }
-      
-      await prisma.contact.update({
-        where: { id: contact.id },
-        data: { tags: { connect: { id: tag.id } } },
-      });
-    }
-  }
 
-  return { success: true, contactId: contact.id, email: contact.email };
+        if (!tag) {
+          tag = await tx.tag.create({
+            data: mcpCreateData(context, { name, color: "#6366f1" }),
+            select: { id: true },
+          });
+        }
+
+        await tx.contact.update({
+          where: { id: created.id },
+          data: { tags: { connect: { id: tag.id } } },
+        });
+      }
+    }
+
+    return { success: true as const, contactId: created.id, email: created.email };
+  });
+
+  return contact;
 }
 
 async function listContacts(
@@ -107,7 +111,7 @@ async function listContacts(
   const limit = sanitizeLimit(args.limit, 50, 100);
   const offset = sanitizeOffset(args.offset);
 
-  const where: Record<string, unknown> = { userId: context.userId };
+  const where: Record<string, unknown> = mcpScopeWhere(context);
 
   if (search) {
     where.OR = [
@@ -152,7 +156,7 @@ async function getContact(
   }
 
   const contact = await prisma.contact.findFirst({
-    where: { id: contactId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: contactId }),
   });
 
   if (!contact) {
@@ -178,7 +182,7 @@ async function updateContact(
   }
 
   const existing = await prisma.contact.findFirst({
-    where: { id: contactId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: contactId }),
   });
 
   if (!existing) {
@@ -208,7 +212,7 @@ async function deleteContact(
   }
 
   const existing = await prisma.contact.findFirst({
-    where: { id: contactId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: contactId }),
   });
 
   if (!existing) {

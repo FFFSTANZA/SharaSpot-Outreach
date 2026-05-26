@@ -218,7 +218,7 @@ export default function GuidePage() {
                 <div className="p-5 space-y-3">
                   <div className="flex items-start gap-2">
                     <span className="text-[10px] font-bold text-slate-400 w-6">1</span>
-                    <p className="text-xs text-slate-600">Go to <strong>myaccount.google.com/apppasswords</strong></p>
+                    <p className="text-xs text-slate-600">Go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline font-bold">myaccount.google.com/apppasswords</a></p>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-[10px] font-bold text-slate-400 w-6">2</span>
@@ -255,7 +255,7 @@ export default function GuidePage() {
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-[10px] font-bold text-slate-400 w-6">2</span>
-                    <p className="text-xs text-slate-600">Go to myaccount.google.com/apppasswords for each user</p>
+                    <p className="text-xs text-slate-600">Go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-brand hover:underline font-bold">myaccount.google.com/apppasswords</a> for each user</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-[10px] font-bold text-slate-400 w-6">3</span>

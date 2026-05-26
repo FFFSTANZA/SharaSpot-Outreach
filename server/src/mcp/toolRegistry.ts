@@ -1,20 +1,40 @@
-import { MCPTool, MCPContext, ToolHandler } from "./types";
+import { MCPTool, MCPContext, MCPToolAccess, MCPToolCategory, ToolHandler } from "./types";
+
+type ToolRegistration = Omit<Partial<MCPTool>, "name" | "description" | "inputSchema" | "handler"> & {
+  name: string;
+  description: string;
+  inputSchema: Record<string, unknown>;
+  handler: ToolHandler;
+};
 
 class MCPToolRegistry {
   private tools: Map<string, MCPTool> = new Map();
-  private categories: Map<string, string[]> = new Map();
+  private categories: Map<MCPToolCategory, string[]> = new Map();
 
-  register(tool: MCPTool, category?: string): void {
+  register(tool: ToolRegistration, category?: MCPToolCategory, access?: MCPToolAccess): void {
     if (this.tools.has(tool.name)) {
       throw new Error(`Tool ${tool.name} is already registered`);
     }
-    this.tools.set(tool.name, tool);
 
-    if (category) {
-      const existing = this.categories.get(category) || [];
-      existing.push(tool.name);
-      this.categories.set(category, existing);
-    }
+    const resolvedCategory = tool.category || category || "settings";
+    const resolvedAccess = tool.access || access || inferAccess(tool.name);
+    const destructive = tool.destructive ?? inferDestructive(tool.name);
+    const requiresConfirmation = tool.requiresConfirmation ?? destructive;
+    const inputSchema = withConfirmationSchema(tool.inputSchema, requiresConfirmation);
+    const registeredTool: MCPTool = {
+      ...tool,
+      inputSchema,
+      category: resolvedCategory,
+      access: resolvedAccess,
+      destructive,
+      requiresConfirmation,
+    };
+
+    this.tools.set(tool.name, registeredTool);
+
+    const existing = this.categories.get(resolvedCategory) || [];
+    existing.push(tool.name);
+    this.categories.set(resolvedCategory, existing);
   }
 
   get(name: string): MCPTool | undefined {
@@ -25,7 +45,7 @@ class MCPToolRegistry {
     return Array.from(this.tools.values());
   }
 
-  getByCategory(category: string): MCPTool[] {
+  getByCategory(category: MCPToolCategory): MCPTool[] {
     const names = this.categories.get(category) || [];
     return names.map((name) => this.tools.get(name)!).filter(Boolean);
   }
@@ -39,21 +59,68 @@ class MCPToolRegistry {
     if (!tool) {
       throw new Error(`Tool ${name} not found`);
     }
-    return tool.handler(context, args);
+    const result = await tool.handler(context, args);
+    if (result && typeof result === "object" && !Array.isArray(result) && "success" in result) {
+      return result;
+    }
+    return { success: true, data: result };
   }
 
-  listTools(): Array<{ name: string; description: string; inputSchema: unknown }> {
+  listTools(): Array<{
+    name: string;
+    description: string;
+    inputSchema: unknown;
+    category: MCPToolCategory;
+    access: MCPToolAccess;
+    destructive: boolean;
+    requiresConfirmation: boolean;
+  }> {
     return this.getAll().map((tool) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema,
+      category: tool.category,
+      access: tool.access,
+      destructive: tool.destructive,
+      requiresConfirmation: tool.requiresConfirmation,
     }));
   }
 }
 
 export const toolRegistry = new MCPToolRegistry();
 
-export function createToolHandler(tool: MCPTool): ToolHandler {
+function inferAccess(toolName: string): MCPToolAccess {
+  return /(^|_)(create|update|delete|launch|add|remove|revoke|pause|resume|cancel|sync|reply|apply|undo|archive|star|read|log|disposition|validate|upsert)($|_)/.test(toolName)
+    ? "write"
+    : "read";
+}
+
+function inferDestructive(toolName: string): boolean {
+  return /(^|_)(delete|bulk_delete|launch|cancel|remove|revoke|apply|undo|archive|disposition)($|_)/.test(toolName);
+}
+
+function withConfirmationSchema(schema: Record<string, unknown>, requiresConfirmation: boolean): Record<string, unknown> {
+  if (!requiresConfirmation || schema.type !== "object") return schema;
+  const properties = typeof schema.properties === "object" && schema.properties !== null
+    ? schema.properties as Record<string, unknown>
+    : {};
+  const required = Array.isArray(schema.required) ? schema.required as string[] : [];
+
+  return {
+    ...schema,
+    properties: {
+      ...properties,
+      confirm: {
+        type: "boolean",
+        const: true,
+        description: "Required for destructive or externally visible operator actions.",
+      },
+    },
+    required: Array.from(new Set([...required, "confirm"])),
+  };
+}
+
+export function createToolHandler(tool: ToolRegistration): ToolHandler {
   return async (context: MCPContext, args: Record<string, unknown>) => {
     try {
       return await tool.handler(context, args);

@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
+import { mcpCreateData, mcpScopeWhere } from "../scope";
 
 async function listContactLists(
   context: MCPContext,
@@ -9,7 +10,7 @@ async function listContactLists(
   const { limit = 20, offset = 0 } = args;
 
   const lists = await prisma.contactList.findMany({
-    where: { userId: context.userId },
+    where: mcpScopeWhere(context),
     take: Number(limit),
     skip: Number(offset),
     orderBy: { createdAt: "desc" },
@@ -42,7 +43,7 @@ async function getContactList(
   const { listId } = args;
 
   const list = await prisma.contactList.findFirst({
-    where: { id: String(listId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(listId) }),
   });
 
   if (!list) {
@@ -73,10 +74,9 @@ async function createContactList(
   const { name } = args;
 
   const list = await prisma.contactList.create({
-    data: {
-      userId: context.userId,
+    data: mcpCreateData(context, {
       name: String(name),
-    },
+    }),
   });
 
   return { success: true, listId: list.id, name: list.name };
@@ -89,7 +89,7 @@ async function addContactsToList(
   const { listId, contactIds } = args;
 
   const list = await prisma.contactList.findFirst({
-    where: { id: String(listId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(listId) }),
   });
 
   if (!list) {
@@ -102,7 +102,7 @@ async function addContactsToList(
 
   for (const contactId of contactIds) {
     const contact = await prisma.contact.findFirst({
-      where: { id: String(contactId), userId: context.userId },
+      where: mcpScopeWhere(context, { id: String(contactId) }),
     });
     if (contact) {
       await prisma.contact.update({
@@ -122,7 +122,7 @@ async function removeContactsFromList(
   const { listId, contactIds } = args;
 
   const list = await prisma.contactList.findFirst({
-    where: { id: String(listId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(listId) }),
   });
 
   if (!list) {
@@ -134,10 +134,16 @@ async function removeContactsFromList(
   }
 
   for (const contactId of contactIds) {
-    await prisma.contact.update({
-      where: { id: String(contactId) },
-      data: { lists: { disconnect: { id: list.id } } },
+    const contact = await prisma.contact.findFirst({
+      where: mcpScopeWhere(context, { id: String(contactId) }),
+      select: { id: true },
     });
+    if (contact) {
+      await prisma.contact.update({
+        where: { id: contact.id },
+        data: { lists: { disconnect: { id: list.id } } },
+      });
+    }
   }
 
   return { success: true, message: `Removed ${contactIds.length} contacts` };
@@ -150,7 +156,7 @@ async function deleteContactList(
   const { listId } = args;
 
   const list = await prisma.contactList.findFirst({
-    where: { id: String(listId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(listId) }),
   });
 
   if (!list) {
@@ -169,7 +175,70 @@ export function registerContactListTools() {
     {
       name: "contact_list_list",
       description: "List contact lists",
-inputSchema: {
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          limit: { type: "number", description: "Max results" },
+          offset: { type: "number", description: "Results offset" },
+        },
+      },
+      handler: createToolHandler({
+        name: "contact_list_list",
+        description: "",
+        inputSchema: {} as never,
+        handler: listContactLists,
+      }),
+    },
+    "contactLists"
+  );
+
+  toolRegistry.register(
+    {
+      name: "contact_list_get",
+      description: "Get contact list details",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          listId: { type: "string", description: "List ID" },
+        },
+        required: ["listId"],
+      },
+      handler: createToolHandler({
+        name: "contact_list_get",
+        description: "",
+        inputSchema: {} as never,
+        handler: getContactList,
+      }),
+    },
+    "contactLists"
+  );
+
+  toolRegistry.register(
+    {
+      name: "contact_list_create",
+      description: "Create contact list",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          name: { type: "string", description: "List name" },
+        },
+        required: ["name"],
+      },
+      handler: createToolHandler({
+        name: "contact_list_create",
+        description: "",
+        inputSchema: {} as never,
+        handler: createContactList,
+      }),
+    },
+    "contactLists"
+  );
+
+  toolRegistry.register(
+    {
+      name: "contact_list_add_contacts",
+      description: "Add contacts to list",
+      inputSchema: {
         type: "object" as const,
         properties: {
           listId: { type: "string", description: "List ID" },
@@ -184,7 +253,7 @@ inputSchema: {
         handler: addContactsToList,
       }),
     },
-    "contacts"
+    "contactLists"
   );
 
   toolRegistry.register(
@@ -206,7 +275,7 @@ inputSchema: {
         handler: removeContactsFromList,
       }),
     },
-    "contacts"
+    "contactLists"
   );
 
   toolRegistry.register(
@@ -227,6 +296,6 @@ inputSchema: {
         handler: deleteContactList,
       }),
     },
-    "contacts"
+    "contactLists"
   );
 }

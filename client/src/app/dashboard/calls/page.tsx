@@ -116,7 +116,6 @@ export default function CallsPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const fetchData = useCallback(async (page = 1) => {
-    if (!user?.callingEnabled) { setIsLoading(false); return; }
     setIsLoading(true);
     try {
       const data = await getCallQueue({
@@ -134,7 +133,7 @@ export default function CallsPage() {
     } catch (error: unknown) {
       addToast("error", getApiErrorMessage(error, "Failed to load call workspace"));
     } finally { setIsLoading(false); }
-  }, [addToast, user?.callingEnabled, searchQuery, listFilterId, dueFilter]);
+  }, [addToast, searchQuery, listFilterId, dueFilter]);
 
   useEffect(() => {
     fetchData(currentPage);
@@ -148,7 +147,6 @@ export default function CallsPage() {
   }, [searchQuery, listFilterId, dueFilter, fetchData]);
 
   useEffect(() => {
-    if (!user?.callingEnabled) return;
     (async () => {
       try {
         const data = await getContactLists();
@@ -157,7 +155,7 @@ export default function CallsPage() {
         setLists([]);
       }
     })();
-  }, [user?.callingEnabled]);
+  }, []);
 
   const stageCounts = useMemo(() => {
     const base: Record<PipelineStage, number> = { ALL: allTasks.length, PENDING: 0, FOLLOW_UP_REQUIRED: 0, INTERESTED: 0, NOT_INTERESTED: 0, CONVERTED: 0, CLOSED: 0 };
@@ -225,26 +223,6 @@ export default function CallsPage() {
   };
 
   const isTerminal = outcome === "NOT_A_FIT" || outcome === "DO_NOT_CALL";
-
-  if (!user?.callingEnabled) {
-    return (
-      <AuthGuard>
-        <ErrorBoundary>
-          <SidebarProvider>
-            <div className="flex h-screen bg-[#F8FAFC] font-sans">
-              <Sidebar currentLabel="Calls" setLabel={() => {}} profile={{ name: user?.name ?? "Outreach Pro", email: user?.email ?? "", avatarUrl: user?.avatarUrl ?? "" }} />
-              <main className="flex-1 min-w-0 overflow-hidden pt-4 px-4">
-                <div className="bg-white rounded-2xl border border-border-light shadow-card h-full p-8">
-                  <h1 className="text-2xl font-semibold text-text-primary tracking-tight">Calling is disabled</h1>
-                  <p className="text-sm text-text-muted mt-2">Enable Calling Workspace in Settings to reveal the call queue and outcome logging.</p>
-                </div>
-              </main>
-            </div>
-          </SidebarProvider>
-        </ErrorBoundary>
-      </AuthGuard>
-    );
-  }
 
   return (
     <AuthGuard>

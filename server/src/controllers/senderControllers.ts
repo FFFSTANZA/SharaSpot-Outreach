@@ -31,6 +31,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
 export const createSender = async (
   req: Request,
@@ -70,7 +71,9 @@ export const createSender = async (
     }
 
     // Validate email format
-    if (!EMAIL_REGEX.test(email)) {
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
       res.status(400).json({ message: "Invalid email format" });
       return;
     }
@@ -85,7 +88,7 @@ export const createSender = async (
       port,
       secure: isSecure,
       auth: {
-        user: email,
+        user: normalizedEmail,
         pass: appPassword,
       },
       connectionTimeout: 10000,
@@ -102,42 +105,36 @@ export const createSender = async (
     }
 
     // Encrypt the app password before storing
-    const encryptedPassword = encrypt(appPassword);
-
-    const sender = await prisma.sender.create({
-      data: orgCreateData(req, {
-        userId: req.user.id,
-        name,
-        email,
-        appPassword: encryptedPassword,
-        smtpHost: host,
-        smtpPort: port,
-        replyTo: replyTo || null,
-        isVerified: true,
-      }),
-    });
-
-    // Auto-detect provider from SMTP host and associate the profile
     const profile = await detectProvider(host);
-    if (profile) {
-      await prisma.sender.update({
-        where: { id: sender.id },
-        data: { providerProfileId: profile.id },
-      });
-      sender.providerProfileId = profile.id;
-    }
-
-    // Create WarmupSchedule for newly verified sender
+    const encryptedPassword = encrypt(appPassword);
     const optedOut = req.body.skipWarmup === true;
-    await prisma.warmupSchedule.create({
-      data: {
-        senderId: sender.id,
-        startDate: new Date(),
-        durationDays: 14,
-        dailyLimits: DEFAULT_WARMUP_DAILY_LIMITS,
-        isActive: true,
-        optedOut,
-      },
+    const sender = await prisma.$transaction(async (tx) => {
+      const createdSender = await tx.sender.create({
+        data: orgCreateData(req, {
+          userId: req.user!.id,
+          name: String(name).trim(),
+          email: normalizedEmail,
+          appPassword: encryptedPassword,
+          smtpHost: host,
+          smtpPort: port,
+          replyTo: typeof replyTo === "string" && replyTo.trim() ? replyTo.trim() : null,
+          isVerified: true,
+          providerProfileId: profile?.id ?? null,
+        }),
+      });
+
+      await tx.warmupSchedule.create({
+        data: {
+          senderId: createdSender.id,
+          startDate: new Date(),
+          durationDays: 14,
+          dailyLimits: DEFAULT_WARMUP_DAILY_LIMITS,
+          isActive: true,
+          optedOut,
+        },
+      });
+
+      return createdSender;
     });
 
     // Strip appPassword from the response
@@ -225,50 +222,49 @@ export const verifySender = async (
     }
 
     // Encrypt and update the sender
-    const encryptedPassword = encrypt(appPassword);
-
-    const updatedSender = await prisma.sender.update({
-      where: { id },
-      data: {
-        appPassword: encryptedPassword,
-        smtpHost: host,
-        smtpPort: port,
-        replyTo: replyTo || existingSender.replyTo,
-        isVerified: true,
-        ...(name ? { name } : {}),
-      },
-    });
-
-    // Auto-detect provider from SMTP host and associate the profile
     const profile = await detectProvider(host);
-    if (profile) {
-      await prisma.sender.update({
+    const encryptedPassword = encrypt(appPassword);
+    const hasReplyTo = Object.prototype.hasOwnProperty.call(req.body, "replyTo");
+    const replyToValue = hasReplyTo
+      ? (typeof replyTo === "string" && replyTo.trim() ? replyTo.trim() : null)
+      : existingSender.replyTo;
+
+    const updatedSender = await prisma.$transaction(async (tx) => {
+      const sender = await tx.sender.update({
         where: { id },
-        data: { providerProfileId: profile.id },
+        data: {
+          appPassword: encryptedPassword,
+          smtpHost: host,
+          smtpPort: port,
+          replyTo: replyToValue,
+          isVerified: true,
+          providerProfileId: profile?.id ?? null,
+          ...(typeof name === "string" && name.trim() ? { name: name.trim() } : {}),
+        },
       });
-      updatedSender.providerProfileId = profile.id;
-    }
 
-    // Create WarmupSchedule when isVerified transitions to true
-    if (!existingSender.isVerified) {
-      const existingWarmup = await prisma.warmupSchedule.findUnique({
-        where: { senderId: id },
-      });
-
-      if (!existingWarmup) {
-        const optedOut = req.body.skipWarmup === true;
-        await prisma.warmupSchedule.create({
-          data: {
-            senderId: id,
-            startDate: new Date(),
-            durationDays: 14,
-            dailyLimits: DEFAULT_WARMUP_DAILY_LIMITS,
-            isActive: true,
-            optedOut,
-          },
+      if (!existingSender.isVerified) {
+        const existingWarmup = await tx.warmupSchedule.findUnique({
+          where: { senderId: id },
         });
+
+        if (!existingWarmup) {
+          const optedOut = req.body.skipWarmup === true;
+          await tx.warmupSchedule.create({
+            data: {
+              senderId: id,
+              startDate: new Date(),
+              durationDays: 14,
+              dailyLimits: DEFAULT_WARMUP_DAILY_LIMITS,
+              isActive: true,
+              optedOut,
+            },
+          });
+        }
       }
-    }
+
+      return sender;
+    });
 
     const { appPassword: _, ...senderResponse } = updatedSender;
     res.status(200).json(senderResponse);
@@ -460,13 +456,50 @@ export const deleteSender = async (
       return;
     }
 
-    // Delete sender (cascades or manual depending on schema settings)
-    await prisma.sender.delete({
-      where: { id }
+    await prisma.$transaction(async (tx) => {
+      await tx.emailCampaign.updateMany({
+        where: {
+          OR: [
+            { senderId: id },
+            { campaignSenders: { some: { senderId: id } } },
+          ],
+          status: { in: ["SCHEDULED", "SENDING"] },
+          ...scope,
+        },
+        data: {
+          status: "PAUSED",
+          pauseReason: `Sender ${sender.email} removed`,
+        },
+      });
+
+      await tx.emailCampaign.updateMany({
+        where: { senderId: id, ...scope },
+        data: { senderId: null },
+      });
+
+      await tx.emailJob.updateMany({
+        where: { senderId: id, campaign: { ...scope } },
+        data: { senderId: null },
+      });
+
+      await tx.campaignSender.deleteMany({
+        where: { senderId: id, campaign: { ...scope } },
+      });
+
+      await tx.warmupSchedule.deleteMany({ where: { senderId: id } });
+      await tx.senderCooldown.deleteMany({ where: { senderId: id } });
+
+      await tx.sender.delete({ where: { id } });
     });
 
     res.status(200).json({ message: "Sender deleted successfully" });
   } catch (error: any) {
+    if (error?.code === "P2003") {
+      res.status(409).json({
+        message: "Sender is still linked to historical records and cannot be deleted yet.",
+      });
+      return;
+    }
     res.status(500).json({
       message: "An error occurred while deleting sender",
     });

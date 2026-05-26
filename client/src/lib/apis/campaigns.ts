@@ -6,12 +6,6 @@ export const createCampaign = async (data: CreateCampaignPayload): Promise<{ cam
   return res.data;
 };
 
-export const generateAIFollowUps = async (campaignId: string, subject: string, body: string): Promise<{
-  followUps: Array<{ stepNumber: number; subject: string; body: string; waitDays: number }>;
-}> => {
-  const res = await api.post("/api/campaigns/ai-followups", { campaignId, subject, body });
-  return res.data;
-};
 
 export const getCampaignById = async (id: string): Promise<CampaignDetail> => {
   const res = await api.get(`/api/campaigns/${id}`);

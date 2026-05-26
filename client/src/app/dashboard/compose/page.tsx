@@ -21,6 +21,7 @@ function ComposeContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitTrigger] = useState(0);
   const [initialEmails, setInitialEmails] = useState<string[]>([]);
+  const [followUpTemplateId, setFollowUpTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     const resolveRecipients = async () => {
@@ -40,6 +41,7 @@ function ComposeContent() {
       }
     };
     resolveRecipients();
+    setFollowUpTemplateId(searchParams.get("followUpTemplateId") || null);
   }, [searchParams, addToast]);
 
   const handleFilesSelected = useCallback(async (files: File[]) => {
@@ -99,6 +101,7 @@ function ComposeContent() {
             submitTrigger={submitTrigger}
             isSubmitting={isSubmitting}
             initialEmails={initialEmails}
+            followUpTemplateId={followUpTemplateId}
           />
         </ErrorBoundary>
       </div>

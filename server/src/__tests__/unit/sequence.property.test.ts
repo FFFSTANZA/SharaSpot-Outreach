@@ -13,14 +13,14 @@ describe("Sequence Validation — Property-Based Tests", () => {
    * Feature: follow-up-sequences, Property 5: Step validation rejects invalid inputs
    * Validates: Requirements 8.1, 8.2, 8.3, 8.4, 8.5
    */
-  it("Property 5: rejects arrays with > 5 steps", () => {
+  it("Property 5: rejects arrays exceeding max steps", () => {
     fc.assert(
       fc.property(
-        fc.array(validStepArb, { minLength: 6, maxLength: 10 }),
+        fc.array(validStepArb, { minLength: 11, maxLength: 20 }),
         (steps) => {
           const result = validateSequenceSteps(steps);
           expect(result.valid).toBe(false);
-          expect(result.message).toContain("Maximum of 5");
+          expect(result.message).toContain("Maximum of 10");
         }
       ),
       { numRuns: 100 }

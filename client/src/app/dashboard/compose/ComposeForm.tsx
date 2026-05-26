@@ -12,6 +12,8 @@ import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import VariablePreview from "./VariablePreview";
 import SequenceBuilder from "./SequenceBuilder";
+import { getFollowUpTemplateById } from "@/lib/followUpTemplates";
+import type { FollowUpTemplate } from "@/types";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { EmailValidator } from "./EmailValidator";
 import { useToast } from "@/context/ToastContext";
@@ -32,7 +34,8 @@ export function ComposeForm({
   onSubmit,
   submitTrigger,
   isSubmitting,
-  initialEmails
+  initialEmails,
+  followUpTemplateId,
 }: ComposeFormProps & {
   setScheduledAt: (date: Date | null) => void;
   onFilesSelected: (files: File[]) => void;
@@ -40,6 +43,7 @@ export function ComposeForm({
   isUploading: boolean;
   isSubmitting?: boolean;
   initialEmails?: string[];
+  followUpTemplateId?: string | null;
 }) {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const { addToast } = useToast();
@@ -59,6 +63,8 @@ export function ComposeForm({
   const csvError = useComposeStore((s) => s.csvError);
   const recipientColumnData = useComposeStore((s) => s.recipientColumnData);
   const sequenceSteps = useComposeStore((s) => s.sequenceSteps);
+  const sequenceSchedule = useComposeStore((s) => s.sequenceSchedule);
+  const frequencyCaps = useComposeStore((s) => s.frequencyCaps);
   const setSignatures = useComposeStore((s) => s.setSignatures);
   const setEditingSignature = useComposeStore((s) => s.setEditingSignature);
   const setSelectedSignatureId = useComposeStore((s) => s.setSelectedSignatureId);
@@ -72,6 +78,8 @@ export function ComposeForm({
   const setCsvError = useComposeStore((s) => s.setCsvError);
   const setRecipientColumnData = useComposeStore((s) => s.setRecipientColumnData);
   const setSequenceSteps = useComposeStore((s) => s.setSequenceSteps);
+  const setSequenceSchedule = useComposeStore((s) => s.setSequenceSchedule);
+  const setFrequencyCaps = useComposeStore((s) => s.setFrequencyCaps);
   const resetStore = useComposeStore((s) => s.reset);
 
   const [senders, setSenders] = useState<SenderResponse[]>([]);
@@ -87,11 +95,14 @@ export function ComposeForm({
   const [tempTime, setTempTime] = useState("");
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
+  const [ccInput, setCcInput] = useState("");
+  const [bccInput, setBccInput] = useState("");
   const [showReplyTo, setShowReplyTo] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
   const [pendingTemplate, setPendingTemplate] = useState<EmailTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<FollowUpTemplate | null>(null);
 
   const selectedSignature = signatures.find((s) => s.id === selectedSignatureId) || null;
   const availableVariables = Object.keys(recipientColumnData)[0]
@@ -109,6 +120,28 @@ export function ComposeForm({
       }));
     }
   }, [initialEmails, updateData]);
+
+  useEffect(() => {
+    if (!followUpTemplateId) return;
+    (async () => {
+      try {
+        const template = await getFollowUpTemplateById(followUpTemplateId);
+        setEditingTemplate(template);
+        setSequenceSteps(template.steps.map((s) => ({
+          subject: s.subject || "",
+          body: s.body || "",
+          waitDays: s.waitDays || 3,
+          condition: s.condition,
+          altSubjects: s.altSubjects,
+          sendHour: s.sendHour,
+          waitHours: s.waitHours,
+        })));
+        addToast("info", `Editing follow-up template: ${template.name}`);
+      } catch {
+        addToast("error", "Failed to load follow-up template");
+      }
+    })();
+  }, [followUpTemplateId, setSequenceSteps, addToast]);
 
   useEffect(() => {
     const saved = localStorage.getItem("email_signatures");
@@ -289,6 +322,23 @@ export function ComposeForm({
     addToast("success", "Signature saved");
   };
 
+  const addRecipientToField = (field: "cc" | "bcc", rawValue: string) => {
+    const value = rawValue.trim().replace(/,$/, "");
+    if (!value) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      addToast("error", "Invalid email address");
+      return;
+    }
+
+    updateData(prev => {
+      const current = field === "cc" ? prev.cc : prev.bcc;
+      if (current.includes(value)) return prev;
+      return field === "cc"
+        ? { ...prev, cc: [...prev.cc, value] }
+        : { ...prev, bcc: [...prev.bcc, value] };
+    });
+  };
+
   const openSchedule = () => {
     if (scheduledAt) {
       const d = scheduledAt;
@@ -370,7 +420,30 @@ export function ComposeForm({
           body: s.body,
           waitDays: s.waitDays,
           condition: s.condition?.type,
+          altSubjects: s.altSubjects?.filter(Boolean),
+          sendHour: s.sendHour,
+          waitHours: s.waitHours,
         })) : undefined,
+        sequenceGraph: sequenceSteps.length > 0 ? {
+          startNodeId: "n1",
+          nodes: sequenceSteps.map((s, i) => ({
+            id: `n${i + 1}`,
+            subject: s.subject,
+            body: s.body,
+            waitDays: s.waitDays,
+            rules: s.condition?.rules || (s.condition?.type && s.condition.type !== "none"
+              ? { operator: "AND" as const, operands: [{ type: s.condition.type as "opened" | "clicked" | "replied" }] }
+              : undefined),
+          })),
+          edges: Object.fromEntries(sequenceSteps.map((s, i) => {
+            const from = `n${i + 1}`;
+            const matchNode = s.condition?.onMatchNodeId ?? (i + 2 <= sequenceSteps.length ? `n${i + 2}` : null);
+            return [from, { onMatch: matchNode, onNoMatch: s.condition?.onNoMatchNodeId ?? null }];
+          })),
+        } : undefined,
+        sequenceSchedule: sequenceSteps.length > 0 ? sequenceSchedule : undefined,
+        frequencyCaps: sequenceSteps.length > 0 && (frequencyCaps.maxPerRecipient > 0 || frequencyCaps.maxPerDay > 0 || frequencyCaps.maxPerWeek > 0)
+          ? frequencyCaps : undefined,
         trackOpens,
         trackClicks,
         replyTo: showReplyTo ? data.replyTo : undefined,
@@ -527,6 +600,28 @@ export function ComposeForm({
                             </button>
                           </span>
                         ))}
+                        <input
+                          value={ccInput}
+                          onChange={(e) => setCcInput(e.target.value)}
+                          placeholder={data.cc.length ? "" : "cc@example.com"}
+                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === ",") {
+                              e.preventDefault();
+                              addRecipientToField("cc", ccInput);
+                              setCcInput("");
+                            }
+                            if (e.key === "Backspace" && !ccInput && data.cc.length) {
+                              updateData(prev => ({ ...prev, cc: prev.cc.slice(0, -1) }));
+                            }
+                          }}
+                          onBlur={() => {
+                            if (ccInput.trim()) {
+                              addRecipientToField("cc", ccInput);
+                              setCcInput("");
+                            }
+                          }}
+                        />
                       </div>
                     </div>
                   )}
@@ -544,6 +639,28 @@ export function ComposeForm({
                             </button>
                           </span>
                         ))}
+                        <input
+                          value={bccInput}
+                          onChange={(e) => setBccInput(e.target.value)}
+                          placeholder={data.bcc.length ? "" : "bcc@example.com"}
+                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === ",") {
+                              e.preventDefault();
+                              addRecipientToField("bcc", bccInput);
+                              setBccInput("");
+                            }
+                            if (e.key === "Backspace" && !bccInput && data.bcc.length) {
+                              updateData(prev => ({ ...prev, bcc: prev.bcc.slice(0, -1) }));
+                            }
+                          }}
+                          onBlur={() => {
+                            if (bccInput.trim()) {
+                              addRecipientToField("bcc", bccInput);
+                              setBccInput("");
+                            }
+                          }}
+                        />
                       </div>
                     </div>
                   )}
@@ -630,7 +747,17 @@ export function ComposeForm({
                 </div>
 
                 {/* Sequence Builder */}
-                <SequenceBuilder steps={sequenceSteps} onChange={setSequenceSteps} subject={data.subject} body={data.body} />
+                <SequenceBuilder
+                  steps={sequenceSteps}
+                  onChange={setSequenceSteps}
+                  subject={data.subject}
+                  body={data.body}
+                  scheduleConfig={sequenceSchedule}
+                  onScheduleConfigChange={setSequenceSchedule}
+                  frequencyCaps={frequencyCaps}
+                  onFrequencyCapsChange={setFrequencyCaps}
+                  editingTemplate={editingTemplate}
+                />
               </div>
 
               {/* Right Sidebar */}

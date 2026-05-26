@@ -33,8 +33,43 @@ export const campaignBodySchema = z.object({
         body: z.string(),
         waitDays: z.number().int().min(1),
         condition: z.enum(["opened", "clicked", "replied", "none"]).optional(),
+        altSubjects: z.array(z.string().min(1)).max(3).optional(),
+        sendHour: z.number().int().min(-1).max(23).optional(),
+        waitHours: z.number().int().min(0).max(23).optional(),
       }),
     )
+    .optional(),
+  sequenceGraph: z
+    .object({
+      startNodeId: z.string().min(1),
+      nodes: z.array(z.object({
+        id: z.string().min(1),
+        subject: z.string(),
+        body: z.string(),
+        waitDays: z.number().int().min(1),
+        rules: z.any().optional(),
+      })).min(1),
+      edges: z.record(z.string(), z.object({
+        onMatch: z.string().nullable().optional(),
+        onNoMatch: z.string().nullable().optional(),
+      })),
+    })
+    .optional(),
+  sequenceSchedule: z
+    .object({
+      sendHour: z.number().int().min(-1).max(23),
+      allowedDaysOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
+      skipWeekends: z.boolean().optional(),
+      skipHolidays: z.boolean().optional(),
+      timezone: z.string().optional(),
+    })
+    .optional(),
+  frequencyCaps: z
+    .object({
+      maxPerRecipient: z.number().int().min(0),
+      maxPerDay: z.number().int().min(0),
+      maxPerWeek: z.number().int().min(0),
+    })
     .optional(),
   trackOpens: z.boolean().optional(),
   trackClicks: z.boolean().optional(),

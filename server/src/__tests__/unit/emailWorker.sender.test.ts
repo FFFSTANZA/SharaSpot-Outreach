@@ -52,6 +52,12 @@ jest.mock("../../config/prisma", () => ({
     contactActivity: {
       create: jest.fn(),
     },
+    bounceList: {
+      findUnique: jest.fn(),
+    },
+    systemAuditLog: {
+      create: jest.fn(),
+    },
     $transaction: jest.fn(),
     $disconnect: jest.fn(),
   },
@@ -59,7 +65,7 @@ jest.mock("../../config/prisma", () => ({
 
 jest.mock("../../config/redis", () => ({
   redisConnection: { host: "localhost", port: 6379, maxRetriesPerRequest: null },
-  redis: { quit: jest.fn().mockResolvedValue(undefined) },
+  redis: { quit: jest.fn().mockResolvedValue(undefined), get: jest.fn().mockResolvedValue(null), set: jest.fn().mockResolvedValue("OK") },
 }));
 
 jest.mock("../../queues/emailQueue", () => ({
@@ -87,6 +93,7 @@ jest.mock("../../utils/throttleEngine", () => ({
   recordSendResult: jest.fn().mockResolvedValue(undefined),
   computeJitteredDelay: jest.fn((v: number) => v),
   getEffectiveLimits: jest.fn().mockResolvedValue({ perMinute: 10, perHour: 100, perDay: 500, isThrottled: false, isWarmup: false, isCooldown: false }),
+  checkDomainRateCap: jest.fn().mockResolvedValue({ allowed: true }),
 }));
 
 import { processEmailJob, clearSmtpPool } from "../../worker/emailWorker";

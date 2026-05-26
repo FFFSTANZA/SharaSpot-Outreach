@@ -29,6 +29,7 @@ jest.mock("../../config/prisma", () => ({
   prisma: {
     emailJob: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
@@ -51,12 +52,25 @@ jest.mock("../../config/prisma", () => ({
     },
     recipientSequenceState: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
+      updateMany: jest.fn(),
+      update: jest.fn(),
     },
     contact: {
       findUnique: jest.fn(),
       upsert: jest.fn(),
     },
     contactActivity: {
+      create: jest.fn(),
+    },
+    trackingEvent: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+    },
+    bounceList: {
+      findUnique: jest.fn(),
+    },
+    systemAuditLog: {
       create: jest.fn(),
     },
     $transaction: jest.fn(),
@@ -66,7 +80,7 @@ jest.mock("../../config/prisma", () => ({
 
 jest.mock("../../config/redis", () => ({
   redisConnection: { host: "localhost", port: 6379, maxRetriesPerRequest: null },
-  redis: { quit: jest.fn().mockResolvedValue(undefined) },
+  redis: { quit: jest.fn().mockResolvedValue(undefined), get: jest.fn().mockResolvedValue(null), set: jest.fn().mockResolvedValue("OK") },
 }));
 
 jest.mock("../../queues/emailQueue", () => ({
@@ -91,6 +105,7 @@ jest.mock("../../utils/throttleEngine", () => ({
   recordSendResult: jest.fn().mockResolvedValue(undefined),
   computeJitteredDelay: jest.fn((v: number) => v),
   getEffectiveLimits: jest.fn().mockResolvedValue({ perMinute: 10, perHour: 100, perDay: 500, isThrottled: false, isWarmup: false, isCooldown: false }),
+  checkDomainRateCap: jest.fn().mockResolvedValue({ allowed: true }),
 }));
 
 jest.mock("../../utils/dailyLimitTracker", () => ({
@@ -100,7 +115,7 @@ jest.mock("../../utils/dailyLimitTracker", () => ({
 }));
 
 import * as fc from "fast-check";
-import { processEmailJob, toHourWindow, createSmtpTransporter, clearSmtpPool } from "../../worker/emailWorker";
+import { processEmailJob, toHourWindow, createSmtpTransporter, clearSmtpPool, pickABVariant } from "../../worker/emailWorker";
 import { prisma } from "../../config/prisma";
 import { emailQueue } from "../../queues/emailQueue";
 import nodemailer from "nodemailer";
@@ -889,5 +904,125 @@ describe("Email Worker — Unit Tests", () => {
         replyTo: "sender-only@example.com"
       })
     );
+  });
+
+  it("uses altSubjects from sequence step condition to pick an A/B variant", async () => {
+    const mockSendMail = jest.fn().mockResolvedValue({});
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({
+      sendMail: mockSendMail,
+      close: jest.fn(),
+    });
+
+    const emailJob = makeEmailJob({
+      status: "PENDING",
+      sequenceStepId: "step-follow-1",
+      sequenceStep: {
+        id: "step-follow-1",
+        stepNumber: 1,
+        subject: "Default subject",
+        body: "<p>Follow-up body</p>",
+        waitDays: 3,
+        condition: JSON.stringify({ altSubjects: ["Variant A", "Variant B"] }),
+      },
+    });
+
+    (prisma.emailJob.findUnique as jest.Mock)
+      .mockResolvedValueOnce(emailJob)
+      .mockResolvedValueOnce({ status: "SENDING" });
+    (prisma.emailJob.findFirst as jest.Mock).mockResolvedValue(null);
+    (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.emailJob.update as jest.Mock).mockResolvedValue(undefined);
+
+    await processEmailJob(fakeJob("job-1"));
+
+    expect(mockSendMail).toHaveBeenCalled();
+    const mailArgs = mockSendMail.mock.calls[0][0];
+    expect(["Default subject", "Variant A", "Variant B"]).toContain(mailArgs.subject);
+    expect(mailArgs.subject).not.toBe("Alternate subject that should never appear");
+  });
+
+  it("picks a variant from altSubjects deterministically per recipient", async () => {
+    const mockSendMail = jest.fn().mockResolvedValue({});
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({
+      sendMail: mockSendMail,
+      close: jest.fn(),
+    });
+
+    const emailJob = makeEmailJob({
+      status: "PENDING",
+      sequenceStepId: "step-follow-2",
+      sequenceStep: {
+        id: "step-follow-2",
+        stepNumber: 2,
+        subject: "Default subject",
+        body: "<p>Follow-up body</p>",
+        waitDays: 3,
+        condition: JSON.stringify({ altSubjects: ["Alt A", "Alt B"] }),
+      },
+    });
+
+    (prisma.emailJob.findUnique as jest.Mock)
+      .mockResolvedValueOnce(emailJob)
+      .mockResolvedValueOnce({ status: "SENDING" });
+    (prisma.emailJob.findFirst as jest.Mock).mockResolvedValue(null);
+    (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.emailJob.update as jest.Mock).mockResolvedValue(undefined);
+
+    await processEmailJob(fakeJob("job-2"));
+
+    expect(mockSendMail).toHaveBeenCalled();
+    const mailArgs = mockSendMail.mock.calls[0][0];
+    // Must be one of the available subjects (original + altSubjects)
+    expect(["Default subject", "Alt A", "Alt B"]).toContain(mailArgs.subject);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A/B Variant Selection Tests — pure function tests
+// ---------------------------------------------------------------------------
+
+describe("pickABVariant", () => {
+  it("returns original subject when condition is null", () => {
+    expect(pickABVariant("Hello", null, "key")).toBe("Hello");
+  });
+
+  it("returns original subject when condition has no altSubjects", () => {
+    expect(pickABVariant("Hello", '{"kind":"advanced","v":2}', "key")).toBe("Hello");
+  });
+
+  it("returns original subject when altSubjects is empty", () => {
+    expect(pickABVariant("Hello", '{"altSubjects":[]}', "key")).toBe("Hello");
+  });
+
+  it("returns original subject for invalid JSON", () => {
+    expect(pickABVariant("Hello", "not-json{", "key")).toBe("Hello");
+  });
+
+  it("distributes variants deterministically across recipients", () => {
+    const condition = JSON.stringify({ altSubjects: ["Alt A", "Alt B"] });
+    const recipients = ["alice@a.com", "bob@b.com", "carol@c.com", "dave@d.com"];
+
+    const chosen = recipients.map((r) =>
+      pickABVariant("Original", condition, `${r}:step-1`)
+    );
+
+    const reRun = recipients.map((r) =>
+      pickABVariant("Original", condition, `${r}:step-1`)
+    );
+    expect(chosen).toEqual(reRun);
+  });
+
+  it("picks from altSubjects or original subject", () => {
+    const condition = JSON.stringify({ altSubjects: ["Alt A"] });
+    const seen = new Set<string>();
+    const key = "user@test.com:step-1";
+
+    for (let i = 0; i < 100; i++) {
+      seen.add(pickABVariant("Original", condition, key));
+    }
+
+    expect(seen.size).toBe(1);
   });
 });

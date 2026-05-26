@@ -350,7 +350,9 @@ describe("Priority Worker Tests", () => {
         retryCount: 2, // At max retries
       });
 
-      (prisma.emailJob.findUnique as jest.Mock).mockRejectedValue(new Error("Database error"));
+      (prisma.emailJob.findUnique as jest.Mock)
+        .mockRejectedValueOnce(new Error("Database error"))
+        .mockResolvedValue({ id: "job-1", campaignId: "campaign-1" });
 
       const job = fakeJob({ emailJobId: "job-1", userId: "user-1" });
       await processPriorityJob(job);

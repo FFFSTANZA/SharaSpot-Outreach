@@ -15,3 +15,5 @@ export * from "./apis/inbox";
 export * from "./apis/prm";
 export * from "./apis/calls";
 export * from "./apis/organizations";
+export * from "./apis/mcp";
+export * from "./apis/followUpTemplates";

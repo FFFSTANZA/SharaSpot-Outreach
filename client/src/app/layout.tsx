@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "SharaSpot",
     title: "SharaSpot — Cold Outreach That Gets Replies",
-    description: "High-stakes cold outreach for founders and sales teams. Ensure your emails land in the primary inbox with multi-sender rotation and AI follow-ups.",
+    description: "High-stakes cold outreach for founders and sales teams. Ensure your emails land in the primary inbox with multi-sender rotation and automated follow-ups.",
     images: [
       {
         url: "/og-image.jpg",
@@ -125,7 +125,7 @@ const jsonLd = {
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "url": siteUrl,
-      "description": "Professional cold outreach platform with multi-sender rotation and AI follow-up generation.",
+      "description": "Professional cold outreach platform with multi-sender rotation and automated follow-up sequences.",
       "offers": {
         "@type": "Offer",
         "price": BRAND_CONFIG.pricing.global.amount.toFixed(2),

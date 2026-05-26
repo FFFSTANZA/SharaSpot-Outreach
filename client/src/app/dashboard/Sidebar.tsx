@@ -5,7 +5,7 @@ import { SidebarProps } from "@/types";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { X, LogOut, FileText, Plus, Settings, Users, Mail, Inbox, Megaphone, Clock, Send, Pause, CheckCircle, PhoneCall, UserPlus, ChevronDown, Building2, PlusCircle } from "lucide-react";
+import { X, LogOut, FileText, Plus, Settings, Users, Mail, Inbox, Megaphone, Clock, Send, Pause, CheckCircle, PhoneCall, UserPlus, ChevronDown, Building2, PlusCircle, ServerCog } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { logout, getUnreadCount, getSenders, getOrganizations, switchOrganization, createOrganization } from "@/lib/apis";
 import { cn } from "@/lib/utils";
@@ -171,7 +171,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
       links: [
         { label: "Inbox", href: "/dashboard/inbox", icon: <Inbox size={18} />, count: unreadCount },
         { label: "Contacts", href: "/dashboard/prm", icon: <Users size={18} /> },
-        ...(user?.callingEnabled ? [{ label: "Calls", href: "/dashboard/calls", icon: <PhoneCall size={18} /> }] : []),
+        { label: "Calls", href: "/dashboard/calls", icon: <PhoneCall size={18} /> },
         { label: "Accounts", href: "/dashboard/senders", icon: <Mail size={18} /> },
         { label: "Templates", href: "/dashboard/templates", icon: <FileText size={18} /> },
       ]
@@ -180,6 +180,7 @@ export function Sidebar({ currentLabel, setLabel, onItemClick, items = [], group
       title: "Account",
       links: [
         { label: "Team", href: "/dashboard/team", icon: <UserPlus size={18} /> },
+        { label: "MCP", href: "/dashboard/mcp", icon: <ServerCog size={18} /> },
         { label: "Settings", href: "/dashboard/settings", icon: <Settings size={18} /> },
       ]
     }

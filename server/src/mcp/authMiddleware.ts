@@ -1,35 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { validateMcpApiKey } from "./services/apiKeyService";
+import { validateMcpApiKey, McpApiKeyAuth } from "./services/apiKeyService";
+import { checkPremiumStatus } from "../utils/premiumCheck";
+import { MCP_ERROR_CODES } from "./types";
 
-const apiKeyCache = new Map<string, { userId: string; expiresAt: number }>();
-const CACHE_TTL = 5 * 60 * 1000;
-const MAX_CACHE = 1000;
-
-async function getCachedUserId(key: string): Promise<string | null> {
-  const cached = apiKeyCache.get(key);
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached.userId;
-  }
-  
-  const userId = await validateMcpApiKey(key);
-  
-  if (userId && apiKeyCache.size < MAX_CACHE) {
-    apiKeyCache.set(key, { userId, expiresAt: Date.now() + CACHE_TTL });
-  }
-  
-  return userId;
+async function getApiKeyAuth(key: string): Promise<McpApiKeyAuth | null> {
+  return validateMcpApiKey(key);
 }
-
-function clearExpiredCache() {
-  const now = Date.now();
-  for (const [key, value] of apiKeyCache) {
-    if (value.expiresAt < now) {
-      apiKeyCache.delete(key);
-    }
-  }
-}
-
-setInterval(clearExpiredCache, CACHE_TTL);
 
 export async function mcpAuthMiddleware(
   req: Request,
@@ -42,28 +18,64 @@ export async function mcpAuthMiddleware(
     return res.status(401).json({
       jsonrpc: "2.0",
       id: null,
-      error: { code: -32601, message: "Missing authorization header" },
+      error: { code: MCP_ERROR_CODES.AUTHENTICATION_FAILED, message: "Missing authorization header" },
     });
   }
   
   const key = authHeader.substring(7);
   
   if (key.startsWith("msk_")) {
-    const userId = await getCachedUserId(key);
+    const auth = await getApiKeyAuth(key);
     
-    if (!userId) {
+    if (!auth) {
       return res.status(401).json({
         jsonrpc: "2.0",
         id: null,
-        error: { code: -32601, message: "Invalid or expired API key" },
+        error: { code: MCP_ERROR_CODES.AUTHENTICATION_FAILED, message: "Invalid or expired API key" },
+      });
+    }
+
+    const premium = await checkPremiumStatus(auth.userId);
+    if (!premium.isPremium) {
+      return res.status(403).json({
+        jsonrpc: "2.0",
+        id: null,
+        error: { code: MCP_ERROR_CODES.PERMISSION_DENIED, message: "MCP access requires a premium subscription" },
       });
     }
     
-    (req as any).user = { id: userId };
-    (req as any).isApiKey = true;
+    (req as any).user = {
+      id: auth.userId,
+      activeOrganizationId: auth.organizationId,
+    };
+    (req as any).mcpAuth = {
+      apiKeyId: auth.id,
+      isApiKey: true,
+      userId: auth.userId,
+      organizationId: auth.organizationId,
+      permissions: auth.permissions,
+    };
     return next();
   }
   
   const { authMiddleware } = await import("../middlewares/authMiddleware");
-  return authMiddleware(req, res, next);
+  return authMiddleware(req, res, async () => {
+    const sessionUserId = req.user!.id;
+
+    const premium = await checkPremiumStatus(sessionUserId);
+    if (!premium.isPremium) {
+      return res.status(403).json({
+        jsonrpc: "2.0",
+        id: null,
+        error: { code: MCP_ERROR_CODES.PERMISSION_DENIED, message: "MCP access requires a premium subscription" },
+      });
+    }
+
+    (req as any).mcpAuth = {
+      isApiKey: false,
+      userId: sessionUserId,
+      organizationId: req.user!.activeOrganizationId,
+    };
+    next();
+  });
 }

@@ -11,7 +11,10 @@ process.env.ENCRYPTION_KEY =
 jest.mock("../../config/prisma", () => ({
   prisma: {
     sender: { findMany: jest.fn() },
-    emailCampaign: { findUnique: jest.fn() },
+    bounceList: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+    emailCampaign: { findUnique: jest.fn(), findFirst: jest.fn() },
     $transaction: jest.fn(),
   },
 }));
@@ -347,7 +350,7 @@ describe("Campaign Controller — Sender Rotation", () => {
       ],
     };
 
-    (prisma.emailCampaign.findUnique as jest.Mock).mockResolvedValue(campaignData);
+    (prisma.emailCampaign.findFirst as jest.Mock).mockResolvedValue(campaignData);
 
     const { req, res } = mockReqRes({}, undefined, { id: "camp-1" });
     req.user = { id: "user-1" };
@@ -396,7 +399,7 @@ describe("Campaign Controller — Sender Rotation", () => {
       ],
     };
 
-    (prisma.emailCampaign.findUnique as jest.Mock).mockResolvedValue(campaignData);
+    (prisma.emailCampaign.findFirst as jest.Mock).mockResolvedValue(campaignData);
 
     const { req, res } = mockReqRes({}, undefined, { id: "camp-legacy" });
     req.user = { id: "user-1" };

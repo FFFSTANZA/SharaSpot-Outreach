@@ -47,6 +47,13 @@ describe("requireOrgWriteAccess", () => {
     expect(next).toHaveBeenCalled();
   });
 
+  it("allows MCP key routes to apply their own scope-specific role checks", async () => {
+    const { req, res, next } = makeReqRes({ path: "/mcp-keys" as any });
+    await requireOrgWriteAccess(req, res, next);
+    expect(mockFindMembership).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalled();
+  });
+
   it("blocks viewers from write operations", async () => {
     mockFindMembership.mockResolvedValue({ role: "VIEWER" });
     const { req, res, next } = makeReqRes();

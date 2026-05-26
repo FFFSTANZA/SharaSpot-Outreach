@@ -11,14 +11,34 @@ process.env.ENCRYPTION_KEY =
 // ---------------------------------------------------------------------------
 jest.mock("../../config/prisma", () => ({
   prisma: {
+    $transaction: jest.fn(async (arg: any) => {
+      const prismaMock = (await import("../../config/prisma")).prisma as any;
+      if (typeof arg === "function") return arg(prismaMock);
+      return Promise.all(arg);
+    }),
     sender: {
       create: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
+      findFirst: jest.fn(),
+      delete: jest.fn(),
+    },
+    emailCampaign: {
+      updateMany: jest.fn(),
+    },
+    emailJob: {
+      updateMany: jest.fn(),
+    },
+    campaignSender: {
+      deleteMany: jest.fn(),
+    },
+    senderCooldown: {
+      deleteMany: jest.fn(),
     },
     warmupSchedule: {
       create: jest.fn().mockResolvedValue({ id: "warmup-1" }),
       findUnique: jest.fn().mockResolvedValue(null),
+      deleteMany: jest.fn(),
     },
   },
 }));

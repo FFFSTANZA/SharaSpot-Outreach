@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
+import { mcpCreateData, mcpScopeWhere } from "../scope";
 
 function sanitizeString(value: unknown, maxLength = 500): string {
   if (typeof value !== "string") return "";
@@ -30,11 +31,11 @@ async function createCampaign(
   const senderId = sanitizeString(args.senderId, 50);
   const sender = senderId
     ? await prisma.sender.findFirst({
-        where: { id: senderId, userId: context.userId },
+        where: mcpScopeWhere(context, { id: senderId }),
         select: { id: true, hourlyLimit: true },
       })
     : await prisma.sender.findFirst({
-        where: { userId: context.userId, isVerified: true },
+        where: mcpScopeWhere(context, { isVerified: true }),
         select: { id: true, hourlyLimit: true },
       });
 
@@ -48,8 +49,7 @@ async function createCampaign(
   }
 
   const campaign = await prisma.emailCampaign.create({
-    data: {
-      userId: context.userId,
+    data: mcpCreateData(context, {
       senderId: sender.id,
       subject,
       body,
@@ -61,7 +61,7 @@ async function createCampaign(
       trackOpens: args.trackOpens !== false,
       trackClicks: args.trackClicks !== false,
       status: "SCHEDULED",
-    },
+    }),
   });
 
   return {
@@ -80,7 +80,7 @@ async function listCampaigns(
   const limit = sanitizeLimit(args.limit, 20, 100);
   const offset = sanitizeOffset(args.offset);
 
-  const where: Record<string, unknown> = { userId: context.userId };
+  const where: Record<string, unknown> = mcpScopeWhere(context);
   if (status) where.status = status;
 
   const [campaigns, total] = await Promise.all([
@@ -117,7 +117,7 @@ async function getCampaign(
   }
 
   const campaign = await prisma.emailCampaign.findFirst({
-    where: { id: campaignId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: campaignId }),
   });
 
   if (!campaign) {
@@ -145,7 +145,7 @@ async function updateCampaign(
   }
 
   const existing = await prisma.emailCampaign.findFirst({
-    where: { id: campaignId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: campaignId }),
     select: { status: true },
   });
 
@@ -164,7 +164,7 @@ async function updateCampaign(
   const senderId = sanitizeString(args.senderId, 50);
   if (senderId) {
     const sender = await prisma.sender.findFirst({
-      where: { id: senderId, userId: context.userId },
+      where: mcpScopeWhere(context, { id: senderId }),
       select: { id: true },
     });
     if (sender) updateData.senderId = sender.id;
@@ -188,7 +188,7 @@ async function deleteCampaign(
   }
 
   const existing = await prisma.emailCampaign.findFirst({
-    where: { id: campaignId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: campaignId }),
     select: { status: true },
   });
 
@@ -217,7 +217,7 @@ async function launchCampaign(
   }
 
   const campaign = await prisma.emailCampaign.findFirst({
-    where: { id: campaignId, userId: context.userId },
+    where: mcpScopeWhere(context, { id: campaignId }),
   });
 
   if (!campaign) {
@@ -229,18 +229,27 @@ async function launchCampaign(
   }
 
   const listId = sanitizeString(args.contactListId, 50);
+  const maxRecipients = Math.min(Math.max(Number(args.maxRecipients) || 1000, 1), 5000);
   const contacts = listId
     ? await prisma.contact.findMany({
-        where: { lists: { some: { id: listId } }, userId: context.userId },
-        take: 1000,
+        where: mcpScopeWhere(context, { lists: { some: { id: listId } } }),
+        take: maxRecipients,
       })
     : await prisma.contact.findMany({
-        where: { userId: context.userId },
-        take: 1000,
+        where: mcpScopeWhere(context),
+        take: maxRecipients,
       });
 
   if (contacts.length === 0) {
     return { success: false, message: "No contacts to send to" };
+  }
+
+  const totalMatching = listId
+    ? await prisma.contact.count({ where: mcpScopeWhere(context, { lists: { some: { id: listId } } }) })
+    : await prisma.contact.count({ where: mcpScopeWhere(context) });
+
+  if (totalMatching > maxRecipients) {
+    console.warn(`[MCP] Campaign ${campaignId}: ${totalMatching} total contacts found, but only sending to ${maxRecipients}. Use maxRecipients to increase the limit.`);
   }
 
   const existingJobs = await prisma.emailJob.count({
@@ -371,6 +380,7 @@ export function registerCampaignTools() {
         properties: {
           campaignId: { type: "string", description: "Campaign ID" },
           contactListId: { type: "string", description: "Contact list ID" },
+          maxRecipients: { type: "number", description: "Max recipients (default 1000, max 5000)" },
         },
         required: ["campaignId"],
       },

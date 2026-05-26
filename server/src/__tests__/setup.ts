@@ -13,6 +13,7 @@ jest.mock("ioredis", () => {
             this.disconnect = jest.fn().mockResolvedValue(undefined);
             this.quit = jest.fn().mockResolvedValue(undefined);
         }
+        setex = jest.fn().mockResolvedValue("OK");
         lpush = jest.fn().mockResolvedValue(1);
         rpop = jest.fn().mockResolvedValue(null);
         set = jest.fn().mockResolvedValue("OK");

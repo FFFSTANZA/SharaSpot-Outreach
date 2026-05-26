@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
+import { mcpScopeWhere } from "../scope";
 
 async function listSenders(
   context: MCPContext,
@@ -9,7 +10,7 @@ async function listSenders(
   const { limit = 20, offset = 0 } = args;
 
   const senders = await prisma.sender.findMany({
-    where: { userId: context.userId },
+    where: mcpScopeWhere(context),
     take: Number(limit),
     skip: Number(offset),
     orderBy: { createdAt: "desc" },
@@ -45,7 +46,7 @@ async function getSender(
   const { senderId } = args;
 
   const sender = await prisma.sender.findFirst({
-    where: { id: String(senderId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(senderId) }),
   });
 
   if (!sender) {
@@ -73,7 +74,7 @@ async function updateSender(
   const { senderId, name, dailyLimit, hourlyLimit, replyTo } = args;
 
   const sender = await prisma.sender.findFirst({
-    where: { id: String(senderId), userId: context.userId },
+    where: mcpScopeWhere(context, { id: String(senderId) }),
   });
 
   if (!sender) {

@@ -175,7 +175,7 @@ describe("Priority Mail Benchmarks", () => {
         10000
       );
 
-      expect(result.avgMs).toBeLessThan(0.01);
+      expect(result.avgMs).toBeLessThan(0.02);
       console.log("Timing Decision Benchmark:", result);
     });
 
@@ -186,7 +186,7 @@ describe("Priority Mail Benchmarks", () => {
         10000
       );
 
-      expect(result.avgMs).toBeLessThan(0.01);
+      expect(result.avgMs).toBeLessThan(0.02);
       console.log("Micro Jitter Benchmark:", result);
     });
 

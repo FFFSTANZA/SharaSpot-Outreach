@@ -10,14 +10,12 @@ import {
   cancelCampaign,
   searchCampaigns,
 } from "../controllers/campaignControllers";
-import { generateAIFollowUps } from "../controllers/aiFollowUpController";
 import sequenceRoutes from "./sequenceRoutes";
 
 const router = Router();
 
 router.get("/search", searchCampaigns);
 router.post("/", createCampaign);
-router.post("/ai-followups", generateAIFollowUps);
 router.get("/", getAllCampaigns);
 router.get("/complete", getCompletedCampaigns);
 router.get("/:id", getCampaignById);

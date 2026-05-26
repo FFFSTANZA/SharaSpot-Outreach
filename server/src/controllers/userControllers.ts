@@ -70,17 +70,13 @@ export const getUserEmails = async (
 export const updateUserSettings = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { callingEnabled } = req.body as { callingEnabled?: boolean };
 
-    if (typeof callingEnabled !== "boolean") {
-      res.status(400).json({ message: "callingEnabled must be a boolean" });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
       return;
     }
-
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { callingEnabled },
-    });
 
     const { isPremium } = await checkPremiumStatus(userId);
     res.json({ ...user, isPremium, activeOrganizationId: user.activeOrganizationId });

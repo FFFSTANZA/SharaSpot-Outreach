@@ -15,6 +15,9 @@ jest.mock("../../config/prisma", () => ({
       findFirst: jest.fn(),
       findMany: jest.fn(),
     },
+    bounceList: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
     $transaction: jest.fn(),
     emailCampaign: {
       findMany: jest.fn(),

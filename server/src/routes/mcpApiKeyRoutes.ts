@@ -1,84 +1,174 @@
 import { Router, Request, Response } from "express";
+import { prisma } from "../config/prisma";
 import {
-    createMcpApiKey,
-    listMcpApiKeys,
-    revokeMcpApiKey,
-    deleteMcpApiKey
+  createMcpApiKey,
+  deleteMcpApiKey,
+  listMcpApiKeys,
+  MCPKeyScope,
+  revokeMcpApiKey,
 } from "../mcp/services/apiKeyService";
 
 const router = Router();
 
-// Create a new MCP API key
+const MANAGER_ROLES = new Set(["OWNER", "ADMIN"]);
+
+function getScope(req: Request): MCPKeyScope {
+  return req.query.scope === "organization" || req.body?.scope === "organization"
+    ? "organization"
+    : "personal";
+}
+
+async function ensureOrganizationAccess(req: Request, res: Response, requireManager: boolean): Promise<string | null> {
+  const userId = req.user!.id;
+  const organizationId = req.user?.activeOrganizationId;
+
+  if (!organizationId) {
+    res.status(400).json({ message: "No active organization selected" });
+    return null;
+  }
+
+  const membership = await prisma.organizationMember.findUnique({
+    where: { organizationId_userId: { organizationId, userId } },
+    select: { role: true },
+  });
+
+  if (!membership) {
+    res.status(403).json({ message: "Access denied to this organization" });
+    return null;
+  }
+
+  if (requireManager && !MANAGER_ROLES.has(membership.role)) {
+    res.status(403).json({ message: "Only workspace owners and admins can manage organization MCP keys" });
+    return null;
+  }
+
+  return organizationId;
+}
+
 router.post("/", async (req: Request, res: Response) => {
-    try {
-        const userId = req.user!.id;
-        const { name, permissions, expiresAt } = req.body;
+  try {
+    const userId = req.user!.id;
+    const { name, permissions, expiresAt } = req.body;
+    const scope = getScope(req);
 
-        if (!name) {
-            res.status(400).json({ message: "Key name is required" });
-            return;
-        }
-
-        const result = await createMcpApiKey(
-            userId,
-            name,
-            permissions,
-            expiresAt ? new Date(expiresAt) : undefined
-        );
-
-        res.status(201).json(result);
-    } catch (error) {
-        console.error("Error creating MCP API key:", error);
-        res.status(500).json({ message: "Failed to create API key" });
+    if (!name || typeof name !== "string") {
+      res.status(400).json({ message: "Key name is required" });
+      return;
     }
+
+    const organizationId = scope === "organization"
+      ? await ensureOrganizationAccess(req, res, true)
+      : null;
+    if (scope === "organization" && !organizationId) return;
+
+    let parsedExpiresAt: Date | undefined;
+    if (expiresAt) {
+      parsedExpiresAt = new Date(expiresAt);
+      if (Number.isNaN(parsedExpiresAt.getTime())) {
+        res.status(400).json({ message: "expiresAt must be a valid date" });
+        return;
+      }
+    }
+
+    const result = await createMcpApiKey({
+      userId,
+      name,
+      scope,
+      organizationId,
+      permissions,
+      expiresAt: parsedExpiresAt,
+    });
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Error creating MCP API key:", error);
+    if (error instanceof Error && error.message === "Key name is required") {
+      res.status(400).json({ message: error.message });
+      return;
+    }
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2002"
+    ) {
+      res.status(409).json({ message: "An API key with this name already exists for your account" });
+      return;
+    }
+    res.status(500).json({ message: "Failed to create API key" });
+  }
 });
 
-// List all MCP API keys for the user
 router.get("/", async (req: Request, res: Response) => {
-    try {
-        const userId = req.user!.id;
-        const keys = await listMcpApiKeys(userId);
-        res.json(keys);
-    } catch (error) {
-        console.error("Error listing MCP API keys:", error);
-        res.status(500).json({ message: "Failed to list API keys" });
-    }
+  try {
+    const scope = getScope(req);
+    const organizationId = scope === "organization"
+      ? await ensureOrganizationAccess(req, res, false)
+      : null;
+    if (scope === "organization" && !organizationId) return;
+
+    const keys = await listMcpApiKeys({
+      userId: req.user!.id,
+      scope,
+      organizationId,
+    });
+    res.json(keys);
+  } catch (error) {
+    console.error("Error listing MCP API keys:", error);
+    res.status(500).json({ message: "Failed to list API keys" });
+  }
 });
 
-// Revoke an MCP API key (make it inactive)
 router.patch("/:id/revoke", async (req: Request, res: Response) => {
-    try {
-        const userId = req.user!.id;
-        const { id } = req.params;
-        const success = await revokeMcpApiKey(userId, id as string);
+  try {
+    const scope = getScope(req);
+    const organizationId = scope === "organization"
+      ? await ensureOrganizationAccess(req, res, true)
+      : null;
+    if (scope === "organization" && !organizationId) return;
 
-        if (success) {
-            res.json({ message: "API key revoked" });
-        } else {
-            res.status(404).json({ message: "API key not found" });
-        }
-    } catch (error) {
-        console.error("Error revoking MCP API key:", error);
-        res.status(500).json({ message: "Failed to revoke API key" });
+    const success = await revokeMcpApiKey({
+      userId: req.user!.id,
+      keyId: String(req.params.id),
+      scope,
+      organizationId,
+    });
+
+    if (success) {
+      res.json({ message: "API key revoked" });
+    } else {
+      res.status(404).json({ message: "API key not found" });
     }
+  } catch (error) {
+    console.error("Error revoking MCP API key:", error);
+    res.status(500).json({ message: "Failed to revoke API key" });
+  }
 });
 
-// Delete an MCP API key permanently
 router.delete("/:id", async (req: Request, res: Response) => {
-    try {
-        const userId = req.user!.id;
-        const { id } = req.params;
-        const success = await deleteMcpApiKey(userId, id as string);
+  try {
+    const scope = getScope(req);
+    const organizationId = scope === "organization"
+      ? await ensureOrganizationAccess(req, res, true)
+      : null;
+    if (scope === "organization" && !organizationId) return;
 
-        if (success) {
-            res.json({ message: "API key deleted" });
-        } else {
-            res.status(404).json({ message: "API key not found" });
-        }
-    } catch (error) {
-        console.error("Error deleting MCP API key:", error);
-        res.status(500).json({ message: "Failed to delete API key" });
+    const success = await deleteMcpApiKey({
+      userId: req.user!.id,
+      keyId: String(req.params.id),
+      scope,
+      organizationId,
+    });
+
+    if (success) {
+      res.json({ message: "API key deleted" });
+    } else {
+      res.status(404).json({ message: "API key not found" });
     }
+  } catch (error) {
+    console.error("Error deleting MCP API key:", error);
+    res.status(500).json({ message: "Failed to delete API key" });
+  }
 });
 
 export default router;

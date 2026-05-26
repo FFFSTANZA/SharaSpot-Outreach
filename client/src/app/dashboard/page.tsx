@@ -25,6 +25,8 @@ import {
   BarChart3,
   CheckCircle,
   Pause,
+  Mail,
+  ArrowRight,
 } from "lucide-react";
 
 const CAMPAIGN_STATUS_OPTIONS = ["SCHEDULED", "SENDING", "PAUSED", "CANCELLED", "COMPLETED"];
@@ -203,6 +205,45 @@ const DashboardComponent = () => {
                   onClearAll={clearAllFilters}
                   senders={senders}
                 />
+
+                {/* Setup banner — shown when no sender is connected */}
+                {senders.length === 0 ? (
+                  <div className="mx-5 mt-4 mb-1 p-4 rounded-xl bg-brand-light border border-brand/20 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-10 w-10 rounded-lg bg-brand/10 flex items-center justify-center shrink-0">
+                        <Mail className="h-5 w-5 text-brand" />
+                      </div>
+                      <p className="text-sm font-semibold text-brand leading-relaxed">
+                        No email accounts connected. Set up your first sender to start sending campaigns.
+                      </p>
+                    </div>
+                    <a
+                      href="/dashboard/senders"
+                      className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-white bg-brand px-4 py-2.5 rounded-lg hover:bg-brand-dark transition-colors"
+                    >
+                      Add Sender
+                      <ArrowRight size={14} />
+                    </a>
+                  </div>
+                ) : !senders.some((s) => s.isVerified) ? (
+                  <div className="mx-5 mt-4 mb-1 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                        <AlertCircle className="h-5 w-5 text-amber-600" />
+                      </div>
+                      <p className="text-sm font-semibold text-amber-800 leading-relaxed">
+                        Complete your email setup to start sending campaigns.
+                      </p>
+                    </div>
+                    <a
+                      href="/dashboard/senders"
+                      className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-white bg-amber-600 px-4 py-2.5 rounded-lg hover:bg-amber-700 transition-colors"
+                    >
+                      Complete Setup
+                      <ArrowRight size={14} />
+                    </a>
+                  </div>
+                ) : null}
 
                 <div className="flex-1 flex flex-col min-h-0">
                   {isLoading && results.length === 0 ? (

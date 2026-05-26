@@ -29,6 +29,7 @@ import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 import Button from "@/components/Button";
 import { getProviderConfig, inferProviderFromHost } from "@/lib/senderProviders";
+import axios from "axios";
 
 export default function SendersPage() {
     const { user } = useAuth();
@@ -60,8 +61,11 @@ export default function SendersPage() {
             await deleteSender(id);
             addToast("success", "Sender removed successfully");
             fetchSenders();
-        } catch {
-            addToast("error", "Failed to remove sender");
+        } catch (err) {
+            const message = axios.isAxiosError(err)
+                ? err.response?.data?.message || "Failed to remove sender"
+                : "Failed to remove sender";
+            addToast("error", message);
         }
     };
 

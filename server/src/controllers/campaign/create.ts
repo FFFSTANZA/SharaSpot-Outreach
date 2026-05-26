@@ -28,6 +28,9 @@ export const createCampaign = async (
       emails,
       attachments,
       steps,
+      sequenceGraph,
+      sequenceSchedule,
+      frequencyCaps,
       trackOpens,
       trackClicks,
       timezone,
@@ -57,6 +60,9 @@ export const createCampaign = async (
       emails,
       attachments,
       steps,
+      sequenceGraph,
+      sequenceSchedule,
+      frequencyCaps,
       trackOpens,
       trackClicks,
       timezone,
@@ -66,31 +72,27 @@ export const createCampaign = async (
       replyTo,
     });
 
-    if (isPriority === true) {
-      for (const emailJob of result.emailJobs) {
+    const queue = isPriority === true ? priorityQueue : emailQueue;
+    const prefix = isPriority === true ? "priority" : "email";
+    let enqueueErrors = 0;
+    for (const emailJob of result.emailJobs) {
+      try {
         const delay = Math.max(0, new Date(emailJob.scheduledAt).getTime() - Date.now());
-        await priorityQueue.add(
-          "send-priority-email",
-          { emailJobId: emailJob.id, userId: req.user!.id },
-          {
-            jobId: `priority-${emailJob.id}-${crypto.randomUUID()}`,
-            delay,
-            priority: 3,
-          },
+        const jobData = isPriority === true
+          ? { emailJobId: emailJob.id, userId: req.user!.id }
+          : { emailJobId: emailJob.id };
+        await queue.add(
+          isPriority === true ? "send-priority-email" : "send-email",
+          jobData,
+          { jobId: `${prefix}-${emailJob.id}-${crypto.randomUUID()}`, delay },
         );
+      } catch (err) {
+        enqueueErrors++;
+        logger.error({ err, emailJobId: emailJob.id }, "Failed to enqueue email job");
       }
-    } else {
-      for (const emailJob of result.emailJobs) {
-        const delay = Math.max(0, new Date(emailJob.scheduledAt).getTime() - Date.now());
-        await emailQueue.add(
-          "send-email",
-          { emailJobId: emailJob.id },
-          {
-            jobId: `${emailJob.id}-${crypto.randomUUID()}`,
-            delay,
-          },
-        );
-      }
+    }
+    if (enqueueErrors > 0) {
+      logger.warn({ total: result.emailJobs.length, failed: enqueueErrors }, "Some email jobs failed to enqueue — startup sweep will recover");
     }
 
     res.status(201).json({

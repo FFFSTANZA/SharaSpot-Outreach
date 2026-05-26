@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ComposeFormData, SequenceStepInput } from "@/types";
+import type { ComposeFormData, SequenceStepInput, SequenceScheduleConfig, FrequencyCap } from "@/types";
 
 interface Signature {
   id: string;
@@ -24,6 +24,18 @@ const initialData: ComposeFormData = {
   scheduleDate: null,
 };
 
+const DEFAULT_SCHEDULE_CONFIG: SequenceScheduleConfig = {
+  sendHour: -1,
+  skipWeekends: true,
+  allowedDaysOfWeek: [1, 2, 3, 4, 5],
+};
+
+const DEFAULT_FREQUENCY_CAPS: FrequencyCap = {
+  maxPerRecipient: 0,
+  maxPerDay: 0,
+  maxPerWeek: 0,
+};
+
 interface ComposeStore {
   data: ComposeFormData;
   signatures: Signature[];
@@ -34,6 +46,8 @@ interface ComposeStore {
   priorityEnabled: boolean;
   recipientColumnData: Record<string, Record<string, string>>;
   sequenceSteps: SequenceStepInput[];
+  sequenceSchedule: SequenceScheduleConfig;
+  frequencyCaps: FrequencyCap;
   errors: Record<string, string>;
   submitError: string | null;
   csvMessage: string | null;
@@ -50,6 +64,8 @@ interface ComposeStore {
   setPriorityEnabled: (v: boolean) => void;
   setRecipientColumnData: (data: Record<string, Record<string, string>>) => void;
   setSequenceSteps: (steps: SequenceStepInput[]) => void;
+  setSequenceSchedule: (config: SequenceScheduleConfig) => void;
+  setFrequencyCaps: (caps: FrequencyCap) => void;
   setErrors: (errors: Record<string, string>) => void;
   updateErrors: (fn: (prev: Record<string, string>) => Record<string, string>) => void;
   setSubmitError: (error: string | null) => void;
@@ -68,6 +84,8 @@ export const useComposeStore = create<ComposeStore>()((set) => ({
   priorityEnabled: false,
   recipientColumnData: {},
   sequenceSteps: [],
+  sequenceSchedule: { ...DEFAULT_SCHEDULE_CONFIG },
+  frequencyCaps: { ...DEFAULT_FREQUENCY_CAPS },
   errors: {},
   submitError: null,
   csvMessage: null,
@@ -84,6 +102,8 @@ export const useComposeStore = create<ComposeStore>()((set) => ({
   setPriorityEnabled: (v) => set({ priorityEnabled: v }),
   setRecipientColumnData: (data) => set({ recipientColumnData: data }),
   setSequenceSteps: (steps) => set({ sequenceSteps: steps }),
+  setSequenceSchedule: (config) => set({ sequenceSchedule: config }),
+  setFrequencyCaps: (caps) => set({ frequencyCaps: caps }),
   setErrors: (errors) => set({ errors }),
   updateErrors: (fn) => set((state) => ({ errors: fn(state.errors) })),
   setSubmitError: (error) => set({ submitError: error }),
@@ -92,6 +112,9 @@ export const useComposeStore = create<ComposeStore>()((set) => ({
   reset: () =>
     set({
       data: { ...initialData },
+      sequenceSteps: [],
+      sequenceSchedule: { ...DEFAULT_SCHEDULE_CONFIG },
+      frequencyCaps: { ...DEFAULT_FREQUENCY_CAPS },
       errors: {},
       submitError: null,
       csvMessage: null,

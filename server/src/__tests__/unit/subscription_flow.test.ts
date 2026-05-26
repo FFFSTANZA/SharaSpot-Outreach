@@ -1,3 +1,6 @@
+process.env.DODO_PAYMENTS_API_KEY = "sk_live_real_key_for_testing_1234567890abcdef";
+process.env.NODE_ENV = "test";
+
 import { 
   createCheckoutSession, 
   handleCheckoutCompleted, 

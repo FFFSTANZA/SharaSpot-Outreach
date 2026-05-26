@@ -37,7 +37,4 @@ export const getUser = async (): Promise<import("@/types").User> => {
   return res.data;
 };
 
-export const updateUserSettings = async (payload: { callingEnabled: boolean }): Promise<import("@/types").User> => {
-  const res = await api.patch("/api/users/settings", payload);
-  return res.data;
-};
+

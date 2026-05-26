@@ -4,6 +4,7 @@ jest.mock("../../config/prisma", () => ({
       create: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
@@ -113,7 +114,7 @@ describe("Template Controller — Unit Tests", () => {
   it("updates a template successfully", async () => {
     const existing = { id: "t1", userId: "user-123", name: "Old", isSystem: false };
     const updated = { ...existing, name: "New" };
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue(existing);
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue(existing);
     (prisma.emailTemplate.update as jest.Mock).mockResolvedValue(updated);
 
     const { req, res } = mockReqRes({ name: "New" }, undefined, { id: "t1" });
@@ -124,7 +125,7 @@ describe("Template Controller — Unit Tests", () => {
   });
 
   it("returns 404 when updating non-existent template", async () => {
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue(null);
 
     const { req, res } = mockReqRes({ name: "X" }, undefined, { id: "nope" });
     await updateTemplate(req, res);
@@ -132,20 +133,17 @@ describe("Template Controller — Unit Tests", () => {
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
-  it("returns 403 when updating another user's template", async () => {
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue({
-      id: "t1",
-      userId: "other-user",
-    });
+  it("returns 404 when updating another user's template (scoped)", async () => {
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue(null);
 
     const { req, res } = mockReqRes({ name: "X" }, undefined, { id: "t1" });
     await updateTemplate(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.status).toHaveBeenCalledWith(404);
   });
 
   it("rejects update with empty name (400)", async () => {
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue({
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue({
       id: "t1",
       userId: "user-123",
     });
@@ -157,7 +155,7 @@ describe("Template Controller — Unit Tests", () => {
   });
 
   it("returns 409 on duplicate name during update", async () => {
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue({
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue({
       id: "t1",
       userId: "user-123",
     });
@@ -172,7 +170,7 @@ describe("Template Controller — Unit Tests", () => {
   // --- deleteTemplate ---
 
   it("deletes a template successfully", async () => {
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue({
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue({
       id: "t1",
       userId: "user-123",
     });
@@ -186,7 +184,7 @@ describe("Template Controller — Unit Tests", () => {
   });
 
   it("returns 404 when deleting non-existent template", async () => {
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue(null);
 
     const { req, res } = mockReqRes({}, undefined, { id: "nope" });
     await deleteTemplate(req, res);
@@ -194,16 +192,13 @@ describe("Template Controller — Unit Tests", () => {
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
-  it("returns 403 when deleting another user's template", async () => {
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue({
-      id: "t1",
-      userId: "other-user",
-    });
+  it("returns 404 when deleting another user's template (scoped)", async () => {
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue(null);
 
     const { req, res } = mockReqRes({}, undefined, { id: "t1" });
     await deleteTemplate(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.status).toHaveBeenCalledWith(404);
   });
 });
 
@@ -233,21 +228,18 @@ describe("Template Controller — Property-Based Tests", () => {
    * Feature: email-templates, Property 12: Access control returns correct HTTP status
    * Validates: Requirements 10.5, 10.6
    */
-  it("Property 12: 404 for non-existent, 403 for wrong owner on update", async () => {
+  it("Property 12: 404 for non-existent and wrong owner on update (scoped)", async () => {
     // Non-existent → 404
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue(null);
     const { req: req1, res: res1 } = mockReqRes({ name: "X" }, undefined, { id: "missing" });
     await updateTemplate(req1, res1);
     expect(res1.status).toHaveBeenCalledWith(404);
 
-    // Wrong owner → 403
+    // Wrong owner → 404 (scope-based filtering)
     jest.clearAllMocks();
-    (prisma.emailTemplate.findUnique as jest.Mock).mockResolvedValue({
-      id: "t1",
-      userId: "someone-else",
-    });
+    (prisma.emailTemplate.findFirst as jest.Mock).mockResolvedValue(null);
     const { req: req2, res: res2 } = mockReqRes({ name: "X" }, undefined, { id: "t1" });
     await updateTemplate(req2, res2);
-    expect(res2.status).toHaveBeenCalledWith(403);
+    expect(res2.status).toHaveBeenCalledWith(404);
   });
 });

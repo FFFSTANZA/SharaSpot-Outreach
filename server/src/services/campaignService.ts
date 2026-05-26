@@ -1,9 +1,18 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma";
 import { logger } from "../utils/logger";
 import { upsertContact, logContactActivity } from "../utils/contactService";
 import { resolveForRecipient } from "../utils/variableResolver";
 import { parseVariables } from "../utils/templateParser";
-import { validateSequenceSteps, SequenceStepInput } from "../utils/sequenceValidation";
+import {
+  validateSequenceSteps,
+  validateSequenceGraph,
+  legacyStepsToGraph,
+  SequenceStepInput,
+  SequenceGraphInput,
+  SequenceScheduleConfig,
+  FrequencyCap,
+} from "../utils/sequenceValidation";
 import { assignSendersRoundRobin, createCampaignSenderData } from "../utils/senderRotation";
 import { requirePremium } from "../utils/premiumCheck";
 
@@ -17,6 +26,9 @@ export interface CreateCampaignInput {
   emails: Array<string | { email: string; columnData?: Record<string, string> }>;
   attachments?: Array<{ url: string; filename: string; size: number; mimeType: string }>;
   steps?: SequenceStepInput[];
+  sequenceGraph?: SequenceGraphInput;
+  sequenceSchedule?: SequenceScheduleConfig;
+  frequencyCaps?: FrequencyCap;
   trackOpens?: boolean;
   trackClicks?: boolean;
   timezone?: string;
@@ -55,6 +67,9 @@ export class CampaignService {
       emails,
       attachments,
       steps,
+      sequenceGraph,
+      sequenceSchedule,
+      frequencyCaps,
       trackOpens: rawTrackOpens,
       trackClicks: rawTrackClicks,
       timezone,
@@ -108,10 +123,25 @@ export class CampaignService {
       }
     }
 
-    if (steps && steps.length > 0) {
-      const validation = validateSequenceSteps(steps);
+    let resolvedSteps = steps;
+    let resolvedGraph = sequenceGraph;
+    if (!resolvedGraph && resolvedSteps && resolvedSteps.length > 0) {
+      resolvedGraph = legacyStepsToGraph(resolvedSteps);
+    }
+    if (!resolvedSteps && resolvedGraph) {
+      resolvedSteps = resolvedGraph.nodes.map((n) => ({ subject: n.subject, body: n.body, waitDays: n.waitDays }));
+    }
+
+    if (resolvedSteps && resolvedSteps.length > 0 && !resolvedGraph) {
+      const validation = validateSequenceSteps(resolvedSteps);
       if (!validation.valid) {
         throw new CampaignError(validation.message!, "INVALID_SEQUENCE");
+      }
+    }
+    if (resolvedGraph) {
+      const graphValidation = validateSequenceGraph(resolvedGraph);
+      if (!graphValidation.valid) {
+        throw new CampaignError(graphValidation.message!, "INVALID_SEQUENCE_GRAPH");
       }
     }
 
@@ -187,6 +217,9 @@ export class CampaignService {
           businessEndHour: bEnd,
           isPriority: isPriority === true,
           replyTo: replyTo || null,
+          sequenceConfig: (sequenceSchedule || frequencyCaps)
+            ? JSON.parse(JSON.stringify({ schedule: sequenceSchedule ?? null, frequencyCaps: frequencyCaps ?? null }))
+            : Prisma.DbNull,
         },
       });
 
@@ -289,7 +322,7 @@ export class CampaignService {
         }
       }
 
-      if (steps && steps.length > 0) {
+      if (resolvedSteps && resolvedSteps.length > 0) {
         const step0 = await tx.sequenceStep.create({
           data: {
             campaignId: campaign.id,
@@ -307,20 +340,71 @@ export class CampaignService {
           });
         }
 
-        for (let s = 0; s < steps.length; s++) {
+        const nodeStepNumbers = new Map<string, number>();
+        if (resolvedGraph) {
+          for (let n = 0; n < resolvedGraph.nodes.length; n++) {
+            nodeStepNumbers.set(resolvedGraph.nodes[n].id, n + 1);
+          }
+        }
+
+        for (let s = 0; s < resolvedSteps.length; s++) {
+          const step = resolvedSteps[s];
+          let serializedCondition: string | null = null;
+
+          const extended: Record<string, any> = {};
+          if ((step as any).altSubjects?.length) extended.altSubjects = (step as any).altSubjects;
+          if (typeof (step as any).sendHour === 'number' && (step as any).sendHour >= 0) extended.sendHour = (step as any).sendHour;
+          if (typeof (step as any).waitHours === 'number' && (step as any).waitHours > 0) extended.waitHours = (step as any).waitHours;
+
+          if (resolvedGraph) {
+            const node = resolvedGraph.nodes[s];
+            const edge = resolvedGraph.edges[node.id];
+            let rules = node.rules ?? null;
+            if (!rules && step.condition && step.condition !== "none") {
+              rules = { operator: "AND", operands: [{ type: step.condition as "opened" | "clicked" | "replied" }] };
+            }
+            serializedCondition = JSON.stringify({
+              v: 2,
+              kind: "advanced",
+              rules,
+              onMatchStepNumber: edge?.onMatch ? (nodeStepNumbers.get(edge.onMatch) ?? null) : null,
+              onNoMatchStepNumber: edge?.onNoMatch ? (nodeStepNumbers.get(edge.onNoMatch) ?? null) : null,
+              originalNodeId: node.id,
+              ...extended,
+            });
+          } else if (step.condition) {
+            if (extended.altSubjects || extended.sendHour || extended.waitHours) {
+              serializedCondition = JSON.stringify({
+                v: 1,
+                kind: "simple_extended",
+                type: step.condition,
+                ...extended,
+              });
+            } else {
+              serializedCondition = step.condition ?? null;
+            }
+          } else if (extended.altSubjects || extended.sendHour || extended.waitHours) {
+            serializedCondition = JSON.stringify({
+              v: 1,
+              kind: "simple_extended",
+              type: "none",
+              ...extended,
+            });
+          }
+
           await tx.sequenceStep.create({
             data: {
               campaignId: campaign.id,
               stepNumber: s + 1,
-              subject: steps[s].subject,
-              body: steps[s].body,
-              waitDays: steps[s].waitDays,
-              condition: steps[s].condition || null,
+              subject: step.subject,
+              body: step.body,
+              waitDays: step.waitDays,
+              condition: serializedCondition,
             },
           });
         }
 
-        const totalSteps = steps.length + 1;
+        const totalSteps = resolvedSteps.length + 1;
         for (const recipient of recipients) {
           const stepStatuses = Array.from({ length: totalSteps }, (_, i) => ({
             stepNumber: i,
@@ -328,6 +412,9 @@ export class CampaignService {
             sentAt: null,
             error: null,
             emailJobId: null,
+            nodeId: i === 0 ? "initial" : resolvedGraph?.nodes[i - 1]?.id ?? `n${i}`,
+            lastRuleMatched: null,
+            decisionAt: null,
           }));
 
           await tx.recipientSequenceState.create({

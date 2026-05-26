@@ -1,11 +1,16 @@
 export type SenderProviderKey = "gmail" | "outlook" | "zoho" | "yahoo" | "custom";
 
+export interface InstructionItem {
+  text: string;
+  href?: string;
+}
+
 export interface SenderProviderConfig {
   key: SenderProviderKey;
   label: string;
   smtpHost: string;
   smtpPort: number;
-  instructions: string[];
+  instructions: InstructionItem[];
 }
 
 export const SENDER_PROVIDERS: SenderProviderConfig[] = [
@@ -15,9 +20,9 @@ export const SENDER_PROVIDERS: SenderProviderConfig[] = [
     smtpHost: "smtp.gmail.com",
     smtpPort: 465,
     instructions: [
-      "Enable 2-Step Verification in your Google account.",
-      "Generate an App Password from myaccount.google.com/apppasswords.",
-      "Paste the 16-character App Password here.",
+      { text: "Enable 2-Step Verification in your Google account." },
+      { text: "Generate an App Password", href: "https://myaccount.google.com/apppasswords" },
+      { text: "Paste the 16-character App Password here." },
     ],
   },
   {
@@ -26,9 +31,9 @@ export const SENDER_PROVIDERS: SenderProviderConfig[] = [
     smtpHost: "smtp.office365.com",
     smtpPort: 587,
     instructions: [
-      "Enable multi-factor authentication for the mailbox.",
-      "Create an app password from Microsoft security settings.",
-      "Use that app password in this form.",
+      { text: "Enable multi-factor authentication for the mailbox." },
+      { text: "Create an app password", href: "https://account.microsoft.com/security" },
+      { text: "Use that app password in this form." },
     ],
   },
   {
@@ -37,9 +42,9 @@ export const SENDER_PROVIDERS: SenderProviderConfig[] = [
     smtpHost: "smtp.zoho.com",
     smtpPort: 587,
     instructions: [
-      "Turn on MFA in Zoho Account security.",
-      "Generate an application-specific password.",
-      "Use the generated password here.",
+      { text: "Turn on MFA in Zoho Account security." },
+      { text: "Generate an application-specific password", href: "https://accounts.zoho.com/security" },
+      { text: "Use the generated password here." },
     ],
   },
   {
@@ -48,9 +53,9 @@ export const SENDER_PROVIDERS: SenderProviderConfig[] = [
     smtpHost: "smtp.mail.yahoo.com",
     smtpPort: 465,
     instructions: [
-      "Enable 2-step verification in Yahoo Account Security.",
-      "Generate an app password for Mail.",
-      "Paste the generated app password here.",
+      { text: "Enable 2-step verification in Yahoo Account Security." },
+      { text: "Generate an app password for Mail", href: "https://login.yahoo.com/account/security" },
+      { text: "Paste the generated app password here." },
     ],
   },
   {
@@ -59,9 +64,9 @@ export const SENDER_PROVIDERS: SenderProviderConfig[] = [
     smtpHost: "",
     smtpPort: 587,
     instructions: [
-      "Use the SMTP host/port provided by your IT or email provider.",
-      "Use your mailbox app password (or SMTP password) for authentication.",
-      "Port 465 usually uses SSL, and port 587 usually uses STARTTLS.",
+      { text: "Use the SMTP host/port provided by your IT or email provider." },
+      { text: "Use your mailbox app password (or SMTP password) for authentication." },
+      { text: "Port 465 usually uses SSL, and port 587 usually uses STARTTLS." },
     ],
   },
 ];

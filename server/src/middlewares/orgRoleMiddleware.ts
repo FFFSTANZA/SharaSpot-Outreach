@@ -5,6 +5,7 @@ const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 // Routes under /organizations need to stay accessible for switch/leave/create flows.
 const ORG_ROUTE_PREFIX = "/organizations";
+const ROUTES_WITH_OWN_ROLE_CHECKS = new Set(["/mcp-keys"]);
 
 export const requireOrgWriteAccess = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   if (READ_METHODS.has(req.method)) {
@@ -13,6 +14,11 @@ export const requireOrgWriteAccess = async (req: Request, res: Response, next: N
   }
 
   if (req.path.startsWith(ORG_ROUTE_PREFIX)) {
+    next();
+    return;
+  }
+
+  if (Array.from(ROUTES_WITH_OWN_ROLE_CHECKS).some((prefix) => req.path.startsWith(prefix))) {
     next();
     return;
   }
