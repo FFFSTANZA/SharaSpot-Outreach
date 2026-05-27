@@ -2,6 +2,7 @@ import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
 import { mcpScopeWhere } from "../scope";
+import { fail, ok } from "../helpers";
 
 function sanitizeLimit(value: unknown, defaultVal = 30, maxVal = 365): number {
   const num = Number(value) || defaultVal;
@@ -145,6 +146,64 @@ async function getOverallAnalytics(
   };
 }
 
+async function getCampaignSequenceAnalytics(context: MCPContext, args: Record<string, unknown>) {
+  const campaignId = String(args.campaignId).slice(0, 50);
+  if (!campaignId) return fail("campaignId is required");
+
+  const campaign = await prisma.emailCampaign.findFirst({
+    where: mcpScopeWhere(context, { id: campaignId }),
+    select: { id: true, subject: true },
+  });
+  if (!campaign) return fail("Campaign not found");
+
+  const steps = await prisma.sequenceStep.findMany({
+    where: { campaignId },
+    orderBy: { stepNumber: "asc" },
+  });
+
+  const stepAnalytics = await Promise.all(
+    steps.map(async (step) => {
+      const jobs = await prisma.emailJob.findMany({
+        where: { campaignId, sequenceStepId: step.id },
+        select: { id: true, status: true },
+      });
+
+      const jobIds = jobs.map((j) => j.id);
+      const [opens, clicks] = await Promise.all([
+        prisma.trackingEvent.count({
+          where: { emailJobId: { in: jobIds }, eventType: "OPEN" },
+        }),
+        prisma.trackingEvent.count({
+          where: { emailJobId: { in: jobIds }, eventType: "CLICK" },
+        }),
+      ]);
+
+      let parsedCondition: Record<string, unknown> | null = null;
+      try {
+        if (step.condition) parsedCondition = JSON.parse(step.condition);
+      } catch {}
+
+      const altSubjects = parsedCondition && Array.isArray(parsedCondition.altSubjects)
+        ? parsedCondition.altSubjects as string[]
+        : [];
+
+      return {
+        stepNumber: step.stepNumber,
+        subject: step.subject,
+        waitDays: step.waitDays,
+        totalJobs: jobs.length,
+        sentCount: jobs.filter((j) => j.status === "SENT").length,
+        opens,
+        clicks,
+        altSubjects: altSubjects.length > 0 ? altSubjects : undefined,
+        conditionRaw: step.condition || null,
+      };
+    })
+  );
+
+  return ok({ campaignId: campaign.id, steps: stepAnalytics }, "Campaign sequence analytics");
+}
+
 export function registerAnalyticsTools() {
   toolRegistry.register(
     {
@@ -190,6 +249,22 @@ export function registerAnalyticsTools() {
         },
       },
       handler: createToolHandler({ name: "analytics_overall", description: "", inputSchema: {} as never, handler: getOverallAnalytics }),
+    },
+    "analytics"
+  );
+
+  toolRegistry.register(
+    {
+      name: "analytics_campaign_sequence",
+      description: "Get per-step analytics for a campaign sequence including A/B variant configs",
+      inputSchema: {
+        type: "object" as const,
+        properties: {
+          campaignId: { type: "string", description: "Campaign ID" },
+        },
+        required: ["campaignId"],
+      },
+      handler: createToolHandler({ name: "analytics_campaign_sequence", description: "", inputSchema: {} as never, handler: getCampaignSequenceAnalytics }),
     },
     "analytics"
   );

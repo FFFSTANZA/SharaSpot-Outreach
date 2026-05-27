@@ -1,4 +1,5 @@
-process.env.DODO_PAYMENTS_API_KEY = "sk_live_real_key_for_testing_1234567890abcdef";
+process.env.DODO_PAYMENTS_API_KEY = "sk_test_fake_key_for_testing_1234567890abcdef";
+process.env.DODO_WEBHOOK_SECRET = "test_webhook_secret";
 process.env.NODE_ENV = "test";
 
 import { 
@@ -25,6 +26,7 @@ jest.mock("../../config/prisma", () => ({
         },
         processedWebhook: {
             findUnique: jest.fn(),
+            create: jest.fn().mockResolvedValue({ id: "marker_create_1" }),
             upsert: jest.fn().mockResolvedValue({ id: "wh_1" }),
         },
         user: {
@@ -190,6 +192,44 @@ describe("Subscription Flow - Complete Payment System", () => {
             expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ error: "Missing userId in metadata" }));
         });
 
+        it("should resolve userId via customer mapping when metadata is missing", async () => {
+            const mappedUserId = "mapped_user_123";
+            const mockReq = {
+                body: {
+                    id: "evt_checkout_3",
+                    type: "checkout.session.completed",
+                    data: {
+                        session_id: "sess_789",
+                        subscription_id: "sub_789",
+                        customer_id: "cust_mapped_789",
+                        metadata: {},
+                    },
+                },
+                headers: {},
+            } as any;
+
+            const mockRes = {
+                json: jest.fn(),
+                status: jest.fn().mockReturnThis(),
+            } as any;
+
+            (prisma.subscription.findFirst as jest.Mock).mockResolvedValueOnce({
+                userId: mappedUserId,
+                user: { id: mappedUserId, email: "mapped@example.com" },
+            });
+            (prisma.subscription.findUnique as jest.Mock).mockResolvedValue(null);
+            (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: mappedUserId, email: "mapped@example.com" });
+
+            await handleWebhook(mockReq, mockRes);
+
+            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
+                where: { eventId: "evt_checkout_3" },
+                create: { eventId: "evt_checkout_3", eventType: "checkout.session.completed" },
+                update: {},
+            });
+            expect(mockRes.json).toHaveBeenCalledWith({ success: true });
+        });
+
         it("should handle idempotency - skip duplicate events", async () => {
             const mockReq = {
                 body: { id: "evt_dup", type: "subscription.updated", data: { id: "sub_1" } },
@@ -210,6 +250,69 @@ describe("Subscription Flow - Complete Payment System", () => {
             await handleWebhook(mockReq, mockRes);
 
             expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ duplicated: true }));
+        });
+
+        it("should process activation only once across payment.succeeded and checkout.session.completed", async () => {
+            const eventData = {
+                session_id: "sess_cross_1",
+                subscription_id: "sub_cross_1",
+                customer_id: "cust_cross_1",
+                metadata: { userId },
+                id: "pay_cross_1",
+            };
+
+            const paymentReq = {
+                body: {
+                    id: "evt_payment_cross_1",
+                    type: "payment.succeeded",
+                    data: eventData,
+                },
+                headers: {},
+            } as any;
+
+            const checkoutReq = {
+                body: {
+                    id: "evt_checkout_cross_1",
+                    type: "checkout.session.completed",
+                    data: eventData,
+                },
+                headers: {},
+            } as any;
+
+            const mockRes = {
+                json: jest.fn(),
+                status: jest.fn().mockReturnThis(),
+            } as any;
+
+            (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: userId, email: userEmail });
+            (prisma.subscription.findUnique as jest.Mock).mockResolvedValue(null);
+
+            const processedCreate = prisma.processedWebhook.create as jest.Mock;
+            processedCreate
+                .mockResolvedValueOnce({ id: "activation_marker_created" })
+                .mockRejectedValueOnce(Object.assign(new Error("Unique constraint"), { code: "P2002" }));
+
+            await handleWebhook(paymentReq, mockRes);
+            await handleWebhook(checkoutReq, mockRes);
+
+            expect(processedCreate).toHaveBeenCalledWith(expect.objectContaining({
+                data: expect.objectContaining({
+                    eventId: "activation:sub_cross_1",
+                }),
+            }));
+
+            expect(prisma.processedWebhook.create).toHaveBeenCalledTimes(2);
+            expect(prisma.systemAuditLog.create).toHaveBeenCalled();
+            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
+                where: { eventId: "evt_payment_cross_1" },
+                create: { eventId: "evt_payment_cross_1", eventType: "payment.succeeded" },
+                update: {},
+            });
+            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
+                where: { eventId: "evt_checkout_cross_1" },
+                create: { eventId: "evt_checkout_cross_1", eventType: "checkout.session.completed" },
+                update: {},
+            });
         });
     });
 

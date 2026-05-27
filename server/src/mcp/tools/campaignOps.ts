@@ -4,6 +4,66 @@ import { toolRegistry, createToolHandler } from "../toolRegistry";
 import { MCPContext } from "../types";
 import { clampLimit, fail, mcpScopeWhere, ok, sanitizeOffset, sanitizeString } from "../helpers";
 
+function sanitizeInt(value: unknown, min: number, max: number): number | null {
+  const num = Number(value);
+  if (!Number.isInteger(num)) return null;
+  if (num < min || num > max) return null;
+  return num;
+}
+
+function sanitizeAltSubjects(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => sanitizeString(entry, 300))
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+function buildSequenceCondition(args: Record<string, unknown>): string | null {
+  const rawCondition = sanitizeString(args.condition, 4000);
+  const rules = typeof args.rules === "object" && args.rules !== null ? args.rules : undefined;
+  const onMatchStepNumber = sanitizeInt(args.onMatchStepNumber, 1, 200);
+  const onNoMatchStepNumber = sanitizeInt(args.onNoMatchStepNumber, 1, 200);
+  const altSubjects = sanitizeAltSubjects(args.altSubjects);
+  const sendHour = sanitizeInt(args.sendHour, -1, 23);
+  const waitHours = sanitizeInt(args.waitHours, 0, 23);
+
+  const hasExtended = altSubjects.length > 0 || sendHour !== null || waitHours !== null;
+  const hasAdvanced = !!rules || onMatchStepNumber !== null || onNoMatchStepNumber !== null;
+
+  if (hasAdvanced) {
+    let normalizedRules = rules;
+    if (!normalizedRules && rawCondition && rawCondition !== "none") {
+      normalizedRules = { operator: "AND", operands: [{ type: rawCondition }] };
+    }
+    return JSON.stringify({
+      v: 2,
+      kind: "advanced",
+      rules: normalizedRules ?? null,
+      onMatchStepNumber,
+      onNoMatchStepNumber,
+      ...(hasExtended ? { altSubjects, ...(sendHour !== null ? { sendHour } : {}), ...(waitHours !== null ? { waitHours } : {}) } : {}),
+    });
+  }
+
+  if (rawCondition && rawCondition.startsWith("{")) {
+    return rawCondition;
+  }
+
+  if (hasExtended) {
+    return JSON.stringify({
+      v: 1,
+      kind: "simple_extended",
+      type: rawCondition || "none",
+      altSubjects,
+      ...(sendHour !== null ? { sendHour } : {}),
+      ...(waitHours !== null ? { waitHours } : {}),
+    });
+  }
+
+  return rawCondition || null;
+}
+
 async function setCampaignStatus(context: MCPContext, args: Record<string, unknown>, status: "PAUSED" | "SCHEDULED" | "CANCELLED") {
   const campaignId = sanitizeString(args.campaignId, 80);
   if (!campaignId) return fail("campaignId is required");
@@ -83,12 +143,51 @@ async function upsertSequenceStep(context: MCPContext, args: Record<string, unkn
   const campaign = await prisma.emailCampaign.findFirst({ where: mcpScopeWhere(context, { id: campaignId }), select: { id: true, status: true } });
   if (!campaign) return fail("Campaign not found");
   if (campaign.status !== "SCHEDULED" && campaign.status !== "PAUSED") return fail("Only scheduled or paused campaigns can be changed");
+  const condition = buildSequenceCondition(args);
   const step = await prisma.sequenceStep.upsert({
     where: { campaignId_stepNumber: { campaignId, stepNumber } },
-    create: { campaignId, stepNumber, subject, body, waitDays, condition: sanitizeString(args.condition, 500) || null },
-    update: { subject, body, waitDays, condition: sanitizeString(args.condition, 500) || null },
+    create: { campaignId, stepNumber, subject, body, waitDays, condition },
+    update: { subject, body, waitDays, condition },
   });
   return ok({ step }, "Sequence step saved");
+}
+
+async function getSequenceConfig(context: MCPContext, args: Record<string, unknown>) {
+  const campaignId = sanitizeString(args.campaignId, 80);
+  if (!campaignId) return fail("campaignId is required");
+  const campaign = await prisma.emailCampaign.findFirst({
+    where: mcpScopeWhere(context, { id: campaignId }),
+    select: { id: true, sequenceConfig: true },
+  });
+  if (!campaign) return fail("Campaign not found");
+  return ok({ sequenceConfig: campaign.sequenceConfig ?? null });
+}
+
+async function updateSequenceConfig(context: MCPContext, args: Record<string, unknown>) {
+  const campaignId = sanitizeString(args.campaignId, 80);
+  if (!campaignId) return fail("campaignId is required");
+  const campaign = await prisma.emailCampaign.findFirst({
+    where: mcpScopeWhere(context, { id: campaignId }),
+    select: { id: true, status: true, sequenceConfig: true },
+  });
+  if (!campaign) return fail("Campaign not found");
+  if (campaign.status !== "SCHEDULED" && campaign.status !== "PAUSED") return fail("Only scheduled or paused campaigns can be changed");
+
+  const schedule = typeof args.sequenceSchedule === "object" && args.sequenceSchedule !== null
+    ? args.sequenceSchedule
+    : null;
+  const frequencyCaps = typeof args.frequencyCaps === "object" && args.frequencyCaps !== null
+    ? args.frequencyCaps
+    : null;
+
+  const nextConfig = JSON.parse(JSON.stringify({ schedule, frequencyCaps }));
+
+  const updated = await prisma.emailCampaign.update({
+    where: { id: campaign.id },
+    data: { sequenceConfig: nextConfig as Prisma.InputJsonValue },
+    select: { id: true, sequenceConfig: true },
+  });
+  return ok({ campaignId: updated.id, sequenceConfig: updated.sequenceConfig }, "Sequence config updated");
 }
 
 async function deleteSequenceStep(context: MCPContext, args: Record<string, unknown>) {
@@ -144,7 +243,9 @@ export function registerCampaignOperatorTools() {
   toolRegistry.register({ name: "campaign_cancel", description: "Cancel a campaign and pending recipients", category: "campaigns", access: "write", destructive: true, inputSchema: campaignIdSchema, handler: createToolHandler({ name: "campaign_cancel", description: "", inputSchema: {}, handler: cancelCampaign }) });
   toolRegistry.register({ name: "campaign_throttle_status", description: "Inspect campaign sender throttle counters", category: "campaigns", access: "read", inputSchema: campaignIdSchema, handler: createToolHandler({ name: "campaign_throttle_status", description: "", inputSchema: {}, handler: throttleStatus }) });
   toolRegistry.register({ name: "campaign_sequence_list", description: "List campaign sequence steps", category: "campaigns", access: "read", inputSchema: campaignIdSchema, handler: createToolHandler({ name: "campaign_sequence_list", description: "", inputSchema: {}, handler: listSequence }) });
-  toolRegistry.register({ name: "campaign_sequence_upsert", description: "Create or update a campaign sequence step", category: "campaigns", access: "write", inputSchema: { type: "object", properties: { campaignId: { type: "string" }, stepNumber: { type: "number" }, subject: { type: "string" }, body: { type: "string" }, waitDays: { type: "number" }, condition: { type: "string" } }, required: ["campaignId", "stepNumber", "subject", "body"] }, handler: createToolHandler({ name: "campaign_sequence_upsert", description: "", inputSchema: {}, handler: upsertSequenceStep }) });
+  toolRegistry.register({ name: "campaign_sequence_upsert", description: "Create or update a campaign sequence step", category: "campaigns", access: "write", inputSchema: { type: "object", properties: { campaignId: { type: "string" }, stepNumber: { type: "number" }, subject: { type: "string" }, body: { type: "string" }, waitDays: { type: "number" }, condition: { type: "string", description: "Simple condition or serialized JSON condition." }, rules: { type: "object", description: "Advanced branching rule group." }, onMatchStepNumber: { type: "number", description: "Branch target step number when rules match." }, onNoMatchStepNumber: { type: "number", description: "Branch target step number when rules do not match." }, altSubjects: { type: "array", description: "Up to 3 A/B subject alternatives." }, sendHour: { type: "number", description: "Step-level send hour override (-1..23)." }, waitHours: { type: "number", description: "Step-level extra wait hours (0..23)." } }, required: ["campaignId", "stepNumber", "subject", "body"] }, handler: createToolHandler({ name: "campaign_sequence_upsert", description: "", inputSchema: {}, handler: upsertSequenceStep }) });
+  toolRegistry.register({ name: "campaign_sequence_config_get", description: "Get campaign follow-up schedule/cap config", category: "campaigns", access: "read", inputSchema: campaignIdSchema, handler: createToolHandler({ name: "campaign_sequence_config_get", description: "", inputSchema: {}, handler: getSequenceConfig }) });
+  toolRegistry.register({ name: "campaign_sequence_config_update", description: "Update campaign follow-up schedule/cap config", category: "campaigns", access: "write", inputSchema: { type: "object", properties: { campaignId: { type: "string" }, sequenceSchedule: { type: "object" }, frequencyCaps: { type: "object" } }, required: ["campaignId"] }, handler: createToolHandler({ name: "campaign_sequence_config_update", description: "", inputSchema: {}, handler: updateSequenceConfig }) });
   toolRegistry.register({ name: "campaign_sequence_delete", description: "Delete a campaign sequence step", category: "campaigns", access: "write", destructive: true, inputSchema: { type: "object", properties: { campaignId: { type: "string" }, stepNumber: { type: "number" } }, required: ["campaignId", "stepNumber"] }, handler: createToolHandler({ name: "campaign_sequence_delete", description: "", inputSchema: {}, handler: deleteSequenceStep }) });
   toolRegistry.register({ name: "campaign_email_search", description: "Search campaign recipient email jobs", category: "campaigns", access: "read", inputSchema: { type: "object", properties: { campaignId: { type: "string" }, search: { type: "string" }, status: { type: "string" }, limit: { type: "number" }, offset: { type: "number" } }, required: ["campaignId"] }, handler: createToolHandler({ name: "campaign_email_search", description: "", inputSchema: {}, handler: searchCampaignEmails }) });
   toolRegistry.register({ name: "campaign_recipient_status_update", description: "Update one campaign recipient status", category: "campaigns", access: "write", inputSchema: { type: "object", properties: { campaignId: { type: "string" }, emailJobId: { type: "string" }, toEmail: { type: "string" }, status: { type: "string" } }, required: ["campaignId", "status"] }, handler: createToolHandler({ name: "campaign_recipient_status_update", description: "", inputSchema: {}, handler: updateRecipientStatus }) });

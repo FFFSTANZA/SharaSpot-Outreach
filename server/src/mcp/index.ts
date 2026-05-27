@@ -14,6 +14,7 @@ import { registerInboxTools } from "./tools/inboxOps";
 import { registerPrmTools } from "./tools/prmOps";
 import { registerValidationTools } from "./tools/validationOps";
 import { registerCallTools } from "./tools/callOps";
+import { registerFollowUpTemplateTools } from "./tools/followUpTemplates";
 
 export * from "./types";
 export { toolRegistry, mcpRequestHandler };
@@ -43,6 +44,7 @@ export function initializeMCP() {
   registerPrmTools();
   registerValidationTools();
   registerCallTools();
+  registerFollowUpTemplateTools();
 
   const toolCount = toolRegistry.getAll().length;
   console.log(`[MCP] Registered ${toolCount} tools`);

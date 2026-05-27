@@ -58,15 +58,13 @@ describe("PRM Lifecycle End-to-End Flow", () => {
   let token: string;
   let userId: string;
   let senderId: string;
+  const runId = Date.now().toString();
 
   beforeAll(async () => {
-    // Clean up in correct order
-    await prisma.user.deleteMany();
-
     // Create user
     const user = await prisma.user.create({
       data: {
-        email: "prm-test-user@example.com",
+        email: `prm-test-user-${runId}@example.com`,
         name: "PRM Test User",
       },
     });
@@ -85,7 +83,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
     const sender = await prisma.sender.create({
       data: {
         userId,
-        email: "prm-sender@example.com",
+        email: `prm-sender-${runId}@example.com`,
         name: "PRM Sender",
         appPassword: encrypt("password"),
         smtpHost: "smtp.example.com",
@@ -105,7 +103,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
   it("should complete the full PRM lifecycle", async () => {
     // 1. Contact Creation
     const contactPayload = {
-      email: "contact@example.com",
+      email: `contact-${runId}@example.com`,
       firstName: "John",
       lastName: "Doe",
       company: "Acme Corp",
@@ -187,7 +185,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
       hourlyLimit: 100,
       emails: [
         {
-          email: "contact@example.com",
+          email: `contact-${runId}@example.com`,
           columnData: { FirstName: "John" },
         },
       ],
@@ -209,7 +207,7 @@ describe("PRM Lifecycle End-to-End Flow", () => {
 
     // Simulate sending email
     const emailJob = await prisma.emailJob.findFirst({
-      where: { campaignId, toEmail: "contact@example.com" }
+      where: { campaignId, toEmail: `contact-${runId}@example.com` }
     });
     expect(emailJob).toBeDefined();
 
@@ -219,11 +217,11 @@ describe("PRM Lifecycle End-to-End Flow", () => {
     });
 
     // Mock worker's activity log and stage update
-    await logContactActivityByEmail(userId, "contact@example.com", "EMAIL_SENT", {
+    await logContactActivityByEmail(userId, `contact-${runId}@example.com`, "EMAIL_SENT", {
       emailJobId: emailJob!.id,
       campaignId: campaignId,
     });
-    await updateContactStageByEmail(userId, "contact@example.com", "CONTACTED");
+    await updateContactStageByEmail(userId, `contact-${runId}@example.com`, "CONTACTED");
 
     const updatedContact = await prisma.contact.findUnique({ where: { id: contactId } });
     expect(updatedContact?.stage).toBe("CONTACTED");

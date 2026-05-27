@@ -100,19 +100,23 @@ async function addContactsToList(
     return { success: false, message: "contactIds array required" };
   }
 
-  for (const contactId of contactIds) {
-    const contact = await prisma.contact.findFirst({
-      where: mcpScopeWhere(context, { id: String(contactId) }),
-    });
-    if (contact) {
-      await prisma.contact.update({
-        where: { id: contact.id },
-        data: { lists: { connect: { id: list.id } } },
-      });
-    }
+  const validContacts = await prisma.contact.findMany({
+    where: mcpScopeWhere(context, { id: { in: contactIds.map(String) } }),
+    select: { id: true },
+  });
+
+  if (validContacts.length > 0) {
+    await prisma.$transaction(
+      validContacts.map((contact) =>
+        prisma.contact.update({
+          where: { id: contact.id },
+          data: { lists: { connect: { id: list.id } } },
+        })
+      )
+    );
   }
 
-  return { success: true, message: `Added ${contactIds.length} contacts` };
+  return { success: true, message: `Added ${validContacts.length} contacts` };
 }
 
 async function removeContactsFromList(
@@ -133,20 +137,23 @@ async function removeContactsFromList(
     return { success: false, message: "contactIds array required" };
   }
 
-  for (const contactId of contactIds) {
-    const contact = await prisma.contact.findFirst({
-      where: mcpScopeWhere(context, { id: String(contactId) }),
-      select: { id: true },
-    });
-    if (contact) {
-      await prisma.contact.update({
-        where: { id: contact.id },
-        data: { lists: { disconnect: { id: list.id } } },
-      });
-    }
+  const validContacts = await prisma.contact.findMany({
+    where: mcpScopeWhere(context, { id: { in: contactIds.map(String) } }),
+    select: { id: true },
+  });
+
+  if (validContacts.length > 0) {
+    await prisma.$transaction(
+      validContacts.map((contact) =>
+        prisma.contact.update({
+          where: { id: contact.id },
+          data: { lists: { disconnect: { id: list.id } } },
+        })
+      )
+    );
   }
 
-  return { success: true, message: `Removed ${contactIds.length} contacts` };
+  return { success: true, message: `Removed ${validContacts.length} contacts` };
 }
 
 async function deleteContactList(

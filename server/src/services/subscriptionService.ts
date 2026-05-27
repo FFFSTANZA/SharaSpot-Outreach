@@ -69,7 +69,10 @@ export async function createCheckoutSession(
 
   // Local development fallback with placeholder API keys
   const apiKey = process.env.DODO_PAYMENTS_API_KEY;
-  if (process.env.NODE_ENV !== "production" && (!apiKey || apiKey.startsWith("local_placeholder") || apiKey.includes("placeholder"))) {
+  if (
+    process.env.MOCK_PAYMENTS === "true" &&
+    (!apiKey || apiKey.startsWith("local_placeholder") || apiKey.includes("placeholder"))
+  ) {
     logger.info({ userId }, "[CHECKOUT] Using local mock checkout session");
     const mockSessionId = `sess_mock_${Math.random().toString(36).substring(2, 15)}`;
     // Simulate webhook payment completion in the background in development
@@ -226,7 +229,16 @@ export async function updateSubscriptionFromWebhook(
   };
 
   const previousStatus = subscription.status;
-  const newStatus = data.status ? statusMap[data.status] || SubscriptionStatus.ACTIVE : undefined;
+  const newStatus = data.status ? statusMap[data.status] : undefined;
+
+  if (data.status && !newStatus) {
+    logger.error({ dodoSubscriptionId, status: data.status }, "[WEBHOOK] Unknown subscription status from provider");
+    await logPaymentAuditEvent("subscription.update.failed", dodoSubscriptionId, {
+      reason: "unknown_status",
+      status: data.status,
+    });
+    return;
+  }
 
   await prisma.subscription.update({
     where: { id: subscription.id },

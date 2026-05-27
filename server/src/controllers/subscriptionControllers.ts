@@ -8,6 +8,9 @@ import {
   getSubscriptionStatus,
   logPaymentAuditEvent,
   syncSubscriptionFromDodo,
+  updateSubscriptionFromWebhook,
+  handleCheckoutCompleted as finalizeCheckout,
+  activateSubscriptionFromPayment,
 } from "../services/subscriptionService";
 import { getCountryFromIp, isIndia } from "../utils/geoUtils";
 import { SUBSCRIPTION_PRICE_USD, SUBSCRIPTION_PRICE_INR, SUBSCRIPTION_INTERVAL } from "../config/subscription";
@@ -152,57 +155,75 @@ function parseDodoDate(dateInput: any): Date | undefined {
   return isNaN(d.getTime()) ? undefined : d;
 }
 
+async function resolveWebhookUserId(
+  metadataUserId: string | undefined,
+  customerId: string | undefined
+): Promise<string | null> {
+  if (metadataUserId) return metadataUserId;
+  if (!customerId) return null;
+
+  const existingSub = await prisma.subscription.findFirst({
+    where: { dodoCustomerId: customerId },
+    include: { user: true },
+  });
+
+  return existingSub?.userId || null;
+}
+
+async function claimActivationMarker(markerId: string, sourceEventType: string): Promise<boolean> {
+  try {
+    await prisma.processedWebhook.create({
+      data: {
+        eventId: markerId,
+        eventType: `activation:${sourceEventType}`,
+      },
+    });
+    return true;
+  } catch (error: unknown) {
+    const maybeCode = (error as { code?: string } | null)?.code;
+    if (maybeCode === "P2002") {
+      return false;
+    }
+    throw error;
+  }
+}
+
 export async function handleWebhook(req: Request, res: Response): Promise<void> {
   const secret = process.env.DODO_WEBHOOK_SECRET?.trim();
   let event: any;
   const rawBody = req.rawBody;
 
-  if (secret) {
-    try {
-      // Robustly extract the raw body string
-      const body = Buffer.isBuffer(rawBody)
-        ? rawBody.toString("utf8")
-        : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
-
-      const headers = {
-        "svix-id": (req.headers["webhook-id"] || req.headers["svix-id"] || "") as string,
-        "svix-timestamp": (req.headers["webhook-timestamp"] || req.headers["svix-timestamp"] || "") as string,
-        "svix-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"] || "") as string,
-      };
-
-      // Also include standard webhook headers if the SDK has been updated
-      const svixHeaders: any = { ...headers };
-      if (req.headers["webhook-id"]) svixHeaders["webhook-id"] = req.headers["webhook-id"];
-      if (req.headers["webhook-timestamp"]) svixHeaders["webhook-timestamp"] = req.headers["webhook-timestamp"];
-      if (req.headers["webhook-signature"]) svixHeaders["webhook-signature"] = req.headers["webhook-signature"];
-
-      try {
-        event = dodo.webhooks.unwrap(body, { headers: svixHeaders, key: secret });
-      } catch (firstErr: any) {
-        logger.warn({ err: firstErr }, "[WEBHOOK] Primary unwrap failed, trying fallback with raw headers");
-        event = dodo.webhooks.unwrap(body, { headers: req.headers as any, key: secret });
-      }
-    } catch (error: any) {
-      const bodyStr = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : "NOT_A_BUFFER";
-      logger.error({ err: error }, "[WEBHOOK] Auth Failed Final");
-      logger.error({
-        bodyLength: bodyStr.length,
-        bodyStart: bodyStr.substring(0, 20),
-        secretPrefix: secret.substring(0, 10),
-        headerKeys: Object.keys(req.headers).filter(k => k.toLowerCase().includes("webhook") || k.toLowerCase().includes("svix")),
-      }, "[WEBHOOK-DIAGNOSIS]");
-      res.status(401).json({
-        error: "Unauthorized",
-        details: error.message,
-        hint: "Check signature and secret integrity"
-      });
-      return;
-    }
-  } else {
-    event = req.body;
+  if (!secret) {
+    logger.error("[WEBHOOK] DODO_WEBHOOK_SECRET is not configured");
+    res.status(500).json({ error: "Webhook processing unavailable" });
+    return;
   }
 
-  let prismaTx: any = null;
+  try {
+    const body = Buffer.isBuffer(rawBody)
+      ? rawBody.toString("utf8")
+      : (typeof rawBody === "string" ? rawBody : JSON.stringify(req.body));
+
+    const headers = {
+      "svix-id": (req.headers["webhook-id"] || req.headers["svix-id"] || "") as string,
+      "svix-timestamp": (req.headers["webhook-timestamp"] || req.headers["svix-timestamp"] || "") as string,
+      "svix-signature": (req.headers["webhook-signature"] || req.headers["svix-signature"] || "") as string,
+    };
+
+    const webhookTimestamp = Number(headers["svix-timestamp"]);
+    if (!Number.isFinite(webhookTimestamp)) {
+      throw new Error("Missing or invalid webhook timestamp");
+    }
+    if (process.env.NODE_ENV !== "test" && Math.abs(Date.now() - webhookTimestamp * 1000) > 5 * 60 * 1000) {
+      throw new Error("Webhook timestamp outside allowed tolerance");
+    }
+
+    event = dodo.webhooks.unwrap(body, { headers, key: secret });
+  } catch (error: any) {
+    logger.error({ err: error }, "[WEBHOOK] Authentication failed");
+    res.status(401).json({ error: "Unauthorized webhook signature" });
+    return;
+  }
 
   try {
     const { type, data, id: eventId } = event;
@@ -233,14 +254,13 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       }
     }
 
-    const { updateSubscriptionFromWebhook, handleCheckoutCompleted: finalizeCheckout, activateSubscriptionFromPayment } = await import("../services/subscriptionService");
-
     if (type === "payment.succeeded") {
-      const userId = data.metadata?.userId;
+      const userId = await resolveWebhookUserId(data.metadata?.userId, data.customer_id);
       const sessionId = data.session_id;
       const dodoSubscriptionId = data.subscription_id;
       const customerId = data.customer_id;
       const paymentId = data.id || data.payment_id;
+      const activationMarker = `activation:${dodoSubscriptionId || sessionId || paymentId || eventId || "unknown"}`;
 
       logger.info({
         userId, sessionId,
@@ -252,17 +272,6 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       if (!userId) {
         logger.error({ data }, "[WEBHOOK] CRITICAL: No userId in payment metadata");
 
-        if (customerId) {
-          const existingSub = await prisma.subscription.findFirst({
-            where: { dodoCustomerId: customerId },
-            include: { user: true },
-          });
-
-          if (existingSub) {
-            logger.info({ userId: existingSub.userId }, "[WEBHOOK] Found user via customer ID mapping");
-          }
-        }
-
         await logPaymentAuditEvent("payment.succeeded.error", paymentId || sessionId, {
           error: "No userId in metadata",
           customerId,
@@ -272,14 +281,19 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         return;
       }
 
-      await activateSubscriptionFromPayment(userId, dodoSubscriptionId, customerId, sessionId, paymentId);
+      const shouldProcessActivation = await claimActivationMarker(activationMarker, type);
+      if (!shouldProcessActivation) {
+        logger.info({ activationMarker, type }, "[WEBHOOK] Activation already processed. Skipping duplicate activation event.");
+      } else {
+        await activateSubscriptionFromPayment(userId, dodoSubscriptionId, customerId, sessionId, paymentId);
 
-      await logPaymentAuditEvent("payment.succeeded", userId, {
-        sessionId,
-        dodoSubscriptionId,
-        customerId,
-        paymentId,
-      });
+        await logPaymentAuditEvent("payment.succeeded", userId, {
+          sessionId,
+          dodoSubscriptionId,
+          customerId,
+          paymentId,
+        });
+      }
     } else if (type === "subscription.active" || type === "subscription.updated" || type === "subscription.renewed") {
       if (!dodoSubId) {
         logger.warn({ type }, `[WEBHOOK] ${type} event missing subscription ID, skipping subscription update`);
@@ -309,10 +323,11 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         });
       }
     } else if (type === "checkout.session.completed" || type === "checkout.completed") {
-      const userId = data.metadata?.userId;
+      const userId = await resolveWebhookUserId(data.metadata?.userId, data.customer_id);
       const sessionId = data.session_id;
       const dodoSubscriptionId = data.subscription_id;
       const customerId = data.customer_id;
+      const activationMarker = `activation:${dodoSubscriptionId || sessionId || eventId}`;
 
       logger.info({
         userId, sessionId,
@@ -322,19 +337,6 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
 
       if (!userId) {
         logger.error({ data }, "[WEBHOOK] CRITICAL: No userId in checkout metadata");
-
-        if (customerId) {
-          const existingSub = await prisma.subscription.findFirst({
-            where: { dodoCustomerId: customerId },
-            include: { user: true },
-          });
-
-          if (existingSub) {
-            logger.info({ userId: existingSub.userId }, "[WEBHOOK] Found user via customer ID mapping");
-          } else {
-            logger.error("[WEBHOOK] No subscription found for customer ID either");
-          }
-        }
 
         await logPaymentAuditEvent("checkout.completed.error", sessionId, {
           error: "No userId in metadata",
@@ -346,13 +348,18 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         return;
       }
 
-      await finalizeCheckout(sessionId, userId, dodoSubscriptionId, customerId);
+      const shouldProcessActivation = await claimActivationMarker(activationMarker, type);
+      if (!shouldProcessActivation) {
+        logger.info({ activationMarker, type }, "[WEBHOOK] Activation already processed. Skipping duplicate activation event.");
+      } else {
+        await finalizeCheckout(sessionId, userId, dodoSubscriptionId, customerId);
 
-      await logPaymentAuditEvent("checkout.completed", userId, {
-        sessionId,
-        dodoSubscriptionId,
-        customerId,
-      });
+        await logPaymentAuditEvent("checkout.completed", userId, {
+          sessionId,
+          dodoSubscriptionId,
+          customerId,
+        });
+      }
     }
 
     if (eventId) {
@@ -369,6 +376,6 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     res.json({ success: true });
   } catch (error: any) {
     logger.error({ err: error }, "[WEBHOOK] Error processing webhook");
-    res.status(500).json({ error: "Webhook failure", message: error.message });
+    res.status(500).json({ error: "Webhook failure" });
   }
 }

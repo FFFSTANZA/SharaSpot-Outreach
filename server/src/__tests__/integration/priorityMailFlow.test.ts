@@ -5,33 +5,17 @@ process.env.JWT_REFRESH_SECRET = "2b5d8f1e4a7c0d3f6b9e2c5a8d1f4e7b0c3a6d9f2e5b8c
 process.env.ACCESS_TOKEN_EXPIRES = "1h";
 process.env.REFRESH_TOKEN_EXPIRES = "7d";
 
-import request from "supertest";
-import { app } from "../../index";
-import { prisma } from "../../config/prisma";
-import nodemailer from "nodemailer";
-import { signAccessToken } from "../../utils/jwt";
-import { processPriorityJob } from "../../worker/priorityEmailWorker";
-import { encrypt } from "../../utils/encryption";
-import * as signalCollector from "../../utils/signalCollector";
-import { priorityQueue } from "../../queues/priorityQueue";
-import { SubscriptionStatus } from "@prisma/client";
-
-if (!process.env.DATABASE_URL) {
-  describe("Priority Mail Flow Integration Test", () => {
-    it("skipped — DATABASE_URL not set", () => {
-      console.warn("[SKIP] Priority mail integration test requires DATABASE_URL");
-    });
-  });
-} else {
-
 // Mock ioredis before anything else
 jest.mock("ioredis", () => {
   return jest.fn().mockImplementation(() => ({
     get: jest.fn().mockResolvedValue(null),
+    setex: jest.fn().mockResolvedValue("OK"),
     set: jest.fn().mockResolvedValue("OK"),
     del: jest.fn().mockResolvedValue(1),
     lpush: jest.fn().mockResolvedValue(1),
     rpop: jest.fn().mockResolvedValue(null),
+    incr: jest.fn().mockResolvedValue(1),
+    expire: jest.fn().mockResolvedValue(1),
     quit: jest.fn().mockResolvedValue(undefined),
     on: jest.fn(),
   }));
@@ -68,19 +52,35 @@ jest.mock("../../queues/emailQueue", () => ({
   }
 }));
 
+import request from "supertest";
+import { app } from "../../index";
+import { prisma } from "../../config/prisma";
+import nodemailer from "nodemailer";
+import { signAccessToken } from "../../utils/jwt";
+import { processPriorityJob } from "../../worker/priorityEmailWorker";
+import { encrypt } from "../../utils/encryption";
+import * as signalCollector from "../../utils/signalCollector";
+import { priorityQueue } from "../../queues/priorityQueue";
+import { SubscriptionStatus } from "@prisma/client";
+
+if (!process.env.DATABASE_URL) {
+  describe("Priority Mail Flow Integration Test", () => {
+    it("skipped — DATABASE_URL not set", () => {
+      console.warn("[SKIP] Priority mail integration test requires DATABASE_URL");
+    });
+  });
+} else {
 describe("Priority Mail Flow Integration Test", () => {
   let token: string;
   let userId: string;
   let senderId: string;
+  const runId = Date.now().toString();
 
   beforeAll(async () => {
-    // Clean up in correct order
-    await prisma.user.deleteMany();
-
     // Create user
     const user = await prisma.user.create({
       data: {
-        email: "priority-test@example.com",
+        email: `priority-test-${runId}@example.com`,
         name: "Priority User",
       },
     });
@@ -99,7 +99,7 @@ describe("Priority Mail Flow Integration Test", () => {
     const sender = await prisma.sender.create({
       data: {
         userId,
-        email: "priority-sender@example.com",
+        email: `priority-sender-${runId}@example.com`,
         name: "Priority Sender",
         appPassword: encrypt("password"),
         smtpHost: "smtp.example.com",
@@ -147,6 +147,8 @@ describe("Priority Mail Flow Integration Test", () => {
       hourlyLimit: 100,
       emails: ["recipient@gmail.com"],
       isPriority: true,
+      businessStartHour: 0,
+      businessEndHour: 23,
     };
 
     const createRes = await request(app)
@@ -225,6 +227,8 @@ describe("Priority Mail Flow Integration Test", () => {
       hourlyLimit: 100,
       emails: ["congested@outlook.com"],
       isPriority: true,
+      businessStartHour: 0,
+      businessEndHour: 23,
     };
 
     const createRes = await request(app)
@@ -277,7 +281,7 @@ describe("Priority Mail Flow Integration Test", () => {
     // 1. Create a job for a user at quota limit
     const userAtLimit = await prisma.user.create({
       data: {
-        email: "limited-user@example.com",
+        email: `limited-user-${runId}@example.com`,
         name: "Limited User",
       }
     });
@@ -309,6 +313,8 @@ describe("Priority Mail Flow Integration Test", () => {
       hourlyLimit: 100,
       emails: ["quota-test@gmail.com"],
       isPriority: true,
+      businessStartHour: 0,
+      businessEndHour: 23,
     };
 
     const createRes = await request(app)

@@ -1,7 +1,11 @@
+import crypto from "crypto";
 import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
 import { mcpCreateData, mcpScopeWhere } from "../scope";
+import { campaignService, CampaignError } from "../../services/campaignService";
+import { emailQueue } from "../../queues/emailQueue";
+import { priorityQueue } from "../../queues/priorityQueue";
 
 function sanitizeString(value: unknown, maxLength = 500): string {
   if (typeof value !== "string") return "";
@@ -23,7 +27,7 @@ async function createCampaign(
 ): Promise<unknown> {
   const subject = sanitizeString(args.subject, 200);
   const body = sanitizeString(args.body, 10000);
-  
+
   if (!subject || !body) {
     return { success: false, message: "Subject and body are required" };
   }
@@ -36,6 +40,7 @@ async function createCampaign(
       })
     : await prisma.sender.findFirst({
         where: mcpScopeWhere(context, { isVerified: true }),
+        orderBy: { createdAt: "desc" },
         select: { id: true, hourlyLimit: true },
       });
 
@@ -48,6 +53,69 @@ async function createCampaign(
     return { success: false, message: "Invalid start time" };
   }
 
+  const emails = Array.isArray(args.emails) ? args.emails as Array<string | { email: string; columnData?: Record<string, string> }> : [];
+
+  // New path: when recipients are provided, route through campaignService so MCP gets
+  // the same advanced follow-up setup (graph/schedule/caps/state init) as API campaigns.
+  if (emails.length > 0) {
+    try {
+      const result = await campaignService.createCampaign(context.userId, {
+        senderIds: [sender.id],
+        subject,
+        body,
+        startTime: startTime.toISOString(),
+        delaySeconds: Math.max(Number(args.delaySeconds) || 0, 0),
+        hourlyLimit: Math.max(Number(args.hourlyLimit) || sender.hourlyLimit || 50, 1),
+        emails,
+        steps: Array.isArray(args.steps) ? args.steps as any : undefined,
+        sequenceGraph: (typeof args.sequenceGraph === "object" && args.sequenceGraph !== null) ? args.sequenceGraph as any : undefined,
+        sequenceSchedule: (typeof args.sequenceSchedule === "object" && args.sequenceSchedule !== null) ? args.sequenceSchedule as any : undefined,
+        frequencyCaps: (typeof args.frequencyCaps === "object" && args.frequencyCaps !== null) ? args.frequencyCaps as any : undefined,
+        trackOpens: args.trackOpens !== false,
+        trackClicks: args.trackClicks === true,
+        timezone: sanitizeString(args.timezone, 50) || "UTC",
+        businessStartHour: typeof args.businessStartHour === "number" ? args.businessStartHour : undefined,
+        businessEndHour: typeof args.businessEndHour === "number" ? args.businessEndHour : undefined,
+        isPriority: args.isPriority === true,
+        replyTo: sanitizeString(args.replyTo, 254) || undefined,
+      });
+
+      const isPriority = args.isPriority === true;
+      const queue = isPriority ? priorityQueue : emailQueue;
+      const prefix = isPriority ? "priority" : "email";
+
+      for (const emailJob of result.emailJobs) {
+        const delay = Math.max(0, new Date(emailJob.scheduledAt).getTime() - Date.now());
+        const jobData = isPriority
+          ? { emailJobId: emailJob.id, userId: context.userId }
+          : { emailJobId: emailJob.id };
+
+        await queue.add(
+          isPriority ? "send-priority-email" : "send-email",
+          jobData,
+          { jobId: `${prefix}-${emailJob.id}-${crypto.randomUUID()}`, delay },
+        );
+      }
+
+      return {
+        success: true,
+        campaignId: result.campaignId,
+        status: "SCHEDULED",
+        queuedJobs: result.emailJobs.length,
+        senderPool: result.senderPool,
+        skippedCount: result.skippedCount,
+        skipReasons: result.skipReasons,
+      };
+    } catch (error: unknown) {
+      if (error instanceof CampaignError) {
+        return { success: false, message: error.message, code: error.code, upgradeRequired: error.upgradeRequired };
+      }
+      const message = error instanceof Error ? error.message : "Failed to create campaign";
+      return { success: false, message };
+    }
+  }
+
+  // Backward-compatible lightweight create path (no recipients yet).
   const campaign = await prisma.emailCampaign.create({
     data: mcpCreateData(context, {
       senderId: sender.id,
@@ -59,7 +127,7 @@ async function createCampaign(
       totalRecipients: 0,
       timezone: sanitizeString(args.timezone, 50) || "UTC",
       trackOpens: args.trackOpens !== false,
-      trackClicks: args.trackClicks !== false,
+      trackClicks: args.trackClicks === true,
       status: "SCHEDULED",
     }),
   });
@@ -299,6 +367,17 @@ export function registerCampaignTools() {
           timezone: { type: "string", description: "Timezone" },
           trackOpens: { type: "boolean", description: "Track opens" },
           trackClicks: { type: "boolean", description: "Track clicks" },
+          emails: { type: "array", description: "Recipient list. If provided, uses full campaign service with advanced follow-ups." },
+          delaySeconds: { type: "number", description: "Inter-email delay in seconds" },
+          hourlyLimit: { type: "number", description: "Hourly send rate" },
+          steps: { type: "array", description: "Legacy follow-up steps" },
+          sequenceGraph: { type: "object", description: "Advanced follow-up graph" },
+          sequenceSchedule: { type: "object", description: "Follow-up daily schedule settings" },
+          frequencyCaps: { type: "object", description: "Follow-up frequency limits" },
+          businessStartHour: { type: "number", description: "Preferred local send window start hour" },
+          businessEndHour: { type: "number", description: "Preferred local send window end hour" },
+          isPriority: { type: "boolean", description: "Use priority send pipeline" },
+          replyTo: { type: "string", description: "Reply-to address override" },
         },
         required: ["subject", "body"],
       },

@@ -19,6 +19,7 @@ jest.mock("ioredis", () => {
     }),
     quit: jest.fn().mockResolvedValue(undefined),
     on: jest.fn(),
+    setex: jest.fn().mockResolvedValue("OK"),
     set: jest.fn().mockResolvedValue("OK"),
     get: jest.fn().mockResolvedValue(null),
     del: jest.fn().mockResolvedValue(1),
@@ -75,15 +76,13 @@ describe("Email Delivery and Tracking End-to-End Flow", () => {
   let token: string;
   let userId: string;
   let senderId: string;
+  const runId = Date.now().toString();
 
   beforeAll(async () => {
-    // Clean up in correct order
-    await prisma.user.deleteMany();
-
     // Create user
     const user = await prisma.user.create({
       data: {
-        email: "test-integration-unique-3@example.com",
+        email: `test-integration-${runId}@example.com`,
         name: "Test User",
       },
     });
@@ -102,7 +101,7 @@ describe("Email Delivery and Tracking End-to-End Flow", () => {
     const sender = await prisma.sender.create({
       data: {
         userId,
-        email: "sender-unique-3@example.com",
+        email: `sender-${runId}@example.com`,
         name: "Test Sender",
         appPassword: encrypt("password"),
         smtpHost: "smtp.example.com",
@@ -152,12 +151,14 @@ describe("Email Delivery and Tracking End-to-End Flow", () => {
       hourlyLimit: 100,
       emails: [
         {
-          email: "recipient-unique-3@example.com",
+          email: `recipient-${runId}@example.com`,
           columnData: { FirstName: "John" },
         },
       ],
       trackOpens: true,
       trackClicks: true,
+      businessStartHour: 0,
+      businessEndHour: 23,
     };
 
     const createRes = await request(app)
