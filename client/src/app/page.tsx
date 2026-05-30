@@ -106,7 +106,7 @@ function PricingCard() {
         <span className="text-4xl font-bold text-text-primary">{pricing.symbol}{pricing.amount}</span>
         <span className="text-sm font-medium text-text-muted">/month</span>
       </div>
-      <p className="text-[13px] text-text-secondary mb-8 font-medium">One flat price. Zero hidden fees. All premium infrastructure included.</p>
+      <p className="text-[13px] text-text-secondary mb-8 font-medium">Start with {BRAND_CONFIG.pricing.trialDays} days free. Then one flat price with zero hidden fees.</p>
 
       <ul className="space-y-3">
         {[

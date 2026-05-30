@@ -24,6 +24,10 @@ jest.mock("../../config/prisma", () => ({
   },
 }));
 
+jest.mock("../../utils/premiumCheck", () => ({
+  invalidatePremiumCache: jest.fn(),
+}));
+
 import { acceptInvite, acceptOrganizationInviteForUser, inviteMember } from "../../controllers/organizationControllers";
 import { prisma } from "../../config/prisma";
 

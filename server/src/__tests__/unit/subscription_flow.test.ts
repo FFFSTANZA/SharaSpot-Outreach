@@ -4,6 +4,7 @@ process.env.NODE_ENV = "test";
 
 import { 
   createCheckoutSession, 
+  createCustomerPortalSession,
   handleCheckoutCompleted, 
   updateSubscriptionFromWebhook,
   getSubscriptionStatus,
@@ -15,6 +16,7 @@ import { prisma } from "../../config/prisma";
 import { dodo } from "../../config/dodo";
 import { redis } from "../../config/redis";
 import { SubscriptionStatus } from "@prisma/client";
+import { SUBSCRIPTION_TRIAL_DAYS } from "../../config/subscription";
 
 jest.mock("../../config/prisma", () => ({
     prisma: {
@@ -31,6 +33,9 @@ jest.mock("../../config/prisma", () => ({
         },
         user: {
             findUnique: jest.fn(),
+        },
+        organization: {
+            findMany: jest.fn().mockResolvedValue([]),
         },
         systemAuditLog: {
             create: jest.fn(),
@@ -59,6 +64,11 @@ jest.mock("../../config/dodo", () => ({
         subscriptions: {
             update: jest.fn(),
             retrieve: jest.fn(),
+        },
+        customers: {
+            customerPortal: {
+                create: jest.fn(),
+            },
         },
         webhooks: {
             unwrap: jest.fn((body) => JSON.parse(body)),
@@ -104,6 +114,33 @@ describe("Subscription Flow - Complete Payment System", () => {
                 expect.objectContaining({
                     product_cart: [expect.objectContaining({ product_id: expect.stringContaining("pdt_") })],
                     metadata: expect.objectContaining({ userId }),
+                })
+            );
+            expect(dodo.checkoutSessions.create).toHaveBeenCalledWith(
+                expect.not.objectContaining({ subscription_data: expect.anything() })
+            );
+        });
+
+        it("should not grant a repeat trial when a prior subscription record exists", async () => {
+            const past = new Date();
+            past.setDate(past.getDate() - 1);
+
+            (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
+                userId,
+                status: SubscriptionStatus.EXPIRED,
+                currentPeriodEnd: past,
+                trialEnd: past,
+            });
+            (dodo.checkoutSessions.create as jest.Mock).mockResolvedValue({
+                checkout_url: "https://dodopayments.com/checkout/sess_repeat",
+                session_id: "sess_repeat",
+            });
+
+            await createCheckoutSession(userId, userEmail, userName, "8.8.8.8");
+
+            expect(dodo.checkoutSessions.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    subscription_data: { trial_period_days: 0 },
                 })
             );
         });
@@ -325,8 +362,10 @@ describe("Subscription Flow - Complete Payment System", () => {
                     data: {
                         subscription_id: "sub_123",
                         status: "active",
-                        current_period_start: 1704067200,
-                        current_period_end: 1706745600,
+                        previous_billing_date: 1704067200,
+                        next_billing_date: 1706745600,
+                        created_at: "2024-01-01T00:00:00.000Z",
+                        trial_period_days: 7,
                     },
                 },
                 headers: {},
@@ -350,10 +389,57 @@ describe("Subscription Flow - Complete Payment System", () => {
                     where: { id: "sub_db_1" },
                     data: expect.objectContaining({
                         status: SubscriptionStatus.ACTIVE,
+                        trialEnd: new Date("2024-01-08T00:00:00.000Z"),
                     }),
                 })
             );
             expect(redis.del).toHaveBeenCalled();
+        });
+
+        it("should provision access from subscription.active when it arrives before checkout completion", async () => {
+            const mockReq = {
+                body: {
+                    id: "evt_sub_active_first",
+                    type: "subscription.active",
+                    data: {
+                        subscription_id: "sub_active_first",
+                        status: "active",
+                        customer: { customer_id: "cust_active_first" },
+                        metadata: { userId },
+                        created_at: "2024-01-01T00:00:00.000Z",
+                        next_billing_date: "2024-01-08T00:00:00.000Z",
+                        trial_period_days: SUBSCRIPTION_TRIAL_DAYS,
+                    },
+                },
+                headers: {},
+            } as any;
+
+            const mockRes = {
+                json: jest.fn(),
+                status: jest.fn().mockReturnThis(),
+            } as any;
+
+            (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: userId, email: userEmail });
+            (prisma.subscription.findFirst as jest.Mock).mockResolvedValue({
+                id: "sub_db_active_first",
+                userId,
+                status: SubscriptionStatus.ACTIVE,
+            });
+
+            await handleWebhook(mockReq, mockRes);
+
+            expect(prisma.processedWebhook.create).toHaveBeenCalledWith(expect.objectContaining({
+                data: expect.objectContaining({
+                    eventId: "activation:sub_active_first",
+                    eventType: "activation:subscription.active",
+                }),
+            }));
+            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
+                where: { eventId: "evt_sub_active_first" },
+                create: { eventId: "evt_sub_active_first", eventType: "subscription.active" },
+                update: {},
+            });
+            expect(mockRes.json).toHaveBeenCalledWith({ success: true });
         });
 
         it("should process subscription.past_due event", async () => {
@@ -426,7 +512,7 @@ describe("Subscription Flow - Complete Payment System", () => {
             future.setDate(future.getDate() + 5);
 
             (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
-                status: SubscriptionStatus.CANCELLED,
+                status: SubscriptionStatus.ACTIVE,
                 currentPeriodEnd: new Date(),
                 trialEnd: future,
             });
@@ -434,6 +520,21 @@ describe("Subscription Flow - Complete Payment System", () => {
             const result = await getSubscriptionStatus(userId);
 
             expect(result.isPremium).toBe(true);
+        });
+
+        it("should return isPremium=false for on-hold subscription even with a future period", async () => {
+            const future = new Date();
+            future.setMonth(future.getMonth() + 1);
+
+            (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
+                status: SubscriptionStatus.ON_HOLD,
+                currentPeriodEnd: future,
+                trialEnd: null,
+            });
+
+            const result = await getSubscriptionStatus(userId);
+
+            expect(result.isPremium).toBe(false);
         });
 
         it("should return isPremium=false when no subscription exists", async () => {
@@ -516,6 +617,26 @@ describe("Subscription Flow - Complete Payment System", () => {
                         message: expect.stringContaining("checkout.completed"),
                     }),
                 })
+            );
+        });
+    });
+
+    describe("createCustomerPortalSession", () => {
+        it("should create a Dodo customer portal session", async () => {
+            (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
+                userId,
+                dodoCustomerId: "cust_123",
+            });
+            (dodo.customers.customerPortal.create as jest.Mock).mockResolvedValue({
+                link: "https://customer.dodopayments.com/session/portal_123",
+            });
+
+            const result = await createCustomerPortalSession(userId);
+
+            expect(result.portalUrl).toBe("https://customer.dodopayments.com/session/portal_123");
+            expect(dodo.customers.customerPortal.create).toHaveBeenCalledWith(
+                "cust_123",
+                expect.objectContaining({ send_email: false })
             );
         });
     });

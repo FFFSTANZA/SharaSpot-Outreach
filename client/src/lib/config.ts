@@ -21,7 +21,7 @@ export const BRAND_CONFIG = {
             currency: "INR",
             symbol: "₹",
         },
-        trialDays: 0,
+        trialDays: 7,
     },
     features: [
         {

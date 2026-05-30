@@ -84,3 +84,27 @@ export const updateUserSettings = async (req: Request, res: Response): Promise<v
     res.status(500).json({ message: "An error occurred while updating user settings" });
   }
 };
+
+export const updateUserName = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { name } = req.body;
+
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      res.status(400).json({ message: "Name is required" });
+      return;
+    }
+
+    const trimmed = name.trim().slice(0, 100);
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name: trimmed },
+    });
+
+    const { isPremium } = await checkPremiumStatus(userId);
+    res.json({ ...user, isPremium, activeOrganizationId: user.activeOrganizationId });
+  } catch (error: any) {
+    res.status(500).json({ message: "An error occurred while updating name" });
+  }
+};

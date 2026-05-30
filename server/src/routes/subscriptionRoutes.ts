@@ -3,6 +3,7 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 import {
   getSubscription,
   createSubscription,
+  createBillingPortalSession,
   cancelUserSubscription,
   reactivateUserSubscription,
   handleWebhook,
@@ -17,6 +18,8 @@ router.post("/", authMiddleware, createSubscription);
 router.post("/cancel", authMiddleware, cancelUserSubscription);
 
 router.post("/reactivate", authMiddleware, reactivateUserSubscription);
+
+router.post("/portal", authMiddleware, createBillingPortalSession);
 
 export default router;
 

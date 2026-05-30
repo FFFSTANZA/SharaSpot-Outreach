@@ -82,6 +82,7 @@ jest.mock("../../config/redis", () => ({
   redis: {
     ping: jest.fn().mockResolvedValue("PONG"),
     get: jest.fn().mockResolvedValue(String(Date.now())),
+    del: jest.fn().mockResolvedValue(1),
     quit: jest.fn(),
   },
 }));

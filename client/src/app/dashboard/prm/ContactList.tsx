@@ -57,6 +57,7 @@ export function ContactList({
   selectedIds,
   setSelectedIds,
 }: ContactListProps) {
+  if (!contacts) return null;
   const toggleSelectAll = () => {
     if (selectedIds.size === contacts.length) {
       setSelectedIds(new Set());

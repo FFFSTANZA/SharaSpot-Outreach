@@ -105,9 +105,9 @@ function PRMPage() {
         listId: selectedListId,
         page,
       });
-      setContacts(data.contacts);
-      setTotalPages(data.totalPages);
-      setTotalContacts(data.total);
+      setContacts(data.contacts ?? []);
+      setTotalPages(data.totalPages ?? 1);
+      setTotalContacts(data.total ?? 0);
       setCurrentPage(data.page);
     } catch {
       addToast("error", "Failed to fetch contacts");

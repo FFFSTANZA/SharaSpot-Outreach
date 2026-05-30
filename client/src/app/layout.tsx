@@ -7,11 +7,13 @@ import { BRAND_CONFIG } from "@/lib/config";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sharaspot.in";
@@ -82,9 +84,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/SharaSpot%20Icon.png", type: "image/png" },
     ],
-    apple: "/favicon.svg",
+    apple: "/SharaSpot%20Icon.png",
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",
@@ -103,12 +105,12 @@ const jsonLd = {
       "@id": `${siteUrl}/#organization`,
       "name": "Folonite",
       "url": siteUrl,
-      "logo": {
-        "@type": "ImageObject",
-        "url": `${siteUrl}/favicon.svg`,
-        "width": "512",
-        "height": "512"
-      }
+        "logo": {
+          "@type": "ImageObject",
+          "url": `${siteUrl}/SharaSpot%20Icon.png`,
+          "width": "512",
+          "height": "512"
+        }
     },
     {
       "@type": "WebSite",

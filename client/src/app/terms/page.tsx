@@ -30,7 +30,7 @@ export default function TermsPage() {
     {
       icon: Scale,
       title: "Subscription and Billing",
-      content: "SharaSpot requires a premium subscription to access the services. The global subscription price is $19/month and the local Indian price is ₹999/month. Subscriptions are billed monthly via Dodo Payments and can be cancelled at any time through the billing dashboard.",
+      content: "SharaSpot requires a premium subscription to access the services. New customers may receive a 7-day free trial before billing starts. The global subscription price is $19/month and the local Indian price is ₹999/month. Subscriptions are billed monthly via Dodo Payments and can be cancelled at any time through the billing dashboard.",
     },
     {
       icon: RefreshCw,

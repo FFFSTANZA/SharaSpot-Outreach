@@ -1,7 +1,7 @@
 export const SUBSCRIPTION_PRICE_USD = 19.00;
 export const SUBSCRIPTION_PRICE_INR = 999.00;
 export const SUBSCRIPTION_INTERVAL = "month";
-export const SUBSCRIPTION_TRIAL_DAYS = 0;
+export const SUBSCRIPTION_TRIAL_DAYS = 7;
 
 export const PREMIUM_FEATURES = {
   unlimitedCampaigns: true,

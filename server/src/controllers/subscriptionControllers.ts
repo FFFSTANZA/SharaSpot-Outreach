@@ -3,17 +3,20 @@ import { prisma } from "../config/prisma";
 import { logger } from "../utils/logger";
 import {
   createCheckoutSession,
+  createCustomerPortalSession,
   cancelSubscription,
   reactivateSubscription,
   getSubscriptionStatus,
   logPaymentAuditEvent,
   syncSubscriptionFromDodo,
   updateSubscriptionFromWebhook,
+  deriveDodoSubscriptionDates,
+  parseDodoDate,
   handleCheckoutCompleted as finalizeCheckout,
   activateSubscriptionFromPayment,
 } from "../services/subscriptionService";
 import { getCountryFromIp, isIndia } from "../utils/geoUtils";
-import { SUBSCRIPTION_PRICE_USD, SUBSCRIPTION_PRICE_INR, SUBSCRIPTION_INTERVAL } from "../config/subscription";
+import { SUBSCRIPTION_PRICE_USD, SUBSCRIPTION_PRICE_INR, SUBSCRIPTION_INTERVAL, SUBSCRIPTION_TRIAL_DAYS } from "../config/subscription";
 import { dodo } from "../config/dodo";
 
 export async function getSubscription(req: Request, res: Response): Promise<void> {
@@ -63,6 +66,7 @@ export async function getSubscription(req: Request, res: Response): Promise<void
         amount: region === "india" ? SUBSCRIPTION_PRICE_INR : SUBSCRIPTION_PRICE_USD,
         interval: SUBSCRIPTION_INTERVAL,
         currency: region === "india" ? "INR" : "USD",
+        trialDays: SUBSCRIPTION_TRIAL_DAYS,
       },
     });
   } catch (error) {
@@ -143,16 +147,23 @@ export async function reactivateUserSubscription(req: Request, res: Response): P
   }
 }
 
-/**
- * Safely parse dates from Dodo Payments (handles seconds vs milliseconds vs ISO strings)
- */
-function parseDodoDate(dateInput: any): Date | undefined {
-  if (!dateInput) return undefined;
-  if (typeof dateInput === 'number') {
-    return new Date(dateInput < 10000000000 ? dateInput * 1000 : dateInput);
+export async function createBillingPortalSession(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = req.user!.id;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const { portalUrl } = await createCustomerPortalSession(userId);
+    res.json({ portalUrl });
+  } catch (error: any) {
+    logger.error({ err: error }, "Error creating billing portal session");
+    res.status(500).json({
+      message: "Failed to open billing portal",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
-  const d = new Date(dateInput);
-  return isNaN(d.getTime()) ? undefined : d;
 }
 
 async function resolveWebhookUserId(
@@ -168,6 +179,10 @@ async function resolveWebhookUserId(
   });
 
   return existingSub?.userId || null;
+}
+
+function getDodoCustomerId(data: any): string | undefined {
+  return data.customer_id || data.customer?.customer_id || data.customer?.id;
 }
 
 async function claimActivationMarker(markerId: string, sourceEventType: string): Promise<boolean> {
@@ -226,13 +241,16 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
   }
 
   try {
-    const { type, data, id: eventId } = event;
+    const { type, data } = event;
+    const rawEventId = event.id || req.headers["webhook-id"] || req.headers["svix-id"];
+    const eventId = Array.isArray(rawEventId) ? rawEventId[0] : rawEventId;
     const dodoSubId = data.subscription_id || data.id;
+    const customerId = getDodoCustomerId(data);
     logger.info({
       type, eventId,
       subscriptionId: dodoSubId,
-      sessionId: data.session_id,
-      customerId: data.customer_id,
+      sessionId: data.checkout_session_id || data.session_id,
+      customerId,
       status: data.status,
     }, `[WEBHOOK] Received ${type}`);
 
@@ -255,11 +273,10 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
     }
 
     if (type === "payment.succeeded") {
-      const userId = await resolveWebhookUserId(data.metadata?.userId, data.customer_id);
-      const sessionId = data.session_id;
+      const userId = await resolveWebhookUserId(data.metadata?.userId, customerId);
+      const sessionId = data.checkout_session_id || data.session_id;
       const dodoSubscriptionId = data.subscription_id;
-      const customerId = data.customer_id;
-      const paymentId = data.id || data.payment_id;
+      const paymentId = data.payment_id || data.id;
       const activationMarker = `activation:${dodoSubscriptionId || sessionId || paymentId || eventId || "unknown"}`;
 
       logger.info({
@@ -294,15 +311,40 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
           paymentId,
         });
       }
-    } else if (type === "subscription.active" || type === "subscription.updated" || type === "subscription.renewed") {
+    } else if (type === "payment.failed" || type === "payment.cancelled" || type === "payment.processing") {
+      const paymentId = data.payment_id || data.id;
+      await logPaymentAuditEvent(type, paymentId || "unknown", {
+        subscriptionId: data.subscription_id,
+        customerId,
+        status: data.status,
+        errorCode: data.error_code,
+        errorMessage: data.error_message,
+      });
+    } else if (type === "subscription.active" || type === "subscription.updated" || type === "subscription.renewed" || type === "subscription.plan_changed") {
       if (!dodoSubId) {
         logger.warn({ type }, `[WEBHOOK] ${type} event missing subscription ID, skipping subscription update`);
       } else {
+        if (type === "subscription.active") {
+          const userId = await resolveWebhookUserId(data.metadata?.userId, customerId);
+          if (userId) {
+            const activationMarker = `activation:${dodoSubId}`;
+            const shouldProcessActivation = await claimActivationMarker(activationMarker, type);
+            if (shouldProcessActivation) {
+              await finalizeCheckout(`subscription:${eventId || dodoSubId}`, userId, dodoSubId, customerId);
+            } else {
+              logger.info({ activationMarker, type }, "[WEBHOOK] Activation already processed. Applying subscription update only.");
+            }
+          }
+        }
+
+        const { periodStart, periodEnd, trialEnd } = deriveDodoSubscriptionDates(data);
         await updateSubscriptionFromWebhook(dodoSubId, {
           status: data.status,
-          currentPeriodStart: parseDodoDate(data.previous_billing_date),
-          currentPeriodEnd: parseDodoDate(data.next_billing_date),
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
           cancelAtPeriodEnd: data.cancel_at_next_billing_date,
+          cancelAt: parseDodoDate(data.cancelled_at) || null,
+          trialEnd,
         });
 
         await logPaymentAuditEvent("subscription." + type.replace("subscription.", ""), dodoSubId, {
@@ -311,11 +353,14 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       }
     } else if (type === "subscription.cancelled" || type === "subscription.expired" || type === "subscription.failed" || type === "subscription.on_hold") {
       if (dodoSubId) {
+        const { periodStart, periodEnd, trialEnd } = deriveDodoSubscriptionDates(data);
         await updateSubscriptionFromWebhook(dodoSubId, {
           status: data.status,
-          currentPeriodStart: parseDodoDate(data.previous_billing_date),
-          currentPeriodEnd: parseDodoDate(data.next_billing_date),
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
           cancelAtPeriodEnd: data.cancel_at_next_billing_date,
+          cancelAt: parseDodoDate(data.cancelled_at) || null,
+          trialEnd,
         });
 
         await logPaymentAuditEvent("subscription." + type.replace("subscription.", ""), dodoSubId, {
@@ -323,10 +368,9 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         });
       }
     } else if (type === "checkout.session.completed" || type === "checkout.completed") {
-      const userId = await resolveWebhookUserId(data.metadata?.userId, data.customer_id);
-      const sessionId = data.session_id;
+      const userId = await resolveWebhookUserId(data.metadata?.userId, customerId);
+      const sessionId = data.checkout_session_id || data.session_id;
       const dodoSubscriptionId = data.subscription_id;
-      const customerId = data.customer_id;
       const activationMarker = `activation:${dodoSubscriptionId || sessionId || eventId}`;
 
       logger.info({

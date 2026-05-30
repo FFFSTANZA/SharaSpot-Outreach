@@ -31,7 +31,7 @@ const faqs = [
     },
     {
         q: `How much does it cost?`,
-        a: `During early access, it is ${BRAND_CONFIG.pricing.global.symbol}${BRAND_CONFIG.pricing.global.amount} per month for full access to our premium infrastructure. This includes Priority Sending, AI Follow-ups, and PRM capabilities.`
+        a: `You can start with a ${BRAND_CONFIG.pricing.trialDays}-day free trial. After the trial, early access is ${BRAND_CONFIG.pricing.global.symbol}${BRAND_CONFIG.pricing.global.amount} per month for full access to our premium infrastructure, including Priority Sending, AI Follow-ups, and PRM capabilities.`
     },
 ];
 
@@ -78,7 +78,7 @@ export default function FAQ() {
                         Everything you need <br /><span className="text-brand">to know.</span>
                     </h2>
                     <p className="text-text-secondary text-lg font-medium max-w-xl mx-auto">
-                        Got a question? We have answers. If you don't find what you are looking for, our support team is just a click away.
+                        Got a question? We have answers. If you don&apos;t find what you are looking for, our support team is just a click away.
                     </p>
                 </div>
 

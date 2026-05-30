@@ -37,4 +37,9 @@ export const getUser = async (): Promise<import("@/types").User> => {
   return res.data;
 };
 
+export const updateUserName = async (name: string): Promise<import("@/types").User> => {
+  const res = await api.patch("/api/users/name", { name });
+  return res.data;
+};
+
 

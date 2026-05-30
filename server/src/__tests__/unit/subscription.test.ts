@@ -31,7 +31,7 @@ describe("Subscription Service & Premium Checks", () => {
             (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
                 userId,
                 trialEnd: futureDate,
-                status: SubscriptionStatus.ACTIVE, // status doesn't strictly matter if trial is active
+                status: SubscriptionStatus.ACTIVE,
                 currentPeriodEnd: new Date(0), // expired sub
             });
 
@@ -88,6 +88,8 @@ describe("Subscription Service & Premium Checks", () => {
             (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
                 userId,
                 trialEnd: futureDate,
+                status: SubscriptionStatus.ACTIVE,
+                currentPeriodEnd: futureDate,
             });
 
             const result = await requirePremium(userId);

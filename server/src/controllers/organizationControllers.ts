@@ -113,6 +113,7 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
       where: { id: userId },
       data: { activeOrganizationId: org.id },
     });
+    await invalidatePremiumCache(userId);
 
     const newAccessToken = signAccessToken({
       id: userId,
@@ -187,6 +188,7 @@ export const switchOrganization = async (req: Request, res: Response): Promise<v
       where: { id: userId },
       data: { activeOrganizationId: organizationId },
     });
+    await invalidatePremiumCache(userId);
 
     const newAccessToken = signAccessToken({
       id: userId,
@@ -260,6 +262,8 @@ export const acceptOrganizationInviteForUser = async (token: string, userId: str
     data: { activeOrganizationId: invite.organizationId },
   });
 
+  await invalidatePremiumCache(userId);
+
   return {
     accepted: true as const,
     organizationId: invite.organizationId,
@@ -324,6 +328,8 @@ export const inviteMember = async (req: Request, res: Response): Promise<void> =
           data: { activeOrganizationId: orgId },
         });
       }
+
+      await invalidatePremiumCache(invitedUser.id);
 
       res.status(201).json({
         type: "member",
@@ -536,8 +542,8 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const target = await prisma.organizationMember.findUnique({
-      where: { id: memberId },
+    const target = await prisma.organizationMember.findFirst({
+      where: { id: memberId, organizationId: orgId },
     });
     if (!target) { res.status(404).json({ message: "Member not found" }); return; }
     if (target.role === "OWNER") { res.status(400).json({ message: "Cannot remove the owner" }); return; }
@@ -546,10 +552,17 @@ export const removeMember = async (req: Request, res: Response): Promise<void> =
       where: { id: memberId },
     });
 
-    // Clear active organization for the removed user if it was pointing to this org
+    const otherMembership = await prisma.organizationMember.findFirst({
+      where: {
+        userId: target.userId,
+        organizationId: { not: orgId },
+      },
+      select: { organizationId: true },
+    });
+
     await prisma.user.updateMany({
       where: { id: target.userId, activeOrganizationId: orgId },
-      data: { activeOrganizationId: null },
+      data: { activeOrganizationId: otherMembership?.organizationId || null },
     });
 
     // Invalidate premium cache so removed user no longer inherits premium
@@ -582,8 +595,8 @@ export const updateMemberRole = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const target = await prisma.organizationMember.findUnique({
-      where: { id: memberId },
+    const target = await prisma.organizationMember.findFirst({
+      where: { id: memberId, organizationId: orgId },
     });
     if (!target) { res.status(404).json({ message: "Member not found" }); return; }
     if (target.role === "OWNER") { res.status(400).json({ message: "Cannot change the owner's role" }); return; }
@@ -614,56 +627,69 @@ export const deleteOrganization = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    // Nullify organizationId on all org-scoped resources
-    const resourceTables = [
-      prisma.emailCampaign.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.sender.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.contact.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.emailTemplate.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.tag.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.contactList.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.callTask.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.prmSegment.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.webhook.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.mcpApiKey.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.bounceList.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.inboxEmail.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-      prisma.inboxThread.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-    ];
-    await Promise.all(resourceTables);
+    // Wrap all Prisma mutations in a transaction for atomicity
+    const memberUserIds = await prisma.$transaction(async (tx) => {
+      // Nullify organizationId on all org-scoped resources
+      await Promise.all([
+        tx.emailCampaign.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.sender.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.contact.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.emailTemplate.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.followUpTemplate.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.tag.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.contactList.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.callTask.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.prmSegment.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.webhook.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.mcpApiKey.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.bounceList.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.inboxEmail.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.inboxThread.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+      ]);
 
-    // Get all members of this org
-    const members = await prisma.organizationMember.findMany({
-      where: { organizationId: orgId },
-    });
-    const memberUserIds = members.map(m => m.userId);
+      // Get all members
+      const members = await tx.organizationMember.findMany({
+        where: { organizationId: orgId },
+      });
+      const ids = members.map(m => m.userId);
 
-    // For members who had this as their active org, find another org or set to null
-    for (const memberUserId of memberUserIds) {
-      const user = await prisma.user.findUnique({ where: { id: memberUserId } });
-      if (user?.activeOrganizationId === orgId) {
-        const otherMembership = await prisma.organizationMember.findFirst({
-          where: { userId: memberUserId, organizationId: { not: orgId } },
-        });
-        await prisma.user.update({
-          where: { id: memberUserId },
-          data: { activeOrganizationId: otherMembership?.organizationId || null },
-        });
+      // Reassign active org for members who had this as their active org
+      for (const memberUserId of ids) {
+        const user = await tx.user.findUnique({ where: { id: memberUserId } });
+        if (user?.activeOrganizationId === orgId) {
+          const otherMembership = await tx.organizationMember.findFirst({
+            where: { userId: memberUserId, organizationId: { not: orgId } },
+          });
+          await tx.user.update({
+            where: { id: memberUserId },
+            data: { activeOrganizationId: otherMembership?.organizationId || null },
+          });
+        }
       }
-      // Invalidate premium cache for all members since premium inheritance is lost
+
+      // Delete all memberships
+      await tx.organizationMember.deleteMany({ where: { organizationId: orgId } });
+
+      // Delete the organization
+      await tx.organization.delete({ where: { id: orgId } });
+
+      return ids;
+    });
+
+    // Invalidate premium caches after successful Prisma transaction
+    for (const memberUserId of memberUserIds) {
       await invalidatePremiumCache(memberUserId);
     }
 
-    // Delete all memberships (cascade will handle OrganizationMember)
-    await prisma.organizationMember.deleteMany({ where: { organizationId: orgId } });
-
-    // Delete the organization
-    await prisma.organization.delete({ where: { id: orgId } });
+    const ownerAfterDelete = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { activeOrganizationId: true },
+    });
 
     const newAccessToken = signAccessToken({
       id: userId,
       email: req.user!.email,
-      activeOrganizationId: null,
+      activeOrganizationId: ownerAfterDelete?.activeOrganizationId || null,
     });
 
     res.json({ accessToken: newAccessToken, message: "Organization deleted" });
@@ -690,9 +716,17 @@ export const leaveOrganization = async (req: Request, res: Response): Promise<vo
       where: { organizationId_userId: { organizationId: orgId, userId } },
     });
 
+    const otherMembership = await prisma.organizationMember.findFirst({
+      where: {
+        userId,
+        organizationId: { not: orgId },
+      },
+      select: { organizationId: true },
+    });
+
     await prisma.user.update({
       where: { id: userId },
-      data: { activeOrganizationId: null },
+      data: { activeOrganizationId: otherMembership?.organizationId || null },
     });
 
     // Invalidate premium cache so leaving user no longer inherits premium
@@ -701,7 +735,7 @@ export const leaveOrganization = async (req: Request, res: Response): Promise<vo
     const newAccessToken = signAccessToken({
       id: userId,
       email: req.user!.email,
-      activeOrganizationId: null,
+      activeOrganizationId: otherMembership?.organizationId || null,
     });
 
     res.json({ accessToken: newAccessToken });
