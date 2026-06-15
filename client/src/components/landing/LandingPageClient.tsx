@@ -13,6 +13,7 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import FAQ from "@/components/landing/FAQ";
 import Support from "@/components/landing/Support";
 import { BRAND_CONFIG } from "@/lib/config";
+import { detectRegion, getCachedRegionSync } from "@/lib/geo";
 
 export default function LandingPageClient() {
   const router = useRouter();
@@ -165,15 +166,12 @@ function AeoSection() {
 }
 
 function PricingCard() {
-  const [region, setRegion] = React.useState<"india" | "global">("global");
+  const [region, setRegion] = React.useState<"india" | "global">(
+    getCachedRegionSync() || "global"
+  );
 
   React.useEffect(() => {
-    fetch("/geo")
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => {
-        if (data?.country_code === "IN") setRegion("india");
-      })
-      .catch(() => {});
+    detectRegion().then(setRegion);
   }, []);
 
   const pricing = BRAND_CONFIG.pricing[region];

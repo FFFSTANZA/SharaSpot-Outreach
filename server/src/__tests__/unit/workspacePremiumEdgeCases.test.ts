@@ -15,7 +15,7 @@ jest.mock("../../config/prisma", () => ({
     },
     user: {
       findUnique: jest.fn(),
-      update: jest.fn(),
+      update: jest.fn().mockResolvedValue({}),
       updateMany: jest.fn(),
     },
     organization: {

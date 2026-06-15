@@ -146,12 +146,12 @@ export async function createCheckoutSession(
 
   // Use stored region preference first, fall back to geo-IP detection
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { region: true } });
-  let region: string | null = null;
-  if (user?.region) {
-    region = user.region;
-  } else {
+  let region: string | null = user?.region || null;
+  if (!region) {
     const countryCode = ipAddress ? await getCountryFromIp(ipAddress) : null;
     region = isIndia(countryCode) ? "india" : "global";
+    // Persist detected region so subsequent calls don't re-detect
+    await prisma.user.update({ where: { id: userId }, data: { region } }).catch(() => {});
   }
   const productId = region === "india" ? DODO_PRODUCT_ID_INDIA : DODO_PRODUCT_ID_GLOBAL;
   const trialDays = subscription ? 0 : SUBSCRIPTION_TRIAL_DAYS;

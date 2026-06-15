@@ -6,6 +6,8 @@ export interface GeoInfo {
     region: string | null;
 }
 
+const GEO_CACHE_TTL = 86400; // 24 hours — well within free-tier rate limits
+
 /**
  * Extracts the real client IP from an Express request.
  * - Handles x-forwarded-for (may contain comma-separated proxy chain)
@@ -60,29 +62,117 @@ function isPrivateIp(ip: string): boolean {
 }
 
 /**
+ * Attempts to read a cached geo result from Redis.
+ */
+async function getCachedCountryCode(ip: string): Promise<string | null> {
+    try {
+        const { redis } = await import("../config/redis");
+        const cached = await redis.get(`geo:ip:${ip}`);
+        if (cached) {
+            logger.debug({ ip }, "GeoIP cache hit");
+            return cached;
+        }
+    } catch {
+        // Redis unavailable — skip cache
+    }
+    return null;
+}
+
+/**
+ * Writes a geo result to Redis cache (best-effort).
+ */
+async function setCachedCountryCode(ip: string, countryCode: string): Promise<void> {
+    try {
+        const { redis } = await import("../config/redis");
+        await redis.setex(`geo:ip:${ip}`, GEO_CACHE_TTL, countryCode);
+    } catch {
+        // Redis unavailable — skip cache
+    }
+}
+
+// ─── Provider chain ──────────────────────────────────────────────
+
+interface GeoProvider {
+    name: string;
+    lookup: (ip: string) => Promise<string | null>;
+}
+
+/**
+ * Primary provider: ip-api.com (free, 45 req/min, fast, no API key).
+ */
+async function lookupIpApi(ip: string): Promise<string | null> {
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,countryCode`, {
+        signal: AbortSignal.timeout(3000),
+    });
+    if (!response.ok) return null;
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) return null;
+    const data = await response.json();
+    return data?.status === "success" ? (data.countryCode ?? null) : null;
+}
+
+/**
+ * Fallback provider: ipapi.co (1000 req/day, returns country_code).
+ */
+async function lookupIpapiCo(ip: string): Promise<string | null> {
+    const response = await fetch(`https://ipapi.co/${ip}/json/`, {
+        signal: AbortSignal.timeout(3000),
+        headers: { Accept: "application/json" },
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data?.country_code ?? null;
+}
+
+/**
+ * Second fallback: ipwho.is (generous free tier, returns country_code).
+ */
+async function lookupIpwhoIs(ip: string): Promise<string | null> {
+    const response = await fetch(`https://ipwho.is/${ip}`, {
+        signal: AbortSignal.timeout(3000),
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data?.success === true ? (data.country_code ?? null) : null;
+}
+
+const GEO_PROVIDERS: GeoProvider[] = [
+    { name: "ip-api.com", lookup: lookupIpApi },
+    { name: "ipapi.co", lookup: lookupIpapiCo },
+    { name: "ipwho.is", lookup: lookupIpwhoIs },
+];
+
+/**
  * Detects the country code from an IP address.
- * Uses ip-api.com (free for non-commercial use, 45 req/min).
+ *
+ * Strategy:
+ *  1. Check Redis cache (24h TTL) — skips external calls for repeat visitors.
+ *  2. Try each provider in order until one succeeds.
+ *  3. Cache the successful result in Redis.
+ *
+ * Returns null when all providers fail.
  */
 export async function getCountryFromIp(ip: string): Promise<string | null> {
     if (isPrivateIp(ip)) {
         return process.env.DEFAULT_COUNTRY_CODE || "US";
     }
 
-    try {
-        const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,countryCode`);
-        if (!response.ok) return null;
+    const cached = await getCachedCountryCode(ip);
+    if (cached) return cached;
 
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) return null;
-
-        const data = await response.json();
-        if (data && data.status === "success") {
-            return data.countryCode;
+    for (const provider of GEO_PROVIDERS) {
+        try {
+            const code = await provider.lookup(ip);
+            if (code) {
+                await setCachedCountryCode(ip, code);
+                return code;
+            }
+        } catch (error) {
+            logger.warn({ error, provider: provider.name, ip }, "GeoIP provider failed, trying next");
         }
-    } catch (error) {
-        logger.error({ error }, "GeoIP lookup failed:");
     }
 
+    logger.error({ ip }, "All GeoIP providers failed");
     return null;
 }
 

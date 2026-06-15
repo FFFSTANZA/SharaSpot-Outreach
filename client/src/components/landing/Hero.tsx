@@ -174,7 +174,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative pt-12 pb-14 sm:pt-20 sm:pb-24 lg:pt-32 lg:pb-44 overflow-hidden bg-[#f4f7f9]">
+    <section className="relative pt-16 pb-14 sm:pt-20 sm:pb-24 lg:pt-32 lg:pb-44 overflow-hidden bg-[#f4f7f9]">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[url('/hero-clouds.jpg')] bg-cover bg-center opacity-40" />
         <div className="absolute inset-0 bg-gradient-to-b from-sky-100/35 via-white/15 to-blue-50/55" />
@@ -322,7 +322,7 @@ export default function Hero() {
               </div>
 
               {/* ====== SIDEBAR ====== */}
-              <div className="w-52 lg:w-56 bg-[#f8fafc] border-r border-slate-200/80 flex flex-col pt-14 pb-6 px-3 shrink-0">
+              <div className="hidden sm:flex w-52 lg:w-56 bg-[#f8fafc] border-r border-slate-200/80 flex-col pt-14 pb-6 px-3 shrink-0">
                 <div className="mb-6 px-2">
                   <Logo size="sm" />
                 </div>

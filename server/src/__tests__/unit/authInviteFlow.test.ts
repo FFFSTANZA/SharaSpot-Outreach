@@ -38,6 +38,12 @@ jest.mock("../../controllers/organizationControllers", () => ({
   acceptOrganizationInviteForUser: jest.fn(),
 }));
 
+jest.mock("../../utils/geoUtils", () => ({
+  extractClientIp: jest.fn(() => "203.0.113.1"),
+  getCountryFromIp: jest.fn().mockResolvedValue(null),
+  isIndia: jest.fn(() => false),
+}));
+
 import { googleLogin } from "../../controllers/authControllers";
 import { prisma } from "../../config/prisma";
 import { acceptOrganizationInviteForUser } from "../../controllers/organizationControllers";

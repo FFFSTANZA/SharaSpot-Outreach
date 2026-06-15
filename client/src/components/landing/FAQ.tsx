@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { BRAND_CONFIG } from "@/lib/config";
+import { detectRegion, getCachedRegionSync } from "@/lib/geo";
 
 const faqs = (region: "india" | "global") => [
     {
@@ -62,13 +63,12 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function FAQ() {
-    const [region, setRegion] = useState<"india" | "global">("global");
+    const [region, setRegion] = useState<"india" | "global">(
+        getCachedRegionSync() || "global"
+    );
 
     useEffect(() => {
-        fetch("/geo")
-            .then((res) => res.ok ? res.json() : null)
-            .then((data) => { if (data?.country_code === "IN") setRegion("india"); })
-            .catch(() => {});
+        detectRegion().then(setRegion);
     }, []);
 
     const items = faqs(region);

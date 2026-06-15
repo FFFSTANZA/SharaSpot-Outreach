@@ -4,6 +4,7 @@ import { prisma } from "../config/prisma";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { refreshTokenCookieOptions } from "../config/cookies";
 import { acceptOrganizationInviteForUser } from "./organizationControllers";
+import { extractClientIp, getCountryFromIp, isIndia } from "../utils/geoUtils";
 import { logger } from "../utils/logger";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -28,11 +29,17 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     const existingUser = await prisma.user.findUnique({ where: { email } });
     const isNewUser = !existingUser;
 
+    // Detect region from IP on signup so pricing is geo-aware from the start
+    const ipAddress = extractClientIp(req);
+    const countryCode = ipAddress ? await getCountryFromIp(ipAddress) : null;
+    const detectedRegion = isIndia(countryCode) ? "india" : "global";
+
     const user = await prisma.user.upsert({
       where: { email },
       update: { name, avatarUrl: picture },
       create: {
         email, name, avatarUrl: picture,
+        region: detectedRegion,
         senders: { create: { email, name, appPassword: "" } },
         tags: {
           create: [

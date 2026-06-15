@@ -10,6 +10,7 @@ import { Logo } from "@/components/Logo";
 import { useToast } from "@/context/ToastContext";
 import { useAuth } from "@/hooks/useAuth";
 import { BRAND_CONFIG } from "@/lib/config";
+import { detectRegion, getCachedRegionSync } from "@/lib/geo";
 
 declare global {
   interface Window {
@@ -47,13 +48,12 @@ const LoginComponent = () => {
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
-  const [region, setRegion] = useState<"india" | "global">("global");
+  const [region, setRegion] = useState<"india" | "global">(
+    getCachedRegionSync() || "global"
+  );
 
   useEffect(() => {
-    fetch("/geo")
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => { if (data?.country_code === "IN") setRegion("india"); })
-      .catch(() => {});
+    detectRegion().then(setRegion);
   }, []);
 
   useEffect(() => {
