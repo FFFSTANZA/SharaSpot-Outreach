@@ -28,7 +28,7 @@
 
 SharaSpot is a high-performance cold outreach engine built for Founders, Sales Professionals, and HR Leaders who need to build high-value relationships at scale. Whether you’re pitching investors, closing major deals, or headhunting top talent, SharaSpot ensures your message cuts through the noise.
 
-Connect your professional email accounts (Gmail, Outlook, Zoho, or custom domains), import target lists, and deploy hyper-personalized sequences that maintain absolute deliverability through adaptive warmup, human-like sending patterns, and intelligent reply detection.
+Connect your professional email accounts (Gmail, Outlook, Zoho, or custom domains), import target lists, and deploy hyper-personalized sequences with inbox-first guardrails: adaptive warmup, human-like sending patterns, and intelligent reply detection.
 
 ---
 
@@ -332,9 +332,6 @@ The app is now running at `http://localhost:3000`.
 | `JWT_ACCESS_SECRET` | Yes | Auth token secret |
 | `JWT_REFRESH_SECRET` | Yes | Refresh token secret |
 | `GOOGLE_CLIENT_ID` | Yes | Google sign-in Client ID |
-| `R2_ACCOUNT_ID` | Yes | File storage cloud name |
-| `R2_ACCESS_KEY_ID` | Yes | File storage API key |
-| `R2_SECRET_ACCESS_KEY` | Yes | File storage API secret |
 | `TRACKING_BASE_URL` | No | Public URL for tracking |
 | `WORKER_CONCURRENCY` | No | Max parallel jobs |
 | `MIN_DELAY_MS` | No | Min delay between sends |

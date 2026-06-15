@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { SnapshotType } from "@prisma/client";
+import { logger } from "../utils/logger";
 
 /**
  * Analytics Aggregator
@@ -11,7 +12,7 @@ import { SnapshotType } from "@prisma/client";
  */
 
 export async function aggregateAnalytics(): Promise<void> {
-    console.log("📊 Starting analytics aggregation...");
+    logger.info("📊 Starting analytics aggregation...");
     const now = new Date();
 
     const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
@@ -90,10 +91,10 @@ export async function aggregateAnalytics(): Promise<void> {
             snapshots.set(key, existing);
         }
 
-        console.log(`📊 Upserting ${snapshots.size} hourly snapshots...`);
+        logger.info(`📊 Upserting ${snapshots.size} hourly snapshots...`);
         for (const snapshot of snapshots.values()) {
             if (!snapshot.campaignId || !snapshot.senderId) {
-                console.warn(`[AnalyticsAggregator] Skipping snapshot due to missing ID: campaignId=${snapshot.campaignId}, senderId=${snapshot.senderId}`);
+                logger.warn(`[AnalyticsAggregator] Skipping snapshot due to missing ID: campaignId=${snapshot.campaignId}, senderId=${snapshot.senderId}`);
                 continue;
             }
             await prisma.analyticsSnapshot.upsert({
@@ -127,9 +128,9 @@ export async function aggregateAnalytics(): Promise<void> {
         }
 
         await updateSenderHealth(now);
-        console.log("✅ Analytics aggregation complete.");
+        logger.info("✅ Analytics aggregation complete.");
     } catch (err) {
-        console.error("❌ Analytics aggregation failed:", err);
+        logger.error({ error: err }, "❌ Analytics aggregation failed:");
     }
 }
 
@@ -147,13 +148,13 @@ export async function ensureAnalyticsUpToDate(): Promise<void> {
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
         if (!latestSnapshot || latestSnapshot.timestamp < oneHourAgo) {
-            console.log("📊 Analytics are stale or missing. Triggering immediate catch-up...");
+            logger.info("📊 Analytics are stale or missing. Triggering immediate catch-up...");
             await aggregateAnalytics();
         } else {
-            console.log("📊 Analytics health check: Data is up-to-date");
+            logger.info("📊 Analytics health check: Data is up-to-date");
         }
     } catch (err) {
-        console.error("❌ Analytics health check failed:", err);
+        logger.error({ error: err }, "❌ Analytics health check failed:");
     }
 }
 

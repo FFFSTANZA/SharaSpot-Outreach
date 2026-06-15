@@ -45,4 +45,13 @@ describe("Spam Detector", () => {
         expect(result.triggers.length).toBeGreaterThan(0);
         expect(result.score).toBeGreaterThan(0);
     });
+
+    it("should penalize too many plain-text URLs", () => {
+        const subject = "Resources for you";
+        const body = "Hi, see https://a.example.com https://b.example.com https://c.example.com https://d.example.com";
+
+        const result = analyzeSpamScore(subject, body);
+        expect(result.metrics.linkCount).toBe(4);
+        expect(result.triggers).toContain("too-many-links");
+    });
 });

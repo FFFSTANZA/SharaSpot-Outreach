@@ -6,7 +6,7 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { createSender, verifySender } from "@/lib/apis";
 import { SenderModalProps, SenderResponse } from "@/types";
-import { AlertCircle, CheckCircle2, Mail, Settings, Reply } from "lucide-react";
+import { AlertCircle, CheckCircle2, Mail, Reply, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
@@ -186,7 +186,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
         </div>
 
         {error && (
-          <div className="flex items-start gap-2 rounded-xl bg-error-bg border border-error-border/30 px-4 py-3 text-sm text-error-text font-medium">
+          <div className="flex items-start gap-2 rounded-lg bg-error-bg border border-error-border/30 px-4 py-3 text-sm text-error-text font-medium">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -204,7 +204,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
                     setProviderKey(provider.key);
                     setStep(2);
                   }}
-                  className="text-left rounded-xl border border-border-light p-4 hover:border-brand hover:bg-interactive-hover transition-colors"
+                  className="text-left rounded-lg border border-border-light p-4 hover:border-brand hover:bg-interactive-hover transition-colors"
                 >
                   <p className="font-bold text-sm text-text-primary">{provider.label}</p>
                   <p className="text-xs text-text-secondary mt-1">{provider.smtpHost || "Use your own SMTP host/port"}</p>
@@ -216,7 +216,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
 
         {(isVerifyMode || step >= 2) && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-xl border border-border-light bg-interactive-hover/30 px-4 py-3">
+            <div className="flex items-center justify-between rounded-lg border border-border-light bg-interactive-hover/30 px-4 py-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted">Provider</p>
                 <p className="text-sm font-bold text-text-primary">{selectedProvider.label}</p>
@@ -262,7 +262,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
               />
             </div>
 
-            <div className="rounded-xl border border-border-light bg-interactive-hover/30 p-4">
+            <div className="rounded-lg border border-border-light bg-interactive-hover/30 p-4">
               <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.1em] mb-2">Setup Checklist</p>
               <ul className="space-y-1.5">
                 {selectedProvider.instructions.map((instruction: InstructionItem) => (
@@ -285,19 +285,33 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
               </ul>
             </div>
 
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-2 text-xs font-bold text-brand hover:text-brand-dark transition-colors"
-              >
-                <Settings className={cn("h-3.5 w-3.5 transition-transform duration-300", showAdvanced && "rotate-90")} />
-                {showAdvanced ? "Hide SMTP Settings" : "Edit SMTP Settings"}
-              </button>
+            <div className="rounded-lg border border-border-light bg-white p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold text-text-primary">Manual SMTP settings</p>
+                  <p className="mt-1 text-[11px] font-medium leading-5 text-text-secondary">
+                    Keep this closed unless your provider gave you a custom SMTP host or port. Standard Google and Outlook setups usually work with the default values.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="inline-flex items-center gap-2 self-start rounded-lg border border-border-light bg-interactive-hover/40 px-3 py-2 text-xs font-bold text-text-primary transition-colors hover:bg-interactive-hover"
+                >
+                  {showAdvanced ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {showAdvanced ? "Hide manual settings" : "Show manual settings"}
+                </button>
+              </div>
             </div>
 
             {showAdvanced && (
-              <div className="space-y-4 pt-3 border-t border-border-light animate-in">
+              <div className="space-y-4 rounded-lg border border-border-light bg-interactive-hover/20 p-4 animate-in">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted">Advanced SMTP</p>
+                  <p className="mt-1 text-xs font-medium leading-5 text-text-secondary">
+                    Override the default mailbox connection only if you know the exact SMTP values your provider expects.
+                  </p>
+                </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="col-span-2 space-y-1.5">
                     <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.1em]">SMTP Host</label>
@@ -326,7 +340,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
               <Input type="email" placeholder="e.g. founders@company.com" value={replyTo} onChange={(e) => setReplyTo(e.target.value)} disabled={isSubmitting} />
             </div>
 
-            <label className="flex items-start gap-4 cursor-pointer p-4 rounded-xl border border-border-light bg-interactive-hover/30 hover:bg-interactive-hover transition-colors">
+            <label className="flex items-start gap-4 cursor-pointer p-4 rounded-lg border border-border-light bg-interactive-hover/30 hover:bg-interactive-hover transition-colors">
               <input
                 type="checkbox"
                 checked={skipWarmup}
@@ -343,7 +357,7 @@ export function SenderModal({ isOpen, onClose, onSuccess, existingSender }: Send
         )}
 
         {step === 3 && testResult === "passed" && connectedSender && (
-          <div className="rounded-xl border border-brand/20 bg-brand-light p-4 space-y-2">
+          <div className="rounded-lg border border-brand/20 bg-brand-light p-4 space-y-2">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-5 w-5 text-brand" />
               <p className="text-sm font-semibold text-brand">Connection test passed. Sender is ready.</p>

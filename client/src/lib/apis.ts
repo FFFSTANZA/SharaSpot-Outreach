@@ -17,3 +17,5 @@ export * from "./apis/calls";
 export * from "./apis/organizations";
 export * from "./apis/mcp";
 export * from "./apis/followUpTemplates";
+export * from "./apis/trackingDomain";
+export * from "./apis/companies";

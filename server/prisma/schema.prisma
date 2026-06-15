@@ -22,6 +22,8 @@ model User {
   subscription  Subscription?
   tags          Tag[]
   contacts      Contact[]
+  assignedContacts Contact[] @relation("ContactAssignee")
+  assignedCallTasks CallTask[] @relation("CallTaskAssignee")
   contactLists  ContactList[]
   mcpApiKeys    McpApiKey[]
   bounceList    BounceList[]
@@ -35,6 +37,9 @@ model User {
   ownedOrganizations     Organization[]       @relation("OrganizationOwner")
   activeOrganizationId   String?
   activeOrganization     Organization?        @relation("ActiveOrganization", fields: [activeOrganizationId], references: [id])
+  region                 String?              @default("global")
+  trackingDomainSettings TrackingDomainSetting[]
+  prmCompanies  PrmCompany[]
 }
 
 model Organization {
@@ -61,8 +66,41 @@ model Organization {
   bounceList    BounceList[]
   inboxEmails   InboxEmail[]
   inboxThreads  InboxThread[]
+  trackingDomainSettings TrackingDomainSetting[]
+  prmCompanies  PrmCompany[]
 
   @@index([ownerId])
+}
+
+model TrackingDomainSetting {
+  id               String               @id @default(cuid())
+  scopeKey         String               @unique
+  userId           String
+  organizationId   String?
+  rootDomain       String
+  subdomain        String
+  fullDomain       String
+  cnameTarget      String
+  status           TrackingDomainStatus @default(PENDING)
+  lastCheckedAt    DateTime?
+  lastCheckedValue String?
+  verifiedAt       DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization     Organization?        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([organizationId])
+  @@unique([organizationId, fullDomain])
+}
+
+enum TrackingDomainStatus {
+  PENDING
+  VERIFIED
+  MISSING
+  MISMATCH
+  ERROR
 }
 
 model OrganizationMember {
@@ -512,15 +550,23 @@ model Contact {
   userId          String
   organizationId  String?
   email           String
+  website         String?
+  companyDomain   String?
   firstName       String?
   lastName        String?
   company         String?
   phone           String?
   jobTitle        String?
+  techStack       String[]          @default([])
   stage           String            @default("COLD")
+  nextAction      String?
+  nextActionDueAt DateTime?
+  assignedToId    String?
+  lastEnrichedAt  DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo      User?             @relation("ContactAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
   organization    Organization?     @relation(fields: [organizationId], references: [id])
   activities      ContactActivity[]
   notes           Note[]
@@ -534,8 +580,41 @@ model Contact {
   @@index([userId])
   @@index([organizationId])
   @@index([email])
+  @@index([companyDomain])
   @@index([userId, email])
   @@index([userId, stage])
+  @@index([assignedToId])
+  @@index([userId, nextActionDueAt])
+}
+
+model PrmCompany {
+  id              String        @id @default(cuid())
+  userId          String
+  organizationId  String?
+  name            String
+  website         String?
+  domain          String
+  primaryEmail    String?
+  phone           String?
+  linkedinUrl     String?
+  twitterUrl      String?
+  githubUrl       String?
+  facebookUrl     String?
+  instagramUrl    String?
+  techStack       String[]      @default([])
+  whoisRegistrar  String?
+  whoisCreatedAt  DateTime?
+  whoisUpdatedAt  DateTime?
+  whoisExpiresAt  DateTime?
+  lastEnrichedAt  DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, domain])
+  @@index([organizationId])
+  @@index([domain])
 }
 
 model CallTask {
@@ -546,6 +625,7 @@ model CallTask {
   status      CallTaskStatus @default(PENDING)
   priority    Int            @default(0)
   dueAt       DateTime
+  assignedToId String?
   lastOutcome String?
   lastDisposition String?
   lastNote    String?
@@ -555,6 +635,7 @@ model CallTask {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo  User?          @relation("CallTaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
   organization Organization? @relation(fields: [organizationId], references: [id])
   contact     Contact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
   campaign    EmailCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
@@ -565,6 +646,7 @@ model CallTask {
   @@index([userId, status, dueAt])
   @@index([organizationId])
   @@index([contactId])
+  @@index([assignedToId])
   @@index([userId, dueAt])
   @@index([campaignId])
   @@index([contactListId])
@@ -972,16 +1054,17 @@ model ProcessedWebhook {
 
 model BounceList {
   id              String      @id @default(cuid())
-  userId          String
+  userId          String?
   organizationId  String?
   email           String
   bouncedAt       DateTime    @default(now())
   bounceCode      String?
   reason          String?
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization    Organization? @relation(fields: [organizationId], references: [id])
 
   @@unique([userId, email])
+  @@unique([organizationId, email])
   @@index([userId])
   @@index([organizationId])
   @@index([email])

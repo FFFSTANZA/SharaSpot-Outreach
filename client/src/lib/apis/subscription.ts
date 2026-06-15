@@ -14,7 +14,7 @@ export interface DashboardStats {
 export interface SubscriptionResponse {
   isPremium: boolean;
   region?: string;
-  subscription: { status: string; currentPeriodStart: string; currentPeriodEnd: string; cancelAtPeriodEnd: boolean; trialEnd: string | null; dodoCustomerId: string | null; dodoSubscriptionId: string | null; } | null;
+  subscription: { status: string; currentPeriodStart: string; currentPeriodEnd: string; cancelAtPeriodEnd: boolean; trialEnd: string | null; hasDodoCustomerId: boolean; } | null;
   pricing: { amount: number; interval: string; currency: string; trialDays: number };
 }
 

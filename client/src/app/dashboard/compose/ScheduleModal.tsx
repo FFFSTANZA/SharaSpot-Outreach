@@ -1,8 +1,6 @@
 "use client";
 
 import { CalendarClock, Calendar, CheckCircle2 } from "lucide-react";
-import Modal from "@/components/Modal";
-import Button from "@/components/Button";
 
 interface ScheduleModalProps {
   isOpen: boolean;
@@ -31,99 +29,98 @@ export function ScheduleModal({
   onClear,
   isMobile,
 }: ScheduleModalProps) {
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} variant={isMobile ? "bottom-sheet" : "center"}>
-      <div className="space-y-6 min-w-[340px] p-2 text-left">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-green-50 flex items-center justify-center border border-green-100">
-            <CalendarClock className="h-5 w-5 text-green-600" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-primary/10 backdrop-blur-sm" onClick={onClose}>
+      <div className={isMobile ? "fixed bottom-0 left-0 right-0 w-full rounded-t-lg bg-white shadow-premium-lg" : "w-full max-w-sm mx-4 rounded-lg bg-white shadow-premium-lg"} onClick={e => e.stopPropagation()}>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-light border border-brand/10">
+              <CalendarClock className="h-5 w-5 text-brand" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-text-primary">Schedule Email</h2>
+              <p className="text-[11px] text-text-muted font-medium uppercase tracking-wider">Choose when to start this campaign</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-base font-bold text-gray-900">Schedule Email</h2>
-            <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Choose when to start this campaign</p>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Start Date</label>
-            <input
-              type="date"
-              value={tempDate}
-              onChange={(e) => onTempDateChange(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
-              className="w-full h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700
-                outline-none focus:border-[#00A63E]/40 focus:ring-2 focus:ring-[#00A63E]/10 transition-all font-medium"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Start Date</label>
+              <input
+                type="date"
+                value={tempDate}
+                onChange={(e) => onTempDateChange(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="w-full h-11 rounded-md border border-border-light bg-[#F8F9FA] px-3 text-sm text-text-secondary outline-none focus:border-brand/30 focus:ring-2 focus:ring-brand/10 transition-all font-medium"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Start Time</label>
+              <input
+                type="time"
+                value={tempTime}
+                onChange={(e) => onTempTimeChange(e.target.value)}
+                className="w-full h-11 rounded-md border border-border-light bg-[#F8F9FA] px-3 text-sm text-text-secondary outline-none focus:border-brand/30 focus:ring-2 focus:ring-brand/10 transition-all font-medium"
+              />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Start Time</label>
-            <input
-              type="time"
-              value={tempTime}
-              onChange={(e) => onTempTimeChange(e.target.value)}
-              className="w-full h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700
-                outline-none focus:border-[#00A63E]/40 focus:ring-2 focus:ring-[#00A63E]/10 transition-all font-medium"
-            />
-          </div>
-        </div>
 
-        <div className="space-y-3">
-          <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest px-1">Quick Suggestions</p>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { label: "Tomorrow\n10 AM", days: 1, hour: 10 },
-              { label: "Tomorrow\n2 PM", days: 1, hour: 14 },
-              { label: "Next Week\n9 AM", days: 7, hour: 9 },
-            ].map(({ label, days, hour }) => (
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Quick Suggestions</p>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Tomorrow\n10 AM", days: 1, hour: 10 },
+                { label: "Tomorrow\n2 PM", days: 1, hour: 14 },
+                { label: "Next Week\n9 AM", days: 7, hour: 9 },
+              ].map(({ label, days, hour }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => onQuickPick(days, hour)}
+                  className="rounded-md border border-border-light bg-[#F8F9FA] p-3 text-center hover:border-brand/30 hover:bg-brand/5 transition-all group"
+                >
+                  <Calendar className="h-4 w-4 text-text-muted group-hover:text-brand mx-auto mb-1.5 transition-colors" />
+                  <p className="text-[10px] font-bold text-text-secondary group-hover:text-brand whitespace-pre-line leading-tight transition-colors">
+                    {label}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t border-border-light">
+            {scheduledAt ? (
               <button
-                key={label}
                 type="button"
-                onClick={() => onQuickPick(days, hour)}
-                className="rounded-xl border border-gray-100 bg-gray-50/50 p-3 text-center
-                  hover:border-[#00A63E]/30 hover:bg-[#00A63E]/5 transition-all group"
+                onClick={onClear}
+                className="text-xs font-bold text-error-text hover:text-error-text/80 transition-colors px-2"
               >
-                <Calendar className="h-4 w-4 text-gray-300 group-hover:text-[#00A63E] mx-auto mb-1.5 transition-colors" />
-                <p className="text-[10px] font-bold text-gray-600 group-hover:text-[#00A63E] whitespace-pre-line leading-tight transition-colors">
-                  {label}
-                </p>
+                Clear
               </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          {scheduledAt ? (
-            <button
-              type="button"
-              onClick={onClear}
-              className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors px-2"
-            >
-              Clear
-            </button>
-          ) : (
-            <span />
-          )}
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              className="h-10 px-5 text-xs font-bold"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              className="h-10 px-6 text-xs font-bold gap-2"
-              onClick={onConfirm}
-              disabled={!tempDate || !tempTime}
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Schedule
-            </Button>
+            ) : (
+              <span />
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="flex h-10 items-center justify-center rounded-md border border-border-light bg-white px-5 text-xs font-bold text-text-secondary transition-colors hover:bg-[#F0F1F3]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onConfirm}
+                disabled={!tempDate || !tempTime}
+                className="flex h-10 items-center gap-2 rounded-md bg-brand px-6 text-xs font-bold text-white transition-all hover:bg-brand/90 disabled:opacity-50"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Schedule
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 }

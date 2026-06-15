@@ -70,6 +70,9 @@ jest.mock("../../config/prisma", () => ({
     bounceList: {
       findUnique: jest.fn(),
     },
+    trackingDomainSetting: {
+      findFirst: jest.fn().mockResolvedValue(null),
+    },
     systemAuditLog: {
       create: jest.fn(),
     },
@@ -80,7 +83,12 @@ jest.mock("../../config/prisma", () => ({
 
 jest.mock("../../config/redis", () => ({
   redisConnection: { host: "localhost", port: 6379, maxRetriesPerRequest: null },
-  redis: { quit: jest.fn().mockResolvedValue(undefined), get: jest.fn().mockResolvedValue(null), set: jest.fn().mockResolvedValue("OK") },
+  redis: {
+    quit: jest.fn().mockResolvedValue(undefined),
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue("OK"),
+    pttl: jest.fn().mockResolvedValue(1),
+  },
 }));
 
 jest.mock("../../queues/emailQueue", () => ({
@@ -117,10 +125,11 @@ jest.mock("../../utils/dailyLimitTracker", () => ({
 import * as fc from "fast-check";
 import { processEmailJob, toHourWindow, createSmtpTransporter, clearSmtpPool, pickABVariant } from "../../worker/emailWorker";
 import { prisma } from "../../config/prisma";
+import { redis } from "../../config/redis";
 import { emailQueue } from "../../queues/emailQueue";
 import nodemailer from "nodemailer";
 import { decrypt } from "../../utils/encryption";
-import { canSend, recordSendResult, getEffectiveLimits } from "../../utils/throttleEngine";
+import { canSend, checkDomainRateCap, recordSendResult, getEffectiveLimits } from "../../utils/throttleEngine";
 import { hasDailyCapacity } from "../../utils/dailyLimitTracker";
 
 // ---------------------------------------------------------------------------
@@ -271,9 +280,9 @@ describe("Email Worker — Property-Based Tests", () => {
     it("only PENDING jobs trigger claim via updateMany with status: PENDING", async () => {
       jest.clearAllMocks(); clearSmtpPool();
 
-      (prisma.emailJob.findUnique as jest.Mock)
-        .mockResolvedValueOnce(makeEmailJob({ status: "PENDING" }))
-        .mockResolvedValueOnce({ status: "SENDING" }); // re-read after send
+      (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(
+        makeEmailJob({ status: "PENDING" })
+      );
       (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
       (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
       (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
@@ -343,9 +352,7 @@ describe("Email Worker — Property-Based Tests", () => {
             toEmail,
           });
 
-          (prisma.emailJob.findUnique as jest.Mock)
-            .mockResolvedValueOnce(emailJob)
-            .mockResolvedValueOnce({ status: "SENDING" }); // re-read after send
+          (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(emailJob);
           (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
           (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
           (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
@@ -410,20 +417,21 @@ describe("Email Worker — Property-Based Tests", () => {
           (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
           (canSend as jest.Mock).mockResolvedValue({ allowed: true });
           (decrypt as jest.Mock).mockReturnValue("plain-password");
+          const bounceError = `550 bounce: ${errorMessage}`;
           (nodemailer.createTransport as jest.Mock).mockReturnValue({
-            sendMail: jest.fn().mockRejectedValue(new Error(errorMessage)),
+            sendMail: jest.fn().mockRejectedValue(new Error(bounceError)),
             close: jest.fn(),
           });
           (recordSendResult as jest.Mock).mockResolvedValue(undefined);
           (prisma.emailJob.update as jest.Mock).mockResolvedValue(undefined);
 
-          // processEmailJob should NOT throw — it catches SMTP errors
+          // processEmailJob should NOT throw — it catches SMTP errors (bounces are permanent)
           await expect(processEmailJob(fakeJob("job-1"))).resolves.toBeUndefined();
 
-          // emailJob should be marked FAILED with the error message
+          // emailJob should be marked FAILED with the bounce error message
           expect(prisma.emailJob.update).toHaveBeenCalledWith({
             where: { id: "job-1" },
-            data: { status: "FAILED", error: errorMessage },
+            data: { status: "FAILED", error: bounceError },
           });
         }
       ),
@@ -461,9 +469,7 @@ describe("Email Worker — Property-Based Tests", () => {
             },
           });
 
-          (prisma.emailJob.findUnique as jest.Mock)
-            .mockResolvedValueOnce(emailJob)
-            .mockResolvedValueOnce({ status: "SENDING" }); // re-read after send
+          (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(emailJob);
           (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
           (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
           (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
@@ -535,6 +541,7 @@ describe("Email Worker — Property-Based Tests", () => {
 
           // Should NOT have sent the email
           expect(mockSendMail).not.toHaveBeenCalled();
+          expect(checkDomainRateCap).not.toHaveBeenCalled();
 
           // Should reset job to PENDING
           expect(prisma.emailJob.update).toHaveBeenCalledWith({
@@ -559,6 +566,116 @@ describe("Email Worker — Property-Based Tests", () => {
       ),
       { numRuns: 100 }
     );
+  });
+
+  it("blocks high-risk content before SMTP send", async () => {
+    jest.clearAllMocks(); clearSmtpPool();
+
+    const emailJob = makeEmailJob({
+      status: "PENDING",
+      campaign: {
+        ...makeEmailJob().campaign,
+        subject: "URGENT: YOU WON A FREE PRIZE!!! ACT NOW!!!",
+        body: "CONGRATULATIONS!!! Click here to claim your FREE CASH BONUS now! No cost, no obligation! WIN BIG TODAY!!!",
+      },
+    });
+
+    const mockSendMail = jest.fn().mockResolvedValue({});
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValue(emailJob);
+    (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
+    (canSend as jest.Mock).mockResolvedValue({ allowed: true });
+    (decrypt as jest.Mock).mockReturnValue("plain-password");
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({
+      sendMail: mockSendMail,
+      close: jest.fn(),
+    });
+    (prisma.emailJob.update as jest.Mock).mockResolvedValue(undefined);
+    (prisma.emailCampaign.findUnique as jest.Mock).mockResolvedValue({ status: "SENDING", sequenceSteps: [] });
+    (prisma.emailJob.count as jest.Mock).mockResolvedValue(1);
+
+    await processEmailJob(fakeJob("job-1"));
+
+    expect(mockSendMail).not.toHaveBeenCalled();
+    expect(prisma.emailJob.update).toHaveBeenCalledWith({
+      where: { id: "job-1" },
+      data: expect.objectContaining({
+        status: "FAILED",
+        error: expect.stringContaining("deliverability-blocked"),
+      }),
+    });
+  });
+
+  it("waits and reacquires the sender send slot before SMTP send", async () => {
+    jest.clearAllMocks(); clearSmtpPool();
+
+    const mockSendMail = jest.fn().mockResolvedValue({});
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(
+      makeEmailJob({ status: "PENDING" })
+    );
+    (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
+    (canSend as jest.Mock).mockResolvedValue({ allowed: true });
+    (checkDomainRateCap as jest.Mock).mockResolvedValue({ allowed: true });
+    (decrypt as jest.Mock).mockReturnValue("plain-password");
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({
+      sendMail: mockSendMail,
+      close: jest.fn(),
+    });
+    (prisma.emailJob.update as jest.Mock).mockResolvedValue(undefined);
+    (recordSendResult as jest.Mock).mockResolvedValue(undefined);
+    (prisma.emailCampaign.findUnique as jest.Mock).mockResolvedValue({ status: "SENDING", sequenceSteps: [] });
+    (prisma.emailJob.count as jest.Mock).mockResolvedValue(1);
+    (redis.pttl as jest.Mock).mockResolvedValue(1);
+    (redis.set as jest.Mock)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce("OK")
+      .mockResolvedValueOnce("OK")
+      .mockResolvedValueOnce("OK");
+
+    await processEmailJob(fakeJob("job-1"));
+
+    expect(redis.pttl).toHaveBeenCalledWith("sender:sender-1:send_gap");
+    expect(redis.set).toHaveBeenNthCalledWith(1, "sender:sender-1:send_gap", "sending", "PX", 120000, "NX");
+    expect(redis.set).toHaveBeenNthCalledWith(2, "sender:sender-1:send_gap", "sending", "PX", 120000, "NX");
+    expect((redis.set as jest.Mock).mock.invocationCallOrder[1]).toBeLessThan(
+      (checkDomainRateCap as jest.Mock).mock.invocationCallOrder[0]
+    );
+    expect(redis.set).toHaveBeenNthCalledWith(3, "emailJob:smtp_accepted:job-1", expect.any(String), "EX", 86400);
+    expect(redis.set).toHaveBeenNthCalledWith(4, "sender:sender-1:send_gap", "cooldown", "PX", expect.any(Number));
+    expect(mockSendMail).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not mark an SMTP-accepted job FAILED when SENT persistence fails", async () => {
+    jest.clearAllMocks(); clearSmtpPool();
+
+    const mockSendMail = jest.fn().mockResolvedValue({});
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(
+      makeEmailJob({ status: "PENDING" })
+    );
+    (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
+    (canSend as jest.Mock).mockResolvedValue({ allowed: true });
+    (checkDomainRateCap as jest.Mock).mockResolvedValue({ allowed: true });
+    (decrypt as jest.Mock).mockReturnValue("plain-password");
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({
+      sendMail: mockSendMail,
+      close: jest.fn(),
+    });
+    (prisma.emailJob.update as jest.Mock).mockRejectedValueOnce(new Error("database unavailable"));
+
+    await expect(processEmailJob(fakeJob("job-1"))).resolves.toBeUndefined();
+
+    expect(mockSendMail).toHaveBeenCalledTimes(1);
+    expect(redis.set).toHaveBeenCalledWith("emailJob:smtp_accepted:job-1", expect.any(String), "EX", 86400);
+    expect(prisma.emailJob.update).not.toHaveBeenCalledWith({
+      where: { id: "job-1" },
+      data: { status: "FAILED", error: "database unavailable" },
+    });
+    expect(recordSendResult).not.toHaveBeenCalledWith("sender-1", false, false);
   });
 
   // -------------------------------------------------------------------------
@@ -771,9 +888,9 @@ describe("Email Worker — Unit Tests", () => {
   });
 
   it("does not mark campaign COMPLETED when non-terminal jobs remain", async () => {
-    (prisma.emailJob.findUnique as jest.Mock)
-      .mockResolvedValueOnce(makeEmailJob({ status: "PENDING" }))
-      .mockResolvedValueOnce({ status: "SENDING" }); // re-read after send
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(
+      makeEmailJob({ status: "PENDING" })
+    );
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
     (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
@@ -848,9 +965,7 @@ describe("Email Worker — Unit Tests", () => {
       }
     });
 
-    (prisma.emailJob.findUnique as jest.Mock)
-      .mockResolvedValueOnce(emailJob)
-      .mockResolvedValueOnce({ status: "SENDING" });
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(emailJob);
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
@@ -884,9 +999,7 @@ describe("Email Worker — Unit Tests", () => {
       }
     });
 
-    (prisma.emailJob.findUnique as jest.Mock)
-      .mockResolvedValueOnce(emailJob)
-      .mockResolvedValueOnce({ status: "SENDING" });
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(emailJob);
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
@@ -926,9 +1039,7 @@ describe("Email Worker — Unit Tests", () => {
       },
     });
 
-    (prisma.emailJob.findUnique as jest.Mock)
-      .mockResolvedValueOnce(emailJob)
-      .mockResolvedValueOnce({ status: "SENDING" });
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(emailJob);
     (prisma.emailJob.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
@@ -962,9 +1073,7 @@ describe("Email Worker — Unit Tests", () => {
       },
     });
 
-    (prisma.emailJob.findUnique as jest.Mock)
-      .mockResolvedValueOnce(emailJob)
-      .mockResolvedValueOnce({ status: "SENDING" });
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(emailJob);
     (prisma.emailJob.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });

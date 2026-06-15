@@ -3,7 +3,7 @@ dotenv.config();
 
 import { prisma } from "../src/config/prisma";
 import { SubscriptionStatus } from "@prisma/client";
-import { checkPremiumStatus, requirePremium } from "../src/utils/premiumCheck";
+import { checkPremiumStatus, invalidatePremiumCache, requirePremium } from "../src/utils/premiumCheck";
 
 async function runDeepUserTest() {
     console.log("🚀 Starting Deep User Test: Subscription Lifecycle Simulation\n");
@@ -50,6 +50,7 @@ async function runDeepUserTest() {
                 currentPeriodEnd: new Date(Date.now() - 3600000),
             },
         });
+        await invalidatePremiumCache(testUser.id);
 
         status = await checkPremiumStatus(testUser.id);
         console.log(`Status: ${status.isPremium ? "PREMIUM" : "RESTRICTED"}`);
@@ -75,6 +76,7 @@ async function runDeepUserTest() {
                 trialEnd: null,
             },
         });
+        await invalidatePremiumCache(testUser.id);
 
         status = await checkPremiumStatus(testUser.id);
         console.log(`Status: ${status.isPremium ? "PREMIUM (ACTIVE PRO)" : "RESTRICTED"}`);
@@ -95,6 +97,7 @@ async function runDeepUserTest() {
                 cancelAt: nextMonth,
             },
         });
+        await invalidatePremiumCache(testUser.id);
 
         status = await checkPremiumStatus(testUser.id);
         console.log(`Status: ${status.isPremium ? "PREMIUM (CANCELLED BUT ACTIVE)" : "RESTRICTED"}`);
@@ -114,6 +117,7 @@ async function runDeepUserTest() {
                 currentPeriodEnd: new Date(Date.now() - 3600000),
             },
         });
+        await invalidatePremiumCache(testUser.id);
 
         status = await checkPremiumStatus(testUser.id);
         console.log(`Status: ${status.isPremium ? "PREMIUM" : "RESTRICTED"}`);

@@ -4,6 +4,7 @@ import { InboxConnectionType } from "@prisma/client";
 import Imap from "imap";
 import { simpleParser, ParsedMail } from "mailparser";
 import nodemailer from "nodemailer";
+import { logger } from "./logger";
 
 function decodeQuotedPrintable(str: string): string {
   if (!str) return "";
@@ -46,13 +47,13 @@ export interface ParsedInboxEmail {
 }
 
 export async function syncInboxForSender(senderId: string): Promise<{ synced: number; errors: string[] }> {
-  console.log("[InboxSync] Starting for senderId:", senderId);
+  logger.info({ extra: senderId }, "[InboxSync] Starting for senderId:");
   const sender = await prisma.sender.findUnique({
     where: { id: senderId },
     include: { user: true },
   });
 
-  console.log("[InboxSync] Sender found:", sender?.email, "connectionType:", sender?.connectionType);
+  logger.info({ extra: [sender?.email, "connectionType:", sender?.connectionType] }, "[InboxSync] Sender found:");
 
   if (!sender) {
     return { synced: 0, errors: ["Sender not found"] };
@@ -74,12 +75,12 @@ async function syncViaImap(sender: any): Promise<{ synced: number; errors: strin
   let syncedCount = 0;
 
   try {
-    console.log("[InboxSync] Attempting IMAP sync...");
+    logger.info("[InboxSync] Attempting IMAP sync...");
     const decryptedPassword = decrypt(sender.appPassword);
-    console.log("[InboxSync] Password decrypted successfully");
+    logger.info("[InboxSync] Password decrypted successfully");
 
     const imapConfig = getImapConfig(sender.smtpHost);
-    console.log("[InboxSync] IMAP config:", imapConfig);
+    logger.info({ extra: imapConfig }, "[InboxSync] IMAP config:");
 
     const emails = await fetchRecentInboxMessages(
       imapConfig,
@@ -87,7 +88,7 @@ async function syncViaImap(sender: any): Promise<{ synced: number; errors: strin
       decryptedPassword,
       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days instead of 7
     );
-    console.log("[InboxSync] Fetched", emails.length, "emails from IMAP");
+    logger.info({ extra: [emails.length, "emails from IMAP"] }, "[InboxSync] Fetched");
 
     for (const email of emails) {
       try {
@@ -137,13 +138,9 @@ async function syncViaImap(sender: any): Promise<{ synced: number; errors: strin
       }
     }
 
-    await prisma.inboxThread.updateMany({
-      where: { senderId: sender.id },
-      data: { lastMessageAt: new Date() },
-    });
   } catch (err: any) {
     errors.push(`IMAP sync failed: ${err.message || err}`);
-    console.log("[InboxSync] IMAP ERROR:", err.message);
+    logger.info({ extra: err.message }, "[InboxSync] IMAP ERROR:");
   }
 
   return { synced: syncedCount, errors };
@@ -181,26 +178,26 @@ async function fetchRecentInboxMessages(
     });
 
     imap.once("ready", () => {
-      console.log("[InboxSync] IMAP connected, opening INBOX...");
+      logger.info("[InboxSync] IMAP connected, opening INBOX...");
       imap.openBox("INBOX", true, (err: Error | null, box: any) => {
         if (err) {
-          console.log("[InboxSync] Error opening INBOX:", err.message);
+          logger.info({ extra: err.message }, "[InboxSync] Error opening INBOX:");
           imap.end();
           reject(err);
           return;
         }
-        console.log("[InboxSync] INBOX opened, messages:", box.messages.total);
+        logger.info({ extra: box.messages.total }, "[InboxSync] INBOX opened, messages:");
 
         const sinceStr = since.toISOString().split("T")[0];
         imap.search([["SINCE", sinceStr]], (err: Error | null, results: number[]) => {
           if (err || !results || results.length === 0) {
-            console.log("[InboxSync] No emails found since", sinceStr);
+            logger.info({ extra: sinceStr }, "[InboxSync] No emails found since");
             imap.end();
             resolve(messages);
             return;
           }
 
-          console.log("[InboxSync] Found", results.length, "emails");
+          logger.info({ extra: [results.length, "emails"] }, "[InboxSync] Found");
           const toFetch = results.slice(-100);
           const fetch = imap.fetch(toFetch, { bodies: "", struct: true });
           const parsePromises: Promise<void>[] = [];
@@ -250,10 +247,10 @@ async function fetchRecentInboxMessages(
                     folder: "INBOX",
                   });
                 } catch (parseErr) {
-                  console.error("[InboxService] Failed to process parsed email:", parseErr);
+                  logger.error({ error: parseErr }, "[InboxService] Failed to process parsed email:");
                 }
               }).catch(err => {
-                console.error("[InboxService] simpleParser failed:", err);
+                logger.error({ error: err }, "[InboxService] simpleParser failed:");
               });
 
               parsePromises.push(parsePromise);

@@ -37,9 +37,9 @@ export default function Button({
 
   const variantClasses = {
     primary: "bg-brand text-white hover:bg-brand/90 hover:shadow-brand-glow active:bg-brand/95 shadow-premium-sm",
-    secondary: "bg-brand-light text-success-text hover:bg-brand-muted active:bg-brand",
+    secondary: "bg-brand-light text-brand hover:bg-brand-muted active:bg-brand",
     danger: "bg-error-bg text-error-text border border-error-border hover:bg-error-text hover:text-white",
-    outline: "border border-border-medium bg-surface text-text-primary hover:bg-background hover:border-border-strong",
+    outline: "border border-border-medium bg-white text-text-primary hover:bg-[#F8F9FA] hover:border-border-medium",
     ghost: "bg-transparent text-text-secondary hover:bg-interactive-hover hover:text-text-primary",
     minimal: "bg-transparent text-text-muted hover:bg-transparent hover:text-brand p-0",
   };

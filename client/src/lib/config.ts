@@ -6,13 +6,13 @@
 export const BRAND_CONFIG = {
     name: "SharaSpot",
     company: "Folonite",
-    tagline: "Outreach that feels human, not robotic.",
-    description: "Personal outreach system that sends emails like a human. Multi-sender rotation, automatic warmup, and real-time tracking.",
+    tagline: "Cold outreach with better deliverability discipline.",
+    description: "Cold outreach platform for founders, sales teams, recruiters, and partner teams. Includes sender rotation, account warmup, reply detection, analytics, and workflow controls that help teams protect sender reputation while scaling outreach.",
     url: "https://sharaspot.in",
     supportUrl: "https://tally.so/r/aQee69",
     pricing: {
         global: {
-            amount: 19,
+            amount: 29,
             currency: "USD",
             symbol: "$",
         },

@@ -24,6 +24,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Organization = $Result.DefaultSelection<Prisma.$OrganizationPayload>
 /**
+ * Model TrackingDomainSetting
+ * 
+ */
+export type TrackingDomainSetting = $Result.DefaultSelection<Prisma.$TrackingDomainSettingPayload>
+/**
  * Model OrganizationMember
  * 
  */
@@ -78,6 +83,11 @@ export type Attachment = $Result.DefaultSelection<Prisma.$AttachmentPayload>
  * 
  */
 export type EmailTemplate = $Result.DefaultSelection<Prisma.$EmailTemplatePayload>
+/**
+ * Model FollowUpTemplate
+ * 
+ */
+export type FollowUpTemplate = $Result.DefaultSelection<Prisma.$FollowUpTemplatePayload>
 /**
  * Model SequenceStep
  * 
@@ -138,6 +148,11 @@ export type Tag = $Result.DefaultSelection<Prisma.$TagPayload>
  * 
  */
 export type Contact = $Result.DefaultSelection<Prisma.$ContactPayload>
+/**
+ * Model PrmCompany
+ * 
+ */
+export type PrmCompany = $Result.DefaultSelection<Prisma.$PrmCompanyPayload>
 /**
  * Model CallTask
  * 
@@ -243,7 +258,18 @@ export type BounceList = $Result.DefaultSelection<Prisma.$BounceListPayload>
  * Enums
  */
 export namespace $Enums {
-  export const OrgMemberRole: {
+  export const TrackingDomainStatus: {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  MISSING: 'MISSING',
+  MISMATCH: 'MISMATCH',
+  ERROR: 'ERROR'
+};
+
+export type TrackingDomainStatus = (typeof TrackingDomainStatus)[keyof typeof TrackingDomainStatus]
+
+
+export const OrgMemberRole: {
   OWNER: 'OWNER',
   ADMIN: 'ADMIN',
   MEMBER: 'MEMBER',
@@ -385,6 +411,10 @@ export const LogLevel: {
 export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel]
 
 }
+
+export type TrackingDomainStatus = $Enums.TrackingDomainStatus
+
+export const TrackingDomainStatus: typeof $Enums.TrackingDomainStatus
 
 export type OrgMemberRole = $Enums.OrgMemberRole
 
@@ -585,6 +615,16 @@ export class PrismaClient<
   get organization(): Prisma.OrganizationDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.trackingDomainSetting`: Exposes CRUD operations for the **TrackingDomainSetting** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TrackingDomainSettings
+    * const trackingDomainSettings = await prisma.trackingDomainSetting.findMany()
+    * ```
+    */
+  get trackingDomainSetting(): Prisma.TrackingDomainSettingDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.organizationMember`: Exposes CRUD operations for the **OrganizationMember** model.
     * Example usage:
     * ```ts
@@ -693,6 +733,16 @@ export class PrismaClient<
     * ```
     */
   get emailTemplate(): Prisma.EmailTemplateDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.followUpTemplate`: Exposes CRUD operations for the **FollowUpTemplate** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FollowUpTemplates
+    * const followUpTemplates = await prisma.followUpTemplate.findMany()
+    * ```
+    */
+  get followUpTemplate(): Prisma.FollowUpTemplateDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.sequenceStep`: Exposes CRUD operations for the **SequenceStep** model.
@@ -813,6 +863,16 @@ export class PrismaClient<
     * ```
     */
   get contact(): Prisma.ContactDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.prmCompany`: Exposes CRUD operations for the **PrmCompany** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PrmCompanies
+    * const prmCompanies = await prisma.prmCompany.findMany()
+    * ```
+    */
+  get prmCompany(): Prisma.PrmCompanyDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.callTask`: Exposes CRUD operations for the **CallTask** model.
@@ -1456,6 +1516,7 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Organization: 'Organization',
+    TrackingDomainSetting: 'TrackingDomainSetting',
     OrganizationMember: 'OrganizationMember',
     OrganizationInvite: 'OrganizationInvite',
     Subscription: 'Subscription',
@@ -1467,6 +1528,7 @@ export namespace Prisma {
     RefreshToken: 'RefreshToken',
     Attachment: 'Attachment',
     EmailTemplate: 'EmailTemplate',
+    FollowUpTemplate: 'FollowUpTemplate',
     SequenceStep: 'SequenceStep',
     RecipientSequenceState: 'RecipientSequenceState',
     ProviderProfile: 'ProviderProfile',
@@ -1479,6 +1541,7 @@ export namespace Prisma {
     DomainRateLimit: 'DomainRateLimit',
     Tag: 'Tag',
     Contact: 'Contact',
+    PrmCompany: 'PrmCompany',
     CallTask: 'CallTask',
     CallProviderConnection: 'CallProviderConnection',
     CallSession: 'CallSession',
@@ -1517,7 +1580,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "organization" | "organizationMember" | "organizationInvite" | "subscription" | "sender" | "emailCampaign" | "emailJob" | "campaignSender" | "rateLimitCounter" | "refreshToken" | "attachment" | "emailTemplate" | "sequenceStep" | "recipientSequenceState" | "providerProfile" | "warmupSchedule" | "senderCooldown" | "trackingEvent" | "priorityQueueJob" | "smtpSignalLog" | "priorityUserQuota" | "domainRateLimit" | "tag" | "contact" | "callTask" | "callProviderConnection" | "callSession" | "prmSegment" | "prmSegmentContact" | "prmBulkActionLog" | "note" | "contactActivity" | "contactList" | "analyticsSnapshot" | "dailySenderHealth" | "webhook" | "webhookDelivery" | "inboxEmail" | "inboxThread" | "inboxSyncJob" | "mcpApiKey" | "systemAuditLog" | "processedWebhook" | "bounceList"
+      modelProps: "user" | "organization" | "trackingDomainSetting" | "organizationMember" | "organizationInvite" | "subscription" | "sender" | "emailCampaign" | "emailJob" | "campaignSender" | "rateLimitCounter" | "refreshToken" | "attachment" | "emailTemplate" | "followUpTemplate" | "sequenceStep" | "recipientSequenceState" | "providerProfile" | "warmupSchedule" | "senderCooldown" | "trackingEvent" | "priorityQueueJob" | "smtpSignalLog" | "priorityUserQuota" | "domainRateLimit" | "tag" | "contact" | "prmCompany" | "callTask" | "callProviderConnection" | "callSession" | "prmSegment" | "prmSegmentContact" | "prmBulkActionLog" | "note" | "contactActivity" | "contactList" | "analyticsSnapshot" | "dailySenderHealth" | "webhook" | "webhookDelivery" | "inboxEmail" | "inboxThread" | "inboxSyncJob" | "mcpApiKey" | "systemAuditLog" | "processedWebhook" | "bounceList"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1666,6 +1729,80 @@ export namespace Prisma {
           count: {
             args: Prisma.OrganizationCountArgs<ExtArgs>
             result: $Utils.Optional<OrganizationCountAggregateOutputType> | number
+          }
+        }
+      }
+      TrackingDomainSetting: {
+        payload: Prisma.$TrackingDomainSettingPayload<ExtArgs>
+        fields: Prisma.TrackingDomainSettingFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TrackingDomainSettingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TrackingDomainSettingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>
+          }
+          findFirst: {
+            args: Prisma.TrackingDomainSettingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TrackingDomainSettingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>
+          }
+          findMany: {
+            args: Prisma.TrackingDomainSettingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>[]
+          }
+          create: {
+            args: Prisma.TrackingDomainSettingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>
+          }
+          createMany: {
+            args: Prisma.TrackingDomainSettingCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TrackingDomainSettingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>[]
+          }
+          delete: {
+            args: Prisma.TrackingDomainSettingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>
+          }
+          update: {
+            args: Prisma.TrackingDomainSettingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>
+          }
+          deleteMany: {
+            args: Prisma.TrackingDomainSettingDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TrackingDomainSettingUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TrackingDomainSettingUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>[]
+          }
+          upsert: {
+            args: Prisma.TrackingDomainSettingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingDomainSettingPayload>
+          }
+          aggregate: {
+            args: Prisma.TrackingDomainSettingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTrackingDomainSetting>
+          }
+          groupBy: {
+            args: Prisma.TrackingDomainSettingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TrackingDomainSettingGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TrackingDomainSettingCountArgs<ExtArgs>
+            result: $Utils.Optional<TrackingDomainSettingCountAggregateOutputType> | number
           }
         }
       }
@@ -2480,6 +2617,80 @@ export namespace Prisma {
           count: {
             args: Prisma.EmailTemplateCountArgs<ExtArgs>
             result: $Utils.Optional<EmailTemplateCountAggregateOutputType> | number
+          }
+        }
+      }
+      FollowUpTemplate: {
+        payload: Prisma.$FollowUpTemplatePayload<ExtArgs>
+        fields: Prisma.FollowUpTemplateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FollowUpTemplateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FollowUpTemplateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          findFirst: {
+            args: Prisma.FollowUpTemplateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FollowUpTemplateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          findMany: {
+            args: Prisma.FollowUpTemplateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>[]
+          }
+          create: {
+            args: Prisma.FollowUpTemplateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          createMany: {
+            args: Prisma.FollowUpTemplateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FollowUpTemplateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>[]
+          }
+          delete: {
+            args: Prisma.FollowUpTemplateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          update: {
+            args: Prisma.FollowUpTemplateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          deleteMany: {
+            args: Prisma.FollowUpTemplateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FollowUpTemplateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FollowUpTemplateUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>[]
+          }
+          upsert: {
+            args: Prisma.FollowUpTemplateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FollowUpTemplatePayload>
+          }
+          aggregate: {
+            args: Prisma.FollowUpTemplateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFollowUpTemplate>
+          }
+          groupBy: {
+            args: Prisma.FollowUpTemplateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpTemplateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FollowUpTemplateCountArgs<ExtArgs>
+            result: $Utils.Optional<FollowUpTemplateCountAggregateOutputType> | number
           }
         }
       }
@@ -3368,6 +3579,80 @@ export namespace Prisma {
           count: {
             args: Prisma.ContactCountArgs<ExtArgs>
             result: $Utils.Optional<ContactCountAggregateOutputType> | number
+          }
+        }
+      }
+      PrmCompany: {
+        payload: Prisma.$PrmCompanyPayload<ExtArgs>
+        fields: Prisma.PrmCompanyFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PrmCompanyFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PrmCompanyFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>
+          }
+          findFirst: {
+            args: Prisma.PrmCompanyFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PrmCompanyFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>
+          }
+          findMany: {
+            args: Prisma.PrmCompanyFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>[]
+          }
+          create: {
+            args: Prisma.PrmCompanyCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>
+          }
+          createMany: {
+            args: Prisma.PrmCompanyCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PrmCompanyCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>[]
+          }
+          delete: {
+            args: Prisma.PrmCompanyDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>
+          }
+          update: {
+            args: Prisma.PrmCompanyUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>
+          }
+          deleteMany: {
+            args: Prisma.PrmCompanyDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PrmCompanyUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PrmCompanyUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>[]
+          }
+          upsert: {
+            args: Prisma.PrmCompanyUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PrmCompanyPayload>
+          }
+          aggregate: {
+            args: Prisma.PrmCompanyAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePrmCompany>
+          }
+          groupBy: {
+            args: Prisma.PrmCompanyGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PrmCompanyGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PrmCompanyCountArgs<ExtArgs>
+            result: $Utils.Optional<PrmCompanyCountAggregateOutputType> | number
           }
         }
       }
@@ -4949,6 +5234,7 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     user?: UserOmit
     organization?: OrganizationOmit
+    trackingDomainSetting?: TrackingDomainSettingOmit
     organizationMember?: OrganizationMemberOmit
     organizationInvite?: OrganizationInviteOmit
     subscription?: SubscriptionOmit
@@ -4960,6 +5246,7 @@ export namespace Prisma {
     refreshToken?: RefreshTokenOmit
     attachment?: AttachmentOmit
     emailTemplate?: EmailTemplateOmit
+    followUpTemplate?: FollowUpTemplateOmit
     sequenceStep?: SequenceStepOmit
     recipientSequenceState?: RecipientSequenceStateOmit
     providerProfile?: ProviderProfileOmit
@@ -4972,6 +5259,7 @@ export namespace Prisma {
     domainRateLimit?: DomainRateLimitOmit
     tag?: TagOmit
     contact?: ContactOmit
+    prmCompany?: PrmCompanyOmit
     callTask?: CallTaskOmit
     callProviderConnection?: CallProviderConnectionOmit
     callSession?: CallSessionOmit
@@ -5074,10 +5362,13 @@ export namespace Prisma {
   export type UserCountOutputType = {
     campaigns: number
     templates: number
+    followUpTemplates: number
     refreshTokens: number
     senders: number
     tags: number
     contacts: number
+    assignedContacts: number
+    assignedCallTasks: number
     contactLists: number
     mcpApiKeys: number
     bounceList: number
@@ -5088,15 +5379,20 @@ export namespace Prisma {
     callSessions: number
     organizationMemberships: number
     ownedOrganizations: number
+    trackingDomainSettings: number
+    prmCompanies: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     campaigns?: boolean | UserCountOutputTypeCountCampaignsArgs
     templates?: boolean | UserCountOutputTypeCountTemplatesArgs
+    followUpTemplates?: boolean | UserCountOutputTypeCountFollowUpTemplatesArgs
     refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
     senders?: boolean | UserCountOutputTypeCountSendersArgs
     tags?: boolean | UserCountOutputTypeCountTagsArgs
     contacts?: boolean | UserCountOutputTypeCountContactsArgs
+    assignedContacts?: boolean | UserCountOutputTypeCountAssignedContactsArgs
+    assignedCallTasks?: boolean | UserCountOutputTypeCountAssignedCallTasksArgs
     contactLists?: boolean | UserCountOutputTypeCountContactListsArgs
     mcpApiKeys?: boolean | UserCountOutputTypeCountMcpApiKeysArgs
     bounceList?: boolean | UserCountOutputTypeCountBounceListArgs
@@ -5107,6 +5403,8 @@ export namespace Prisma {
     callSessions?: boolean | UserCountOutputTypeCountCallSessionsArgs
     organizationMemberships?: boolean | UserCountOutputTypeCountOrganizationMembershipsArgs
     ownedOrganizations?: boolean | UserCountOutputTypeCountOwnedOrganizationsArgs
+    trackingDomainSettings?: boolean | UserCountOutputTypeCountTrackingDomainSettingsArgs
+    prmCompanies?: boolean | UserCountOutputTypeCountPrmCompaniesArgs
   }
 
   // Custom InputTypes
@@ -5137,6 +5435,13 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountFollowUpTemplatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpTemplateWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountRefreshTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RefreshTokenWhereInput
   }
@@ -5160,6 +5465,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountContactsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ContactWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAssignedContactsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContactWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAssignedCallTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CallTaskWhereInput
   }
 
   /**
@@ -5232,6 +5551,20 @@ export namespace Prisma {
     where?: OrganizationWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountTrackingDomainSettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingDomainSettingWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPrmCompaniesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PrmCompanyWhereInput
+  }
+
 
   /**
    * Count Type OrganizationCountOutputType
@@ -5245,6 +5578,7 @@ export namespace Prisma {
     contacts: number
     senders: number
     templates: number
+    followUpTemplates: number
     contactLists: number
     tags: number
     callTasks: number
@@ -5254,6 +5588,8 @@ export namespace Prisma {
     bounceList: number
     inboxEmails: number
     inboxThreads: number
+    trackingDomainSettings: number
+    prmCompanies: number
   }
 
   export type OrganizationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5264,6 +5600,7 @@ export namespace Prisma {
     contacts?: boolean | OrganizationCountOutputTypeCountContactsArgs
     senders?: boolean | OrganizationCountOutputTypeCountSendersArgs
     templates?: boolean | OrganizationCountOutputTypeCountTemplatesArgs
+    followUpTemplates?: boolean | OrganizationCountOutputTypeCountFollowUpTemplatesArgs
     contactLists?: boolean | OrganizationCountOutputTypeCountContactListsArgs
     tags?: boolean | OrganizationCountOutputTypeCountTagsArgs
     callTasks?: boolean | OrganizationCountOutputTypeCountCallTasksArgs
@@ -5273,6 +5610,8 @@ export namespace Prisma {
     bounceList?: boolean | OrganizationCountOutputTypeCountBounceListArgs
     inboxEmails?: boolean | OrganizationCountOutputTypeCountInboxEmailsArgs
     inboxThreads?: boolean | OrganizationCountOutputTypeCountInboxThreadsArgs
+    trackingDomainSettings?: boolean | OrganizationCountOutputTypeCountTrackingDomainSettingsArgs
+    prmCompanies?: boolean | OrganizationCountOutputTypeCountPrmCompaniesArgs
   }
 
   // Custom InputTypes
@@ -5338,6 +5677,13 @@ export namespace Prisma {
   /**
    * OrganizationCountOutputType without action
    */
+  export type OrganizationCountOutputTypeCountFollowUpTemplatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpTemplateWhereInput
+  }
+
+  /**
+   * OrganizationCountOutputType without action
+   */
   export type OrganizationCountOutputTypeCountContactListsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ContactListWhereInput
   }
@@ -5396,6 +5742,20 @@ export namespace Prisma {
    */
   export type OrganizationCountOutputTypeCountInboxThreadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: InboxThreadWhereInput
+  }
+
+  /**
+   * OrganizationCountOutputType without action
+   */
+  export type OrganizationCountOutputTypeCountTrackingDomainSettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingDomainSettingWhereInput
+  }
+
+  /**
+   * OrganizationCountOutputType without action
+   */
+  export type OrganizationCountOutputTypeCountPrmCompaniesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PrmCompanyWhereInput
   }
 
 
@@ -6123,11 +6483,14 @@ export namespace Prisma {
     activeOrganizationId?: boolean
     campaigns?: boolean | User$campaignsArgs<ExtArgs>
     templates?: boolean | User$templatesArgs<ExtArgs>
+    followUpTemplates?: boolean | User$followUpTemplatesArgs<ExtArgs>
     refreshTokens?: boolean | User$refreshTokensArgs<ExtArgs>
     senders?: boolean | User$sendersArgs<ExtArgs>
     subscription?: boolean | User$subscriptionArgs<ExtArgs>
     tags?: boolean | User$tagsArgs<ExtArgs>
     contacts?: boolean | User$contactsArgs<ExtArgs>
+    assignedContacts?: boolean | User$assignedContactsArgs<ExtArgs>
+    assignedCallTasks?: boolean | User$assignedCallTasksArgs<ExtArgs>
     contactLists?: boolean | User$contactListsArgs<ExtArgs>
     mcpApiKeys?: boolean | User$mcpApiKeysArgs<ExtArgs>
     bounceList?: boolean | User$bounceListArgs<ExtArgs>
@@ -6139,6 +6502,8 @@ export namespace Prisma {
     organizationMemberships?: boolean | User$organizationMembershipsArgs<ExtArgs>
     ownedOrganizations?: boolean | User$ownedOrganizationsArgs<ExtArgs>
     activeOrganization?: boolean | User$activeOrganizationArgs<ExtArgs>
+    trackingDomainSettings?: boolean | User$trackingDomainSettingsArgs<ExtArgs>
+    prmCompanies?: boolean | User$prmCompaniesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -6181,11 +6546,14 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     campaigns?: boolean | User$campaignsArgs<ExtArgs>
     templates?: boolean | User$templatesArgs<ExtArgs>
+    followUpTemplates?: boolean | User$followUpTemplatesArgs<ExtArgs>
     refreshTokens?: boolean | User$refreshTokensArgs<ExtArgs>
     senders?: boolean | User$sendersArgs<ExtArgs>
     subscription?: boolean | User$subscriptionArgs<ExtArgs>
     tags?: boolean | User$tagsArgs<ExtArgs>
     contacts?: boolean | User$contactsArgs<ExtArgs>
+    assignedContacts?: boolean | User$assignedContactsArgs<ExtArgs>
+    assignedCallTasks?: boolean | User$assignedCallTasksArgs<ExtArgs>
     contactLists?: boolean | User$contactListsArgs<ExtArgs>
     mcpApiKeys?: boolean | User$mcpApiKeysArgs<ExtArgs>
     bounceList?: boolean | User$bounceListArgs<ExtArgs>
@@ -6197,6 +6565,8 @@ export namespace Prisma {
     organizationMemberships?: boolean | User$organizationMembershipsArgs<ExtArgs>
     ownedOrganizations?: boolean | User$ownedOrganizationsArgs<ExtArgs>
     activeOrganization?: boolean | User$activeOrganizationArgs<ExtArgs>
+    trackingDomainSettings?: boolean | User$trackingDomainSettingsArgs<ExtArgs>
+    prmCompanies?: boolean | User$prmCompaniesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6211,11 +6581,14 @@ export namespace Prisma {
     objects: {
       campaigns: Prisma.$EmailCampaignPayload<ExtArgs>[]
       templates: Prisma.$EmailTemplatePayload<ExtArgs>[]
+      followUpTemplates: Prisma.$FollowUpTemplatePayload<ExtArgs>[]
       refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
       senders: Prisma.$SenderPayload<ExtArgs>[]
       subscription: Prisma.$SubscriptionPayload<ExtArgs> | null
       tags: Prisma.$TagPayload<ExtArgs>[]
       contacts: Prisma.$ContactPayload<ExtArgs>[]
+      assignedContacts: Prisma.$ContactPayload<ExtArgs>[]
+      assignedCallTasks: Prisma.$CallTaskPayload<ExtArgs>[]
       contactLists: Prisma.$ContactListPayload<ExtArgs>[]
       mcpApiKeys: Prisma.$McpApiKeyPayload<ExtArgs>[]
       bounceList: Prisma.$BounceListPayload<ExtArgs>[]
@@ -6227,6 +6600,8 @@ export namespace Prisma {
       organizationMemberships: Prisma.$OrganizationMemberPayload<ExtArgs>[]
       ownedOrganizations: Prisma.$OrganizationPayload<ExtArgs>[]
       activeOrganization: Prisma.$OrganizationPayload<ExtArgs> | null
+      trackingDomainSettings: Prisma.$TrackingDomainSettingPayload<ExtArgs>[]
+      prmCompanies: Prisma.$PrmCompanyPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6633,11 +7008,14 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     campaigns<T extends User$campaignsArgs<ExtArgs> = {}>(args?: Subset<T, User$campaignsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailCampaignPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     templates<T extends User$templatesArgs<ExtArgs> = {}>(args?: Subset<T, User$templatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    followUpTemplates<T extends User$followUpTemplatesArgs<ExtArgs> = {}>(args?: Subset<T, User$followUpTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     refreshTokens<T extends User$refreshTokensArgs<ExtArgs> = {}>(args?: Subset<T, User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     senders<T extends User$sendersArgs<ExtArgs> = {}>(args?: Subset<T, User$sendersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SenderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     subscription<T extends User$subscriptionArgs<ExtArgs> = {}>(args?: Subset<T, User$subscriptionArgs<ExtArgs>>): Prisma__SubscriptionClient<$Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     tags<T extends User$tagsArgs<ExtArgs> = {}>(args?: Subset<T, User$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contacts<T extends User$contactsArgs<ExtArgs> = {}>(args?: Subset<T, User$contactsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    assignedContacts<T extends User$assignedContactsArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedContactsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    assignedCallTasks<T extends User$assignedCallTasksArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedCallTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contactLists<T extends User$contactListsArgs<ExtArgs> = {}>(args?: Subset<T, User$contactListsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     mcpApiKeys<T extends User$mcpApiKeysArgs<ExtArgs> = {}>(args?: Subset<T, User$mcpApiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$McpApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     bounceList<T extends User$bounceListArgs<ExtArgs> = {}>(args?: Subset<T, User$bounceListArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BounceListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -6649,6 +7027,8 @@ export namespace Prisma {
     organizationMemberships<T extends User$organizationMembershipsArgs<ExtArgs> = {}>(args?: Subset<T, User$organizationMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrganizationMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ownedOrganizations<T extends User$ownedOrganizationsArgs<ExtArgs> = {}>(args?: Subset<T, User$ownedOrganizationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activeOrganization<T extends User$activeOrganizationArgs<ExtArgs> = {}>(args?: Subset<T, User$activeOrganizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    trackingDomainSettings<T extends User$trackingDomainSettingsArgs<ExtArgs> = {}>(args?: Subset<T, User$trackingDomainSettingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    prmCompanies<T extends User$prmCompaniesArgs<ExtArgs> = {}>(args?: Subset<T, User$prmCompaniesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7130,6 +7510,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.followUpTemplates
+   */
+  export type User$followUpTemplatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    where?: FollowUpTemplateWhereInput
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    cursor?: FollowUpTemplateWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
    * User.refreshTokens
    */
   export type User$refreshTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7242,6 +7646,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ContactScalarFieldEnum | ContactScalarFieldEnum[]
+  }
+
+  /**
+   * User.assignedContacts
+   */
+  export type User$assignedContactsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contact
+     */
+    select?: ContactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contact
+     */
+    omit?: ContactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContactInclude<ExtArgs> | null
+    where?: ContactWhereInput
+    orderBy?: ContactOrderByWithRelationInput | ContactOrderByWithRelationInput[]
+    cursor?: ContactWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContactScalarFieldEnum | ContactScalarFieldEnum[]
+  }
+
+  /**
+   * User.assignedCallTasks
+   */
+  export type User$assignedCallTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CallTask
+     */
+    select?: CallTaskSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CallTask
+     */
+    omit?: CallTaskOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CallTaskInclude<ExtArgs> | null
+    where?: CallTaskWhereInput
+    orderBy?: CallTaskOrderByWithRelationInput | CallTaskOrderByWithRelationInput[]
+    cursor?: CallTaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CallTaskScalarFieldEnum | CallTaskScalarFieldEnum[]
   }
 
   /**
@@ -7504,6 +7956,54 @@ export namespace Prisma {
   }
 
   /**
+   * User.trackingDomainSettings
+   */
+  export type User$trackingDomainSettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    where?: TrackingDomainSettingWhereInput
+    orderBy?: TrackingDomainSettingOrderByWithRelationInput | TrackingDomainSettingOrderByWithRelationInput[]
+    cursor?: TrackingDomainSettingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TrackingDomainSettingScalarFieldEnum | TrackingDomainSettingScalarFieldEnum[]
+  }
+
+  /**
+   * User.prmCompanies
+   */
+  export type User$prmCompaniesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    where?: PrmCompanyWhereInput
+    orderBy?: PrmCompanyOrderByWithRelationInput | PrmCompanyOrderByWithRelationInput[]
+    cursor?: PrmCompanyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PrmCompanyScalarFieldEnum | PrmCompanyScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7694,6 +8194,7 @@ export namespace Prisma {
     contacts?: boolean | Organization$contactsArgs<ExtArgs>
     senders?: boolean | Organization$sendersArgs<ExtArgs>
     templates?: boolean | Organization$templatesArgs<ExtArgs>
+    followUpTemplates?: boolean | Organization$followUpTemplatesArgs<ExtArgs>
     contactLists?: boolean | Organization$contactListsArgs<ExtArgs>
     tags?: boolean | Organization$tagsArgs<ExtArgs>
     callTasks?: boolean | Organization$callTasksArgs<ExtArgs>
@@ -7703,6 +8204,8 @@ export namespace Prisma {
     bounceList?: boolean | Organization$bounceListArgs<ExtArgs>
     inboxEmails?: boolean | Organization$inboxEmailsArgs<ExtArgs>
     inboxThreads?: boolean | Organization$inboxThreadsArgs<ExtArgs>
+    trackingDomainSettings?: boolean | Organization$trackingDomainSettingsArgs<ExtArgs>
+    prmCompanies?: boolean | Organization$prmCompaniesArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["organization"]>
 
@@ -7742,6 +8245,7 @@ export namespace Prisma {
     contacts?: boolean | Organization$contactsArgs<ExtArgs>
     senders?: boolean | Organization$sendersArgs<ExtArgs>
     templates?: boolean | Organization$templatesArgs<ExtArgs>
+    followUpTemplates?: boolean | Organization$followUpTemplatesArgs<ExtArgs>
     contactLists?: boolean | Organization$contactListsArgs<ExtArgs>
     tags?: boolean | Organization$tagsArgs<ExtArgs>
     callTasks?: boolean | Organization$callTasksArgs<ExtArgs>
@@ -7751,6 +8255,8 @@ export namespace Prisma {
     bounceList?: boolean | Organization$bounceListArgs<ExtArgs>
     inboxEmails?: boolean | Organization$inboxEmailsArgs<ExtArgs>
     inboxThreads?: boolean | Organization$inboxThreadsArgs<ExtArgs>
+    trackingDomainSettings?: boolean | Organization$trackingDomainSettingsArgs<ExtArgs>
+    prmCompanies?: boolean | Organization$prmCompaniesArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7771,6 +8277,7 @@ export namespace Prisma {
       contacts: Prisma.$ContactPayload<ExtArgs>[]
       senders: Prisma.$SenderPayload<ExtArgs>[]
       templates: Prisma.$EmailTemplatePayload<ExtArgs>[]
+      followUpTemplates: Prisma.$FollowUpTemplatePayload<ExtArgs>[]
       contactLists: Prisma.$ContactListPayload<ExtArgs>[]
       tags: Prisma.$TagPayload<ExtArgs>[]
       callTasks: Prisma.$CallTaskPayload<ExtArgs>[]
@@ -7780,6 +8287,8 @@ export namespace Prisma {
       bounceList: Prisma.$BounceListPayload<ExtArgs>[]
       inboxEmails: Prisma.$InboxEmailPayload<ExtArgs>[]
       inboxThreads: Prisma.$InboxThreadPayload<ExtArgs>[]
+      trackingDomainSettings: Prisma.$TrackingDomainSettingPayload<ExtArgs>[]
+      prmCompanies: Prisma.$PrmCompanyPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8189,6 +8698,7 @@ export namespace Prisma {
     contacts<T extends Organization$contactsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$contactsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     senders<T extends Organization$sendersArgs<ExtArgs> = {}>(args?: Subset<T, Organization$sendersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SenderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     templates<T extends Organization$templatesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$templatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    followUpTemplates<T extends Organization$followUpTemplatesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$followUpTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contactLists<T extends Organization$contactListsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$contactListsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tags<T extends Organization$tagsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     callTasks<T extends Organization$callTasksArgs<ExtArgs> = {}>(args?: Subset<T, Organization$callTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -8198,6 +8708,8 @@ export namespace Prisma {
     bounceList<T extends Organization$bounceListArgs<ExtArgs> = {}>(args?: Subset<T, Organization$bounceListArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BounceListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     inboxEmails<T extends Organization$inboxEmailsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$inboxEmailsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InboxEmailPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     inboxThreads<T extends Organization$inboxThreadsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$inboxThreadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InboxThreadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    trackingDomainSettings<T extends Organization$trackingDomainSettingsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$trackingDomainSettingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    prmCompanies<T extends Organization$prmCompaniesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$prmCompaniesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8796,6 +9308,30 @@ export namespace Prisma {
   }
 
   /**
+   * Organization.followUpTemplates
+   */
+  export type Organization$followUpTemplatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    where?: FollowUpTemplateWhereInput
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    cursor?: FollowUpTemplateWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
    * Organization.contactLists
    */
   export type Organization$contactListsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9012,6 +9548,54 @@ export namespace Prisma {
   }
 
   /**
+   * Organization.trackingDomainSettings
+   */
+  export type Organization$trackingDomainSettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    where?: TrackingDomainSettingWhereInput
+    orderBy?: TrackingDomainSettingOrderByWithRelationInput | TrackingDomainSettingOrderByWithRelationInput[]
+    cursor?: TrackingDomainSettingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TrackingDomainSettingScalarFieldEnum | TrackingDomainSettingScalarFieldEnum[]
+  }
+
+  /**
+   * Organization.prmCompanies
+   */
+  export type Organization$prmCompaniesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    where?: PrmCompanyWhereInput
+    orderBy?: PrmCompanyOrderByWithRelationInput | PrmCompanyOrderByWithRelationInput[]
+    cursor?: PrmCompanyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PrmCompanyScalarFieldEnum | PrmCompanyScalarFieldEnum[]
+  }
+
+  /**
    * Organization without action
    */
   export type OrganizationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9027,6 +9611,1208 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: OrganizationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TrackingDomainSetting
+   */
+
+  export type AggregateTrackingDomainSetting = {
+    _count: TrackingDomainSettingCountAggregateOutputType | null
+    _min: TrackingDomainSettingMinAggregateOutputType | null
+    _max: TrackingDomainSettingMaxAggregateOutputType | null
+  }
+
+  export type TrackingDomainSettingMinAggregateOutputType = {
+    id: string | null
+    scopeKey: string | null
+    userId: string | null
+    organizationId: string | null
+    rootDomain: string | null
+    subdomain: string | null
+    fullDomain: string | null
+    cnameTarget: string | null
+    status: $Enums.TrackingDomainStatus | null
+    lastCheckedAt: Date | null
+    lastCheckedValue: string | null
+    verifiedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type TrackingDomainSettingMaxAggregateOutputType = {
+    id: string | null
+    scopeKey: string | null
+    userId: string | null
+    organizationId: string | null
+    rootDomain: string | null
+    subdomain: string | null
+    fullDomain: string | null
+    cnameTarget: string | null
+    status: $Enums.TrackingDomainStatus | null
+    lastCheckedAt: Date | null
+    lastCheckedValue: string | null
+    verifiedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type TrackingDomainSettingCountAggregateOutputType = {
+    id: number
+    scopeKey: number
+    userId: number
+    organizationId: number
+    rootDomain: number
+    subdomain: number
+    fullDomain: number
+    cnameTarget: number
+    status: number
+    lastCheckedAt: number
+    lastCheckedValue: number
+    verifiedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type TrackingDomainSettingMinAggregateInputType = {
+    id?: true
+    scopeKey?: true
+    userId?: true
+    organizationId?: true
+    rootDomain?: true
+    subdomain?: true
+    fullDomain?: true
+    cnameTarget?: true
+    status?: true
+    lastCheckedAt?: true
+    lastCheckedValue?: true
+    verifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type TrackingDomainSettingMaxAggregateInputType = {
+    id?: true
+    scopeKey?: true
+    userId?: true
+    organizationId?: true
+    rootDomain?: true
+    subdomain?: true
+    fullDomain?: true
+    cnameTarget?: true
+    status?: true
+    lastCheckedAt?: true
+    lastCheckedValue?: true
+    verifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type TrackingDomainSettingCountAggregateInputType = {
+    id?: true
+    scopeKey?: true
+    userId?: true
+    organizationId?: true
+    rootDomain?: true
+    subdomain?: true
+    fullDomain?: true
+    cnameTarget?: true
+    status?: true
+    lastCheckedAt?: true
+    lastCheckedValue?: true
+    verifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type TrackingDomainSettingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TrackingDomainSetting to aggregate.
+     */
+    where?: TrackingDomainSettingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingDomainSettings to fetch.
+     */
+    orderBy?: TrackingDomainSettingOrderByWithRelationInput | TrackingDomainSettingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TrackingDomainSettingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingDomainSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingDomainSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TrackingDomainSettings
+    **/
+    _count?: true | TrackingDomainSettingCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TrackingDomainSettingMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TrackingDomainSettingMaxAggregateInputType
+  }
+
+  export type GetTrackingDomainSettingAggregateType<T extends TrackingDomainSettingAggregateArgs> = {
+        [P in keyof T & keyof AggregateTrackingDomainSetting]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTrackingDomainSetting[P]>
+      : GetScalarType<T[P], AggregateTrackingDomainSetting[P]>
+  }
+
+
+
+
+  export type TrackingDomainSettingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingDomainSettingWhereInput
+    orderBy?: TrackingDomainSettingOrderByWithAggregationInput | TrackingDomainSettingOrderByWithAggregationInput[]
+    by: TrackingDomainSettingScalarFieldEnum[] | TrackingDomainSettingScalarFieldEnum
+    having?: TrackingDomainSettingScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TrackingDomainSettingCountAggregateInputType | true
+    _min?: TrackingDomainSettingMinAggregateInputType
+    _max?: TrackingDomainSettingMaxAggregateInputType
+  }
+
+  export type TrackingDomainSettingGroupByOutputType = {
+    id: string
+    scopeKey: string
+    userId: string
+    organizationId: string | null
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status: $Enums.TrackingDomainStatus
+    lastCheckedAt: Date | null
+    lastCheckedValue: string | null
+    verifiedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: TrackingDomainSettingCountAggregateOutputType | null
+    _min: TrackingDomainSettingMinAggregateOutputType | null
+    _max: TrackingDomainSettingMaxAggregateOutputType | null
+  }
+
+  type GetTrackingDomainSettingGroupByPayload<T extends TrackingDomainSettingGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TrackingDomainSettingGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TrackingDomainSettingGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TrackingDomainSettingGroupByOutputType[P]>
+            : GetScalarType<T[P], TrackingDomainSettingGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TrackingDomainSettingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    scopeKey?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    rootDomain?: boolean
+    subdomain?: boolean
+    fullDomain?: boolean
+    cnameTarget?: boolean
+    status?: boolean
+    lastCheckedAt?: boolean
+    lastCheckedValue?: boolean
+    verifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | TrackingDomainSetting$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["trackingDomainSetting"]>
+
+  export type TrackingDomainSettingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    scopeKey?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    rootDomain?: boolean
+    subdomain?: boolean
+    fullDomain?: boolean
+    cnameTarget?: boolean
+    status?: boolean
+    lastCheckedAt?: boolean
+    lastCheckedValue?: boolean
+    verifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | TrackingDomainSetting$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["trackingDomainSetting"]>
+
+  export type TrackingDomainSettingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    scopeKey?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    rootDomain?: boolean
+    subdomain?: boolean
+    fullDomain?: boolean
+    cnameTarget?: boolean
+    status?: boolean
+    lastCheckedAt?: boolean
+    lastCheckedValue?: boolean
+    verifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | TrackingDomainSetting$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["trackingDomainSetting"]>
+
+  export type TrackingDomainSettingSelectScalar = {
+    id?: boolean
+    scopeKey?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    rootDomain?: boolean
+    subdomain?: boolean
+    fullDomain?: boolean
+    cnameTarget?: boolean
+    status?: boolean
+    lastCheckedAt?: boolean
+    lastCheckedValue?: boolean
+    verifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type TrackingDomainSettingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "scopeKey" | "userId" | "organizationId" | "rootDomain" | "subdomain" | "fullDomain" | "cnameTarget" | "status" | "lastCheckedAt" | "lastCheckedValue" | "verifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["trackingDomainSetting"]>
+  export type TrackingDomainSettingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | TrackingDomainSetting$organizationArgs<ExtArgs>
+  }
+  export type TrackingDomainSettingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | TrackingDomainSetting$organizationArgs<ExtArgs>
+  }
+  export type TrackingDomainSettingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | TrackingDomainSetting$organizationArgs<ExtArgs>
+  }
+
+  export type $TrackingDomainSettingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TrackingDomainSetting"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      organization: Prisma.$OrganizationPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      scopeKey: string
+      userId: string
+      organizationId: string | null
+      rootDomain: string
+      subdomain: string
+      fullDomain: string
+      cnameTarget: string
+      status: $Enums.TrackingDomainStatus
+      lastCheckedAt: Date | null
+      lastCheckedValue: string | null
+      verifiedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["trackingDomainSetting"]>
+    composites: {}
+  }
+
+  type TrackingDomainSettingGetPayload<S extends boolean | null | undefined | TrackingDomainSettingDefaultArgs> = $Result.GetResult<Prisma.$TrackingDomainSettingPayload, S>
+
+  type TrackingDomainSettingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TrackingDomainSettingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TrackingDomainSettingCountAggregateInputType | true
+    }
+
+  export interface TrackingDomainSettingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TrackingDomainSetting'], meta: { name: 'TrackingDomainSetting' } }
+    /**
+     * Find zero or one TrackingDomainSetting that matches the filter.
+     * @param {TrackingDomainSettingFindUniqueArgs} args - Arguments to find a TrackingDomainSetting
+     * @example
+     * // Get one TrackingDomainSetting
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TrackingDomainSettingFindUniqueArgs>(args: SelectSubset<T, TrackingDomainSettingFindUniqueArgs<ExtArgs>>): Prisma__TrackingDomainSettingClient<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TrackingDomainSetting that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TrackingDomainSettingFindUniqueOrThrowArgs} args - Arguments to find a TrackingDomainSetting
+     * @example
+     * // Get one TrackingDomainSetting
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TrackingDomainSettingFindUniqueOrThrowArgs>(args: SelectSubset<T, TrackingDomainSettingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TrackingDomainSettingClient<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TrackingDomainSetting that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingDomainSettingFindFirstArgs} args - Arguments to find a TrackingDomainSetting
+     * @example
+     * // Get one TrackingDomainSetting
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TrackingDomainSettingFindFirstArgs>(args?: SelectSubset<T, TrackingDomainSettingFindFirstArgs<ExtArgs>>): Prisma__TrackingDomainSettingClient<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TrackingDomainSetting that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingDomainSettingFindFirstOrThrowArgs} args - Arguments to find a TrackingDomainSetting
+     * @example
+     * // Get one TrackingDomainSetting
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TrackingDomainSettingFindFirstOrThrowArgs>(args?: SelectSubset<T, TrackingDomainSettingFindFirstOrThrowArgs<ExtArgs>>): Prisma__TrackingDomainSettingClient<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TrackingDomainSettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingDomainSettingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TrackingDomainSettings
+     * const trackingDomainSettings = await prisma.trackingDomainSetting.findMany()
+     * 
+     * // Get first 10 TrackingDomainSettings
+     * const trackingDomainSettings = await prisma.trackingDomainSetting.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const trackingDomainSettingWithIdOnly = await prisma.trackingDomainSetting.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TrackingDomainSettingFindManyArgs>(args?: SelectSubset<T, TrackingDomainSettingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TrackingDomainSetting.
+     * @param {TrackingDomainSettingCreateArgs} args - Arguments to create a TrackingDomainSetting.
+     * @example
+     * // Create one TrackingDomainSetting
+     * const TrackingDomainSetting = await prisma.trackingDomainSetting.create({
+     *   data: {
+     *     // ... data to create a TrackingDomainSetting
+     *   }
+     * })
+     * 
+     */
+    create<T extends TrackingDomainSettingCreateArgs>(args: SelectSubset<T, TrackingDomainSettingCreateArgs<ExtArgs>>): Prisma__TrackingDomainSettingClient<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TrackingDomainSettings.
+     * @param {TrackingDomainSettingCreateManyArgs} args - Arguments to create many TrackingDomainSettings.
+     * @example
+     * // Create many TrackingDomainSettings
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TrackingDomainSettingCreateManyArgs>(args?: SelectSubset<T, TrackingDomainSettingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TrackingDomainSettings and returns the data saved in the database.
+     * @param {TrackingDomainSettingCreateManyAndReturnArgs} args - Arguments to create many TrackingDomainSettings.
+     * @example
+     * // Create many TrackingDomainSettings
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TrackingDomainSettings and only return the `id`
+     * const trackingDomainSettingWithIdOnly = await prisma.trackingDomainSetting.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TrackingDomainSettingCreateManyAndReturnArgs>(args?: SelectSubset<T, TrackingDomainSettingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a TrackingDomainSetting.
+     * @param {TrackingDomainSettingDeleteArgs} args - Arguments to delete one TrackingDomainSetting.
+     * @example
+     * // Delete one TrackingDomainSetting
+     * const TrackingDomainSetting = await prisma.trackingDomainSetting.delete({
+     *   where: {
+     *     // ... filter to delete one TrackingDomainSetting
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TrackingDomainSettingDeleteArgs>(args: SelectSubset<T, TrackingDomainSettingDeleteArgs<ExtArgs>>): Prisma__TrackingDomainSettingClient<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TrackingDomainSetting.
+     * @param {TrackingDomainSettingUpdateArgs} args - Arguments to update one TrackingDomainSetting.
+     * @example
+     * // Update one TrackingDomainSetting
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TrackingDomainSettingUpdateArgs>(args: SelectSubset<T, TrackingDomainSettingUpdateArgs<ExtArgs>>): Prisma__TrackingDomainSettingClient<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TrackingDomainSettings.
+     * @param {TrackingDomainSettingDeleteManyArgs} args - Arguments to filter TrackingDomainSettings to delete.
+     * @example
+     * // Delete a few TrackingDomainSettings
+     * const { count } = await prisma.trackingDomainSetting.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TrackingDomainSettingDeleteManyArgs>(args?: SelectSubset<T, TrackingDomainSettingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TrackingDomainSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingDomainSettingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TrackingDomainSettings
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TrackingDomainSettingUpdateManyArgs>(args: SelectSubset<T, TrackingDomainSettingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TrackingDomainSettings and returns the data updated in the database.
+     * @param {TrackingDomainSettingUpdateManyAndReturnArgs} args - Arguments to update many TrackingDomainSettings.
+     * @example
+     * // Update many TrackingDomainSettings
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more TrackingDomainSettings and only return the `id`
+     * const trackingDomainSettingWithIdOnly = await prisma.trackingDomainSetting.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TrackingDomainSettingUpdateManyAndReturnArgs>(args: SelectSubset<T, TrackingDomainSettingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one TrackingDomainSetting.
+     * @param {TrackingDomainSettingUpsertArgs} args - Arguments to update or create a TrackingDomainSetting.
+     * @example
+     * // Update or create a TrackingDomainSetting
+     * const trackingDomainSetting = await prisma.trackingDomainSetting.upsert({
+     *   create: {
+     *     // ... data to create a TrackingDomainSetting
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TrackingDomainSetting we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TrackingDomainSettingUpsertArgs>(args: SelectSubset<T, TrackingDomainSettingUpsertArgs<ExtArgs>>): Prisma__TrackingDomainSettingClient<$Result.GetResult<Prisma.$TrackingDomainSettingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of TrackingDomainSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingDomainSettingCountArgs} args - Arguments to filter TrackingDomainSettings to count.
+     * @example
+     * // Count the number of TrackingDomainSettings
+     * const count = await prisma.trackingDomainSetting.count({
+     *   where: {
+     *     // ... the filter for the TrackingDomainSettings we want to count
+     *   }
+     * })
+    **/
+    count<T extends TrackingDomainSettingCountArgs>(
+      args?: Subset<T, TrackingDomainSettingCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TrackingDomainSettingCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TrackingDomainSetting.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingDomainSettingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TrackingDomainSettingAggregateArgs>(args: Subset<T, TrackingDomainSettingAggregateArgs>): Prisma.PrismaPromise<GetTrackingDomainSettingAggregateType<T>>
+
+    /**
+     * Group by TrackingDomainSetting.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingDomainSettingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TrackingDomainSettingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TrackingDomainSettingGroupByArgs['orderBy'] }
+        : { orderBy?: TrackingDomainSettingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TrackingDomainSettingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTrackingDomainSettingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TrackingDomainSetting model
+   */
+  readonly fields: TrackingDomainSettingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TrackingDomainSetting.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TrackingDomainSettingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    organization<T extends TrackingDomainSetting$organizationArgs<ExtArgs> = {}>(args?: Subset<T, TrackingDomainSetting$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TrackingDomainSetting model
+   */
+  interface TrackingDomainSettingFieldRefs {
+    readonly id: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly scopeKey: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly userId: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly organizationId: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly rootDomain: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly subdomain: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly fullDomain: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly cnameTarget: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly status: FieldRef<"TrackingDomainSetting", 'TrackingDomainStatus'>
+    readonly lastCheckedAt: FieldRef<"TrackingDomainSetting", 'DateTime'>
+    readonly lastCheckedValue: FieldRef<"TrackingDomainSetting", 'String'>
+    readonly verifiedAt: FieldRef<"TrackingDomainSetting", 'DateTime'>
+    readonly createdAt: FieldRef<"TrackingDomainSetting", 'DateTime'>
+    readonly updatedAt: FieldRef<"TrackingDomainSetting", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TrackingDomainSetting findUnique
+   */
+  export type TrackingDomainSettingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingDomainSetting to fetch.
+     */
+    where: TrackingDomainSettingWhereUniqueInput
+  }
+
+  /**
+   * TrackingDomainSetting findUniqueOrThrow
+   */
+  export type TrackingDomainSettingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingDomainSetting to fetch.
+     */
+    where: TrackingDomainSettingWhereUniqueInput
+  }
+
+  /**
+   * TrackingDomainSetting findFirst
+   */
+  export type TrackingDomainSettingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingDomainSetting to fetch.
+     */
+    where?: TrackingDomainSettingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingDomainSettings to fetch.
+     */
+    orderBy?: TrackingDomainSettingOrderByWithRelationInput | TrackingDomainSettingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TrackingDomainSettings.
+     */
+    cursor?: TrackingDomainSettingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingDomainSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingDomainSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TrackingDomainSettings.
+     */
+    distinct?: TrackingDomainSettingScalarFieldEnum | TrackingDomainSettingScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingDomainSetting findFirstOrThrow
+   */
+  export type TrackingDomainSettingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingDomainSetting to fetch.
+     */
+    where?: TrackingDomainSettingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingDomainSettings to fetch.
+     */
+    orderBy?: TrackingDomainSettingOrderByWithRelationInput | TrackingDomainSettingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TrackingDomainSettings.
+     */
+    cursor?: TrackingDomainSettingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingDomainSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingDomainSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TrackingDomainSettings.
+     */
+    distinct?: TrackingDomainSettingScalarFieldEnum | TrackingDomainSettingScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingDomainSetting findMany
+   */
+  export type TrackingDomainSettingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingDomainSettings to fetch.
+     */
+    where?: TrackingDomainSettingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingDomainSettings to fetch.
+     */
+    orderBy?: TrackingDomainSettingOrderByWithRelationInput | TrackingDomainSettingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TrackingDomainSettings.
+     */
+    cursor?: TrackingDomainSettingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingDomainSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingDomainSettings.
+     */
+    skip?: number
+    distinct?: TrackingDomainSettingScalarFieldEnum | TrackingDomainSettingScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingDomainSetting create
+   */
+  export type TrackingDomainSettingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TrackingDomainSetting.
+     */
+    data: XOR<TrackingDomainSettingCreateInput, TrackingDomainSettingUncheckedCreateInput>
+  }
+
+  /**
+   * TrackingDomainSetting createMany
+   */
+  export type TrackingDomainSettingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TrackingDomainSettings.
+     */
+    data: TrackingDomainSettingCreateManyInput | TrackingDomainSettingCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TrackingDomainSetting createManyAndReturn
+   */
+  export type TrackingDomainSettingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * The data used to create many TrackingDomainSettings.
+     */
+    data: TrackingDomainSettingCreateManyInput | TrackingDomainSettingCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TrackingDomainSetting update
+   */
+  export type TrackingDomainSettingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TrackingDomainSetting.
+     */
+    data: XOR<TrackingDomainSettingUpdateInput, TrackingDomainSettingUncheckedUpdateInput>
+    /**
+     * Choose, which TrackingDomainSetting to update.
+     */
+    where: TrackingDomainSettingWhereUniqueInput
+  }
+
+  /**
+   * TrackingDomainSetting updateMany
+   */
+  export type TrackingDomainSettingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TrackingDomainSettings.
+     */
+    data: XOR<TrackingDomainSettingUpdateManyMutationInput, TrackingDomainSettingUncheckedUpdateManyInput>
+    /**
+     * Filter which TrackingDomainSettings to update
+     */
+    where?: TrackingDomainSettingWhereInput
+    /**
+     * Limit how many TrackingDomainSettings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TrackingDomainSetting updateManyAndReturn
+   */
+  export type TrackingDomainSettingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * The data used to update TrackingDomainSettings.
+     */
+    data: XOR<TrackingDomainSettingUpdateManyMutationInput, TrackingDomainSettingUncheckedUpdateManyInput>
+    /**
+     * Filter which TrackingDomainSettings to update
+     */
+    where?: TrackingDomainSettingWhereInput
+    /**
+     * Limit how many TrackingDomainSettings to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TrackingDomainSetting upsert
+   */
+  export type TrackingDomainSettingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TrackingDomainSetting to update in case it exists.
+     */
+    where: TrackingDomainSettingWhereUniqueInput
+    /**
+     * In case the TrackingDomainSetting found by the `where` argument doesn't exist, create a new TrackingDomainSetting with this data.
+     */
+    create: XOR<TrackingDomainSettingCreateInput, TrackingDomainSettingUncheckedCreateInput>
+    /**
+     * In case the TrackingDomainSetting was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TrackingDomainSettingUpdateInput, TrackingDomainSettingUncheckedUpdateInput>
+  }
+
+  /**
+   * TrackingDomainSetting delete
+   */
+  export type TrackingDomainSettingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
+    /**
+     * Filter which TrackingDomainSetting to delete.
+     */
+    where: TrackingDomainSettingWhereUniqueInput
+  }
+
+  /**
+   * TrackingDomainSetting deleteMany
+   */
+  export type TrackingDomainSettingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TrackingDomainSettings to delete
+     */
+    where?: TrackingDomainSettingWhereInput
+    /**
+     * Limit how many TrackingDomainSettings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TrackingDomainSetting.organization
+   */
+  export type TrackingDomainSetting$organizationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Organization
+     */
+    select?: OrganizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Organization
+     */
+    omit?: OrganizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrganizationInclude<ExtArgs> | null
+    where?: OrganizationWhereInput
+  }
+
+  /**
+   * TrackingDomainSetting without action
+   */
+  export type TrackingDomainSettingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingDomainSetting
+     */
+    select?: TrackingDomainSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingDomainSetting
+     */
+    omit?: TrackingDomainSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingDomainSettingInclude<ExtArgs> | null
   }
 
 
@@ -14096,6 +15882,7 @@ export namespace Prisma {
     businessStartHour: number
     businessEndHour: number
     isPriority: number
+    sequenceConfig: number
     createdAt: number
     _all: number
   }
@@ -14183,6 +15970,7 @@ export namespace Prisma {
     businessStartHour?: true
     businessEndHour?: true
     isPriority?: true
+    sequenceConfig?: true
     createdAt?: true
     _all?: true
   }
@@ -14293,6 +16081,7 @@ export namespace Prisma {
     businessStartHour: number | null
     businessEndHour: number | null
     isPriority: boolean
+    sequenceConfig: JsonValue | null
     createdAt: Date
     _count: EmailCampaignCountAggregateOutputType | null
     _avg: EmailCampaignAvgAggregateOutputType | null
@@ -14335,6 +16124,7 @@ export namespace Prisma {
     businessStartHour?: boolean
     businessEndHour?: boolean
     isPriority?: boolean
+    sequenceConfig?: boolean
     createdAt?: boolean
     attachments?: boolean | EmailCampaign$attachmentsArgs<ExtArgs>
     campaignSenders?: boolean | EmailCampaign$campaignSendersArgs<ExtArgs>
@@ -14369,6 +16159,7 @@ export namespace Prisma {
     businessStartHour?: boolean
     businessEndHour?: boolean
     isPriority?: boolean
+    sequenceConfig?: boolean
     createdAt?: boolean
     sender?: boolean | EmailCampaign$senderArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -14395,6 +16186,7 @@ export namespace Prisma {
     businessStartHour?: boolean
     businessEndHour?: boolean
     isPriority?: boolean
+    sequenceConfig?: boolean
     createdAt?: boolean
     sender?: boolean | EmailCampaign$senderArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -14421,10 +16213,11 @@ export namespace Prisma {
     businessStartHour?: boolean
     businessEndHour?: boolean
     isPriority?: boolean
+    sequenceConfig?: boolean
     createdAt?: boolean
   }
 
-  export type EmailCampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "senderId" | "subject" | "body" | "replyTo" | "startTime" | "delaySeconds" | "hourlyLimit" | "totalRecipients" | "status" | "pauseReason" | "trackOpens" | "trackClicks" | "timezone" | "businessStartHour" | "businessEndHour" | "isPriority" | "createdAt", ExtArgs["result"]["emailCampaign"]>
+  export type EmailCampaignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "senderId" | "subject" | "body" | "replyTo" | "startTime" | "delaySeconds" | "hourlyLimit" | "totalRecipients" | "status" | "pauseReason" | "trackOpens" | "trackClicks" | "timezone" | "businessStartHour" | "businessEndHour" | "isPriority" | "sequenceConfig" | "createdAt", ExtArgs["result"]["emailCampaign"]>
   export type EmailCampaignInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     attachments?: boolean | EmailCampaign$attachmentsArgs<ExtArgs>
     campaignSenders?: boolean | EmailCampaign$campaignSendersArgs<ExtArgs>
@@ -14483,6 +16276,7 @@ export namespace Prisma {
       businessStartHour: number | null
       businessEndHour: number | null
       isPriority: boolean
+      sequenceConfig: Prisma.JsonValue | null
       createdAt: Date
     }, ExtArgs["result"]["emailCampaign"]>
     composites: {}
@@ -14936,6 +16730,7 @@ export namespace Prisma {
     readonly businessStartHour: FieldRef<"EmailCampaign", 'Int'>
     readonly businessEndHour: FieldRef<"EmailCampaign", 'Int'>
     readonly isPriority: FieldRef<"EmailCampaign", 'Boolean'>
+    readonly sequenceConfig: FieldRef<"EmailCampaign", 'Json'>
     readonly createdAt: FieldRef<"EmailCampaign", 'DateTime'>
   }
     
@@ -22296,6 +24091,1126 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: EmailTemplateInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model FollowUpTemplate
+   */
+
+  export type AggregateFollowUpTemplate = {
+    _count: FollowUpTemplateCountAggregateOutputType | null
+    _min: FollowUpTemplateMinAggregateOutputType | null
+    _max: FollowUpTemplateMaxAggregateOutputType | null
+  }
+
+  export type FollowUpTemplateMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    organizationId: string | null
+    name: string | null
+    description: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FollowUpTemplateMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    organizationId: string | null
+    name: string | null
+    description: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FollowUpTemplateCountAggregateOutputType = {
+    id: number
+    userId: number
+    organizationId: number
+    name: number
+    description: number
+    steps: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type FollowUpTemplateMinAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    name?: true
+    description?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FollowUpTemplateMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    name?: true
+    description?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FollowUpTemplateCountAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    name?: true
+    description?: true
+    steps?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type FollowUpTemplateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpTemplate to aggregate.
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpTemplates to fetch.
+     */
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FollowUpTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned FollowUpTemplates
+    **/
+    _count?: true | FollowUpTemplateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FollowUpTemplateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FollowUpTemplateMaxAggregateInputType
+  }
+
+  export type GetFollowUpTemplateAggregateType<T extends FollowUpTemplateAggregateArgs> = {
+        [P in keyof T & keyof AggregateFollowUpTemplate]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFollowUpTemplate[P]>
+      : GetScalarType<T[P], AggregateFollowUpTemplate[P]>
+  }
+
+
+
+
+  export type FollowUpTemplateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FollowUpTemplateWhereInput
+    orderBy?: FollowUpTemplateOrderByWithAggregationInput | FollowUpTemplateOrderByWithAggregationInput[]
+    by: FollowUpTemplateScalarFieldEnum[] | FollowUpTemplateScalarFieldEnum
+    having?: FollowUpTemplateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FollowUpTemplateCountAggregateInputType | true
+    _min?: FollowUpTemplateMinAggregateInputType
+    _max?: FollowUpTemplateMaxAggregateInputType
+  }
+
+  export type FollowUpTemplateGroupByOutputType = {
+    id: string
+    userId: string
+    organizationId: string | null
+    name: string
+    description: string | null
+    steps: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: FollowUpTemplateCountAggregateOutputType | null
+    _min: FollowUpTemplateMinAggregateOutputType | null
+    _max: FollowUpTemplateMaxAggregateOutputType | null
+  }
+
+  type GetFollowUpTemplateGroupByPayload<T extends FollowUpTemplateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FollowUpTemplateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FollowUpTemplateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FollowUpTemplateGroupByOutputType[P]>
+            : GetScalarType<T[P], FollowUpTemplateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FollowUpTemplateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    name?: boolean
+    description?: boolean
+    steps?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | FollowUpTemplate$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpTemplate"]>
+
+  export type FollowUpTemplateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    name?: boolean
+    description?: boolean
+    steps?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | FollowUpTemplate$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpTemplate"]>
+
+  export type FollowUpTemplateSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    name?: boolean
+    description?: boolean
+    steps?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | FollowUpTemplate$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["followUpTemplate"]>
+
+  export type FollowUpTemplateSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    name?: boolean
+    description?: boolean
+    steps?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type FollowUpTemplateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "name" | "description" | "steps" | "createdAt" | "updatedAt", ExtArgs["result"]["followUpTemplate"]>
+  export type FollowUpTemplateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | FollowUpTemplate$organizationArgs<ExtArgs>
+  }
+  export type FollowUpTemplateIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | FollowUpTemplate$organizationArgs<ExtArgs>
+  }
+  export type FollowUpTemplateIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | FollowUpTemplate$organizationArgs<ExtArgs>
+  }
+
+  export type $FollowUpTemplatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FollowUpTemplate"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      organization: Prisma.$OrganizationPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      organizationId: string | null
+      name: string
+      description: string | null
+      steps: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["followUpTemplate"]>
+    composites: {}
+  }
+
+  type FollowUpTemplateGetPayload<S extends boolean | null | undefined | FollowUpTemplateDefaultArgs> = $Result.GetResult<Prisma.$FollowUpTemplatePayload, S>
+
+  type FollowUpTemplateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FollowUpTemplateFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FollowUpTemplateCountAggregateInputType | true
+    }
+
+  export interface FollowUpTemplateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FollowUpTemplate'], meta: { name: 'FollowUpTemplate' } }
+    /**
+     * Find zero or one FollowUpTemplate that matches the filter.
+     * @param {FollowUpTemplateFindUniqueArgs} args - Arguments to find a FollowUpTemplate
+     * @example
+     * // Get one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FollowUpTemplateFindUniqueArgs>(args: SelectSubset<T, FollowUpTemplateFindUniqueArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one FollowUpTemplate that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FollowUpTemplateFindUniqueOrThrowArgs} args - Arguments to find a FollowUpTemplate
+     * @example
+     * // Get one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FollowUpTemplateFindUniqueOrThrowArgs>(args: SelectSubset<T, FollowUpTemplateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FollowUpTemplate that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateFindFirstArgs} args - Arguments to find a FollowUpTemplate
+     * @example
+     * // Get one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FollowUpTemplateFindFirstArgs>(args?: SelectSubset<T, FollowUpTemplateFindFirstArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first FollowUpTemplate that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateFindFirstOrThrowArgs} args - Arguments to find a FollowUpTemplate
+     * @example
+     * // Get one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FollowUpTemplateFindFirstOrThrowArgs>(args?: SelectSubset<T, FollowUpTemplateFindFirstOrThrowArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more FollowUpTemplates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all FollowUpTemplates
+     * const followUpTemplates = await prisma.followUpTemplate.findMany()
+     * 
+     * // Get first 10 FollowUpTemplates
+     * const followUpTemplates = await prisma.followUpTemplate.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const followUpTemplateWithIdOnly = await prisma.followUpTemplate.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FollowUpTemplateFindManyArgs>(args?: SelectSubset<T, FollowUpTemplateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a FollowUpTemplate.
+     * @param {FollowUpTemplateCreateArgs} args - Arguments to create a FollowUpTemplate.
+     * @example
+     * // Create one FollowUpTemplate
+     * const FollowUpTemplate = await prisma.followUpTemplate.create({
+     *   data: {
+     *     // ... data to create a FollowUpTemplate
+     *   }
+     * })
+     * 
+     */
+    create<T extends FollowUpTemplateCreateArgs>(args: SelectSubset<T, FollowUpTemplateCreateArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many FollowUpTemplates.
+     * @param {FollowUpTemplateCreateManyArgs} args - Arguments to create many FollowUpTemplates.
+     * @example
+     * // Create many FollowUpTemplates
+     * const followUpTemplate = await prisma.followUpTemplate.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FollowUpTemplateCreateManyArgs>(args?: SelectSubset<T, FollowUpTemplateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many FollowUpTemplates and returns the data saved in the database.
+     * @param {FollowUpTemplateCreateManyAndReturnArgs} args - Arguments to create many FollowUpTemplates.
+     * @example
+     * // Create many FollowUpTemplates
+     * const followUpTemplate = await prisma.followUpTemplate.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many FollowUpTemplates and only return the `id`
+     * const followUpTemplateWithIdOnly = await prisma.followUpTemplate.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FollowUpTemplateCreateManyAndReturnArgs>(args?: SelectSubset<T, FollowUpTemplateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a FollowUpTemplate.
+     * @param {FollowUpTemplateDeleteArgs} args - Arguments to delete one FollowUpTemplate.
+     * @example
+     * // Delete one FollowUpTemplate
+     * const FollowUpTemplate = await prisma.followUpTemplate.delete({
+     *   where: {
+     *     // ... filter to delete one FollowUpTemplate
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FollowUpTemplateDeleteArgs>(args: SelectSubset<T, FollowUpTemplateDeleteArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one FollowUpTemplate.
+     * @param {FollowUpTemplateUpdateArgs} args - Arguments to update one FollowUpTemplate.
+     * @example
+     * // Update one FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FollowUpTemplateUpdateArgs>(args: SelectSubset<T, FollowUpTemplateUpdateArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more FollowUpTemplates.
+     * @param {FollowUpTemplateDeleteManyArgs} args - Arguments to filter FollowUpTemplates to delete.
+     * @example
+     * // Delete a few FollowUpTemplates
+     * const { count } = await prisma.followUpTemplate.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FollowUpTemplateDeleteManyArgs>(args?: SelectSubset<T, FollowUpTemplateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many FollowUpTemplates
+     * const followUpTemplate = await prisma.followUpTemplate.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FollowUpTemplateUpdateManyArgs>(args: SelectSubset<T, FollowUpTemplateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more FollowUpTemplates and returns the data updated in the database.
+     * @param {FollowUpTemplateUpdateManyAndReturnArgs} args - Arguments to update many FollowUpTemplates.
+     * @example
+     * // Update many FollowUpTemplates
+     * const followUpTemplate = await prisma.followUpTemplate.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more FollowUpTemplates and only return the `id`
+     * const followUpTemplateWithIdOnly = await prisma.followUpTemplate.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FollowUpTemplateUpdateManyAndReturnArgs>(args: SelectSubset<T, FollowUpTemplateUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one FollowUpTemplate.
+     * @param {FollowUpTemplateUpsertArgs} args - Arguments to update or create a FollowUpTemplate.
+     * @example
+     * // Update or create a FollowUpTemplate
+     * const followUpTemplate = await prisma.followUpTemplate.upsert({
+     *   create: {
+     *     // ... data to create a FollowUpTemplate
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the FollowUpTemplate we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FollowUpTemplateUpsertArgs>(args: SelectSubset<T, FollowUpTemplateUpsertArgs<ExtArgs>>): Prisma__FollowUpTemplateClient<$Result.GetResult<Prisma.$FollowUpTemplatePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of FollowUpTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateCountArgs} args - Arguments to filter FollowUpTemplates to count.
+     * @example
+     * // Count the number of FollowUpTemplates
+     * const count = await prisma.followUpTemplate.count({
+     *   where: {
+     *     // ... the filter for the FollowUpTemplates we want to count
+     *   }
+     * })
+    **/
+    count<T extends FollowUpTemplateCountArgs>(
+      args?: Subset<T, FollowUpTemplateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FollowUpTemplateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a FollowUpTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FollowUpTemplateAggregateArgs>(args: Subset<T, FollowUpTemplateAggregateArgs>): Prisma.PrismaPromise<GetFollowUpTemplateAggregateType<T>>
+
+    /**
+     * Group by FollowUpTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FollowUpTemplateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FollowUpTemplateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FollowUpTemplateGroupByArgs['orderBy'] }
+        : { orderBy?: FollowUpTemplateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FollowUpTemplateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFollowUpTemplateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the FollowUpTemplate model
+   */
+  readonly fields: FollowUpTemplateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for FollowUpTemplate.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FollowUpTemplateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    organization<T extends FollowUpTemplate$organizationArgs<ExtArgs> = {}>(args?: Subset<T, FollowUpTemplate$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the FollowUpTemplate model
+   */
+  interface FollowUpTemplateFieldRefs {
+    readonly id: FieldRef<"FollowUpTemplate", 'String'>
+    readonly userId: FieldRef<"FollowUpTemplate", 'String'>
+    readonly organizationId: FieldRef<"FollowUpTemplate", 'String'>
+    readonly name: FieldRef<"FollowUpTemplate", 'String'>
+    readonly description: FieldRef<"FollowUpTemplate", 'String'>
+    readonly steps: FieldRef<"FollowUpTemplate", 'Json'>
+    readonly createdAt: FieldRef<"FollowUpTemplate", 'DateTime'>
+    readonly updatedAt: FieldRef<"FollowUpTemplate", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * FollowUpTemplate findUnique
+   */
+  export type FollowUpTemplateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplate to fetch.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+  }
+
+  /**
+   * FollowUpTemplate findUniqueOrThrow
+   */
+  export type FollowUpTemplateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplate to fetch.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+  }
+
+  /**
+   * FollowUpTemplate findFirst
+   */
+  export type FollowUpTemplateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplate to fetch.
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpTemplates to fetch.
+     */
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpTemplates.
+     */
+    cursor?: FollowUpTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpTemplates.
+     */
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpTemplate findFirstOrThrow
+   */
+  export type FollowUpTemplateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplate to fetch.
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpTemplates to fetch.
+     */
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for FollowUpTemplates.
+     */
+    cursor?: FollowUpTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of FollowUpTemplates.
+     */
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpTemplate findMany
+   */
+  export type FollowUpTemplateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which FollowUpTemplates to fetch.
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of FollowUpTemplates to fetch.
+     */
+    orderBy?: FollowUpTemplateOrderByWithRelationInput | FollowUpTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing FollowUpTemplates.
+     */
+    cursor?: FollowUpTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` FollowUpTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` FollowUpTemplates.
+     */
+    skip?: number
+    distinct?: FollowUpTemplateScalarFieldEnum | FollowUpTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * FollowUpTemplate create
+   */
+  export type FollowUpTemplateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * The data needed to create a FollowUpTemplate.
+     */
+    data: XOR<FollowUpTemplateCreateInput, FollowUpTemplateUncheckedCreateInput>
+  }
+
+  /**
+   * FollowUpTemplate createMany
+   */
+  export type FollowUpTemplateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many FollowUpTemplates.
+     */
+    data: FollowUpTemplateCreateManyInput | FollowUpTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * FollowUpTemplate createManyAndReturn
+   */
+  export type FollowUpTemplateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to create many FollowUpTemplates.
+     */
+    data: FollowUpTemplateCreateManyInput | FollowUpTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpTemplate update
+   */
+  export type FollowUpTemplateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * The data needed to update a FollowUpTemplate.
+     */
+    data: XOR<FollowUpTemplateUpdateInput, FollowUpTemplateUncheckedUpdateInput>
+    /**
+     * Choose, which FollowUpTemplate to update.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+  }
+
+  /**
+   * FollowUpTemplate updateMany
+   */
+  export type FollowUpTemplateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update FollowUpTemplates.
+     */
+    data: XOR<FollowUpTemplateUpdateManyMutationInput, FollowUpTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpTemplates to update
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * Limit how many FollowUpTemplates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * FollowUpTemplate updateManyAndReturn
+   */
+  export type FollowUpTemplateUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to update FollowUpTemplates.
+     */
+    data: XOR<FollowUpTemplateUpdateManyMutationInput, FollowUpTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which FollowUpTemplates to update
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * Limit how many FollowUpTemplates to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * FollowUpTemplate upsert
+   */
+  export type FollowUpTemplateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * The filter to search for the FollowUpTemplate to update in case it exists.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+    /**
+     * In case the FollowUpTemplate found by the `where` argument doesn't exist, create a new FollowUpTemplate with this data.
+     */
+    create: XOR<FollowUpTemplateCreateInput, FollowUpTemplateUncheckedCreateInput>
+    /**
+     * In case the FollowUpTemplate was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FollowUpTemplateUpdateInput, FollowUpTemplateUncheckedUpdateInput>
+  }
+
+  /**
+   * FollowUpTemplate delete
+   */
+  export type FollowUpTemplateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
+    /**
+     * Filter which FollowUpTemplate to delete.
+     */
+    where: FollowUpTemplateWhereUniqueInput
+  }
+
+  /**
+   * FollowUpTemplate deleteMany
+   */
+  export type FollowUpTemplateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which FollowUpTemplates to delete
+     */
+    where?: FollowUpTemplateWhereInput
+    /**
+     * Limit how many FollowUpTemplates to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * FollowUpTemplate.organization
+   */
+  export type FollowUpTemplate$organizationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Organization
+     */
+    select?: OrganizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Organization
+     */
+    omit?: OrganizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrganizationInclude<ExtArgs> | null
+    where?: OrganizationWhereInput
+  }
+
+  /**
+   * FollowUpTemplate without action
+   */
+  export type FollowUpTemplateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FollowUpTemplate
+     */
+    select?: FollowUpTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FollowUpTemplate
+     */
+    omit?: FollowUpTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FollowUpTemplateInclude<ExtArgs> | null
   }
 
 
@@ -34652,12 +37567,18 @@ export namespace Prisma {
     userId: string | null
     organizationId: string | null
     email: string | null
+    website: string | null
+    companyDomain: string | null
     firstName: string | null
     lastName: string | null
     company: string | null
     phone: string | null
     jobTitle: string | null
     stage: string | null
+    nextAction: string | null
+    nextActionDueAt: Date | null
+    assignedToId: string | null
+    lastEnrichedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -34667,12 +37588,18 @@ export namespace Prisma {
     userId: string | null
     organizationId: string | null
     email: string | null
+    website: string | null
+    companyDomain: string | null
     firstName: string | null
     lastName: string | null
     company: string | null
     phone: string | null
     jobTitle: string | null
     stage: string | null
+    nextAction: string | null
+    nextActionDueAt: Date | null
+    assignedToId: string | null
+    lastEnrichedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -34682,12 +37609,19 @@ export namespace Prisma {
     userId: number
     organizationId: number
     email: number
+    website: number
+    companyDomain: number
     firstName: number
     lastName: number
     company: number
     phone: number
     jobTitle: number
+    techStack: number
     stage: number
+    nextAction: number
+    nextActionDueAt: number
+    assignedToId: number
+    lastEnrichedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -34699,12 +37633,18 @@ export namespace Prisma {
     userId?: true
     organizationId?: true
     email?: true
+    website?: true
+    companyDomain?: true
     firstName?: true
     lastName?: true
     company?: true
     phone?: true
     jobTitle?: true
     stage?: true
+    nextAction?: true
+    nextActionDueAt?: true
+    assignedToId?: true
+    lastEnrichedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -34714,12 +37654,18 @@ export namespace Prisma {
     userId?: true
     organizationId?: true
     email?: true
+    website?: true
+    companyDomain?: true
     firstName?: true
     lastName?: true
     company?: true
     phone?: true
     jobTitle?: true
     stage?: true
+    nextAction?: true
+    nextActionDueAt?: true
+    assignedToId?: true
+    lastEnrichedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -34729,12 +37675,19 @@ export namespace Prisma {
     userId?: true
     organizationId?: true
     email?: true
+    website?: true
+    companyDomain?: true
     firstName?: true
     lastName?: true
     company?: true
     phone?: true
     jobTitle?: true
+    techStack?: true
     stage?: true
+    nextAction?: true
+    nextActionDueAt?: true
+    assignedToId?: true
+    lastEnrichedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -34817,12 +37770,19 @@ export namespace Prisma {
     userId: string
     organizationId: string | null
     email: string
+    website: string | null
+    companyDomain: string | null
     firstName: string | null
     lastName: string | null
     company: string | null
     phone: string | null
     jobTitle: string | null
+    techStack: string[]
     stage: string
+    nextAction: string | null
+    nextActionDueAt: Date | null
+    assignedToId: string | null
+    lastEnrichedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: ContactCountAggregateOutputType | null
@@ -34849,15 +37809,23 @@ export namespace Prisma {
     userId?: boolean
     organizationId?: boolean
     email?: boolean
+    website?: boolean
+    companyDomain?: boolean
     firstName?: boolean
     lastName?: boolean
     company?: boolean
     phone?: boolean
     jobTitle?: boolean
+    techStack?: boolean
     stage?: boolean
+    nextAction?: boolean
+    nextActionDueAt?: boolean
+    assignedToId?: boolean
+    lastEnrichedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | Contact$assignedToArgs<ExtArgs>
     organization?: boolean | Contact$organizationArgs<ExtArgs>
     activities?: boolean | Contact$activitiesArgs<ExtArgs>
     notes?: boolean | Contact$notesArgs<ExtArgs>
@@ -34874,15 +37842,23 @@ export namespace Prisma {
     userId?: boolean
     organizationId?: boolean
     email?: boolean
+    website?: boolean
+    companyDomain?: boolean
     firstName?: boolean
     lastName?: boolean
     company?: boolean
     phone?: boolean
     jobTitle?: boolean
+    techStack?: boolean
     stage?: boolean
+    nextAction?: boolean
+    nextActionDueAt?: boolean
+    assignedToId?: boolean
+    lastEnrichedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | Contact$assignedToArgs<ExtArgs>
     organization?: boolean | Contact$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["contact"]>
 
@@ -34891,15 +37867,23 @@ export namespace Prisma {
     userId?: boolean
     organizationId?: boolean
     email?: boolean
+    website?: boolean
+    companyDomain?: boolean
     firstName?: boolean
     lastName?: boolean
     company?: boolean
     phone?: boolean
     jobTitle?: boolean
+    techStack?: boolean
     stage?: boolean
+    nextAction?: boolean
+    nextActionDueAt?: boolean
+    assignedToId?: boolean
+    lastEnrichedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | Contact$assignedToArgs<ExtArgs>
     organization?: boolean | Contact$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["contact"]>
 
@@ -34908,19 +37892,27 @@ export namespace Prisma {
     userId?: boolean
     organizationId?: boolean
     email?: boolean
+    website?: boolean
+    companyDomain?: boolean
     firstName?: boolean
     lastName?: boolean
     company?: boolean
     phone?: boolean
     jobTitle?: boolean
+    techStack?: boolean
     stage?: boolean
+    nextAction?: boolean
+    nextActionDueAt?: boolean
+    assignedToId?: boolean
+    lastEnrichedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "email" | "firstName" | "lastName" | "company" | "phone" | "jobTitle" | "stage" | "createdAt" | "updatedAt", ExtArgs["result"]["contact"]>
+  export type ContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "email" | "website" | "companyDomain" | "firstName" | "lastName" | "company" | "phone" | "jobTitle" | "techStack" | "stage" | "nextAction" | "nextActionDueAt" | "assignedToId" | "lastEnrichedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["contact"]>
   export type ContactInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | Contact$assignedToArgs<ExtArgs>
     organization?: boolean | Contact$organizationArgs<ExtArgs>
     activities?: boolean | Contact$activitiesArgs<ExtArgs>
     notes?: boolean | Contact$notesArgs<ExtArgs>
@@ -34933,10 +37925,12 @@ export namespace Prisma {
   }
   export type ContactIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | Contact$assignedToArgs<ExtArgs>
     organization?: boolean | Contact$organizationArgs<ExtArgs>
   }
   export type ContactIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | Contact$assignedToArgs<ExtArgs>
     organization?: boolean | Contact$organizationArgs<ExtArgs>
   }
 
@@ -34944,6 +37938,7 @@ export namespace Prisma {
     name: "Contact"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      assignedTo: Prisma.$UserPayload<ExtArgs> | null
       organization: Prisma.$OrganizationPayload<ExtArgs> | null
       activities: Prisma.$ContactActivityPayload<ExtArgs>[]
       notes: Prisma.$NotePayload<ExtArgs>[]
@@ -34958,12 +37953,19 @@ export namespace Prisma {
       userId: string
       organizationId: string | null
       email: string
+      website: string | null
+      companyDomain: string | null
       firstName: string | null
       lastName: string | null
       company: string | null
       phone: string | null
       jobTitle: string | null
+      techStack: string[]
       stage: string
+      nextAction: string | null
+      nextActionDueAt: Date | null
+      assignedToId: string | null
+      lastEnrichedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["contact"]>
@@ -35361,6 +38363,7 @@ export namespace Prisma {
   export interface Prisma__ContactClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    assignedTo<T extends Contact$assignedToArgs<ExtArgs> = {}>(args?: Subset<T, Contact$assignedToArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     organization<T extends Contact$organizationArgs<ExtArgs> = {}>(args?: Subset<T, Contact$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     activities<T extends Contact$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Contact$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notes<T extends Contact$notesArgs<ExtArgs> = {}>(args?: Subset<T, Contact$notesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -35402,12 +38405,19 @@ export namespace Prisma {
     readonly userId: FieldRef<"Contact", 'String'>
     readonly organizationId: FieldRef<"Contact", 'String'>
     readonly email: FieldRef<"Contact", 'String'>
+    readonly website: FieldRef<"Contact", 'String'>
+    readonly companyDomain: FieldRef<"Contact", 'String'>
     readonly firstName: FieldRef<"Contact", 'String'>
     readonly lastName: FieldRef<"Contact", 'String'>
     readonly company: FieldRef<"Contact", 'String'>
     readonly phone: FieldRef<"Contact", 'String'>
     readonly jobTitle: FieldRef<"Contact", 'String'>
+    readonly techStack: FieldRef<"Contact", 'String[]'>
     readonly stage: FieldRef<"Contact", 'String'>
+    readonly nextAction: FieldRef<"Contact", 'String'>
+    readonly nextActionDueAt: FieldRef<"Contact", 'DateTime'>
+    readonly assignedToId: FieldRef<"Contact", 'String'>
+    readonly lastEnrichedAt: FieldRef<"Contact", 'DateTime'>
     readonly createdAt: FieldRef<"Contact", 'DateTime'>
     readonly updatedAt: FieldRef<"Contact", 'DateTime'>
   }
@@ -35806,6 +38816,25 @@ export namespace Prisma {
   }
 
   /**
+   * Contact.assignedTo
+   */
+  export type Contact$assignedToArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
    * Contact.organization
    */
   export type Contact$organizationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -36012,6 +39041,1295 @@ export namespace Prisma {
 
 
   /**
+   * Model PrmCompany
+   */
+
+  export type AggregatePrmCompany = {
+    _count: PrmCompanyCountAggregateOutputType | null
+    _min: PrmCompanyMinAggregateOutputType | null
+    _max: PrmCompanyMaxAggregateOutputType | null
+  }
+
+  export type PrmCompanyMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    organizationId: string | null
+    name: string | null
+    website: string | null
+    domain: string | null
+    primaryEmail: string | null
+    phone: string | null
+    linkedinUrl: string | null
+    twitterUrl: string | null
+    githubUrl: string | null
+    facebookUrl: string | null
+    instagramUrl: string | null
+    whoisRegistrar: string | null
+    whoisCreatedAt: Date | null
+    whoisUpdatedAt: Date | null
+    whoisExpiresAt: Date | null
+    lastEnrichedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PrmCompanyMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    organizationId: string | null
+    name: string | null
+    website: string | null
+    domain: string | null
+    primaryEmail: string | null
+    phone: string | null
+    linkedinUrl: string | null
+    twitterUrl: string | null
+    githubUrl: string | null
+    facebookUrl: string | null
+    instagramUrl: string | null
+    whoisRegistrar: string | null
+    whoisCreatedAt: Date | null
+    whoisUpdatedAt: Date | null
+    whoisExpiresAt: Date | null
+    lastEnrichedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PrmCompanyCountAggregateOutputType = {
+    id: number
+    userId: number
+    organizationId: number
+    name: number
+    website: number
+    domain: number
+    primaryEmail: number
+    phone: number
+    linkedinUrl: number
+    twitterUrl: number
+    githubUrl: number
+    facebookUrl: number
+    instagramUrl: number
+    techStack: number
+    whoisRegistrar: number
+    whoisCreatedAt: number
+    whoisUpdatedAt: number
+    whoisExpiresAt: number
+    lastEnrichedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PrmCompanyMinAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    name?: true
+    website?: true
+    domain?: true
+    primaryEmail?: true
+    phone?: true
+    linkedinUrl?: true
+    twitterUrl?: true
+    githubUrl?: true
+    facebookUrl?: true
+    instagramUrl?: true
+    whoisRegistrar?: true
+    whoisCreatedAt?: true
+    whoisUpdatedAt?: true
+    whoisExpiresAt?: true
+    lastEnrichedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PrmCompanyMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    name?: true
+    website?: true
+    domain?: true
+    primaryEmail?: true
+    phone?: true
+    linkedinUrl?: true
+    twitterUrl?: true
+    githubUrl?: true
+    facebookUrl?: true
+    instagramUrl?: true
+    whoisRegistrar?: true
+    whoisCreatedAt?: true
+    whoisUpdatedAt?: true
+    whoisExpiresAt?: true
+    lastEnrichedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PrmCompanyCountAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    name?: true
+    website?: true
+    domain?: true
+    primaryEmail?: true
+    phone?: true
+    linkedinUrl?: true
+    twitterUrl?: true
+    githubUrl?: true
+    facebookUrl?: true
+    instagramUrl?: true
+    techStack?: true
+    whoisRegistrar?: true
+    whoisCreatedAt?: true
+    whoisUpdatedAt?: true
+    whoisExpiresAt?: true
+    lastEnrichedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PrmCompanyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PrmCompany to aggregate.
+     */
+    where?: PrmCompanyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrmCompanies to fetch.
+     */
+    orderBy?: PrmCompanyOrderByWithRelationInput | PrmCompanyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PrmCompanyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrmCompanies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrmCompanies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PrmCompanies
+    **/
+    _count?: true | PrmCompanyCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PrmCompanyMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PrmCompanyMaxAggregateInputType
+  }
+
+  export type GetPrmCompanyAggregateType<T extends PrmCompanyAggregateArgs> = {
+        [P in keyof T & keyof AggregatePrmCompany]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePrmCompany[P]>
+      : GetScalarType<T[P], AggregatePrmCompany[P]>
+  }
+
+
+
+
+  export type PrmCompanyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PrmCompanyWhereInput
+    orderBy?: PrmCompanyOrderByWithAggregationInput | PrmCompanyOrderByWithAggregationInput[]
+    by: PrmCompanyScalarFieldEnum[] | PrmCompanyScalarFieldEnum
+    having?: PrmCompanyScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PrmCompanyCountAggregateInputType | true
+    _min?: PrmCompanyMinAggregateInputType
+    _max?: PrmCompanyMaxAggregateInputType
+  }
+
+  export type PrmCompanyGroupByOutputType = {
+    id: string
+    userId: string
+    organizationId: string | null
+    name: string
+    website: string | null
+    domain: string
+    primaryEmail: string | null
+    phone: string | null
+    linkedinUrl: string | null
+    twitterUrl: string | null
+    githubUrl: string | null
+    facebookUrl: string | null
+    instagramUrl: string | null
+    techStack: string[]
+    whoisRegistrar: string | null
+    whoisCreatedAt: Date | null
+    whoisUpdatedAt: Date | null
+    whoisExpiresAt: Date | null
+    lastEnrichedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PrmCompanyCountAggregateOutputType | null
+    _min: PrmCompanyMinAggregateOutputType | null
+    _max: PrmCompanyMaxAggregateOutputType | null
+  }
+
+  type GetPrmCompanyGroupByPayload<T extends PrmCompanyGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PrmCompanyGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PrmCompanyGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PrmCompanyGroupByOutputType[P]>
+            : GetScalarType<T[P], PrmCompanyGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PrmCompanySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    name?: boolean
+    website?: boolean
+    domain?: boolean
+    primaryEmail?: boolean
+    phone?: boolean
+    linkedinUrl?: boolean
+    twitterUrl?: boolean
+    githubUrl?: boolean
+    facebookUrl?: boolean
+    instagramUrl?: boolean
+    techStack?: boolean
+    whoisRegistrar?: boolean
+    whoisCreatedAt?: boolean
+    whoisUpdatedAt?: boolean
+    whoisExpiresAt?: boolean
+    lastEnrichedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | PrmCompany$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["prmCompany"]>
+
+  export type PrmCompanySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    name?: boolean
+    website?: boolean
+    domain?: boolean
+    primaryEmail?: boolean
+    phone?: boolean
+    linkedinUrl?: boolean
+    twitterUrl?: boolean
+    githubUrl?: boolean
+    facebookUrl?: boolean
+    instagramUrl?: boolean
+    techStack?: boolean
+    whoisRegistrar?: boolean
+    whoisCreatedAt?: boolean
+    whoisUpdatedAt?: boolean
+    whoisExpiresAt?: boolean
+    lastEnrichedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | PrmCompany$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["prmCompany"]>
+
+  export type PrmCompanySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    name?: boolean
+    website?: boolean
+    domain?: boolean
+    primaryEmail?: boolean
+    phone?: boolean
+    linkedinUrl?: boolean
+    twitterUrl?: boolean
+    githubUrl?: boolean
+    facebookUrl?: boolean
+    instagramUrl?: boolean
+    techStack?: boolean
+    whoisRegistrar?: boolean
+    whoisCreatedAt?: boolean
+    whoisUpdatedAt?: boolean
+    whoisExpiresAt?: boolean
+    lastEnrichedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | PrmCompany$organizationArgs<ExtArgs>
+  }, ExtArgs["result"]["prmCompany"]>
+
+  export type PrmCompanySelectScalar = {
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    name?: boolean
+    website?: boolean
+    domain?: boolean
+    primaryEmail?: boolean
+    phone?: boolean
+    linkedinUrl?: boolean
+    twitterUrl?: boolean
+    githubUrl?: boolean
+    facebookUrl?: boolean
+    instagramUrl?: boolean
+    techStack?: boolean
+    whoisRegistrar?: boolean
+    whoisCreatedAt?: boolean
+    whoisUpdatedAt?: boolean
+    whoisExpiresAt?: boolean
+    lastEnrichedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PrmCompanyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "name" | "website" | "domain" | "primaryEmail" | "phone" | "linkedinUrl" | "twitterUrl" | "githubUrl" | "facebookUrl" | "instagramUrl" | "techStack" | "whoisRegistrar" | "whoisCreatedAt" | "whoisUpdatedAt" | "whoisExpiresAt" | "lastEnrichedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["prmCompany"]>
+  export type PrmCompanyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | PrmCompany$organizationArgs<ExtArgs>
+  }
+  export type PrmCompanyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | PrmCompany$organizationArgs<ExtArgs>
+  }
+  export type PrmCompanyIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | PrmCompany$organizationArgs<ExtArgs>
+  }
+
+  export type $PrmCompanyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PrmCompany"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      organization: Prisma.$OrganizationPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      organizationId: string | null
+      name: string
+      website: string | null
+      domain: string
+      primaryEmail: string | null
+      phone: string | null
+      linkedinUrl: string | null
+      twitterUrl: string | null
+      githubUrl: string | null
+      facebookUrl: string | null
+      instagramUrl: string | null
+      techStack: string[]
+      whoisRegistrar: string | null
+      whoisCreatedAt: Date | null
+      whoisUpdatedAt: Date | null
+      whoisExpiresAt: Date | null
+      lastEnrichedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["prmCompany"]>
+    composites: {}
+  }
+
+  type PrmCompanyGetPayload<S extends boolean | null | undefined | PrmCompanyDefaultArgs> = $Result.GetResult<Prisma.$PrmCompanyPayload, S>
+
+  type PrmCompanyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PrmCompanyFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PrmCompanyCountAggregateInputType | true
+    }
+
+  export interface PrmCompanyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PrmCompany'], meta: { name: 'PrmCompany' } }
+    /**
+     * Find zero or one PrmCompany that matches the filter.
+     * @param {PrmCompanyFindUniqueArgs} args - Arguments to find a PrmCompany
+     * @example
+     * // Get one PrmCompany
+     * const prmCompany = await prisma.prmCompany.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PrmCompanyFindUniqueArgs>(args: SelectSubset<T, PrmCompanyFindUniqueArgs<ExtArgs>>): Prisma__PrmCompanyClient<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PrmCompany that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PrmCompanyFindUniqueOrThrowArgs} args - Arguments to find a PrmCompany
+     * @example
+     * // Get one PrmCompany
+     * const prmCompany = await prisma.prmCompany.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PrmCompanyFindUniqueOrThrowArgs>(args: SelectSubset<T, PrmCompanyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PrmCompanyClient<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PrmCompany that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrmCompanyFindFirstArgs} args - Arguments to find a PrmCompany
+     * @example
+     * // Get one PrmCompany
+     * const prmCompany = await prisma.prmCompany.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PrmCompanyFindFirstArgs>(args?: SelectSubset<T, PrmCompanyFindFirstArgs<ExtArgs>>): Prisma__PrmCompanyClient<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PrmCompany that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrmCompanyFindFirstOrThrowArgs} args - Arguments to find a PrmCompany
+     * @example
+     * // Get one PrmCompany
+     * const prmCompany = await prisma.prmCompany.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PrmCompanyFindFirstOrThrowArgs>(args?: SelectSubset<T, PrmCompanyFindFirstOrThrowArgs<ExtArgs>>): Prisma__PrmCompanyClient<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PrmCompanies that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrmCompanyFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PrmCompanies
+     * const prmCompanies = await prisma.prmCompany.findMany()
+     * 
+     * // Get first 10 PrmCompanies
+     * const prmCompanies = await prisma.prmCompany.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const prmCompanyWithIdOnly = await prisma.prmCompany.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PrmCompanyFindManyArgs>(args?: SelectSubset<T, PrmCompanyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PrmCompany.
+     * @param {PrmCompanyCreateArgs} args - Arguments to create a PrmCompany.
+     * @example
+     * // Create one PrmCompany
+     * const PrmCompany = await prisma.prmCompany.create({
+     *   data: {
+     *     // ... data to create a PrmCompany
+     *   }
+     * })
+     * 
+     */
+    create<T extends PrmCompanyCreateArgs>(args: SelectSubset<T, PrmCompanyCreateArgs<ExtArgs>>): Prisma__PrmCompanyClient<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PrmCompanies.
+     * @param {PrmCompanyCreateManyArgs} args - Arguments to create many PrmCompanies.
+     * @example
+     * // Create many PrmCompanies
+     * const prmCompany = await prisma.prmCompany.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PrmCompanyCreateManyArgs>(args?: SelectSubset<T, PrmCompanyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PrmCompanies and returns the data saved in the database.
+     * @param {PrmCompanyCreateManyAndReturnArgs} args - Arguments to create many PrmCompanies.
+     * @example
+     * // Create many PrmCompanies
+     * const prmCompany = await prisma.prmCompany.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PrmCompanies and only return the `id`
+     * const prmCompanyWithIdOnly = await prisma.prmCompany.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PrmCompanyCreateManyAndReturnArgs>(args?: SelectSubset<T, PrmCompanyCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PrmCompany.
+     * @param {PrmCompanyDeleteArgs} args - Arguments to delete one PrmCompany.
+     * @example
+     * // Delete one PrmCompany
+     * const PrmCompany = await prisma.prmCompany.delete({
+     *   where: {
+     *     // ... filter to delete one PrmCompany
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PrmCompanyDeleteArgs>(args: SelectSubset<T, PrmCompanyDeleteArgs<ExtArgs>>): Prisma__PrmCompanyClient<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PrmCompany.
+     * @param {PrmCompanyUpdateArgs} args - Arguments to update one PrmCompany.
+     * @example
+     * // Update one PrmCompany
+     * const prmCompany = await prisma.prmCompany.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PrmCompanyUpdateArgs>(args: SelectSubset<T, PrmCompanyUpdateArgs<ExtArgs>>): Prisma__PrmCompanyClient<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PrmCompanies.
+     * @param {PrmCompanyDeleteManyArgs} args - Arguments to filter PrmCompanies to delete.
+     * @example
+     * // Delete a few PrmCompanies
+     * const { count } = await prisma.prmCompany.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PrmCompanyDeleteManyArgs>(args?: SelectSubset<T, PrmCompanyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PrmCompanies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrmCompanyUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PrmCompanies
+     * const prmCompany = await prisma.prmCompany.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PrmCompanyUpdateManyArgs>(args: SelectSubset<T, PrmCompanyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PrmCompanies and returns the data updated in the database.
+     * @param {PrmCompanyUpdateManyAndReturnArgs} args - Arguments to update many PrmCompanies.
+     * @example
+     * // Update many PrmCompanies
+     * const prmCompany = await prisma.prmCompany.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PrmCompanies and only return the `id`
+     * const prmCompanyWithIdOnly = await prisma.prmCompany.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PrmCompanyUpdateManyAndReturnArgs>(args: SelectSubset<T, PrmCompanyUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PrmCompany.
+     * @param {PrmCompanyUpsertArgs} args - Arguments to update or create a PrmCompany.
+     * @example
+     * // Update or create a PrmCompany
+     * const prmCompany = await prisma.prmCompany.upsert({
+     *   create: {
+     *     // ... data to create a PrmCompany
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PrmCompany we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PrmCompanyUpsertArgs>(args: SelectSubset<T, PrmCompanyUpsertArgs<ExtArgs>>): Prisma__PrmCompanyClient<$Result.GetResult<Prisma.$PrmCompanyPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PrmCompanies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrmCompanyCountArgs} args - Arguments to filter PrmCompanies to count.
+     * @example
+     * // Count the number of PrmCompanies
+     * const count = await prisma.prmCompany.count({
+     *   where: {
+     *     // ... the filter for the PrmCompanies we want to count
+     *   }
+     * })
+    **/
+    count<T extends PrmCompanyCountArgs>(
+      args?: Subset<T, PrmCompanyCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PrmCompanyCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PrmCompany.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrmCompanyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PrmCompanyAggregateArgs>(args: Subset<T, PrmCompanyAggregateArgs>): Prisma.PrismaPromise<GetPrmCompanyAggregateType<T>>
+
+    /**
+     * Group by PrmCompany.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PrmCompanyGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PrmCompanyGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PrmCompanyGroupByArgs['orderBy'] }
+        : { orderBy?: PrmCompanyGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PrmCompanyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPrmCompanyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PrmCompany model
+   */
+  readonly fields: PrmCompanyFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PrmCompany.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PrmCompanyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    organization<T extends PrmCompany$organizationArgs<ExtArgs> = {}>(args?: Subset<T, PrmCompany$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PrmCompany model
+   */
+  interface PrmCompanyFieldRefs {
+    readonly id: FieldRef<"PrmCompany", 'String'>
+    readonly userId: FieldRef<"PrmCompany", 'String'>
+    readonly organizationId: FieldRef<"PrmCompany", 'String'>
+    readonly name: FieldRef<"PrmCompany", 'String'>
+    readonly website: FieldRef<"PrmCompany", 'String'>
+    readonly domain: FieldRef<"PrmCompany", 'String'>
+    readonly primaryEmail: FieldRef<"PrmCompany", 'String'>
+    readonly phone: FieldRef<"PrmCompany", 'String'>
+    readonly linkedinUrl: FieldRef<"PrmCompany", 'String'>
+    readonly twitterUrl: FieldRef<"PrmCompany", 'String'>
+    readonly githubUrl: FieldRef<"PrmCompany", 'String'>
+    readonly facebookUrl: FieldRef<"PrmCompany", 'String'>
+    readonly instagramUrl: FieldRef<"PrmCompany", 'String'>
+    readonly techStack: FieldRef<"PrmCompany", 'String[]'>
+    readonly whoisRegistrar: FieldRef<"PrmCompany", 'String'>
+    readonly whoisCreatedAt: FieldRef<"PrmCompany", 'DateTime'>
+    readonly whoisUpdatedAt: FieldRef<"PrmCompany", 'DateTime'>
+    readonly whoisExpiresAt: FieldRef<"PrmCompany", 'DateTime'>
+    readonly lastEnrichedAt: FieldRef<"PrmCompany", 'DateTime'>
+    readonly createdAt: FieldRef<"PrmCompany", 'DateTime'>
+    readonly updatedAt: FieldRef<"PrmCompany", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PrmCompany findUnique
+   */
+  export type PrmCompanyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * Filter, which PrmCompany to fetch.
+     */
+    where: PrmCompanyWhereUniqueInput
+  }
+
+  /**
+   * PrmCompany findUniqueOrThrow
+   */
+  export type PrmCompanyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * Filter, which PrmCompany to fetch.
+     */
+    where: PrmCompanyWhereUniqueInput
+  }
+
+  /**
+   * PrmCompany findFirst
+   */
+  export type PrmCompanyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * Filter, which PrmCompany to fetch.
+     */
+    where?: PrmCompanyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrmCompanies to fetch.
+     */
+    orderBy?: PrmCompanyOrderByWithRelationInput | PrmCompanyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PrmCompanies.
+     */
+    cursor?: PrmCompanyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrmCompanies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrmCompanies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PrmCompanies.
+     */
+    distinct?: PrmCompanyScalarFieldEnum | PrmCompanyScalarFieldEnum[]
+  }
+
+  /**
+   * PrmCompany findFirstOrThrow
+   */
+  export type PrmCompanyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * Filter, which PrmCompany to fetch.
+     */
+    where?: PrmCompanyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrmCompanies to fetch.
+     */
+    orderBy?: PrmCompanyOrderByWithRelationInput | PrmCompanyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PrmCompanies.
+     */
+    cursor?: PrmCompanyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrmCompanies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrmCompanies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PrmCompanies.
+     */
+    distinct?: PrmCompanyScalarFieldEnum | PrmCompanyScalarFieldEnum[]
+  }
+
+  /**
+   * PrmCompany findMany
+   */
+  export type PrmCompanyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * Filter, which PrmCompanies to fetch.
+     */
+    where?: PrmCompanyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PrmCompanies to fetch.
+     */
+    orderBy?: PrmCompanyOrderByWithRelationInput | PrmCompanyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PrmCompanies.
+     */
+    cursor?: PrmCompanyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PrmCompanies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PrmCompanies.
+     */
+    skip?: number
+    distinct?: PrmCompanyScalarFieldEnum | PrmCompanyScalarFieldEnum[]
+  }
+
+  /**
+   * PrmCompany create
+   */
+  export type PrmCompanyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PrmCompany.
+     */
+    data: XOR<PrmCompanyCreateInput, PrmCompanyUncheckedCreateInput>
+  }
+
+  /**
+   * PrmCompany createMany
+   */
+  export type PrmCompanyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PrmCompanies.
+     */
+    data: PrmCompanyCreateManyInput | PrmCompanyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PrmCompany createManyAndReturn
+   */
+  export type PrmCompanyCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * The data used to create many PrmCompanies.
+     */
+    data: PrmCompanyCreateManyInput | PrmCompanyCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PrmCompany update
+   */
+  export type PrmCompanyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PrmCompany.
+     */
+    data: XOR<PrmCompanyUpdateInput, PrmCompanyUncheckedUpdateInput>
+    /**
+     * Choose, which PrmCompany to update.
+     */
+    where: PrmCompanyWhereUniqueInput
+  }
+
+  /**
+   * PrmCompany updateMany
+   */
+  export type PrmCompanyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PrmCompanies.
+     */
+    data: XOR<PrmCompanyUpdateManyMutationInput, PrmCompanyUncheckedUpdateManyInput>
+    /**
+     * Filter which PrmCompanies to update
+     */
+    where?: PrmCompanyWhereInput
+    /**
+     * Limit how many PrmCompanies to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PrmCompany updateManyAndReturn
+   */
+  export type PrmCompanyUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * The data used to update PrmCompanies.
+     */
+    data: XOR<PrmCompanyUpdateManyMutationInput, PrmCompanyUncheckedUpdateManyInput>
+    /**
+     * Filter which PrmCompanies to update
+     */
+    where?: PrmCompanyWhereInput
+    /**
+     * Limit how many PrmCompanies to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PrmCompany upsert
+   */
+  export type PrmCompanyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PrmCompany to update in case it exists.
+     */
+    where: PrmCompanyWhereUniqueInput
+    /**
+     * In case the PrmCompany found by the `where` argument doesn't exist, create a new PrmCompany with this data.
+     */
+    create: XOR<PrmCompanyCreateInput, PrmCompanyUncheckedCreateInput>
+    /**
+     * In case the PrmCompany was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PrmCompanyUpdateInput, PrmCompanyUncheckedUpdateInput>
+  }
+
+  /**
+   * PrmCompany delete
+   */
+  export type PrmCompanyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+    /**
+     * Filter which PrmCompany to delete.
+     */
+    where: PrmCompanyWhereUniqueInput
+  }
+
+  /**
+   * PrmCompany deleteMany
+   */
+  export type PrmCompanyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PrmCompanies to delete
+     */
+    where?: PrmCompanyWhereInput
+    /**
+     * Limit how many PrmCompanies to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PrmCompany.organization
+   */
+  export type PrmCompany$organizationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Organization
+     */
+    select?: OrganizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Organization
+     */
+    omit?: OrganizationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrganizationInclude<ExtArgs> | null
+    where?: OrganizationWhereInput
+  }
+
+  /**
+   * PrmCompany without action
+   */
+  export type PrmCompanyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PrmCompany
+     */
+    select?: PrmCompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PrmCompany
+     */
+    omit?: PrmCompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PrmCompanyInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model CallTask
    */
 
@@ -36039,6 +40357,7 @@ export namespace Prisma {
     status: $Enums.CallTaskStatus | null
     priority: number | null
     dueAt: Date | null
+    assignedToId: string | null
     lastOutcome: string | null
     lastDisposition: string | null
     lastNote: string | null
@@ -36057,6 +40376,7 @@ export namespace Prisma {
     status: $Enums.CallTaskStatus | null
     priority: number | null
     dueAt: Date | null
+    assignedToId: string | null
     lastOutcome: string | null
     lastDisposition: string | null
     lastNote: string | null
@@ -36075,6 +40395,7 @@ export namespace Prisma {
     status: number
     priority: number
     dueAt: number
+    assignedToId: number
     lastOutcome: number
     lastDisposition: number
     lastNote: number
@@ -36103,6 +40424,7 @@ export namespace Prisma {
     status?: true
     priority?: true
     dueAt?: true
+    assignedToId?: true
     lastOutcome?: true
     lastDisposition?: true
     lastNote?: true
@@ -36121,6 +40443,7 @@ export namespace Prisma {
     status?: true
     priority?: true
     dueAt?: true
+    assignedToId?: true
     lastOutcome?: true
     lastDisposition?: true
     lastNote?: true
@@ -36139,6 +40462,7 @@ export namespace Prisma {
     status?: true
     priority?: true
     dueAt?: true
+    assignedToId?: true
     lastOutcome?: true
     lastDisposition?: true
     lastNote?: true
@@ -36244,6 +40568,7 @@ export namespace Prisma {
     status: $Enums.CallTaskStatus
     priority: number
     dueAt: Date
+    assignedToId: string | null
     lastOutcome: string | null
     lastDisposition: string | null
     lastNote: string | null
@@ -36281,6 +40606,7 @@ export namespace Prisma {
     status?: boolean
     priority?: boolean
     dueAt?: boolean
+    assignedToId?: boolean
     lastOutcome?: boolean
     lastDisposition?: boolean
     lastNote?: boolean
@@ -36290,6 +40616,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | CallTask$assignedToArgs<ExtArgs>
     organization?: boolean | CallTask$organizationArgs<ExtArgs>
     contact?: boolean | ContactDefaultArgs<ExtArgs>
     campaign?: boolean | CallTask$campaignArgs<ExtArgs>
@@ -36307,6 +40634,7 @@ export namespace Prisma {
     status?: boolean
     priority?: boolean
     dueAt?: boolean
+    assignedToId?: boolean
     lastOutcome?: boolean
     lastDisposition?: boolean
     lastNote?: boolean
@@ -36316,6 +40644,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | CallTask$assignedToArgs<ExtArgs>
     organization?: boolean | CallTask$organizationArgs<ExtArgs>
     contact?: boolean | ContactDefaultArgs<ExtArgs>
     campaign?: boolean | CallTask$campaignArgs<ExtArgs>
@@ -36331,6 +40660,7 @@ export namespace Prisma {
     status?: boolean
     priority?: boolean
     dueAt?: boolean
+    assignedToId?: boolean
     lastOutcome?: boolean
     lastDisposition?: boolean
     lastNote?: boolean
@@ -36340,6 +40670,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | CallTask$assignedToArgs<ExtArgs>
     organization?: boolean | CallTask$organizationArgs<ExtArgs>
     contact?: boolean | ContactDefaultArgs<ExtArgs>
     campaign?: boolean | CallTask$campaignArgs<ExtArgs>
@@ -36355,6 +40686,7 @@ export namespace Prisma {
     status?: boolean
     priority?: boolean
     dueAt?: boolean
+    assignedToId?: boolean
     lastOutcome?: boolean
     lastDisposition?: boolean
     lastNote?: boolean
@@ -36365,9 +40697,10 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type CallTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "contactId" | "status" | "priority" | "dueAt" | "lastOutcome" | "lastDisposition" | "lastNote" | "campaignId" | "contactListId" | "prmSegmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["callTask"]>
+  export type CallTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "contactId" | "status" | "priority" | "dueAt" | "assignedToId" | "lastOutcome" | "lastDisposition" | "lastNote" | "campaignId" | "contactListId" | "prmSegmentId" | "createdAt" | "updatedAt", ExtArgs["result"]["callTask"]>
   export type CallTaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | CallTask$assignedToArgs<ExtArgs>
     organization?: boolean | CallTask$organizationArgs<ExtArgs>
     contact?: boolean | ContactDefaultArgs<ExtArgs>
     campaign?: boolean | CallTask$campaignArgs<ExtArgs>
@@ -36378,6 +40711,7 @@ export namespace Prisma {
   }
   export type CallTaskIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | CallTask$assignedToArgs<ExtArgs>
     organization?: boolean | CallTask$organizationArgs<ExtArgs>
     contact?: boolean | ContactDefaultArgs<ExtArgs>
     campaign?: boolean | CallTask$campaignArgs<ExtArgs>
@@ -36386,6 +40720,7 @@ export namespace Prisma {
   }
   export type CallTaskIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedTo?: boolean | CallTask$assignedToArgs<ExtArgs>
     organization?: boolean | CallTask$organizationArgs<ExtArgs>
     contact?: boolean | ContactDefaultArgs<ExtArgs>
     campaign?: boolean | CallTask$campaignArgs<ExtArgs>
@@ -36397,6 +40732,7 @@ export namespace Prisma {
     name: "CallTask"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      assignedTo: Prisma.$UserPayload<ExtArgs> | null
       organization: Prisma.$OrganizationPayload<ExtArgs> | null
       contact: Prisma.$ContactPayload<ExtArgs>
       campaign: Prisma.$EmailCampaignPayload<ExtArgs> | null
@@ -36412,6 +40748,7 @@ export namespace Prisma {
       status: $Enums.CallTaskStatus
       priority: number
       dueAt: Date
+      assignedToId: string | null
       lastOutcome: string | null
       lastDisposition: string | null
       lastNote: string | null
@@ -36815,6 +41152,7 @@ export namespace Prisma {
   export interface Prisma__CallTaskClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    assignedTo<T extends CallTask$assignedToArgs<ExtArgs> = {}>(args?: Subset<T, CallTask$assignedToArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     organization<T extends CallTask$organizationArgs<ExtArgs> = {}>(args?: Subset<T, CallTask$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     contact<T extends ContactDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContactDefaultArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     campaign<T extends CallTask$campaignArgs<ExtArgs> = {}>(args?: Subset<T, CallTask$campaignArgs<ExtArgs>>): Prisma__EmailCampaignClient<$Result.GetResult<Prisma.$EmailCampaignPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -36857,6 +41195,7 @@ export namespace Prisma {
     readonly status: FieldRef<"CallTask", 'CallTaskStatus'>
     readonly priority: FieldRef<"CallTask", 'Int'>
     readonly dueAt: FieldRef<"CallTask", 'DateTime'>
+    readonly assignedToId: FieldRef<"CallTask", 'String'>
     readonly lastOutcome: FieldRef<"CallTask", 'String'>
     readonly lastDisposition: FieldRef<"CallTask", 'String'>
     readonly lastNote: FieldRef<"CallTask", 'String'>
@@ -37258,6 +41597,25 @@ export namespace Prisma {
      * Limit how many CallTasks to delete.
      */
     limit?: number
+  }
+
+  /**
+   * CallTask.assignedTo
+   */
+  export type CallTask$assignedToArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -58052,7 +62410,7 @@ export namespace Prisma {
 
   export type BounceListGroupByOutputType = {
     id: string
-    userId: string
+    userId: string | null
     organizationId: string | null
     email: string
     bouncedAt: Date
@@ -58085,7 +62443,7 @@ export namespace Prisma {
     bouncedAt?: boolean
     bounceCode?: boolean
     reason?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    user?: boolean | BounceList$userArgs<ExtArgs>
     organization?: boolean | BounceList$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["bounceList"]>
 
@@ -58097,7 +62455,7 @@ export namespace Prisma {
     bouncedAt?: boolean
     bounceCode?: boolean
     reason?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    user?: boolean | BounceList$userArgs<ExtArgs>
     organization?: boolean | BounceList$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["bounceList"]>
 
@@ -58109,7 +62467,7 @@ export namespace Prisma {
     bouncedAt?: boolean
     bounceCode?: boolean
     reason?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    user?: boolean | BounceList$userArgs<ExtArgs>
     organization?: boolean | BounceList$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["bounceList"]>
 
@@ -58125,27 +62483,27 @@ export namespace Prisma {
 
   export type BounceListOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "email" | "bouncedAt" | "bounceCode" | "reason", ExtArgs["result"]["bounceList"]>
   export type BounceListInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    user?: boolean | BounceList$userArgs<ExtArgs>
     organization?: boolean | BounceList$organizationArgs<ExtArgs>
   }
   export type BounceListIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    user?: boolean | BounceList$userArgs<ExtArgs>
     organization?: boolean | BounceList$organizationArgs<ExtArgs>
   }
   export type BounceListIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    user?: boolean | BounceList$userArgs<ExtArgs>
     organization?: boolean | BounceList$organizationArgs<ExtArgs>
   }
 
   export type $BounceListPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "BounceList"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs> | null
       organization: Prisma.$OrganizationPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      userId: string
+      userId: string | null
       organizationId: string | null
       email: string
       bouncedAt: Date
@@ -58545,7 +62903,7 @@ export namespace Prisma {
    */
   export interface Prisma__BounceListClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends BounceList$userArgs<ExtArgs> = {}>(args?: Subset<T, BounceList$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     organization<T extends BounceList$organizationArgs<ExtArgs> = {}>(args?: Subset<T, BounceList$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -58979,6 +63337,25 @@ export namespace Prisma {
   }
 
   /**
+   * BounceList.user
+   */
+  export type BounceList$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
    * BounceList.organization
    */
   export type BounceList$organizationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -59053,6 +63430,26 @@ export namespace Prisma {
   };
 
   export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
+
+
+  export const TrackingDomainSettingScalarFieldEnum: {
+    id: 'id',
+    scopeKey: 'scopeKey',
+    userId: 'userId',
+    organizationId: 'organizationId',
+    rootDomain: 'rootDomain',
+    subdomain: 'subdomain',
+    fullDomain: 'fullDomain',
+    cnameTarget: 'cnameTarget',
+    status: 'status',
+    lastCheckedAt: 'lastCheckedAt',
+    lastCheckedValue: 'lastCheckedValue',
+    verifiedAt: 'verifiedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type TrackingDomainSettingScalarFieldEnum = (typeof TrackingDomainSettingScalarFieldEnum)[keyof typeof TrackingDomainSettingScalarFieldEnum]
 
 
   export const OrganizationMemberScalarFieldEnum: {
@@ -59147,6 +63544,7 @@ export namespace Prisma {
     businessStartHour: 'businessStartHour',
     businessEndHour: 'businessEndHour',
     isPriority: 'isPriority',
+    sequenceConfig: 'sequenceConfig',
     createdAt: 'createdAt'
   };
 
@@ -59234,6 +63632,20 @@ export namespace Prisma {
   };
 
   export type EmailTemplateScalarFieldEnum = (typeof EmailTemplateScalarFieldEnum)[keyof typeof EmailTemplateScalarFieldEnum]
+
+
+  export const FollowUpTemplateScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    organizationId: 'organizationId',
+    name: 'name',
+    description: 'description',
+    steps: 'steps',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type FollowUpTemplateScalarFieldEnum = (typeof FollowUpTemplateScalarFieldEnum)[keyof typeof FollowUpTemplateScalarFieldEnum]
 
 
   export const SequenceStepScalarFieldEnum: {
@@ -59401,17 +63813,51 @@ export namespace Prisma {
     userId: 'userId',
     organizationId: 'organizationId',
     email: 'email',
+    website: 'website',
+    companyDomain: 'companyDomain',
     firstName: 'firstName',
     lastName: 'lastName',
     company: 'company',
     phone: 'phone',
     jobTitle: 'jobTitle',
+    techStack: 'techStack',
     stage: 'stage',
+    nextAction: 'nextAction',
+    nextActionDueAt: 'nextActionDueAt',
+    assignedToId: 'assignedToId',
+    lastEnrichedAt: 'lastEnrichedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type ContactScalarFieldEnum = (typeof ContactScalarFieldEnum)[keyof typeof ContactScalarFieldEnum]
+
+
+  export const PrmCompanyScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    organizationId: 'organizationId',
+    name: 'name',
+    website: 'website',
+    domain: 'domain',
+    primaryEmail: 'primaryEmail',
+    phone: 'phone',
+    linkedinUrl: 'linkedinUrl',
+    twitterUrl: 'twitterUrl',
+    githubUrl: 'githubUrl',
+    facebookUrl: 'facebookUrl',
+    instagramUrl: 'instagramUrl',
+    techStack: 'techStack',
+    whoisRegistrar: 'whoisRegistrar',
+    whoisCreatedAt: 'whoisCreatedAt',
+    whoisUpdatedAt: 'whoisUpdatedAt',
+    whoisExpiresAt: 'whoisExpiresAt',
+    lastEnrichedAt: 'lastEnrichedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PrmCompanyScalarFieldEnum = (typeof PrmCompanyScalarFieldEnum)[keyof typeof PrmCompanyScalarFieldEnum]
 
 
   export const CallTaskScalarFieldEnum: {
@@ -59422,6 +63868,7 @@ export namespace Prisma {
     status: 'status',
     priority: 'priority',
     dueAt: 'dueAt',
+    assignedToId: 'assignedToId',
     lastOutcome: 'lastOutcome',
     lastDisposition: 'lastDisposition',
     lastNote: 'lastNote',
@@ -59813,6 +64260,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'TrackingDomainStatus'
+   */
+  export type EnumTrackingDomainStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TrackingDomainStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'TrackingDomainStatus[]'
+   */
+  export type ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TrackingDomainStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'OrgMemberRole'
    */
   export type EnumOrgMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrgMemberRole'>
@@ -59883,20 +64344,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'EmailStatus'
-   */
-  export type EnumEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'EmailStatus[]'
-   */
-  export type ListEnumEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailStatus[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Json'
    */
   export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -59907,6 +64354,20 @@ export namespace Prisma {
    * Reference to a field of type 'QueryMode'
    */
   export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'EmailStatus'
+   */
+  export type EnumEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'EmailStatus[]'
+   */
+  export type ListEnumEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailStatus[]'>
     
 
 
@@ -60081,11 +64542,14 @@ export namespace Prisma {
     activeOrganizationId?: StringNullableFilter<"User"> | string | null
     campaigns?: EmailCampaignListRelationFilter
     templates?: EmailTemplateListRelationFilter
+    followUpTemplates?: FollowUpTemplateListRelationFilter
     refreshTokens?: RefreshTokenListRelationFilter
     senders?: SenderListRelationFilter
     subscription?: XOR<SubscriptionNullableScalarRelationFilter, SubscriptionWhereInput> | null
     tags?: TagListRelationFilter
     contacts?: ContactListRelationFilter
+    assignedContacts?: ContactListRelationFilter
+    assignedCallTasks?: CallTaskListRelationFilter
     contactLists?: ContactListListRelationFilter
     mcpApiKeys?: McpApiKeyListRelationFilter
     bounceList?: BounceListListRelationFilter
@@ -60097,6 +64561,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberListRelationFilter
     ownedOrganizations?: OrganizationListRelationFilter
     activeOrganization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
+    trackingDomainSettings?: TrackingDomainSettingListRelationFilter
+    prmCompanies?: PrmCompanyListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -60110,11 +64576,14 @@ export namespace Prisma {
     activeOrganizationId?: SortOrderInput | SortOrder
     campaigns?: EmailCampaignOrderByRelationAggregateInput
     templates?: EmailTemplateOrderByRelationAggregateInput
+    followUpTemplates?: FollowUpTemplateOrderByRelationAggregateInput
     refreshTokens?: RefreshTokenOrderByRelationAggregateInput
     senders?: SenderOrderByRelationAggregateInput
     subscription?: SubscriptionOrderByWithRelationInput
     tags?: TagOrderByRelationAggregateInput
     contacts?: ContactOrderByRelationAggregateInput
+    assignedContacts?: ContactOrderByRelationAggregateInput
+    assignedCallTasks?: CallTaskOrderByRelationAggregateInput
     contactLists?: ContactListOrderByRelationAggregateInput
     mcpApiKeys?: McpApiKeyOrderByRelationAggregateInput
     bounceList?: BounceListOrderByRelationAggregateInput
@@ -60126,6 +64595,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberOrderByRelationAggregateInput
     ownedOrganizations?: OrganizationOrderByRelationAggregateInput
     activeOrganization?: OrganizationOrderByWithRelationInput
+    trackingDomainSettings?: TrackingDomainSettingOrderByRelationAggregateInput
+    prmCompanies?: PrmCompanyOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -60142,11 +64613,14 @@ export namespace Prisma {
     activeOrganizationId?: StringNullableFilter<"User"> | string | null
     campaigns?: EmailCampaignListRelationFilter
     templates?: EmailTemplateListRelationFilter
+    followUpTemplates?: FollowUpTemplateListRelationFilter
     refreshTokens?: RefreshTokenListRelationFilter
     senders?: SenderListRelationFilter
     subscription?: XOR<SubscriptionNullableScalarRelationFilter, SubscriptionWhereInput> | null
     tags?: TagListRelationFilter
     contacts?: ContactListRelationFilter
+    assignedContacts?: ContactListRelationFilter
+    assignedCallTasks?: CallTaskListRelationFilter
     contactLists?: ContactListListRelationFilter
     mcpApiKeys?: McpApiKeyListRelationFilter
     bounceList?: BounceListListRelationFilter
@@ -60158,6 +64632,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberListRelationFilter
     ownedOrganizations?: OrganizationListRelationFilter
     activeOrganization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
+    trackingDomainSettings?: TrackingDomainSettingListRelationFilter
+    prmCompanies?: PrmCompanyListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -60205,6 +64681,7 @@ export namespace Prisma {
     contacts?: ContactListRelationFilter
     senders?: SenderListRelationFilter
     templates?: EmailTemplateListRelationFilter
+    followUpTemplates?: FollowUpTemplateListRelationFilter
     contactLists?: ContactListListRelationFilter
     tags?: TagListRelationFilter
     callTasks?: CallTaskListRelationFilter
@@ -60214,6 +64691,8 @@ export namespace Prisma {
     bounceList?: BounceListListRelationFilter
     inboxEmails?: InboxEmailListRelationFilter
     inboxThreads?: InboxThreadListRelationFilter
+    trackingDomainSettings?: TrackingDomainSettingListRelationFilter
+    prmCompanies?: PrmCompanyListRelationFilter
   }
 
   export type OrganizationOrderByWithRelationInput = {
@@ -60230,6 +64709,7 @@ export namespace Prisma {
     contacts?: ContactOrderByRelationAggregateInput
     senders?: SenderOrderByRelationAggregateInput
     templates?: EmailTemplateOrderByRelationAggregateInput
+    followUpTemplates?: FollowUpTemplateOrderByRelationAggregateInput
     contactLists?: ContactListOrderByRelationAggregateInput
     tags?: TagOrderByRelationAggregateInput
     callTasks?: CallTaskOrderByRelationAggregateInput
@@ -60239,6 +64719,8 @@ export namespace Prisma {
     bounceList?: BounceListOrderByRelationAggregateInput
     inboxEmails?: InboxEmailOrderByRelationAggregateInput
     inboxThreads?: InboxThreadOrderByRelationAggregateInput
+    trackingDomainSettings?: TrackingDomainSettingOrderByRelationAggregateInput
+    prmCompanies?: PrmCompanyOrderByRelationAggregateInput
   }
 
   export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -60258,6 +64740,7 @@ export namespace Prisma {
     contacts?: ContactListRelationFilter
     senders?: SenderListRelationFilter
     templates?: EmailTemplateListRelationFilter
+    followUpTemplates?: FollowUpTemplateListRelationFilter
     contactLists?: ContactListListRelationFilter
     tags?: TagListRelationFilter
     callTasks?: CallTaskListRelationFilter
@@ -60267,6 +64750,8 @@ export namespace Prisma {
     bounceList?: BounceListListRelationFilter
     inboxEmails?: InboxEmailListRelationFilter
     inboxThreads?: InboxThreadListRelationFilter
+    trackingDomainSettings?: TrackingDomainSettingListRelationFilter
+    prmCompanies?: PrmCompanyListRelationFilter
   }, "id">
 
   export type OrganizationOrderByWithAggregationInput = {
@@ -60289,6 +64774,110 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
     ownerId?: StringWithAggregatesFilter<"Organization"> | string
+  }
+
+  export type TrackingDomainSettingWhereInput = {
+    AND?: TrackingDomainSettingWhereInput | TrackingDomainSettingWhereInput[]
+    OR?: TrackingDomainSettingWhereInput[]
+    NOT?: TrackingDomainSettingWhereInput | TrackingDomainSettingWhereInput[]
+    id?: StringFilter<"TrackingDomainSetting"> | string
+    scopeKey?: StringFilter<"TrackingDomainSetting"> | string
+    userId?: StringFilter<"TrackingDomainSetting"> | string
+    organizationId?: StringNullableFilter<"TrackingDomainSetting"> | string | null
+    rootDomain?: StringFilter<"TrackingDomainSetting"> | string
+    subdomain?: StringFilter<"TrackingDomainSetting"> | string
+    fullDomain?: StringFilter<"TrackingDomainSetting"> | string
+    cnameTarget?: StringFilter<"TrackingDomainSetting"> | string
+    status?: EnumTrackingDomainStatusFilter<"TrackingDomainSetting"> | $Enums.TrackingDomainStatus
+    lastCheckedAt?: DateTimeNullableFilter<"TrackingDomainSetting"> | Date | string | null
+    lastCheckedValue?: StringNullableFilter<"TrackingDomainSetting"> | string | null
+    verifiedAt?: DateTimeNullableFilter<"TrackingDomainSetting"> | Date | string | null
+    createdAt?: DateTimeFilter<"TrackingDomainSetting"> | Date | string
+    updatedAt?: DateTimeFilter<"TrackingDomainSetting"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
+  }
+
+  export type TrackingDomainSettingOrderByWithRelationInput = {
+    id?: SortOrder
+    scopeKey?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrderInput | SortOrder
+    rootDomain?: SortOrder
+    subdomain?: SortOrder
+    fullDomain?: SortOrder
+    cnameTarget?: SortOrder
+    status?: SortOrder
+    lastCheckedAt?: SortOrderInput | SortOrder
+    lastCheckedValue?: SortOrderInput | SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    organization?: OrganizationOrderByWithRelationInput
+  }
+
+  export type TrackingDomainSettingWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    scopeKey?: string
+    organizationId_fullDomain?: TrackingDomainSettingOrganizationIdFullDomainCompoundUniqueInput
+    AND?: TrackingDomainSettingWhereInput | TrackingDomainSettingWhereInput[]
+    OR?: TrackingDomainSettingWhereInput[]
+    NOT?: TrackingDomainSettingWhereInput | TrackingDomainSettingWhereInput[]
+    userId?: StringFilter<"TrackingDomainSetting"> | string
+    organizationId?: StringNullableFilter<"TrackingDomainSetting"> | string | null
+    rootDomain?: StringFilter<"TrackingDomainSetting"> | string
+    subdomain?: StringFilter<"TrackingDomainSetting"> | string
+    fullDomain?: StringFilter<"TrackingDomainSetting"> | string
+    cnameTarget?: StringFilter<"TrackingDomainSetting"> | string
+    status?: EnumTrackingDomainStatusFilter<"TrackingDomainSetting"> | $Enums.TrackingDomainStatus
+    lastCheckedAt?: DateTimeNullableFilter<"TrackingDomainSetting"> | Date | string | null
+    lastCheckedValue?: StringNullableFilter<"TrackingDomainSetting"> | string | null
+    verifiedAt?: DateTimeNullableFilter<"TrackingDomainSetting"> | Date | string | null
+    createdAt?: DateTimeFilter<"TrackingDomainSetting"> | Date | string
+    updatedAt?: DateTimeFilter<"TrackingDomainSetting"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
+  }, "id" | "scopeKey" | "organizationId_fullDomain">
+
+  export type TrackingDomainSettingOrderByWithAggregationInput = {
+    id?: SortOrder
+    scopeKey?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrderInput | SortOrder
+    rootDomain?: SortOrder
+    subdomain?: SortOrder
+    fullDomain?: SortOrder
+    cnameTarget?: SortOrder
+    status?: SortOrder
+    lastCheckedAt?: SortOrderInput | SortOrder
+    lastCheckedValue?: SortOrderInput | SortOrder
+    verifiedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: TrackingDomainSettingCountOrderByAggregateInput
+    _max?: TrackingDomainSettingMaxOrderByAggregateInput
+    _min?: TrackingDomainSettingMinOrderByAggregateInput
+  }
+
+  export type TrackingDomainSettingScalarWhereWithAggregatesInput = {
+    AND?: TrackingDomainSettingScalarWhereWithAggregatesInput | TrackingDomainSettingScalarWhereWithAggregatesInput[]
+    OR?: TrackingDomainSettingScalarWhereWithAggregatesInput[]
+    NOT?: TrackingDomainSettingScalarWhereWithAggregatesInput | TrackingDomainSettingScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TrackingDomainSetting"> | string
+    scopeKey?: StringWithAggregatesFilter<"TrackingDomainSetting"> | string
+    userId?: StringWithAggregatesFilter<"TrackingDomainSetting"> | string
+    organizationId?: StringNullableWithAggregatesFilter<"TrackingDomainSetting"> | string | null
+    rootDomain?: StringWithAggregatesFilter<"TrackingDomainSetting"> | string
+    subdomain?: StringWithAggregatesFilter<"TrackingDomainSetting"> | string
+    fullDomain?: StringWithAggregatesFilter<"TrackingDomainSetting"> | string
+    cnameTarget?: StringWithAggregatesFilter<"TrackingDomainSetting"> | string
+    status?: EnumTrackingDomainStatusWithAggregatesFilter<"TrackingDomainSetting"> | $Enums.TrackingDomainStatus
+    lastCheckedAt?: DateTimeNullableWithAggregatesFilter<"TrackingDomainSetting"> | Date | string | null
+    lastCheckedValue?: StringNullableWithAggregatesFilter<"TrackingDomainSetting"> | string | null
+    verifiedAt?: DateTimeNullableWithAggregatesFilter<"TrackingDomainSetting"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"TrackingDomainSetting"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TrackingDomainSetting"> | Date | string
   }
 
   export type OrganizationMemberWhereInput = {
@@ -60717,6 +65306,7 @@ export namespace Prisma {
     businessStartHour?: IntNullableFilter<"EmailCampaign"> | number | null
     businessEndHour?: IntNullableFilter<"EmailCampaign"> | number | null
     isPriority?: BoolFilter<"EmailCampaign"> | boolean
+    sequenceConfig?: JsonNullableFilter<"EmailCampaign">
     createdAt?: DateTimeFilter<"EmailCampaign"> | Date | string
     attachments?: AttachmentListRelationFilter
     campaignSenders?: CampaignSenderListRelationFilter
@@ -60750,6 +65340,7 @@ export namespace Prisma {
     businessStartHour?: SortOrderInput | SortOrder
     businessEndHour?: SortOrderInput | SortOrder
     isPriority?: SortOrder
+    sequenceConfig?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     attachments?: AttachmentOrderByRelationAggregateInput
     campaignSenders?: CampaignSenderOrderByRelationAggregateInput
@@ -60786,6 +65377,7 @@ export namespace Prisma {
     businessStartHour?: IntNullableFilter<"EmailCampaign"> | number | null
     businessEndHour?: IntNullableFilter<"EmailCampaign"> | number | null
     isPriority?: BoolFilter<"EmailCampaign"> | boolean
+    sequenceConfig?: JsonNullableFilter<"EmailCampaign">
     createdAt?: DateTimeFilter<"EmailCampaign"> | Date | string
     attachments?: AttachmentListRelationFilter
     campaignSenders?: CampaignSenderListRelationFilter
@@ -60819,6 +65411,7 @@ export namespace Prisma {
     businessStartHour?: SortOrderInput | SortOrder
     businessEndHour?: SortOrderInput | SortOrder
     isPriority?: SortOrder
+    sequenceConfig?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: EmailCampaignCountOrderByAggregateInput
     _avg?: EmailCampaignAvgOrderByAggregateInput
@@ -60850,6 +65443,7 @@ export namespace Prisma {
     businessStartHour?: IntNullableWithAggregatesFilter<"EmailCampaign"> | number | null
     businessEndHour?: IntNullableWithAggregatesFilter<"EmailCampaign"> | number | null
     isPriority?: BoolWithAggregatesFilter<"EmailCampaign"> | boolean
+    sequenceConfig?: JsonNullableWithAggregatesFilter<"EmailCampaign">
     createdAt?: DateTimeWithAggregatesFilter<"EmailCampaign"> | Date | string
   }
 
@@ -61288,6 +65882,80 @@ export namespace Prisma {
     body?: StringWithAggregatesFilter<"EmailTemplate"> | string
     createdAt?: DateTimeWithAggregatesFilter<"EmailTemplate"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"EmailTemplate"> | Date | string
+  }
+
+  export type FollowUpTemplateWhereInput = {
+    AND?: FollowUpTemplateWhereInput | FollowUpTemplateWhereInput[]
+    OR?: FollowUpTemplateWhereInput[]
+    NOT?: FollowUpTemplateWhereInput | FollowUpTemplateWhereInput[]
+    id?: StringFilter<"FollowUpTemplate"> | string
+    userId?: StringFilter<"FollowUpTemplate"> | string
+    organizationId?: StringNullableFilter<"FollowUpTemplate"> | string | null
+    name?: StringFilter<"FollowUpTemplate"> | string
+    description?: StringNullableFilter<"FollowUpTemplate"> | string | null
+    steps?: JsonFilter<"FollowUpTemplate">
+    createdAt?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    updatedAt?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
+  }
+
+  export type FollowUpTemplateOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrderInput | SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    steps?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    organization?: OrganizationOrderByWithRelationInput
+  }
+
+  export type FollowUpTemplateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_name?: FollowUpTemplateUserIdNameCompoundUniqueInput
+    AND?: FollowUpTemplateWhereInput | FollowUpTemplateWhereInput[]
+    OR?: FollowUpTemplateWhereInput[]
+    NOT?: FollowUpTemplateWhereInput | FollowUpTemplateWhereInput[]
+    userId?: StringFilter<"FollowUpTemplate"> | string
+    organizationId?: StringNullableFilter<"FollowUpTemplate"> | string | null
+    name?: StringFilter<"FollowUpTemplate"> | string
+    description?: StringNullableFilter<"FollowUpTemplate"> | string | null
+    steps?: JsonFilter<"FollowUpTemplate">
+    createdAt?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    updatedAt?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
+  }, "id" | "userId_name">
+
+  export type FollowUpTemplateOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrderInput | SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    steps?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: FollowUpTemplateCountOrderByAggregateInput
+    _max?: FollowUpTemplateMaxOrderByAggregateInput
+    _min?: FollowUpTemplateMinOrderByAggregateInput
+  }
+
+  export type FollowUpTemplateScalarWhereWithAggregatesInput = {
+    AND?: FollowUpTemplateScalarWhereWithAggregatesInput | FollowUpTemplateScalarWhereWithAggregatesInput[]
+    OR?: FollowUpTemplateScalarWhereWithAggregatesInput[]
+    NOT?: FollowUpTemplateScalarWhereWithAggregatesInput | FollowUpTemplateScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"FollowUpTemplate"> | string
+    userId?: StringWithAggregatesFilter<"FollowUpTemplate"> | string
+    organizationId?: StringNullableWithAggregatesFilter<"FollowUpTemplate"> | string | null
+    name?: StringWithAggregatesFilter<"FollowUpTemplate"> | string
+    description?: StringNullableWithAggregatesFilter<"FollowUpTemplate"> | string | null
+    steps?: JsonWithAggregatesFilter<"FollowUpTemplate">
+    createdAt?: DateTimeWithAggregatesFilter<"FollowUpTemplate"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"FollowUpTemplate"> | Date | string
   }
 
   export type SequenceStepWhereInput = {
@@ -62116,15 +66784,23 @@ export namespace Prisma {
     userId?: StringFilter<"Contact"> | string
     organizationId?: StringNullableFilter<"Contact"> | string | null
     email?: StringFilter<"Contact"> | string
+    website?: StringNullableFilter<"Contact"> | string | null
+    companyDomain?: StringNullableFilter<"Contact"> | string | null
     firstName?: StringNullableFilter<"Contact"> | string | null
     lastName?: StringNullableFilter<"Contact"> | string | null
     company?: StringNullableFilter<"Contact"> | string | null
     phone?: StringNullableFilter<"Contact"> | string | null
     jobTitle?: StringNullableFilter<"Contact"> | string | null
+    techStack?: StringNullableListFilter<"Contact">
     stage?: StringFilter<"Contact"> | string
+    nextAction?: StringNullableFilter<"Contact"> | string | null
+    nextActionDueAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
+    assignedToId?: StringNullableFilter<"Contact"> | string | null
+    lastEnrichedAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    assignedTo?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
     activities?: ContactActivityListRelationFilter
     notes?: NoteListRelationFilter
@@ -62140,15 +66816,23 @@ export namespace Prisma {
     userId?: SortOrder
     organizationId?: SortOrderInput | SortOrder
     email?: SortOrder
+    website?: SortOrderInput | SortOrder
+    companyDomain?: SortOrderInput | SortOrder
     firstName?: SortOrderInput | SortOrder
     lastName?: SortOrderInput | SortOrder
     company?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     jobTitle?: SortOrderInput | SortOrder
+    techStack?: SortOrder
     stage?: SortOrder
+    nextAction?: SortOrderInput | SortOrder
+    nextActionDueAt?: SortOrderInput | SortOrder
+    assignedToId?: SortOrderInput | SortOrder
+    lastEnrichedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    assignedTo?: UserOrderByWithRelationInput
     organization?: OrganizationOrderByWithRelationInput
     activities?: ContactActivityOrderByRelationAggregateInput
     notes?: NoteOrderByRelationAggregateInput
@@ -62168,15 +66852,23 @@ export namespace Prisma {
     userId?: StringFilter<"Contact"> | string
     organizationId?: StringNullableFilter<"Contact"> | string | null
     email?: StringFilter<"Contact"> | string
+    website?: StringNullableFilter<"Contact"> | string | null
+    companyDomain?: StringNullableFilter<"Contact"> | string | null
     firstName?: StringNullableFilter<"Contact"> | string | null
     lastName?: StringNullableFilter<"Contact"> | string | null
     company?: StringNullableFilter<"Contact"> | string | null
     phone?: StringNullableFilter<"Contact"> | string | null
     jobTitle?: StringNullableFilter<"Contact"> | string | null
+    techStack?: StringNullableListFilter<"Contact">
     stage?: StringFilter<"Contact"> | string
+    nextAction?: StringNullableFilter<"Contact"> | string | null
+    nextActionDueAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
+    assignedToId?: StringNullableFilter<"Contact"> | string | null
+    lastEnrichedAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    assignedTo?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
     activities?: ContactActivityListRelationFilter
     notes?: NoteListRelationFilter
@@ -62192,12 +66884,19 @@ export namespace Prisma {
     userId?: SortOrder
     organizationId?: SortOrderInput | SortOrder
     email?: SortOrder
+    website?: SortOrderInput | SortOrder
+    companyDomain?: SortOrderInput | SortOrder
     firstName?: SortOrderInput | SortOrder
     lastName?: SortOrderInput | SortOrder
     company?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     jobTitle?: SortOrderInput | SortOrder
+    techStack?: SortOrder
     stage?: SortOrder
+    nextAction?: SortOrderInput | SortOrder
+    nextActionDueAt?: SortOrderInput | SortOrder
+    assignedToId?: SortOrderInput | SortOrder
+    lastEnrichedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ContactCountOrderByAggregateInput
@@ -62213,14 +66912,160 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Contact"> | string
     organizationId?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     email?: StringWithAggregatesFilter<"Contact"> | string
+    website?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    companyDomain?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     firstName?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     lastName?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     company?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     phone?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     jobTitle?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    techStack?: StringNullableListFilter<"Contact">
     stage?: StringWithAggregatesFilter<"Contact"> | string
+    nextAction?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    nextActionDueAt?: DateTimeNullableWithAggregatesFilter<"Contact"> | Date | string | null
+    assignedToId?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    lastEnrichedAt?: DateTimeNullableWithAggregatesFilter<"Contact"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Contact"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Contact"> | Date | string
+  }
+
+  export type PrmCompanyWhereInput = {
+    AND?: PrmCompanyWhereInput | PrmCompanyWhereInput[]
+    OR?: PrmCompanyWhereInput[]
+    NOT?: PrmCompanyWhereInput | PrmCompanyWhereInput[]
+    id?: StringFilter<"PrmCompany"> | string
+    userId?: StringFilter<"PrmCompany"> | string
+    organizationId?: StringNullableFilter<"PrmCompany"> | string | null
+    name?: StringFilter<"PrmCompany"> | string
+    website?: StringNullableFilter<"PrmCompany"> | string | null
+    domain?: StringFilter<"PrmCompany"> | string
+    primaryEmail?: StringNullableFilter<"PrmCompany"> | string | null
+    phone?: StringNullableFilter<"PrmCompany"> | string | null
+    linkedinUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    twitterUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    githubUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    facebookUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    instagramUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    techStack?: StringNullableListFilter<"PrmCompany">
+    whoisRegistrar?: StringNullableFilter<"PrmCompany"> | string | null
+    whoisCreatedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    whoisUpdatedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    whoisExpiresAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    lastEnrichedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrmCompany"> | Date | string
+    updatedAt?: DateTimeFilter<"PrmCompany"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
+  }
+
+  export type PrmCompanyOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrderInput | SortOrder
+    name?: SortOrder
+    website?: SortOrderInput | SortOrder
+    domain?: SortOrder
+    primaryEmail?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    linkedinUrl?: SortOrderInput | SortOrder
+    twitterUrl?: SortOrderInput | SortOrder
+    githubUrl?: SortOrderInput | SortOrder
+    facebookUrl?: SortOrderInput | SortOrder
+    instagramUrl?: SortOrderInput | SortOrder
+    techStack?: SortOrder
+    whoisRegistrar?: SortOrderInput | SortOrder
+    whoisCreatedAt?: SortOrderInput | SortOrder
+    whoisUpdatedAt?: SortOrderInput | SortOrder
+    whoisExpiresAt?: SortOrderInput | SortOrder
+    lastEnrichedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    organization?: OrganizationOrderByWithRelationInput
+  }
+
+  export type PrmCompanyWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_domain?: PrmCompanyUserIdDomainCompoundUniqueInput
+    AND?: PrmCompanyWhereInput | PrmCompanyWhereInput[]
+    OR?: PrmCompanyWhereInput[]
+    NOT?: PrmCompanyWhereInput | PrmCompanyWhereInput[]
+    userId?: StringFilter<"PrmCompany"> | string
+    organizationId?: StringNullableFilter<"PrmCompany"> | string | null
+    name?: StringFilter<"PrmCompany"> | string
+    website?: StringNullableFilter<"PrmCompany"> | string | null
+    domain?: StringFilter<"PrmCompany"> | string
+    primaryEmail?: StringNullableFilter<"PrmCompany"> | string | null
+    phone?: StringNullableFilter<"PrmCompany"> | string | null
+    linkedinUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    twitterUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    githubUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    facebookUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    instagramUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    techStack?: StringNullableListFilter<"PrmCompany">
+    whoisRegistrar?: StringNullableFilter<"PrmCompany"> | string | null
+    whoisCreatedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    whoisUpdatedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    whoisExpiresAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    lastEnrichedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrmCompany"> | Date | string
+    updatedAt?: DateTimeFilter<"PrmCompany"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
+  }, "id" | "userId_domain">
+
+  export type PrmCompanyOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrderInput | SortOrder
+    name?: SortOrder
+    website?: SortOrderInput | SortOrder
+    domain?: SortOrder
+    primaryEmail?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    linkedinUrl?: SortOrderInput | SortOrder
+    twitterUrl?: SortOrderInput | SortOrder
+    githubUrl?: SortOrderInput | SortOrder
+    facebookUrl?: SortOrderInput | SortOrder
+    instagramUrl?: SortOrderInput | SortOrder
+    techStack?: SortOrder
+    whoisRegistrar?: SortOrderInput | SortOrder
+    whoisCreatedAt?: SortOrderInput | SortOrder
+    whoisUpdatedAt?: SortOrderInput | SortOrder
+    whoisExpiresAt?: SortOrderInput | SortOrder
+    lastEnrichedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PrmCompanyCountOrderByAggregateInput
+    _max?: PrmCompanyMaxOrderByAggregateInput
+    _min?: PrmCompanyMinOrderByAggregateInput
+  }
+
+  export type PrmCompanyScalarWhereWithAggregatesInput = {
+    AND?: PrmCompanyScalarWhereWithAggregatesInput | PrmCompanyScalarWhereWithAggregatesInput[]
+    OR?: PrmCompanyScalarWhereWithAggregatesInput[]
+    NOT?: PrmCompanyScalarWhereWithAggregatesInput | PrmCompanyScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PrmCompany"> | string
+    userId?: StringWithAggregatesFilter<"PrmCompany"> | string
+    organizationId?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    name?: StringWithAggregatesFilter<"PrmCompany"> | string
+    website?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    domain?: StringWithAggregatesFilter<"PrmCompany"> | string
+    primaryEmail?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    phone?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    linkedinUrl?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    twitterUrl?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    githubUrl?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    facebookUrl?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    instagramUrl?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    techStack?: StringNullableListFilter<"PrmCompany">
+    whoisRegistrar?: StringNullableWithAggregatesFilter<"PrmCompany"> | string | null
+    whoisCreatedAt?: DateTimeNullableWithAggregatesFilter<"PrmCompany"> | Date | string | null
+    whoisUpdatedAt?: DateTimeNullableWithAggregatesFilter<"PrmCompany"> | Date | string | null
+    whoisExpiresAt?: DateTimeNullableWithAggregatesFilter<"PrmCompany"> | Date | string | null
+    lastEnrichedAt?: DateTimeNullableWithAggregatesFilter<"PrmCompany"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PrmCompany"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PrmCompany"> | Date | string
   }
 
   export type CallTaskWhereInput = {
@@ -62234,6 +67079,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFilter<"CallTask"> | $Enums.CallTaskStatus
     priority?: IntFilter<"CallTask"> | number
     dueAt?: DateTimeFilter<"CallTask"> | Date | string
+    assignedToId?: StringNullableFilter<"CallTask"> | string | null
     lastOutcome?: StringNullableFilter<"CallTask"> | string | null
     lastDisposition?: StringNullableFilter<"CallTask"> | string | null
     lastNote?: StringNullableFilter<"CallTask"> | string | null
@@ -62243,6 +67089,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"CallTask"> | Date | string
     updatedAt?: DateTimeFilter<"CallTask"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    assignedTo?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
     contact?: XOR<ContactScalarRelationFilter, ContactWhereInput>
     campaign?: XOR<EmailCampaignNullableScalarRelationFilter, EmailCampaignWhereInput> | null
@@ -62259,6 +67106,7 @@ export namespace Prisma {
     status?: SortOrder
     priority?: SortOrder
     dueAt?: SortOrder
+    assignedToId?: SortOrderInput | SortOrder
     lastOutcome?: SortOrderInput | SortOrder
     lastDisposition?: SortOrderInput | SortOrder
     lastNote?: SortOrderInput | SortOrder
@@ -62268,6 +67116,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    assignedTo?: UserOrderByWithRelationInput
     organization?: OrganizationOrderByWithRelationInput
     contact?: ContactOrderByWithRelationInput
     campaign?: EmailCampaignOrderByWithRelationInput
@@ -62287,6 +67136,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFilter<"CallTask"> | $Enums.CallTaskStatus
     priority?: IntFilter<"CallTask"> | number
     dueAt?: DateTimeFilter<"CallTask"> | Date | string
+    assignedToId?: StringNullableFilter<"CallTask"> | string | null
     lastOutcome?: StringNullableFilter<"CallTask"> | string | null
     lastDisposition?: StringNullableFilter<"CallTask"> | string | null
     lastNote?: StringNullableFilter<"CallTask"> | string | null
@@ -62296,6 +67146,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"CallTask"> | Date | string
     updatedAt?: DateTimeFilter<"CallTask"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    assignedTo?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
     contact?: XOR<ContactScalarRelationFilter, ContactWhereInput>
     campaign?: XOR<EmailCampaignNullableScalarRelationFilter, EmailCampaignWhereInput> | null
@@ -62312,6 +67163,7 @@ export namespace Prisma {
     status?: SortOrder
     priority?: SortOrder
     dueAt?: SortOrder
+    assignedToId?: SortOrderInput | SortOrder
     lastOutcome?: SortOrderInput | SortOrder
     lastDisposition?: SortOrderInput | SortOrder
     lastNote?: SortOrderInput | SortOrder
@@ -62338,6 +67190,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusWithAggregatesFilter<"CallTask"> | $Enums.CallTaskStatus
     priority?: IntWithAggregatesFilter<"CallTask"> | number
     dueAt?: DateTimeWithAggregatesFilter<"CallTask"> | Date | string
+    assignedToId?: StringNullableWithAggregatesFilter<"CallTask"> | string | null
     lastOutcome?: StringNullableWithAggregatesFilter<"CallTask"> | string | null
     lastDisposition?: StringNullableWithAggregatesFilter<"CallTask"> | string | null
     lastNote?: StringNullableWithAggregatesFilter<"CallTask"> | string | null
@@ -63791,19 +68644,19 @@ export namespace Prisma {
     OR?: BounceListWhereInput[]
     NOT?: BounceListWhereInput | BounceListWhereInput[]
     id?: StringFilter<"BounceList"> | string
-    userId?: StringFilter<"BounceList"> | string
+    userId?: StringNullableFilter<"BounceList"> | string | null
     organizationId?: StringNullableFilter<"BounceList"> | string | null
     email?: StringFilter<"BounceList"> | string
     bouncedAt?: DateTimeFilter<"BounceList"> | Date | string
     bounceCode?: StringNullableFilter<"BounceList"> | string | null
     reason?: StringNullableFilter<"BounceList"> | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
   }
 
   export type BounceListOrderByWithRelationInput = {
     id?: SortOrder
-    userId?: SortOrder
+    userId?: SortOrderInput | SortOrder
     organizationId?: SortOrderInput | SortOrder
     email?: SortOrder
     bouncedAt?: SortOrder
@@ -63816,22 +68669,23 @@ export namespace Prisma {
   export type BounceListWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     userId_email?: BounceListUserIdEmailCompoundUniqueInput
+    organizationId_email?: BounceListOrganizationIdEmailCompoundUniqueInput
     AND?: BounceListWhereInput | BounceListWhereInput[]
     OR?: BounceListWhereInput[]
     NOT?: BounceListWhereInput | BounceListWhereInput[]
-    userId?: StringFilter<"BounceList"> | string
+    userId?: StringNullableFilter<"BounceList"> | string | null
     organizationId?: StringNullableFilter<"BounceList"> | string | null
     email?: StringFilter<"BounceList"> | string
     bouncedAt?: DateTimeFilter<"BounceList"> | Date | string
     bounceCode?: StringNullableFilter<"BounceList"> | string | null
     reason?: StringNullableFilter<"BounceList"> | string | null
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     organization?: XOR<OrganizationNullableScalarRelationFilter, OrganizationWhereInput> | null
-  }, "id" | "userId_email">
+  }, "id" | "userId_email" | "organizationId_email">
 
   export type BounceListOrderByWithAggregationInput = {
     id?: SortOrder
-    userId?: SortOrder
+    userId?: SortOrderInput | SortOrder
     organizationId?: SortOrderInput | SortOrder
     email?: SortOrder
     bouncedAt?: SortOrder
@@ -63847,7 +68701,7 @@ export namespace Prisma {
     OR?: BounceListScalarWhereWithAggregatesInput[]
     NOT?: BounceListScalarWhereWithAggregatesInput | BounceListScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"BounceList"> | string
-    userId?: StringWithAggregatesFilter<"BounceList"> | string
+    userId?: StringNullableWithAggregatesFilter<"BounceList"> | string | null
     organizationId?: StringNullableWithAggregatesFilter<"BounceList"> | string | null
     email?: StringWithAggregatesFilter<"BounceList"> | string
     bouncedAt?: DateTimeWithAggregatesFilter<"BounceList"> | Date | string
@@ -63865,11 +68719,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -63881,6 +68738,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -63894,11 +68753,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -63909,6 +68771,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -63921,11 +68785,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -63937,6 +68804,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -63950,11 +68819,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -63965,6 +68837,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -64012,6 +68886,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -64021,6 +68896,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateInput = {
@@ -64036,6 +68913,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -64045,6 +68923,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUpdateInput = {
@@ -64060,6 +68940,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -64069,6 +68950,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateInput = {
@@ -64084,6 +68967,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -64093,6 +68977,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationCreateManyInput = {
@@ -64116,6 +69002,123 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TrackingDomainSettingCreateInput = {
+    id?: string
+    scopeKey: string
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutTrackingDomainSettingsInput
+    organization?: OrganizationCreateNestedOneWithoutTrackingDomainSettingsInput
+  }
+
+  export type TrackingDomainSettingUncheckedCreateInput = {
+    id?: string
+    scopeKey: string
+    userId: string
+    organizationId?: string | null
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TrackingDomainSettingUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTrackingDomainSettingsNestedInput
+    organization?: OrganizationUpdateOneWithoutTrackingDomainSettingsNestedInput
+  }
+
+  export type TrackingDomainSettingUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingDomainSettingCreateManyInput = {
+    id?: string
+    scopeKey: string
+    userId: string
+    organizationId?: string | null
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TrackingDomainSettingUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingDomainSettingUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OrganizationMemberCreateInput = {
@@ -64588,6 +69591,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -64621,6 +69625,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -64648,6 +69653,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -64681,6 +69687,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -64711,6 +69718,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -64731,6 +69739,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -64754,6 +69763,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -65203,6 +70213,81 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     subject?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutFollowUpTemplatesInput
+    organization?: OrganizationCreateNestedOneWithoutFollowUpTemplatesInput
+  }
+
+  export type FollowUpTemplateUncheckedCreateInput = {
+    id?: string
+    userId: string
+    organizationId?: string | null
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FollowUpTemplateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutFollowUpTemplatesNestedInput
+    organization?: OrganizationUpdateOneWithoutFollowUpTemplatesNestedInput
+  }
+
+  export type FollowUpTemplateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateCreateManyInput = {
+    id?: string
+    userId: string
+    organizationId?: string | null
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FollowUpTemplateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -66104,15 +71189,22 @@ export namespace Prisma {
   export type ContactCreateInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     notes?: NoteCreateNestedManyWithoutContactInput
@@ -66128,12 +71220,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -66148,15 +71247,22 @@ export namespace Prisma {
   export type ContactUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
@@ -66172,12 +71278,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -66194,12 +71307,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -66207,12 +71327,18 @@ export namespace Prisma {
   export type ContactUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -66222,12 +71348,185 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrmCompanyCreateInput = {
+    id?: string
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPrmCompaniesInput
+    organization?: OrganizationCreateNestedOneWithoutPrmCompaniesInput
+  }
+
+  export type PrmCompanyUncheckedCreateInput = {
+    id?: string
+    userId: string
+    organizationId?: string | null
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrmCompanyUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPrmCompaniesNestedInput
+    organization?: OrganizationUpdateOneWithoutPrmCompaniesNestedInput
+  }
+
+  export type PrmCompanyUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrmCompanyCreateManyInput = {
+    id?: string
+    userId: string
+    organizationId?: string | null
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrmCompanyUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrmCompanyUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -66243,6 +71542,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutCallTasksInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedCallTasksInput
     organization?: OrganizationCreateNestedOneWithoutCallTasksInput
     contact: ContactCreateNestedOneWithoutCallTasksInput
     campaign?: EmailCampaignCreateNestedOneWithoutCallTasksInput
@@ -66259,6 +71559,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -66281,6 +71582,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCallTasksNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedCallTasksNestedInput
     organization?: OrganizationUpdateOneWithoutCallTasksNestedInput
     contact?: ContactUpdateOneRequiredWithoutCallTasksNestedInput
     campaign?: EmailCampaignUpdateOneWithoutCallTasksNestedInput
@@ -66297,6 +71599,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -66316,6 +71619,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -66346,6 +71650,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -67911,13 +73216,13 @@ export namespace Prisma {
     bouncedAt?: Date | string
     bounceCode?: string | null
     reason?: string | null
-    user: UserCreateNestedOneWithoutBounceListInput
+    user?: UserCreateNestedOneWithoutBounceListInput
     organization?: OrganizationCreateNestedOneWithoutBounceListInput
   }
 
   export type BounceListUncheckedCreateInput = {
     id?: string
-    userId: string
+    userId?: string | null
     organizationId?: string | null
     email: string
     bouncedAt?: Date | string
@@ -67931,13 +73236,13 @@ export namespace Prisma {
     bouncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bounceCode?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
-    user?: UserUpdateOneRequiredWithoutBounceListNestedInput
+    user?: UserUpdateOneWithoutBounceListNestedInput
     organization?: OrganizationUpdateOneWithoutBounceListNestedInput
   }
 
   export type BounceListUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     bouncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67947,7 +73252,7 @@ export namespace Prisma {
 
   export type BounceListCreateManyInput = {
     id?: string
-    userId: string
+    userId?: string | null
     organizationId?: string | null
     email: string
     bouncedAt?: Date | string
@@ -67965,7 +73270,7 @@ export namespace Prisma {
 
   export type BounceListUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     bouncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68031,6 +73336,12 @@ export namespace Prisma {
     none?: EmailTemplateWhereInput
   }
 
+  export type FollowUpTemplateListRelationFilter = {
+    every?: FollowUpTemplateWhereInput
+    some?: FollowUpTemplateWhereInput
+    none?: FollowUpTemplateWhereInput
+  }
+
   export type RefreshTokenListRelationFilter = {
     every?: RefreshTokenWhereInput
     some?: RefreshTokenWhereInput
@@ -68058,6 +73369,12 @@ export namespace Prisma {
     every?: ContactWhereInput
     some?: ContactWhereInput
     none?: ContactWhereInput
+  }
+
+  export type CallTaskListRelationFilter = {
+    every?: CallTaskWhereInput
+    some?: CallTaskWhereInput
+    none?: CallTaskWhereInput
   }
 
   export type ContactListListRelationFilter = {
@@ -68090,12 +73407,6 @@ export namespace Prisma {
     none?: PrmBulkActionLogWhereInput
   }
 
-  export type CallTaskListRelationFilter = {
-    every?: CallTaskWhereInput
-    some?: CallTaskWhereInput
-    none?: CallTaskWhereInput
-  }
-
   export type CallProviderConnectionListRelationFilter = {
     every?: CallProviderConnectionWhereInput
     some?: CallProviderConnectionWhereInput
@@ -68125,6 +73436,18 @@ export namespace Prisma {
     isNot?: OrganizationWhereInput | null
   }
 
+  export type TrackingDomainSettingListRelationFilter = {
+    every?: TrackingDomainSettingWhereInput
+    some?: TrackingDomainSettingWhereInput
+    none?: TrackingDomainSettingWhereInput
+  }
+
+  export type PrmCompanyListRelationFilter = {
+    every?: PrmCompanyWhereInput
+    some?: PrmCompanyWhereInput
+    none?: PrmCompanyWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -68135,6 +73458,10 @@ export namespace Prisma {
   }
 
   export type EmailTemplateOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FollowUpTemplateOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -68151,6 +73478,10 @@ export namespace Prisma {
   }
 
   export type ContactOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CallTaskOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -68174,10 +73505,6 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type CallTaskOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type CallProviderConnectionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -68191,6 +73518,14 @@ export namespace Prisma {
   }
 
   export type OrganizationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TrackingDomainSettingOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PrmCompanyOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -68364,6 +73699,104 @@ export namespace Prisma {
     ownerId?: SortOrder
   }
 
+  export type EnumTrackingDomainStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.TrackingDomainStatus | EnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.TrackingDomainStatus[] | ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TrackingDomainStatus[] | ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumTrackingDomainStatusFilter<$PrismaModel> | $Enums.TrackingDomainStatus
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type TrackingDomainSettingOrganizationIdFullDomainCompoundUniqueInput = {
+    organizationId: string
+    fullDomain: string
+  }
+
+  export type TrackingDomainSettingCountOrderByAggregateInput = {
+    id?: SortOrder
+    scopeKey?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    rootDomain?: SortOrder
+    subdomain?: SortOrder
+    fullDomain?: SortOrder
+    cnameTarget?: SortOrder
+    status?: SortOrder
+    lastCheckedAt?: SortOrder
+    lastCheckedValue?: SortOrder
+    verifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TrackingDomainSettingMaxOrderByAggregateInput = {
+    id?: SortOrder
+    scopeKey?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    rootDomain?: SortOrder
+    subdomain?: SortOrder
+    fullDomain?: SortOrder
+    cnameTarget?: SortOrder
+    status?: SortOrder
+    lastCheckedAt?: SortOrder
+    lastCheckedValue?: SortOrder
+    verifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TrackingDomainSettingMinOrderByAggregateInput = {
+    id?: SortOrder
+    scopeKey?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    rootDomain?: SortOrder
+    subdomain?: SortOrder
+    fullDomain?: SortOrder
+    cnameTarget?: SortOrder
+    status?: SortOrder
+    lastCheckedAt?: SortOrder
+    lastCheckedValue?: SortOrder
+    verifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumTrackingDomainStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TrackingDomainStatus | EnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.TrackingDomainStatus[] | ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TrackingDomainStatus[] | ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumTrackingDomainStatusWithAggregatesFilter<$PrismaModel> | $Enums.TrackingDomainStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTrackingDomainStatusFilter<$PrismaModel>
+    _max?: NestedEnumTrackingDomainStatusFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type EnumOrgMemberRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.OrgMemberRole | EnumOrgMemberRoleFieldRefInput<$PrismaModel>
     in?: $Enums.OrgMemberRole[] | ListEnumOrgMemberRoleFieldRefInput<$PrismaModel>
@@ -68418,17 +73851,6 @@ export namespace Prisma {
     _max?: NestedEnumOrgMemberRoleFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type OrganizationInviteCountOrderByAggregateInput = {
     id?: SortOrder
     organizationId?: SortOrder
@@ -68469,20 +73891,6 @@ export namespace Prisma {
     revokedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type EnumSubscriptionStatusFilter<$PrismaModel = never> = {
@@ -68772,6 +74180,29 @@ export namespace Prisma {
     notIn?: $Enums.CampaignStatus[] | ListEnumCampaignStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumCampaignStatusFilter<$PrismaModel> | $Enums.CampaignStatus
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type AttachmentListRelationFilter = {
     every?: AttachmentWhereInput
@@ -68828,6 +74259,7 @@ export namespace Prisma {
     businessStartHour?: SortOrder
     businessEndHour?: SortOrder
     isPriority?: SortOrder
+    sequenceConfig?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -68902,26 +74334,14 @@ export namespace Prisma {
     _min?: NestedEnumCampaignStatusFilter<$PrismaModel>
     _max?: NestedEnumCampaignStatusFilter<$PrismaModel>
   }
-
-  export type EnumEmailStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.EmailStatus | EnumEmailStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.EmailStatus[] | ListEnumEmailStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.EmailStatus[] | ListEnumEmailStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumEmailStatusFilter<$PrismaModel> | $Enums.EmailStatus
-  }
-
-  export type BoolNullableFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
-    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
-  }
-  export type JsonNullableFilter<$PrismaModel = never> =
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
       >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
 
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
     equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
     path?: string[]
     mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
@@ -68936,6 +74356,21 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type EnumEmailStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailStatus | EnumEmailStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailStatus[] | ListEnumEmailStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailStatus[] | ListEnumEmailStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailStatusFilter<$PrismaModel> | $Enums.EmailStatus
+  }
+
+  export type BoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
   }
 
   export type EmailCampaignScalarRelationFilter = {
@@ -69032,32 +74467,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedBoolNullableFilter<$PrismaModel>
     _max?: NestedBoolNullableFilter<$PrismaModel>
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type SenderScalarRelationFilter = {
@@ -69248,6 +74657,91 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type FollowUpTemplateUserIdNameCompoundUniqueInput = {
+    userId: string
+    name: string
+  }
+
+  export type FollowUpTemplateCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    steps?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FollowUpTemplateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FollowUpTemplateMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
 
   export type SequenceStepCampaignIdStepNumberCompoundUniqueInput = {
     campaignId: string
@@ -69292,29 +74786,6 @@ export namespace Prisma {
   export type SequenceStepSumOrderByAggregateInput = {
     stepNumber?: SortOrder
     waitDays?: SortOrder
-  }
-  export type JsonFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type RecipientSequenceStateCampaignIdRecipientEmailCompoundUniqueInput = {
@@ -69365,32 +74836,6 @@ export namespace Prisma {
 
   export type RecipientSequenceStateSumOrderByAggregateInput = {
     currentStep?: SortOrder
-  }
-  export type JsonWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedJsonFilter<$PrismaModel>
-    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type ProviderProfileCountOrderByAggregateInput = {
@@ -69852,6 +75297,14 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
   export type ContactActivityListRelationFilter = {
     every?: ContactActivityWhereInput
     some?: ContactActivityWhereInput
@@ -69892,12 +75345,19 @@ export namespace Prisma {
     userId?: SortOrder
     organizationId?: SortOrder
     email?: SortOrder
+    website?: SortOrder
+    companyDomain?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
     company?: SortOrder
     phone?: SortOrder
     jobTitle?: SortOrder
+    techStack?: SortOrder
     stage?: SortOrder
+    nextAction?: SortOrder
+    nextActionDueAt?: SortOrder
+    assignedToId?: SortOrder
+    lastEnrichedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -69907,12 +75367,18 @@ export namespace Prisma {
     userId?: SortOrder
     organizationId?: SortOrder
     email?: SortOrder
+    website?: SortOrder
+    companyDomain?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
     company?: SortOrder
     phone?: SortOrder
     jobTitle?: SortOrder
     stage?: SortOrder
+    nextAction?: SortOrder
+    nextActionDueAt?: SortOrder
+    assignedToId?: SortOrder
+    lastEnrichedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -69922,12 +75388,93 @@ export namespace Prisma {
     userId?: SortOrder
     organizationId?: SortOrder
     email?: SortOrder
+    website?: SortOrder
+    companyDomain?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
     company?: SortOrder
     phone?: SortOrder
     jobTitle?: SortOrder
     stage?: SortOrder
+    nextAction?: SortOrder
+    nextActionDueAt?: SortOrder
+    assignedToId?: SortOrder
+    lastEnrichedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrmCompanyUserIdDomainCompoundUniqueInput = {
+    userId: string
+    domain: string
+  }
+
+  export type PrmCompanyCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    website?: SortOrder
+    domain?: SortOrder
+    primaryEmail?: SortOrder
+    phone?: SortOrder
+    linkedinUrl?: SortOrder
+    twitterUrl?: SortOrder
+    githubUrl?: SortOrder
+    facebookUrl?: SortOrder
+    instagramUrl?: SortOrder
+    techStack?: SortOrder
+    whoisRegistrar?: SortOrder
+    whoisCreatedAt?: SortOrder
+    whoisUpdatedAt?: SortOrder
+    whoisExpiresAt?: SortOrder
+    lastEnrichedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrmCompanyMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    website?: SortOrder
+    domain?: SortOrder
+    primaryEmail?: SortOrder
+    phone?: SortOrder
+    linkedinUrl?: SortOrder
+    twitterUrl?: SortOrder
+    githubUrl?: SortOrder
+    facebookUrl?: SortOrder
+    instagramUrl?: SortOrder
+    whoisRegistrar?: SortOrder
+    whoisCreatedAt?: SortOrder
+    whoisUpdatedAt?: SortOrder
+    whoisExpiresAt?: SortOrder
+    lastEnrichedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PrmCompanyMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    website?: SortOrder
+    domain?: SortOrder
+    primaryEmail?: SortOrder
+    phone?: SortOrder
+    linkedinUrl?: SortOrder
+    twitterUrl?: SortOrder
+    githubUrl?: SortOrder
+    facebookUrl?: SortOrder
+    instagramUrl?: SortOrder
+    whoisRegistrar?: SortOrder
+    whoisCreatedAt?: SortOrder
+    whoisUpdatedAt?: SortOrder
+    whoisExpiresAt?: SortOrder
+    lastEnrichedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -69967,6 +75514,7 @@ export namespace Prisma {
     status?: SortOrder
     priority?: SortOrder
     dueAt?: SortOrder
+    assignedToId?: SortOrder
     lastOutcome?: SortOrder
     lastDisposition?: SortOrder
     lastNote?: SortOrder
@@ -69989,6 +75537,7 @@ export namespace Prisma {
     status?: SortOrder
     priority?: SortOrder
     dueAt?: SortOrder
+    assignedToId?: SortOrder
     lastOutcome?: SortOrder
     lastDisposition?: SortOrder
     lastNote?: SortOrder
@@ -70007,6 +75556,7 @@ export namespace Prisma {
     status?: SortOrder
     priority?: SortOrder
     dueAt?: SortOrder
+    assignedToId?: SortOrder
     lastOutcome?: SortOrder
     lastDisposition?: SortOrder
     lastNote?: SortOrder
@@ -70537,14 +76087,6 @@ export namespace Prisma {
     bounceCount?: SortOrder
   }
 
-  export type StringNullableListFilter<$PrismaModel = never> = {
-    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    has?: string | StringFieldRefInput<$PrismaModel> | null
-    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
-    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
-  }
-
   export type WebhookCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -70939,6 +76481,11 @@ export namespace Prisma {
     email: string
   }
 
+  export type BounceListOrganizationIdEmailCompoundUniqueInput = {
+    organizationId: string
+    email: string
+  }
+
   export type BounceListCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -70983,6 +76530,13 @@ export namespace Prisma {
     connect?: EmailTemplateWhereUniqueInput | EmailTemplateWhereUniqueInput[]
   }
 
+  export type FollowUpTemplateCreateNestedManyWithoutUserInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutUserInput, FollowUpTemplateUncheckedCreateWithoutUserInput> | FollowUpTemplateCreateWithoutUserInput[] | FollowUpTemplateUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutUserInput | FollowUpTemplateCreateOrConnectWithoutUserInput[]
+    createMany?: FollowUpTemplateCreateManyUserInputEnvelope
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+  }
+
   export type RefreshTokenCreateNestedManyWithoutUserInput = {
     create?: XOR<RefreshTokenCreateWithoutUserInput, RefreshTokenUncheckedCreateWithoutUserInput> | RefreshTokenCreateWithoutUserInput[] | RefreshTokenUncheckedCreateWithoutUserInput[]
     connectOrCreate?: RefreshTokenCreateOrConnectWithoutUserInput | RefreshTokenCreateOrConnectWithoutUserInput[]
@@ -71015,6 +76569,20 @@ export namespace Prisma {
     connectOrCreate?: ContactCreateOrConnectWithoutUserInput | ContactCreateOrConnectWithoutUserInput[]
     createMany?: ContactCreateManyUserInputEnvelope
     connect?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+  }
+
+  export type ContactCreateNestedManyWithoutAssignedToInput = {
+    create?: XOR<ContactCreateWithoutAssignedToInput, ContactUncheckedCreateWithoutAssignedToInput> | ContactCreateWithoutAssignedToInput[] | ContactUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: ContactCreateOrConnectWithoutAssignedToInput | ContactCreateOrConnectWithoutAssignedToInput[]
+    createMany?: ContactCreateManyAssignedToInputEnvelope
+    connect?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+  }
+
+  export type CallTaskCreateNestedManyWithoutAssignedToInput = {
+    create?: XOR<CallTaskCreateWithoutAssignedToInput, CallTaskUncheckedCreateWithoutAssignedToInput> | CallTaskCreateWithoutAssignedToInput[] | CallTaskUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: CallTaskCreateOrConnectWithoutAssignedToInput | CallTaskCreateOrConnectWithoutAssignedToInput[]
+    createMany?: CallTaskCreateManyAssignedToInputEnvelope
+    connect?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
   }
 
   export type ContactListCreateNestedManyWithoutUserInput = {
@@ -71093,6 +76661,20 @@ export namespace Prisma {
     connect?: OrganizationWhereUniqueInput
   }
 
+  export type TrackingDomainSettingCreateNestedManyWithoutUserInput = {
+    create?: XOR<TrackingDomainSettingCreateWithoutUserInput, TrackingDomainSettingUncheckedCreateWithoutUserInput> | TrackingDomainSettingCreateWithoutUserInput[] | TrackingDomainSettingUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TrackingDomainSettingCreateOrConnectWithoutUserInput | TrackingDomainSettingCreateOrConnectWithoutUserInput[]
+    createMany?: TrackingDomainSettingCreateManyUserInputEnvelope
+    connect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+  }
+
+  export type PrmCompanyCreateNestedManyWithoutUserInput = {
+    create?: XOR<PrmCompanyCreateWithoutUserInput, PrmCompanyUncheckedCreateWithoutUserInput> | PrmCompanyCreateWithoutUserInput[] | PrmCompanyUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PrmCompanyCreateOrConnectWithoutUserInput | PrmCompanyCreateOrConnectWithoutUserInput[]
+    createMany?: PrmCompanyCreateManyUserInputEnvelope
+    connect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+  }
+
   export type EmailCampaignUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<EmailCampaignCreateWithoutUserInput, EmailCampaignUncheckedCreateWithoutUserInput> | EmailCampaignCreateWithoutUserInput[] | EmailCampaignUncheckedCreateWithoutUserInput[]
     connectOrCreate?: EmailCampaignCreateOrConnectWithoutUserInput | EmailCampaignCreateOrConnectWithoutUserInput[]
@@ -71105,6 +76687,13 @@ export namespace Prisma {
     connectOrCreate?: EmailTemplateCreateOrConnectWithoutUserInput | EmailTemplateCreateOrConnectWithoutUserInput[]
     createMany?: EmailTemplateCreateManyUserInputEnvelope
     connect?: EmailTemplateWhereUniqueInput | EmailTemplateWhereUniqueInput[]
+  }
+
+  export type FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutUserInput, FollowUpTemplateUncheckedCreateWithoutUserInput> | FollowUpTemplateCreateWithoutUserInput[] | FollowUpTemplateUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutUserInput | FollowUpTemplateCreateOrConnectWithoutUserInput[]
+    createMany?: FollowUpTemplateCreateManyUserInputEnvelope
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
   }
 
   export type RefreshTokenUncheckedCreateNestedManyWithoutUserInput = {
@@ -71139,6 +76728,20 @@ export namespace Prisma {
     connectOrCreate?: ContactCreateOrConnectWithoutUserInput | ContactCreateOrConnectWithoutUserInput[]
     createMany?: ContactCreateManyUserInputEnvelope
     connect?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+  }
+
+  export type ContactUncheckedCreateNestedManyWithoutAssignedToInput = {
+    create?: XOR<ContactCreateWithoutAssignedToInput, ContactUncheckedCreateWithoutAssignedToInput> | ContactCreateWithoutAssignedToInput[] | ContactUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: ContactCreateOrConnectWithoutAssignedToInput | ContactCreateOrConnectWithoutAssignedToInput[]
+    createMany?: ContactCreateManyAssignedToInputEnvelope
+    connect?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+  }
+
+  export type CallTaskUncheckedCreateNestedManyWithoutAssignedToInput = {
+    create?: XOR<CallTaskCreateWithoutAssignedToInput, CallTaskUncheckedCreateWithoutAssignedToInput> | CallTaskCreateWithoutAssignedToInput[] | CallTaskUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: CallTaskCreateOrConnectWithoutAssignedToInput | CallTaskCreateOrConnectWithoutAssignedToInput[]
+    createMany?: CallTaskCreateManyAssignedToInputEnvelope
+    connect?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
   }
 
   export type ContactListUncheckedCreateNestedManyWithoutUserInput = {
@@ -71211,6 +76814,20 @@ export namespace Prisma {
     connect?: OrganizationWhereUniqueInput | OrganizationWhereUniqueInput[]
   }
 
+  export type TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<TrackingDomainSettingCreateWithoutUserInput, TrackingDomainSettingUncheckedCreateWithoutUserInput> | TrackingDomainSettingCreateWithoutUserInput[] | TrackingDomainSettingUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TrackingDomainSettingCreateOrConnectWithoutUserInput | TrackingDomainSettingCreateOrConnectWithoutUserInput[]
+    createMany?: TrackingDomainSettingCreateManyUserInputEnvelope
+    connect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+  }
+
+  export type PrmCompanyUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PrmCompanyCreateWithoutUserInput, PrmCompanyUncheckedCreateWithoutUserInput> | PrmCompanyCreateWithoutUserInput[] | PrmCompanyUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PrmCompanyCreateOrConnectWithoutUserInput | PrmCompanyCreateOrConnectWithoutUserInput[]
+    createMany?: PrmCompanyCreateManyUserInputEnvelope
+    connect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -71253,6 +76870,20 @@ export namespace Prisma {
     update?: EmailTemplateUpdateWithWhereUniqueWithoutUserInput | EmailTemplateUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: EmailTemplateUpdateManyWithWhereWithoutUserInput | EmailTemplateUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: EmailTemplateScalarWhereInput | EmailTemplateScalarWhereInput[]
+  }
+
+  export type FollowUpTemplateUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutUserInput, FollowUpTemplateUncheckedCreateWithoutUserInput> | FollowUpTemplateCreateWithoutUserInput[] | FollowUpTemplateUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutUserInput | FollowUpTemplateCreateOrConnectWithoutUserInput[]
+    upsert?: FollowUpTemplateUpsertWithWhereUniqueWithoutUserInput | FollowUpTemplateUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FollowUpTemplateCreateManyUserInputEnvelope
+    set?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    disconnect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    delete?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    update?: FollowUpTemplateUpdateWithWhereUniqueWithoutUserInput | FollowUpTemplateUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FollowUpTemplateUpdateManyWithWhereWithoutUserInput | FollowUpTemplateUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
   }
 
   export type RefreshTokenUpdateManyWithoutUserNestedInput = {
@@ -71319,6 +76950,34 @@ export namespace Prisma {
     update?: ContactUpdateWithWhereUniqueWithoutUserInput | ContactUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ContactUpdateManyWithWhereWithoutUserInput | ContactUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ContactScalarWhereInput | ContactScalarWhereInput[]
+  }
+
+  export type ContactUpdateManyWithoutAssignedToNestedInput = {
+    create?: XOR<ContactCreateWithoutAssignedToInput, ContactUncheckedCreateWithoutAssignedToInput> | ContactCreateWithoutAssignedToInput[] | ContactUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: ContactCreateOrConnectWithoutAssignedToInput | ContactCreateOrConnectWithoutAssignedToInput[]
+    upsert?: ContactUpsertWithWhereUniqueWithoutAssignedToInput | ContactUpsertWithWhereUniqueWithoutAssignedToInput[]
+    createMany?: ContactCreateManyAssignedToInputEnvelope
+    set?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+    disconnect?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+    delete?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+    connect?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+    update?: ContactUpdateWithWhereUniqueWithoutAssignedToInput | ContactUpdateWithWhereUniqueWithoutAssignedToInput[]
+    updateMany?: ContactUpdateManyWithWhereWithoutAssignedToInput | ContactUpdateManyWithWhereWithoutAssignedToInput[]
+    deleteMany?: ContactScalarWhereInput | ContactScalarWhereInput[]
+  }
+
+  export type CallTaskUpdateManyWithoutAssignedToNestedInput = {
+    create?: XOR<CallTaskCreateWithoutAssignedToInput, CallTaskUncheckedCreateWithoutAssignedToInput> | CallTaskCreateWithoutAssignedToInput[] | CallTaskUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: CallTaskCreateOrConnectWithoutAssignedToInput | CallTaskCreateOrConnectWithoutAssignedToInput[]
+    upsert?: CallTaskUpsertWithWhereUniqueWithoutAssignedToInput | CallTaskUpsertWithWhereUniqueWithoutAssignedToInput[]
+    createMany?: CallTaskCreateManyAssignedToInputEnvelope
+    set?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
+    disconnect?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
+    delete?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
+    connect?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
+    update?: CallTaskUpdateWithWhereUniqueWithoutAssignedToInput | CallTaskUpdateWithWhereUniqueWithoutAssignedToInput[]
+    updateMany?: CallTaskUpdateManyWithWhereWithoutAssignedToInput | CallTaskUpdateManyWithWhereWithoutAssignedToInput[]
+    deleteMany?: CallTaskScalarWhereInput | CallTaskScalarWhereInput[]
   }
 
   export type ContactListUpdateManyWithoutUserNestedInput = {
@@ -71471,6 +77130,34 @@ export namespace Prisma {
     update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutUsersInput, OrganizationUpdateWithoutUsersInput>, OrganizationUncheckedUpdateWithoutUsersInput>
   }
 
+  export type TrackingDomainSettingUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TrackingDomainSettingCreateWithoutUserInput, TrackingDomainSettingUncheckedCreateWithoutUserInput> | TrackingDomainSettingCreateWithoutUserInput[] | TrackingDomainSettingUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TrackingDomainSettingCreateOrConnectWithoutUserInput | TrackingDomainSettingCreateOrConnectWithoutUserInput[]
+    upsert?: TrackingDomainSettingUpsertWithWhereUniqueWithoutUserInput | TrackingDomainSettingUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TrackingDomainSettingCreateManyUserInputEnvelope
+    set?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    disconnect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    delete?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    connect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    update?: TrackingDomainSettingUpdateWithWhereUniqueWithoutUserInput | TrackingDomainSettingUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TrackingDomainSettingUpdateManyWithWhereWithoutUserInput | TrackingDomainSettingUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TrackingDomainSettingScalarWhereInput | TrackingDomainSettingScalarWhereInput[]
+  }
+
+  export type PrmCompanyUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PrmCompanyCreateWithoutUserInput, PrmCompanyUncheckedCreateWithoutUserInput> | PrmCompanyCreateWithoutUserInput[] | PrmCompanyUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PrmCompanyCreateOrConnectWithoutUserInput | PrmCompanyCreateOrConnectWithoutUserInput[]
+    upsert?: PrmCompanyUpsertWithWhereUniqueWithoutUserInput | PrmCompanyUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PrmCompanyCreateManyUserInputEnvelope
+    set?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    disconnect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    delete?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    connect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    update?: PrmCompanyUpdateWithWhereUniqueWithoutUserInput | PrmCompanyUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PrmCompanyUpdateManyWithWhereWithoutUserInput | PrmCompanyUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PrmCompanyScalarWhereInput | PrmCompanyScalarWhereInput[]
+  }
+
   export type EmailCampaignUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<EmailCampaignCreateWithoutUserInput, EmailCampaignUncheckedCreateWithoutUserInput> | EmailCampaignCreateWithoutUserInput[] | EmailCampaignUncheckedCreateWithoutUserInput[]
     connectOrCreate?: EmailCampaignCreateOrConnectWithoutUserInput | EmailCampaignCreateOrConnectWithoutUserInput[]
@@ -71497,6 +77184,20 @@ export namespace Prisma {
     update?: EmailTemplateUpdateWithWhereUniqueWithoutUserInput | EmailTemplateUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: EmailTemplateUpdateManyWithWhereWithoutUserInput | EmailTemplateUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: EmailTemplateScalarWhereInput | EmailTemplateScalarWhereInput[]
+  }
+
+  export type FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutUserInput, FollowUpTemplateUncheckedCreateWithoutUserInput> | FollowUpTemplateCreateWithoutUserInput[] | FollowUpTemplateUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutUserInput | FollowUpTemplateCreateOrConnectWithoutUserInput[]
+    upsert?: FollowUpTemplateUpsertWithWhereUniqueWithoutUserInput | FollowUpTemplateUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FollowUpTemplateCreateManyUserInputEnvelope
+    set?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    disconnect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    delete?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    update?: FollowUpTemplateUpdateWithWhereUniqueWithoutUserInput | FollowUpTemplateUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FollowUpTemplateUpdateManyWithWhereWithoutUserInput | FollowUpTemplateUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
   }
 
   export type RefreshTokenUncheckedUpdateManyWithoutUserNestedInput = {
@@ -71563,6 +77264,34 @@ export namespace Prisma {
     update?: ContactUpdateWithWhereUniqueWithoutUserInput | ContactUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ContactUpdateManyWithWhereWithoutUserInput | ContactUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ContactScalarWhereInput | ContactScalarWhereInput[]
+  }
+
+  export type ContactUncheckedUpdateManyWithoutAssignedToNestedInput = {
+    create?: XOR<ContactCreateWithoutAssignedToInput, ContactUncheckedCreateWithoutAssignedToInput> | ContactCreateWithoutAssignedToInput[] | ContactUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: ContactCreateOrConnectWithoutAssignedToInput | ContactCreateOrConnectWithoutAssignedToInput[]
+    upsert?: ContactUpsertWithWhereUniqueWithoutAssignedToInput | ContactUpsertWithWhereUniqueWithoutAssignedToInput[]
+    createMany?: ContactCreateManyAssignedToInputEnvelope
+    set?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+    disconnect?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+    delete?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+    connect?: ContactWhereUniqueInput | ContactWhereUniqueInput[]
+    update?: ContactUpdateWithWhereUniqueWithoutAssignedToInput | ContactUpdateWithWhereUniqueWithoutAssignedToInput[]
+    updateMany?: ContactUpdateManyWithWhereWithoutAssignedToInput | ContactUpdateManyWithWhereWithoutAssignedToInput[]
+    deleteMany?: ContactScalarWhereInput | ContactScalarWhereInput[]
+  }
+
+  export type CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput = {
+    create?: XOR<CallTaskCreateWithoutAssignedToInput, CallTaskUncheckedCreateWithoutAssignedToInput> | CallTaskCreateWithoutAssignedToInput[] | CallTaskUncheckedCreateWithoutAssignedToInput[]
+    connectOrCreate?: CallTaskCreateOrConnectWithoutAssignedToInput | CallTaskCreateOrConnectWithoutAssignedToInput[]
+    upsert?: CallTaskUpsertWithWhereUniqueWithoutAssignedToInput | CallTaskUpsertWithWhereUniqueWithoutAssignedToInput[]
+    createMany?: CallTaskCreateManyAssignedToInputEnvelope
+    set?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
+    disconnect?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
+    delete?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
+    connect?: CallTaskWhereUniqueInput | CallTaskWhereUniqueInput[]
+    update?: CallTaskUpdateWithWhereUniqueWithoutAssignedToInput | CallTaskUpdateWithWhereUniqueWithoutAssignedToInput[]
+    updateMany?: CallTaskUpdateManyWithWhereWithoutAssignedToInput | CallTaskUpdateManyWithWhereWithoutAssignedToInput[]
+    deleteMany?: CallTaskScalarWhereInput | CallTaskScalarWhereInput[]
   }
 
   export type ContactListUncheckedUpdateManyWithoutUserNestedInput = {
@@ -71705,6 +77434,34 @@ export namespace Prisma {
     deleteMany?: OrganizationScalarWhereInput | OrganizationScalarWhereInput[]
   }
 
+  export type TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TrackingDomainSettingCreateWithoutUserInput, TrackingDomainSettingUncheckedCreateWithoutUserInput> | TrackingDomainSettingCreateWithoutUserInput[] | TrackingDomainSettingUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TrackingDomainSettingCreateOrConnectWithoutUserInput | TrackingDomainSettingCreateOrConnectWithoutUserInput[]
+    upsert?: TrackingDomainSettingUpsertWithWhereUniqueWithoutUserInput | TrackingDomainSettingUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TrackingDomainSettingCreateManyUserInputEnvelope
+    set?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    disconnect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    delete?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    connect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    update?: TrackingDomainSettingUpdateWithWhereUniqueWithoutUserInput | TrackingDomainSettingUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TrackingDomainSettingUpdateManyWithWhereWithoutUserInput | TrackingDomainSettingUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TrackingDomainSettingScalarWhereInput | TrackingDomainSettingScalarWhereInput[]
+  }
+
+  export type PrmCompanyUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PrmCompanyCreateWithoutUserInput, PrmCompanyUncheckedCreateWithoutUserInput> | PrmCompanyCreateWithoutUserInput[] | PrmCompanyUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PrmCompanyCreateOrConnectWithoutUserInput | PrmCompanyCreateOrConnectWithoutUserInput[]
+    upsert?: PrmCompanyUpsertWithWhereUniqueWithoutUserInput | PrmCompanyUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PrmCompanyCreateManyUserInputEnvelope
+    set?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    disconnect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    delete?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    connect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    update?: PrmCompanyUpdateWithWhereUniqueWithoutUserInput | PrmCompanyUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PrmCompanyUpdateManyWithWhereWithoutUserInput | PrmCompanyUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PrmCompanyScalarWhereInput | PrmCompanyScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutOwnedOrganizationsInput = {
     create?: XOR<UserCreateWithoutOwnedOrganizationsInput, UserUncheckedCreateWithoutOwnedOrganizationsInput>
     connectOrCreate?: UserCreateOrConnectWithoutOwnedOrganizationsInput
@@ -71758,6 +77515,13 @@ export namespace Prisma {
     connectOrCreate?: EmailTemplateCreateOrConnectWithoutOrganizationInput | EmailTemplateCreateOrConnectWithoutOrganizationInput[]
     createMany?: EmailTemplateCreateManyOrganizationInputEnvelope
     connect?: EmailTemplateWhereUniqueInput | EmailTemplateWhereUniqueInput[]
+  }
+
+  export type FollowUpTemplateCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutOrganizationInput, FollowUpTemplateUncheckedCreateWithoutOrganizationInput> | FollowUpTemplateCreateWithoutOrganizationInput[] | FollowUpTemplateUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutOrganizationInput | FollowUpTemplateCreateOrConnectWithoutOrganizationInput[]
+    createMany?: FollowUpTemplateCreateManyOrganizationInputEnvelope
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
   }
 
   export type ContactListCreateNestedManyWithoutOrganizationInput = {
@@ -71823,6 +77587,20 @@ export namespace Prisma {
     connect?: InboxThreadWhereUniqueInput | InboxThreadWhereUniqueInput[]
   }
 
+  export type TrackingDomainSettingCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<TrackingDomainSettingCreateWithoutOrganizationInput, TrackingDomainSettingUncheckedCreateWithoutOrganizationInput> | TrackingDomainSettingCreateWithoutOrganizationInput[] | TrackingDomainSettingUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: TrackingDomainSettingCreateOrConnectWithoutOrganizationInput | TrackingDomainSettingCreateOrConnectWithoutOrganizationInput[]
+    createMany?: TrackingDomainSettingCreateManyOrganizationInputEnvelope
+    connect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+  }
+
+  export type PrmCompanyCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<PrmCompanyCreateWithoutOrganizationInput, PrmCompanyUncheckedCreateWithoutOrganizationInput> | PrmCompanyCreateWithoutOrganizationInput[] | PrmCompanyUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: PrmCompanyCreateOrConnectWithoutOrganizationInput | PrmCompanyCreateOrConnectWithoutOrganizationInput[]
+    createMany?: PrmCompanyCreateManyOrganizationInputEnvelope
+    connect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutActiveOrganizationInput = {
     create?: XOR<UserCreateWithoutActiveOrganizationInput, UserUncheckedCreateWithoutActiveOrganizationInput> | UserCreateWithoutActiveOrganizationInput[] | UserUncheckedCreateWithoutActiveOrganizationInput[]
     connectOrCreate?: UserCreateOrConnectWithoutActiveOrganizationInput | UserCreateOrConnectWithoutActiveOrganizationInput[]
@@ -71870,6 +77648,13 @@ export namespace Prisma {
     connectOrCreate?: EmailTemplateCreateOrConnectWithoutOrganizationInput | EmailTemplateCreateOrConnectWithoutOrganizationInput[]
     createMany?: EmailTemplateCreateManyOrganizationInputEnvelope
     connect?: EmailTemplateWhereUniqueInput | EmailTemplateWhereUniqueInput[]
+  }
+
+  export type FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutOrganizationInput, FollowUpTemplateUncheckedCreateWithoutOrganizationInput> | FollowUpTemplateCreateWithoutOrganizationInput[] | FollowUpTemplateUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutOrganizationInput | FollowUpTemplateCreateOrConnectWithoutOrganizationInput[]
+    createMany?: FollowUpTemplateCreateManyOrganizationInputEnvelope
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
   }
 
   export type ContactListUncheckedCreateNestedManyWithoutOrganizationInput = {
@@ -71933,6 +77718,20 @@ export namespace Prisma {
     connectOrCreate?: InboxThreadCreateOrConnectWithoutOrganizationInput | InboxThreadCreateOrConnectWithoutOrganizationInput[]
     createMany?: InboxThreadCreateManyOrganizationInputEnvelope
     connect?: InboxThreadWhereUniqueInput | InboxThreadWhereUniqueInput[]
+  }
+
+  export type TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<TrackingDomainSettingCreateWithoutOrganizationInput, TrackingDomainSettingUncheckedCreateWithoutOrganizationInput> | TrackingDomainSettingCreateWithoutOrganizationInput[] | TrackingDomainSettingUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: TrackingDomainSettingCreateOrConnectWithoutOrganizationInput | TrackingDomainSettingCreateOrConnectWithoutOrganizationInput[]
+    createMany?: TrackingDomainSettingCreateManyOrganizationInputEnvelope
+    connect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+  }
+
+  export type PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<PrmCompanyCreateWithoutOrganizationInput, PrmCompanyUncheckedCreateWithoutOrganizationInput> | PrmCompanyCreateWithoutOrganizationInput[] | PrmCompanyUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: PrmCompanyCreateOrConnectWithoutOrganizationInput | PrmCompanyCreateOrConnectWithoutOrganizationInput[]
+    createMany?: PrmCompanyCreateManyOrganizationInputEnvelope
+    connect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutOwnedOrganizationsNestedInput = {
@@ -72039,6 +77838,20 @@ export namespace Prisma {
     update?: EmailTemplateUpdateWithWhereUniqueWithoutOrganizationInput | EmailTemplateUpdateWithWhereUniqueWithoutOrganizationInput[]
     updateMany?: EmailTemplateUpdateManyWithWhereWithoutOrganizationInput | EmailTemplateUpdateManyWithWhereWithoutOrganizationInput[]
     deleteMany?: EmailTemplateScalarWhereInput | EmailTemplateScalarWhereInput[]
+  }
+
+  export type FollowUpTemplateUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutOrganizationInput, FollowUpTemplateUncheckedCreateWithoutOrganizationInput> | FollowUpTemplateCreateWithoutOrganizationInput[] | FollowUpTemplateUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutOrganizationInput | FollowUpTemplateCreateOrConnectWithoutOrganizationInput[]
+    upsert?: FollowUpTemplateUpsertWithWhereUniqueWithoutOrganizationInput | FollowUpTemplateUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: FollowUpTemplateCreateManyOrganizationInputEnvelope
+    set?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    disconnect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    delete?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    update?: FollowUpTemplateUpdateWithWhereUniqueWithoutOrganizationInput | FollowUpTemplateUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: FollowUpTemplateUpdateManyWithWhereWithoutOrganizationInput | FollowUpTemplateUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
   }
 
   export type ContactListUpdateManyWithoutOrganizationNestedInput = {
@@ -72167,6 +77980,34 @@ export namespace Prisma {
     deleteMany?: InboxThreadScalarWhereInput | InboxThreadScalarWhereInput[]
   }
 
+  export type TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<TrackingDomainSettingCreateWithoutOrganizationInput, TrackingDomainSettingUncheckedCreateWithoutOrganizationInput> | TrackingDomainSettingCreateWithoutOrganizationInput[] | TrackingDomainSettingUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: TrackingDomainSettingCreateOrConnectWithoutOrganizationInput | TrackingDomainSettingCreateOrConnectWithoutOrganizationInput[]
+    upsert?: TrackingDomainSettingUpsertWithWhereUniqueWithoutOrganizationInput | TrackingDomainSettingUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: TrackingDomainSettingCreateManyOrganizationInputEnvelope
+    set?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    disconnect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    delete?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    connect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    update?: TrackingDomainSettingUpdateWithWhereUniqueWithoutOrganizationInput | TrackingDomainSettingUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: TrackingDomainSettingUpdateManyWithWhereWithoutOrganizationInput | TrackingDomainSettingUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: TrackingDomainSettingScalarWhereInput | TrackingDomainSettingScalarWhereInput[]
+  }
+
+  export type PrmCompanyUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<PrmCompanyCreateWithoutOrganizationInput, PrmCompanyUncheckedCreateWithoutOrganizationInput> | PrmCompanyCreateWithoutOrganizationInput[] | PrmCompanyUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: PrmCompanyCreateOrConnectWithoutOrganizationInput | PrmCompanyCreateOrConnectWithoutOrganizationInput[]
+    upsert?: PrmCompanyUpsertWithWhereUniqueWithoutOrganizationInput | PrmCompanyUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: PrmCompanyCreateManyOrganizationInputEnvelope
+    set?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    disconnect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    delete?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    connect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    update?: PrmCompanyUpdateWithWhereUniqueWithoutOrganizationInput | PrmCompanyUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: PrmCompanyUpdateManyWithWhereWithoutOrganizationInput | PrmCompanyUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: PrmCompanyScalarWhereInput | PrmCompanyScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutActiveOrganizationNestedInput = {
     create?: XOR<UserCreateWithoutActiveOrganizationInput, UserUncheckedCreateWithoutActiveOrganizationInput> | UserCreateWithoutActiveOrganizationInput[] | UserUncheckedCreateWithoutActiveOrganizationInput[]
     connectOrCreate?: UserCreateOrConnectWithoutActiveOrganizationInput | UserCreateOrConnectWithoutActiveOrganizationInput[]
@@ -72263,6 +78104,20 @@ export namespace Prisma {
     update?: EmailTemplateUpdateWithWhereUniqueWithoutOrganizationInput | EmailTemplateUpdateWithWhereUniqueWithoutOrganizationInput[]
     updateMany?: EmailTemplateUpdateManyWithWhereWithoutOrganizationInput | EmailTemplateUpdateManyWithWhereWithoutOrganizationInput[]
     deleteMany?: EmailTemplateScalarWhereInput | EmailTemplateScalarWhereInput[]
+  }
+
+  export type FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<FollowUpTemplateCreateWithoutOrganizationInput, FollowUpTemplateUncheckedCreateWithoutOrganizationInput> | FollowUpTemplateCreateWithoutOrganizationInput[] | FollowUpTemplateUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: FollowUpTemplateCreateOrConnectWithoutOrganizationInput | FollowUpTemplateCreateOrConnectWithoutOrganizationInput[]
+    upsert?: FollowUpTemplateUpsertWithWhereUniqueWithoutOrganizationInput | FollowUpTemplateUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: FollowUpTemplateCreateManyOrganizationInputEnvelope
+    set?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    disconnect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    delete?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    connect?: FollowUpTemplateWhereUniqueInput | FollowUpTemplateWhereUniqueInput[]
+    update?: FollowUpTemplateUpdateWithWhereUniqueWithoutOrganizationInput | FollowUpTemplateUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: FollowUpTemplateUpdateManyWithWhereWithoutOrganizationInput | FollowUpTemplateUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
   }
 
   export type ContactListUncheckedUpdateManyWithoutOrganizationNestedInput = {
@@ -72391,6 +78246,72 @@ export namespace Prisma {
     deleteMany?: InboxThreadScalarWhereInput | InboxThreadScalarWhereInput[]
   }
 
+  export type TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<TrackingDomainSettingCreateWithoutOrganizationInput, TrackingDomainSettingUncheckedCreateWithoutOrganizationInput> | TrackingDomainSettingCreateWithoutOrganizationInput[] | TrackingDomainSettingUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: TrackingDomainSettingCreateOrConnectWithoutOrganizationInput | TrackingDomainSettingCreateOrConnectWithoutOrganizationInput[]
+    upsert?: TrackingDomainSettingUpsertWithWhereUniqueWithoutOrganizationInput | TrackingDomainSettingUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: TrackingDomainSettingCreateManyOrganizationInputEnvelope
+    set?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    disconnect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    delete?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    connect?: TrackingDomainSettingWhereUniqueInput | TrackingDomainSettingWhereUniqueInput[]
+    update?: TrackingDomainSettingUpdateWithWhereUniqueWithoutOrganizationInput | TrackingDomainSettingUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: TrackingDomainSettingUpdateManyWithWhereWithoutOrganizationInput | TrackingDomainSettingUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: TrackingDomainSettingScalarWhereInput | TrackingDomainSettingScalarWhereInput[]
+  }
+
+  export type PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<PrmCompanyCreateWithoutOrganizationInput, PrmCompanyUncheckedCreateWithoutOrganizationInput> | PrmCompanyCreateWithoutOrganizationInput[] | PrmCompanyUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: PrmCompanyCreateOrConnectWithoutOrganizationInput | PrmCompanyCreateOrConnectWithoutOrganizationInput[]
+    upsert?: PrmCompanyUpsertWithWhereUniqueWithoutOrganizationInput | PrmCompanyUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: PrmCompanyCreateManyOrganizationInputEnvelope
+    set?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    disconnect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    delete?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    connect?: PrmCompanyWhereUniqueInput | PrmCompanyWhereUniqueInput[]
+    update?: PrmCompanyUpdateWithWhereUniqueWithoutOrganizationInput | PrmCompanyUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: PrmCompanyUpdateManyWithWhereWithoutOrganizationInput | PrmCompanyUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: PrmCompanyScalarWhereInput | PrmCompanyScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutTrackingDomainSettingsInput = {
+    create?: XOR<UserCreateWithoutTrackingDomainSettingsInput, UserUncheckedCreateWithoutTrackingDomainSettingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTrackingDomainSettingsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type OrganizationCreateNestedOneWithoutTrackingDomainSettingsInput = {
+    create?: XOR<OrganizationCreateWithoutTrackingDomainSettingsInput, OrganizationUncheckedCreateWithoutTrackingDomainSettingsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutTrackingDomainSettingsInput
+    connect?: OrganizationWhereUniqueInput
+  }
+
+  export type EnumTrackingDomainStatusFieldUpdateOperationsInput = {
+    set?: $Enums.TrackingDomainStatus
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
+  export type UserUpdateOneRequiredWithoutTrackingDomainSettingsNestedInput = {
+    create?: XOR<UserCreateWithoutTrackingDomainSettingsInput, UserUncheckedCreateWithoutTrackingDomainSettingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTrackingDomainSettingsInput
+    upsert?: UserUpsertWithoutTrackingDomainSettingsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTrackingDomainSettingsInput, UserUpdateWithoutTrackingDomainSettingsInput>, UserUncheckedUpdateWithoutTrackingDomainSettingsInput>
+  }
+
+  export type OrganizationUpdateOneWithoutTrackingDomainSettingsNestedInput = {
+    create?: XOR<OrganizationCreateWithoutTrackingDomainSettingsInput, OrganizationUncheckedCreateWithoutTrackingDomainSettingsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutTrackingDomainSettingsInput
+    upsert?: OrganizationUpsertWithoutTrackingDomainSettingsInput
+    disconnect?: OrganizationWhereInput | boolean
+    delete?: OrganizationWhereInput | boolean
+    connect?: OrganizationWhereUniqueInput
+    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutTrackingDomainSettingsInput, OrganizationUpdateWithoutTrackingDomainSettingsInput>, OrganizationUncheckedUpdateWithoutTrackingDomainSettingsInput>
+  }
+
   export type OrganizationCreateNestedOneWithoutMembersInput = {
     create?: XOR<OrganizationCreateWithoutMembersInput, OrganizationUncheckedCreateWithoutMembersInput>
     connectOrCreate?: OrganizationCreateOrConnectWithoutMembersInput
@@ -72427,10 +78348,6 @@ export namespace Prisma {
     create?: XOR<OrganizationCreateWithoutInvitesInput, OrganizationUncheckedCreateWithoutInvitesInput>
     connectOrCreate?: OrganizationCreateOrConnectWithoutInvitesInput
     connect?: OrganizationWhereUniqueInput
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type OrganizationUpdateOneRequiredWithoutInvitesNestedInput = {
@@ -73453,6 +79370,36 @@ export namespace Prisma {
     update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutTemplatesInput, OrganizationUpdateWithoutTemplatesInput>, OrganizationUncheckedUpdateWithoutTemplatesInput>
   }
 
+  export type UserCreateNestedOneWithoutFollowUpTemplatesInput = {
+    create?: XOR<UserCreateWithoutFollowUpTemplatesInput, UserUncheckedCreateWithoutFollowUpTemplatesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFollowUpTemplatesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type OrganizationCreateNestedOneWithoutFollowUpTemplatesInput = {
+    create?: XOR<OrganizationCreateWithoutFollowUpTemplatesInput, OrganizationUncheckedCreateWithoutFollowUpTemplatesInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutFollowUpTemplatesInput
+    connect?: OrganizationWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutFollowUpTemplatesNestedInput = {
+    create?: XOR<UserCreateWithoutFollowUpTemplatesInput, UserUncheckedCreateWithoutFollowUpTemplatesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFollowUpTemplatesInput
+    upsert?: UserUpsertWithoutFollowUpTemplatesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutFollowUpTemplatesInput, UserUpdateWithoutFollowUpTemplatesInput>, UserUncheckedUpdateWithoutFollowUpTemplatesInput>
+  }
+
+  export type OrganizationUpdateOneWithoutFollowUpTemplatesNestedInput = {
+    create?: XOR<OrganizationCreateWithoutFollowUpTemplatesInput, OrganizationUncheckedCreateWithoutFollowUpTemplatesInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutFollowUpTemplatesInput
+    upsert?: OrganizationUpsertWithoutFollowUpTemplatesInput
+    disconnect?: OrganizationWhereInput | boolean
+    delete?: OrganizationWhereInput | boolean
+    connect?: OrganizationWhereUniqueInput
+    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutFollowUpTemplatesInput, OrganizationUpdateWithoutFollowUpTemplatesInput>, OrganizationUncheckedUpdateWithoutFollowUpTemplatesInput>
+  }
+
   export type EmailJobCreateNestedManyWithoutSequenceStepInput = {
     create?: XOR<EmailJobCreateWithoutSequenceStepInput, EmailJobUncheckedCreateWithoutSequenceStepInput> | EmailJobCreateWithoutSequenceStepInput[] | EmailJobUncheckedCreateWithoutSequenceStepInput[]
     connectOrCreate?: EmailJobCreateOrConnectWithoutSequenceStepInput | EmailJobCreateOrConnectWithoutSequenceStepInput[]
@@ -73691,9 +79638,19 @@ export namespace Prisma {
     deleteMany?: ContactScalarWhereInput | ContactScalarWhereInput[]
   }
 
+  export type ContactCreatetechStackInput = {
+    set: string[]
+  }
+
   export type UserCreateNestedOneWithoutContactsInput = {
     create?: XOR<UserCreateWithoutContactsInput, UserUncheckedCreateWithoutContactsInput>
     connectOrCreate?: UserCreateOrConnectWithoutContactsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAssignedContactsInput = {
+    create?: XOR<UserCreateWithoutAssignedContactsInput, UserUncheckedCreateWithoutAssignedContactsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedContactsInput
     connect?: UserWhereUniqueInput
   }
 
@@ -73797,12 +79754,27 @@ export namespace Prisma {
     connect?: CallSessionWhereUniqueInput | CallSessionWhereUniqueInput[]
   }
 
+  export type ContactUpdatetechStackInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
   export type UserUpdateOneRequiredWithoutContactsNestedInput = {
     create?: XOR<UserCreateWithoutContactsInput, UserUncheckedCreateWithoutContactsInput>
     connectOrCreate?: UserCreateOrConnectWithoutContactsInput
     upsert?: UserUpsertWithoutContactsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutContactsInput, UserUpdateWithoutContactsInput>, UserUncheckedUpdateWithoutContactsInput>
+  }
+
+  export type UserUpdateOneWithoutAssignedContactsNestedInput = {
+    create?: XOR<UserCreateWithoutAssignedContactsInput, UserUncheckedCreateWithoutAssignedContactsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedContactsInput
+    upsert?: UserUpsertWithoutAssignedContactsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAssignedContactsInput, UserUpdateWithoutAssignedContactsInput>, UserUncheckedUpdateWithoutAssignedContactsInput>
   }
 
   export type OrganizationUpdateOneWithoutContactsNestedInput = {
@@ -74007,9 +79979,54 @@ export namespace Prisma {
     deleteMany?: CallSessionScalarWhereInput | CallSessionScalarWhereInput[]
   }
 
+  export type PrmCompanyCreatetechStackInput = {
+    set: string[]
+  }
+
+  export type UserCreateNestedOneWithoutPrmCompaniesInput = {
+    create?: XOR<UserCreateWithoutPrmCompaniesInput, UserUncheckedCreateWithoutPrmCompaniesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPrmCompaniesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type OrganizationCreateNestedOneWithoutPrmCompaniesInput = {
+    create?: XOR<OrganizationCreateWithoutPrmCompaniesInput, OrganizationUncheckedCreateWithoutPrmCompaniesInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutPrmCompaniesInput
+    connect?: OrganizationWhereUniqueInput
+  }
+
+  export type PrmCompanyUpdatetechStackInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserUpdateOneRequiredWithoutPrmCompaniesNestedInput = {
+    create?: XOR<UserCreateWithoutPrmCompaniesInput, UserUncheckedCreateWithoutPrmCompaniesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPrmCompaniesInput
+    upsert?: UserUpsertWithoutPrmCompaniesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPrmCompaniesInput, UserUpdateWithoutPrmCompaniesInput>, UserUncheckedUpdateWithoutPrmCompaniesInput>
+  }
+
+  export type OrganizationUpdateOneWithoutPrmCompaniesNestedInput = {
+    create?: XOR<OrganizationCreateWithoutPrmCompaniesInput, OrganizationUncheckedCreateWithoutPrmCompaniesInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutPrmCompaniesInput
+    upsert?: OrganizationUpsertWithoutPrmCompaniesInput
+    disconnect?: OrganizationWhereInput | boolean
+    delete?: OrganizationWhereInput | boolean
+    connect?: OrganizationWhereUniqueInput
+    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutPrmCompaniesInput, OrganizationUpdateWithoutPrmCompaniesInput>, OrganizationUncheckedUpdateWithoutPrmCompaniesInput>
+  }
+
   export type UserCreateNestedOneWithoutCallTasksInput = {
     create?: XOR<UserCreateWithoutCallTasksInput, UserUncheckedCreateWithoutCallTasksInput>
     connectOrCreate?: UserCreateOrConnectWithoutCallTasksInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAssignedCallTasksInput = {
+    create?: XOR<UserCreateWithoutAssignedCallTasksInput, UserUncheckedCreateWithoutAssignedCallTasksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedCallTasksInput
     connect?: UserWhereUniqueInput
   }
 
@@ -74067,6 +80084,16 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutCallTasksInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCallTasksInput, UserUpdateWithoutCallTasksInput>, UserUncheckedUpdateWithoutCallTasksInput>
+  }
+
+  export type UserUpdateOneWithoutAssignedCallTasksNestedInput = {
+    create?: XOR<UserCreateWithoutAssignedCallTasksInput, UserUncheckedCreateWithoutAssignedCallTasksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedCallTasksInput
+    upsert?: UserUpsertWithoutAssignedCallTasksInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAssignedCallTasksInput, UserUpdateWithoutAssignedCallTasksInput>, UserUncheckedUpdateWithoutAssignedCallTasksInput>
   }
 
   export type OrganizationUpdateOneWithoutCallTasksNestedInput = {
@@ -74781,10 +80808,12 @@ export namespace Prisma {
     connect?: OrganizationWhereUniqueInput
   }
 
-  export type UserUpdateOneRequiredWithoutBounceListNestedInput = {
+  export type UserUpdateOneWithoutBounceListNestedInput = {
     create?: XOR<UserCreateWithoutBounceListInput, UserUncheckedCreateWithoutBounceListInput>
     connectOrCreate?: UserCreateOrConnectWithoutBounceListInput
     upsert?: UserUpsertWithoutBounceListInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBounceListInput, UserUpdateWithoutBounceListInput>, UserUncheckedUpdateWithoutBounceListInput>
   }
@@ -74921,6 +80950,48 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type NestedEnumTrackingDomainStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.TrackingDomainStatus | EnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.TrackingDomainStatus[] | ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TrackingDomainStatus[] | ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumTrackingDomainStatusFilter<$PrismaModel> | $Enums.TrackingDomainStatus
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedEnumTrackingDomainStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TrackingDomainStatus | EnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.TrackingDomainStatus[] | ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TrackingDomainStatus[] | ListEnumTrackingDomainStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumTrackingDomainStatusWithAggregatesFilter<$PrismaModel> | $Enums.TrackingDomainStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTrackingDomainStatusFilter<$PrismaModel>
+    _max?: NestedEnumTrackingDomainStatusFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type NestedEnumOrgMemberRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.OrgMemberRole | EnumOrgMemberRoleFieldRefInput<$PrismaModel>
     in?: $Enums.OrgMemberRole[] | ListEnumOrgMemberRoleFieldRefInput<$PrismaModel>
@@ -74936,31 +81007,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumOrgMemberRoleFilter<$PrismaModel>
     _max?: NestedEnumOrgMemberRoleFilter<$PrismaModel>
-  }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumSubscriptionStatusFilter<$PrismaModel = never> = {
@@ -75067,6 +81113,29 @@ export namespace Prisma {
     _min?: NestedEnumCampaignStatusFilter<$PrismaModel>
     _max?: NestedEnumCampaignStatusFilter<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedEnumEmailStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.EmailStatus | EnumEmailStatusFieldRefInput<$PrismaModel>
@@ -75096,29 +81165,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedBoolNullableFilter<$PrismaModel>
     _max?: NestedBoolNullableFilter<$PrismaModel>
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -75347,6 +81393,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -75378,6 +81425,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -75425,6 +81473,36 @@ export namespace Prisma {
 
   export type EmailTemplateCreateManyUserInputEnvelope = {
     data: EmailTemplateCreateManyUserInput | EmailTemplateCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FollowUpTemplateCreateWithoutUserInput = {
+    id?: string
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organization?: OrganizationCreateNestedOneWithoutFollowUpTemplatesInput
+  }
+
+  export type FollowUpTemplateUncheckedCreateWithoutUserInput = {
+    id?: string
+    organizationId?: string | null
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FollowUpTemplateCreateOrConnectWithoutUserInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    create: XOR<FollowUpTemplateCreateWithoutUserInput, FollowUpTemplateUncheckedCreateWithoutUserInput>
+  }
+
+  export type FollowUpTemplateCreateManyUserInputEnvelope = {
+    data: FollowUpTemplateCreateManyUserInput | FollowUpTemplateCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -75592,14 +81670,21 @@ export namespace Prisma {
   export type ContactCreateWithoutUserInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     notes?: NoteCreateNestedManyWithoutContactInput
@@ -75614,12 +81699,19 @@ export namespace Prisma {
     id?: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -75638,6 +81730,120 @@ export namespace Prisma {
 
   export type ContactCreateManyUserInputEnvelope = {
     data: ContactCreateManyUserInput | ContactCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ContactCreateWithoutAssignedToInput = {
+    id?: string
+    email: string
+    website?: string | null
+    companyDomain?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    company?: string | null
+    phone?: string | null
+    jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
+    stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutContactsInput
+    organization?: OrganizationCreateNestedOneWithoutContactsInput
+    activities?: ContactActivityCreateNestedManyWithoutContactInput
+    notes?: NoteCreateNestedManyWithoutContactInput
+    tags?: TagCreateNestedManyWithoutContactsInput
+    lists?: ContactListCreateNestedManyWithoutContactsInput
+    segmentMemberships?: PrmSegmentContactCreateNestedManyWithoutContactInput
+    callTasks?: CallTaskCreateNestedManyWithoutContactInput
+    callSessions?: CallSessionCreateNestedManyWithoutContactInput
+  }
+
+  export type ContactUncheckedCreateWithoutAssignedToInput = {
+    id?: string
+    userId: string
+    organizationId?: string | null
+    email: string
+    website?: string | null
+    companyDomain?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    company?: string | null
+    phone?: string | null
+    jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
+    stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
+    notes?: NoteUncheckedCreateNestedManyWithoutContactInput
+    tags?: TagUncheckedCreateNestedManyWithoutContactsInput
+    lists?: ContactListUncheckedCreateNestedManyWithoutContactsInput
+    segmentMemberships?: PrmSegmentContactUncheckedCreateNestedManyWithoutContactInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutContactInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutContactInput
+  }
+
+  export type ContactCreateOrConnectWithoutAssignedToInput = {
+    where: ContactWhereUniqueInput
+    create: XOR<ContactCreateWithoutAssignedToInput, ContactUncheckedCreateWithoutAssignedToInput>
+  }
+
+  export type ContactCreateManyAssignedToInputEnvelope = {
+    data: ContactCreateManyAssignedToInput | ContactCreateManyAssignedToInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CallTaskCreateWithoutAssignedToInput = {
+    id?: string
+    status?: $Enums.CallTaskStatus
+    priority?: number
+    dueAt: Date | string
+    lastOutcome?: string | null
+    lastDisposition?: string | null
+    lastNote?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutCallTasksInput
+    organization?: OrganizationCreateNestedOneWithoutCallTasksInput
+    contact: ContactCreateNestedOneWithoutCallTasksInput
+    campaign?: EmailCampaignCreateNestedOneWithoutCallTasksInput
+    contactList?: ContactListCreateNestedOneWithoutCallTasksInput
+    prmSegment?: PrmSegmentCreateNestedOneWithoutCallTasksInput
+    callSessions?: CallSessionCreateNestedManyWithoutTaskInput
+  }
+
+  export type CallTaskUncheckedCreateWithoutAssignedToInput = {
+    id?: string
+    userId: string
+    organizationId?: string | null
+    contactId: string
+    status?: $Enums.CallTaskStatus
+    priority?: number
+    dueAt: Date | string
+    lastOutcome?: string | null
+    lastDisposition?: string | null
+    lastNote?: string | null
+    campaignId?: string | null
+    contactListId?: string | null
+    prmSegmentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutTaskInput
+  }
+
+  export type CallTaskCreateOrConnectWithoutAssignedToInput = {
+    where: CallTaskWhereUniqueInput
+    create: XOR<CallTaskCreateWithoutAssignedToInput, CallTaskUncheckedCreateWithoutAssignedToInput>
+  }
+
+  export type CallTaskCreateManyAssignedToInputEnvelope = {
+    data: CallTaskCreateManyAssignedToInput | CallTaskCreateManyAssignedToInput[]
     skipDuplicates?: boolean
   }
 
@@ -75809,6 +82015,7 @@ export namespace Prisma {
     lastNote?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    assignedTo?: UserCreateNestedOneWithoutAssignedCallTasksInput
     organization?: OrganizationCreateNestedOneWithoutCallTasksInput
     contact: ContactCreateNestedOneWithoutCallTasksInput
     campaign?: EmailCampaignCreateNestedOneWithoutCallTasksInput
@@ -75824,6 +82031,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -75975,6 +82183,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -75984,6 +82193,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutOwnerInput = {
@@ -75998,6 +82209,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -76007,6 +82219,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutOwnerInput = {
@@ -76031,6 +82245,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -76040,6 +82255,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -76054,6 +82271,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -76063,11 +82281,111 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutUsersInput = {
     where: OrganizationWhereUniqueInput
     create: XOR<OrganizationCreateWithoutUsersInput, OrganizationUncheckedCreateWithoutUsersInput>
+  }
+
+  export type TrackingDomainSettingCreateWithoutUserInput = {
+    id?: string
+    scopeKey: string
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organization?: OrganizationCreateNestedOneWithoutTrackingDomainSettingsInput
+  }
+
+  export type TrackingDomainSettingUncheckedCreateWithoutUserInput = {
+    id?: string
+    scopeKey: string
+    organizationId?: string | null
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TrackingDomainSettingCreateOrConnectWithoutUserInput = {
+    where: TrackingDomainSettingWhereUniqueInput
+    create: XOR<TrackingDomainSettingCreateWithoutUserInput, TrackingDomainSettingUncheckedCreateWithoutUserInput>
+  }
+
+  export type TrackingDomainSettingCreateManyUserInputEnvelope = {
+    data: TrackingDomainSettingCreateManyUserInput | TrackingDomainSettingCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PrmCompanyCreateWithoutUserInput = {
+    id?: string
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organization?: OrganizationCreateNestedOneWithoutPrmCompaniesInput
+  }
+
+  export type PrmCompanyUncheckedCreateWithoutUserInput = {
+    id?: string
+    organizationId?: string | null
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrmCompanyCreateOrConnectWithoutUserInput = {
+    where: PrmCompanyWhereUniqueInput
+    create: XOR<PrmCompanyCreateWithoutUserInput, PrmCompanyUncheckedCreateWithoutUserInput>
+  }
+
+  export type PrmCompanyCreateManyUserInputEnvelope = {
+    data: PrmCompanyCreateManyUserInput | PrmCompanyCreateManyUserInput[]
+    skipDuplicates?: boolean
   }
 
   export type EmailCampaignUpsertWithWhereUniqueWithoutUserInput = {
@@ -76109,6 +82427,7 @@ export namespace Prisma {
     businessStartHour?: IntNullableFilter<"EmailCampaign"> | number | null
     businessEndHour?: IntNullableFilter<"EmailCampaign"> | number | null
     isPriority?: BoolFilter<"EmailCampaign"> | boolean
+    sequenceConfig?: JsonNullableFilter<"EmailCampaign">
     createdAt?: DateTimeFilter<"EmailCampaign"> | Date | string
   }
 
@@ -76140,6 +82459,36 @@ export namespace Prisma {
     body?: StringFilter<"EmailTemplate"> | string
     createdAt?: DateTimeFilter<"EmailTemplate"> | Date | string
     updatedAt?: DateTimeFilter<"EmailTemplate"> | Date | string
+  }
+
+  export type FollowUpTemplateUpsertWithWhereUniqueWithoutUserInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    update: XOR<FollowUpTemplateUpdateWithoutUserInput, FollowUpTemplateUncheckedUpdateWithoutUserInput>
+    create: XOR<FollowUpTemplateCreateWithoutUserInput, FollowUpTemplateUncheckedCreateWithoutUserInput>
+  }
+
+  export type FollowUpTemplateUpdateWithWhereUniqueWithoutUserInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    data: XOR<FollowUpTemplateUpdateWithoutUserInput, FollowUpTemplateUncheckedUpdateWithoutUserInput>
+  }
+
+  export type FollowUpTemplateUpdateManyWithWhereWithoutUserInput = {
+    where: FollowUpTemplateScalarWhereInput
+    data: XOR<FollowUpTemplateUpdateManyMutationInput, FollowUpTemplateUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type FollowUpTemplateScalarWhereInput = {
+    AND?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
+    OR?: FollowUpTemplateScalarWhereInput[]
+    NOT?: FollowUpTemplateScalarWhereInput | FollowUpTemplateScalarWhereInput[]
+    id?: StringFilter<"FollowUpTemplate"> | string
+    userId?: StringFilter<"FollowUpTemplate"> | string
+    organizationId?: StringNullableFilter<"FollowUpTemplate"> | string | null
+    name?: StringFilter<"FollowUpTemplate"> | string
+    description?: StringNullableFilter<"FollowUpTemplate"> | string | null
+    steps?: JsonFilter<"FollowUpTemplate">
+    createdAt?: DateTimeFilter<"FollowUpTemplate"> | Date | string
+    updatedAt?: DateTimeFilter<"FollowUpTemplate"> | Date | string
   }
 
   export type RefreshTokenUpsertWithWhereUniqueWithoutUserInput = {
@@ -76303,14 +82652,75 @@ export namespace Prisma {
     userId?: StringFilter<"Contact"> | string
     organizationId?: StringNullableFilter<"Contact"> | string | null
     email?: StringFilter<"Contact"> | string
+    website?: StringNullableFilter<"Contact"> | string | null
+    companyDomain?: StringNullableFilter<"Contact"> | string | null
     firstName?: StringNullableFilter<"Contact"> | string | null
     lastName?: StringNullableFilter<"Contact"> | string | null
     company?: StringNullableFilter<"Contact"> | string | null
     phone?: StringNullableFilter<"Contact"> | string | null
     jobTitle?: StringNullableFilter<"Contact"> | string | null
+    techStack?: StringNullableListFilter<"Contact">
     stage?: StringFilter<"Contact"> | string
+    nextAction?: StringNullableFilter<"Contact"> | string | null
+    nextActionDueAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
+    assignedToId?: StringNullableFilter<"Contact"> | string | null
+    lastEnrichedAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
+  }
+
+  export type ContactUpsertWithWhereUniqueWithoutAssignedToInput = {
+    where: ContactWhereUniqueInput
+    update: XOR<ContactUpdateWithoutAssignedToInput, ContactUncheckedUpdateWithoutAssignedToInput>
+    create: XOR<ContactCreateWithoutAssignedToInput, ContactUncheckedCreateWithoutAssignedToInput>
+  }
+
+  export type ContactUpdateWithWhereUniqueWithoutAssignedToInput = {
+    where: ContactWhereUniqueInput
+    data: XOR<ContactUpdateWithoutAssignedToInput, ContactUncheckedUpdateWithoutAssignedToInput>
+  }
+
+  export type ContactUpdateManyWithWhereWithoutAssignedToInput = {
+    where: ContactScalarWhereInput
+    data: XOR<ContactUpdateManyMutationInput, ContactUncheckedUpdateManyWithoutAssignedToInput>
+  }
+
+  export type CallTaskUpsertWithWhereUniqueWithoutAssignedToInput = {
+    where: CallTaskWhereUniqueInput
+    update: XOR<CallTaskUpdateWithoutAssignedToInput, CallTaskUncheckedUpdateWithoutAssignedToInput>
+    create: XOR<CallTaskCreateWithoutAssignedToInput, CallTaskUncheckedCreateWithoutAssignedToInput>
+  }
+
+  export type CallTaskUpdateWithWhereUniqueWithoutAssignedToInput = {
+    where: CallTaskWhereUniqueInput
+    data: XOR<CallTaskUpdateWithoutAssignedToInput, CallTaskUncheckedUpdateWithoutAssignedToInput>
+  }
+
+  export type CallTaskUpdateManyWithWhereWithoutAssignedToInput = {
+    where: CallTaskScalarWhereInput
+    data: XOR<CallTaskUpdateManyMutationInput, CallTaskUncheckedUpdateManyWithoutAssignedToInput>
+  }
+
+  export type CallTaskScalarWhereInput = {
+    AND?: CallTaskScalarWhereInput | CallTaskScalarWhereInput[]
+    OR?: CallTaskScalarWhereInput[]
+    NOT?: CallTaskScalarWhereInput | CallTaskScalarWhereInput[]
+    id?: StringFilter<"CallTask"> | string
+    userId?: StringFilter<"CallTask"> | string
+    organizationId?: StringNullableFilter<"CallTask"> | string | null
+    contactId?: StringFilter<"CallTask"> | string
+    status?: EnumCallTaskStatusFilter<"CallTask"> | $Enums.CallTaskStatus
+    priority?: IntFilter<"CallTask"> | number
+    dueAt?: DateTimeFilter<"CallTask"> | Date | string
+    assignedToId?: StringNullableFilter<"CallTask"> | string | null
+    lastOutcome?: StringNullableFilter<"CallTask"> | string | null
+    lastDisposition?: StringNullableFilter<"CallTask"> | string | null
+    lastNote?: StringNullableFilter<"CallTask"> | string | null
+    campaignId?: StringNullableFilter<"CallTask"> | string | null
+    contactListId?: StringNullableFilter<"CallTask"> | string | null
+    prmSegmentId?: StringNullableFilter<"CallTask"> | string | null
+    createdAt?: DateTimeFilter<"CallTask"> | Date | string
+    updatedAt?: DateTimeFilter<"CallTask"> | Date | string
   }
 
   export type ContactListUpsertWithWhereUniqueWithoutUserInput = {
@@ -76395,7 +82805,7 @@ export namespace Prisma {
     OR?: BounceListScalarWhereInput[]
     NOT?: BounceListScalarWhereInput | BounceListScalarWhereInput[]
     id?: StringFilter<"BounceList"> | string
-    userId?: StringFilter<"BounceList"> | string
+    userId?: StringNullableFilter<"BounceList"> | string | null
     organizationId?: StringNullableFilter<"BounceList"> | string | null
     email?: StringFilter<"BounceList"> | string
     bouncedAt?: DateTimeFilter<"BounceList"> | Date | string
@@ -76477,27 +82887,6 @@ export namespace Prisma {
   export type CallTaskUpdateManyWithWhereWithoutUserInput = {
     where: CallTaskScalarWhereInput
     data: XOR<CallTaskUpdateManyMutationInput, CallTaskUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type CallTaskScalarWhereInput = {
-    AND?: CallTaskScalarWhereInput | CallTaskScalarWhereInput[]
-    OR?: CallTaskScalarWhereInput[]
-    NOT?: CallTaskScalarWhereInput | CallTaskScalarWhereInput[]
-    id?: StringFilter<"CallTask"> | string
-    userId?: StringFilter<"CallTask"> | string
-    organizationId?: StringNullableFilter<"CallTask"> | string | null
-    contactId?: StringFilter<"CallTask"> | string
-    status?: EnumCallTaskStatusFilter<"CallTask"> | $Enums.CallTaskStatus
-    priority?: IntFilter<"CallTask"> | number
-    dueAt?: DateTimeFilter<"CallTask"> | Date | string
-    lastOutcome?: StringNullableFilter<"CallTask"> | string | null
-    lastDisposition?: StringNullableFilter<"CallTask"> | string | null
-    lastNote?: StringNullableFilter<"CallTask"> | string | null
-    campaignId?: StringNullableFilter<"CallTask"> | string | null
-    contactListId?: StringNullableFilter<"CallTask"> | string | null
-    prmSegmentId?: StringNullableFilter<"CallTask"> | string | null
-    createdAt?: DateTimeFilter<"CallTask"> | Date | string
-    updatedAt?: DateTimeFilter<"CallTask"> | Date | string
   }
 
   export type CallProviderConnectionUpsertWithWhereUniqueWithoutUserInput = {
@@ -76653,6 +83042,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -76662,6 +83052,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -76676,6 +83068,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -76685,6 +83078,87 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type TrackingDomainSettingUpsertWithWhereUniqueWithoutUserInput = {
+    where: TrackingDomainSettingWhereUniqueInput
+    update: XOR<TrackingDomainSettingUpdateWithoutUserInput, TrackingDomainSettingUncheckedUpdateWithoutUserInput>
+    create: XOR<TrackingDomainSettingCreateWithoutUserInput, TrackingDomainSettingUncheckedCreateWithoutUserInput>
+  }
+
+  export type TrackingDomainSettingUpdateWithWhereUniqueWithoutUserInput = {
+    where: TrackingDomainSettingWhereUniqueInput
+    data: XOR<TrackingDomainSettingUpdateWithoutUserInput, TrackingDomainSettingUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TrackingDomainSettingUpdateManyWithWhereWithoutUserInput = {
+    where: TrackingDomainSettingScalarWhereInput
+    data: XOR<TrackingDomainSettingUpdateManyMutationInput, TrackingDomainSettingUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type TrackingDomainSettingScalarWhereInput = {
+    AND?: TrackingDomainSettingScalarWhereInput | TrackingDomainSettingScalarWhereInput[]
+    OR?: TrackingDomainSettingScalarWhereInput[]
+    NOT?: TrackingDomainSettingScalarWhereInput | TrackingDomainSettingScalarWhereInput[]
+    id?: StringFilter<"TrackingDomainSetting"> | string
+    scopeKey?: StringFilter<"TrackingDomainSetting"> | string
+    userId?: StringFilter<"TrackingDomainSetting"> | string
+    organizationId?: StringNullableFilter<"TrackingDomainSetting"> | string | null
+    rootDomain?: StringFilter<"TrackingDomainSetting"> | string
+    subdomain?: StringFilter<"TrackingDomainSetting"> | string
+    fullDomain?: StringFilter<"TrackingDomainSetting"> | string
+    cnameTarget?: StringFilter<"TrackingDomainSetting"> | string
+    status?: EnumTrackingDomainStatusFilter<"TrackingDomainSetting"> | $Enums.TrackingDomainStatus
+    lastCheckedAt?: DateTimeNullableFilter<"TrackingDomainSetting"> | Date | string | null
+    lastCheckedValue?: StringNullableFilter<"TrackingDomainSetting"> | string | null
+    verifiedAt?: DateTimeNullableFilter<"TrackingDomainSetting"> | Date | string | null
+    createdAt?: DateTimeFilter<"TrackingDomainSetting"> | Date | string
+    updatedAt?: DateTimeFilter<"TrackingDomainSetting"> | Date | string
+  }
+
+  export type PrmCompanyUpsertWithWhereUniqueWithoutUserInput = {
+    where: PrmCompanyWhereUniqueInput
+    update: XOR<PrmCompanyUpdateWithoutUserInput, PrmCompanyUncheckedUpdateWithoutUserInput>
+    create: XOR<PrmCompanyCreateWithoutUserInput, PrmCompanyUncheckedCreateWithoutUserInput>
+  }
+
+  export type PrmCompanyUpdateWithWhereUniqueWithoutUserInput = {
+    where: PrmCompanyWhereUniqueInput
+    data: XOR<PrmCompanyUpdateWithoutUserInput, PrmCompanyUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PrmCompanyUpdateManyWithWhereWithoutUserInput = {
+    where: PrmCompanyScalarWhereInput
+    data: XOR<PrmCompanyUpdateManyMutationInput, PrmCompanyUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type PrmCompanyScalarWhereInput = {
+    AND?: PrmCompanyScalarWhereInput | PrmCompanyScalarWhereInput[]
+    OR?: PrmCompanyScalarWhereInput[]
+    NOT?: PrmCompanyScalarWhereInput | PrmCompanyScalarWhereInput[]
+    id?: StringFilter<"PrmCompany"> | string
+    userId?: StringFilter<"PrmCompany"> | string
+    organizationId?: StringNullableFilter<"PrmCompany"> | string | null
+    name?: StringFilter<"PrmCompany"> | string
+    website?: StringNullableFilter<"PrmCompany"> | string | null
+    domain?: StringFilter<"PrmCompany"> | string
+    primaryEmail?: StringNullableFilter<"PrmCompany"> | string | null
+    phone?: StringNullableFilter<"PrmCompany"> | string | null
+    linkedinUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    twitterUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    githubUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    facebookUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    instagramUrl?: StringNullableFilter<"PrmCompany"> | string | null
+    techStack?: StringNullableListFilter<"PrmCompany">
+    whoisRegistrar?: StringNullableFilter<"PrmCompany"> | string | null
+    whoisCreatedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    whoisUpdatedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    whoisExpiresAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    lastEnrichedAt?: DateTimeNullableFilter<"PrmCompany"> | Date | string | null
+    createdAt?: DateTimeFilter<"PrmCompany"> | Date | string
+    updatedAt?: DateTimeFilter<"PrmCompany"> | Date | string
   }
 
   export type UserCreateWithoutOwnedOrganizationsInput = {
@@ -76697,11 +83171,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -76712,6 +83189,8 @@ export namespace Prisma {
     callSessions?: CallSessionCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOwnedOrganizationsInput = {
@@ -76725,11 +83204,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -76739,6 +83221,8 @@ export namespace Prisma {
     callProviderConnections?: CallProviderConnectionUncheckedCreateNestedManyWithoutUserInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOwnedOrganizationsInput = {
@@ -76756,11 +83240,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -76771,6 +83258,8 @@ export namespace Prisma {
     callSessions?: CallSessionCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutActiveOrganizationInput = {
@@ -76783,11 +83272,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -76798,6 +83290,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutActiveOrganizationInput = {
@@ -76889,6 +83383,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -76920,6 +83415,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -76943,15 +83439,22 @@ export namespace Prisma {
   export type ContactCreateWithoutOrganizationInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     notes?: NoteCreateNestedManyWithoutContactInput
     tags?: TagCreateNestedManyWithoutContactsInput
@@ -76965,12 +83468,19 @@ export namespace Prisma {
     id?: string
     userId: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -77094,6 +83604,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type FollowUpTemplateCreateWithoutOrganizationInput = {
+    id?: string
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutFollowUpTemplatesInput
+  }
+
+  export type FollowUpTemplateUncheckedCreateWithoutOrganizationInput = {
+    id?: string
+    userId: string
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FollowUpTemplateCreateOrConnectWithoutOrganizationInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    create: XOR<FollowUpTemplateCreateWithoutOrganizationInput, FollowUpTemplateUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type FollowUpTemplateCreateManyOrganizationInputEnvelope = {
+    data: FollowUpTemplateCreateManyOrganizationInput | FollowUpTemplateCreateManyOrganizationInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ContactListCreateWithoutOrganizationInput = {
     id?: string
     name: string
@@ -77165,6 +83705,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutCallTasksInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedCallTasksInput
     contact: ContactCreateNestedOneWithoutCallTasksInput
     campaign?: EmailCampaignCreateNestedOneWithoutCallTasksInput
     contactList?: ContactListCreateNestedOneWithoutCallTasksInput
@@ -77179,6 +83720,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -77310,12 +83852,12 @@ export namespace Prisma {
     bouncedAt?: Date | string
     bounceCode?: string | null
     reason?: string | null
-    user: UserCreateNestedOneWithoutBounceListInput
+    user?: UserCreateNestedOneWithoutBounceListInput
   }
 
   export type BounceListUncheckedCreateWithoutOrganizationInput = {
     id?: string
-    userId: string
+    userId?: string | null
     email: string
     bouncedAt?: Date | string
     bounceCode?: string | null
@@ -77428,6 +83970,104 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TrackingDomainSettingCreateWithoutOrganizationInput = {
+    id?: string
+    scopeKey: string
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutTrackingDomainSettingsInput
+  }
+
+  export type TrackingDomainSettingUncheckedCreateWithoutOrganizationInput = {
+    id?: string
+    scopeKey: string
+    userId: string
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TrackingDomainSettingCreateOrConnectWithoutOrganizationInput = {
+    where: TrackingDomainSettingWhereUniqueInput
+    create: XOR<TrackingDomainSettingCreateWithoutOrganizationInput, TrackingDomainSettingUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type TrackingDomainSettingCreateManyOrganizationInputEnvelope = {
+    data: TrackingDomainSettingCreateManyOrganizationInput | TrackingDomainSettingCreateManyOrganizationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PrmCompanyCreateWithoutOrganizationInput = {
+    id?: string
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPrmCompaniesInput
+  }
+
+  export type PrmCompanyUncheckedCreateWithoutOrganizationInput = {
+    id?: string
+    userId: string
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrmCompanyCreateOrConnectWithoutOrganizationInput = {
+    where: PrmCompanyWhereUniqueInput
+    create: XOR<PrmCompanyCreateWithoutOrganizationInput, PrmCompanyUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type PrmCompanyCreateManyOrganizationInputEnvelope = {
+    data: PrmCompanyCreateManyOrganizationInput | PrmCompanyCreateManyOrganizationInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutOwnedOrganizationsInput = {
     update: XOR<UserUpdateWithoutOwnedOrganizationsInput, UserUncheckedUpdateWithoutOwnedOrganizationsInput>
     create: XOR<UserCreateWithoutOwnedOrganizationsInput, UserUncheckedCreateWithoutOwnedOrganizationsInput>
@@ -77449,11 +84089,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -77464,6 +84107,8 @@ export namespace Prisma {
     callSessions?: CallSessionUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedOrganizationsInput = {
@@ -77477,11 +84122,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -77491,6 +84139,8 @@ export namespace Prisma {
     callProviderConnections?: CallProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutActiveOrganizationInput = {
@@ -77634,6 +84284,22 @@ export namespace Prisma {
   export type EmailTemplateUpdateManyWithWhereWithoutOrganizationInput = {
     where: EmailTemplateScalarWhereInput
     data: XOR<EmailTemplateUpdateManyMutationInput, EmailTemplateUncheckedUpdateManyWithoutOrganizationInput>
+  }
+
+  export type FollowUpTemplateUpsertWithWhereUniqueWithoutOrganizationInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    update: XOR<FollowUpTemplateUpdateWithoutOrganizationInput, FollowUpTemplateUncheckedUpdateWithoutOrganizationInput>
+    create: XOR<FollowUpTemplateCreateWithoutOrganizationInput, FollowUpTemplateUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type FollowUpTemplateUpdateWithWhereUniqueWithoutOrganizationInput = {
+    where: FollowUpTemplateWhereUniqueInput
+    data: XOR<FollowUpTemplateUpdateWithoutOrganizationInput, FollowUpTemplateUncheckedUpdateWithoutOrganizationInput>
+  }
+
+  export type FollowUpTemplateUpdateManyWithWhereWithoutOrganizationInput = {
+    where: FollowUpTemplateScalarWhereInput
+    data: XOR<FollowUpTemplateUpdateManyMutationInput, FollowUpTemplateUncheckedUpdateManyWithoutOrganizationInput>
   }
 
   export type ContactListUpsertWithWhereUniqueWithoutOrganizationInput = {
@@ -77842,6 +84508,302 @@ export namespace Prisma {
     hasAttachments?: BoolFilter<"InboxThread"> | boolean
   }
 
+  export type TrackingDomainSettingUpsertWithWhereUniqueWithoutOrganizationInput = {
+    where: TrackingDomainSettingWhereUniqueInput
+    update: XOR<TrackingDomainSettingUpdateWithoutOrganizationInput, TrackingDomainSettingUncheckedUpdateWithoutOrganizationInput>
+    create: XOR<TrackingDomainSettingCreateWithoutOrganizationInput, TrackingDomainSettingUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type TrackingDomainSettingUpdateWithWhereUniqueWithoutOrganizationInput = {
+    where: TrackingDomainSettingWhereUniqueInput
+    data: XOR<TrackingDomainSettingUpdateWithoutOrganizationInput, TrackingDomainSettingUncheckedUpdateWithoutOrganizationInput>
+  }
+
+  export type TrackingDomainSettingUpdateManyWithWhereWithoutOrganizationInput = {
+    where: TrackingDomainSettingScalarWhereInput
+    data: XOR<TrackingDomainSettingUpdateManyMutationInput, TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationInput>
+  }
+
+  export type PrmCompanyUpsertWithWhereUniqueWithoutOrganizationInput = {
+    where: PrmCompanyWhereUniqueInput
+    update: XOR<PrmCompanyUpdateWithoutOrganizationInput, PrmCompanyUncheckedUpdateWithoutOrganizationInput>
+    create: XOR<PrmCompanyCreateWithoutOrganizationInput, PrmCompanyUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type PrmCompanyUpdateWithWhereUniqueWithoutOrganizationInput = {
+    where: PrmCompanyWhereUniqueInput
+    data: XOR<PrmCompanyUpdateWithoutOrganizationInput, PrmCompanyUncheckedUpdateWithoutOrganizationInput>
+  }
+
+  export type PrmCompanyUpdateManyWithWhereWithoutOrganizationInput = {
+    where: PrmCompanyScalarWhereInput
+    data: XOR<PrmCompanyUpdateManyMutationInput, PrmCompanyUncheckedUpdateManyWithoutOrganizationInput>
+  }
+
+  export type UserCreateWithoutTrackingDomainSettingsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    senders?: SenderCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionCreateNestedOneWithoutUserInput
+    tags?: TagCreateNestedManyWithoutUserInput
+    contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
+    bounceList?: BounceListCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
+    activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutTrackingDomainSettingsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    activeOrganizationId?: string | null
+    campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    senders?: SenderUncheckedCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
+    tags?: TagUncheckedCreateNestedManyWithoutUserInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
+    bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutTrackingDomainSettingsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTrackingDomainSettingsInput, UserUncheckedCreateWithoutTrackingDomainSettingsInput>
+  }
+
+  export type OrganizationCreateWithoutTrackingDomainSettingsInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedOrganizationsInput
+    users?: UserCreateNestedManyWithoutActiveOrganizationInput
+    members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
+    invites?: OrganizationInviteCreateNestedManyWithoutOrganizationInput
+    campaigns?: EmailCampaignCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactCreateNestedManyWithoutOrganizationInput
+    senders?: SenderCreateNestedManyWithoutOrganizationInput
+    templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
+    contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
+    tags?: TagCreateNestedManyWithoutOrganizationInput
+    callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
+    prmSegments?: PrmSegmentCreateNestedManyWithoutOrganizationInput
+    webhooks?: WebhookCreateNestedManyWithoutOrganizationInput
+    mcpApiKeys?: McpApiKeyCreateNestedManyWithoutOrganizationInput
+    bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
+    inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
+    inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationUncheckedCreateWithoutTrackingDomainSettingsInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownerId: string
+    users?: UserUncheckedCreateNestedManyWithoutActiveOrganizationInput
+    members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
+    invites?: OrganizationInviteUncheckedCreateNestedManyWithoutOrganizationInput
+    campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
+    senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
+    templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
+    tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
+    prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutOrganizationInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutOrganizationInput
+    mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
+    bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
+    inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
+    inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationCreateOrConnectWithoutTrackingDomainSettingsInput = {
+    where: OrganizationWhereUniqueInput
+    create: XOR<OrganizationCreateWithoutTrackingDomainSettingsInput, OrganizationUncheckedCreateWithoutTrackingDomainSettingsInput>
+  }
+
+  export type UserUpsertWithoutTrackingDomainSettingsInput = {
+    update: XOR<UserUpdateWithoutTrackingDomainSettingsInput, UserUncheckedUpdateWithoutTrackingDomainSettingsInput>
+    create: XOR<UserCreateWithoutTrackingDomainSettingsInput, UserUncheckedCreateWithoutTrackingDomainSettingsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTrackingDomainSettingsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTrackingDomainSettingsInput, UserUncheckedUpdateWithoutTrackingDomainSettingsInput>
+  }
+
+  export type UserUpdateWithoutTrackingDomainSettingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    senders?: SenderUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUpdateOneWithoutUserNestedInput
+    tags?: TagUpdateManyWithoutUserNestedInput
+    contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
+    activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTrackingDomainSettingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+    tags?: TagUncheckedUpdateManyWithoutUserNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUncheckedUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type OrganizationUpsertWithoutTrackingDomainSettingsInput = {
+    update: XOR<OrganizationUpdateWithoutTrackingDomainSettingsInput, OrganizationUncheckedUpdateWithoutTrackingDomainSettingsInput>
+    create: XOR<OrganizationCreateWithoutTrackingDomainSettingsInput, OrganizationUncheckedCreateWithoutTrackingDomainSettingsInput>
+    where?: OrganizationWhereInput
+  }
+
+  export type OrganizationUpdateToOneWithWhereWithoutTrackingDomainSettingsInput = {
+    where?: OrganizationWhereInput
+    data: XOR<OrganizationUpdateWithoutTrackingDomainSettingsInput, OrganizationUncheckedUpdateWithoutTrackingDomainSettingsInput>
+  }
+
+  export type OrganizationUpdateWithoutTrackingDomainSettingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedOrganizationsNestedInput
+    users?: UserUpdateManyWithoutActiveOrganizationNestedInput
+    members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
+    invites?: OrganizationInviteUpdateManyWithoutOrganizationNestedInput
+    campaigns?: EmailCampaignUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUpdateManyWithoutOrganizationNestedInput
+    senders?: SenderUpdateManyWithoutOrganizationNestedInput
+    templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
+    contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
+    tags?: TagUpdateManyWithoutOrganizationNestedInput
+    callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
+    prmSegments?: PrmSegmentUpdateManyWithoutOrganizationNestedInput
+    webhooks?: WebhookUpdateManyWithoutOrganizationNestedInput
+    mcpApiKeys?: McpApiKeyUpdateManyWithoutOrganizationNestedInput
+    bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
+    inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
+    inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type OrganizationUncheckedUpdateWithoutTrackingDomainSettingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    users?: UserUncheckedUpdateManyWithoutActiveOrganizationNestedInput
+    members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
+    invites?: OrganizationInviteUncheckedUpdateManyWithoutOrganizationNestedInput
+    campaigns?: EmailCampaignUncheckedUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
+    senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
+    templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
+    tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmSegments?: PrmSegmentUncheckedUpdateManyWithoutOrganizationNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutOrganizationNestedInput
+    mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
+    bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
+    inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
+    inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
   export type OrganizationCreateWithoutMembersInput = {
     id?: string
     name: string
@@ -77854,6 +84816,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -77863,6 +84826,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutMembersInput = {
@@ -77877,6 +84842,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -77886,6 +84852,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutMembersInput = {
@@ -77903,11 +84871,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -77918,6 +84889,8 @@ export namespace Prisma {
     callSessions?: CallSessionCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOrganizationMembershipsInput = {
@@ -77931,11 +84904,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -77945,6 +84921,8 @@ export namespace Prisma {
     callProviderConnections?: CallProviderConnectionUncheckedCreateNestedManyWithoutUserInput
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOrganizationMembershipsInput = {
@@ -77975,6 +84953,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -77984,6 +84963,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutMembersInput = {
@@ -77998,6 +84979,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -78007,6 +84989,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutOrganizationMembershipsInput = {
@@ -78030,11 +85014,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -78045,6 +85032,8 @@ export namespace Prisma {
     callSessions?: CallSessionUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOrganizationMembershipsInput = {
@@ -78058,11 +85047,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -78072,6 +85064,8 @@ export namespace Prisma {
     callProviderConnections?: CallProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationCreateWithoutInvitesInput = {
@@ -78086,6 +85080,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -78095,6 +85090,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutInvitesInput = {
@@ -78109,6 +85106,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -78118,6 +85116,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutInvitesInput = {
@@ -78148,6 +85148,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -78157,6 +85158,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutInvitesInput = {
@@ -78171,6 +85174,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -78180,6 +85184,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutSubscriptionInput = {
@@ -78192,10 +85198,13 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -78207,6 +85216,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSubscriptionInput = {
@@ -78220,10 +85231,13 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -78234,6 +85248,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSubscriptionInput = {
@@ -78262,10 +85278,13 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -78277,6 +85296,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubscriptionInput = {
@@ -78290,10 +85311,13 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -78304,6 +85328,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CampaignSenderCreateWithoutSenderInput = {
@@ -78345,6 +85371,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -78376,6 +85403,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -78479,10 +85507,13 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -78494,6 +85525,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSendersInput = {
@@ -78507,10 +85540,13 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -78521,6 +85557,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSendersInput = {
@@ -78540,6 +85578,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignCreateNestedManyWithoutOrganizationInput
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -78549,6 +85588,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutSendersInput = {
@@ -78563,6 +85604,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutOrganizationInput
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -78572,6 +85614,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutSendersInput = {
@@ -78946,10 +85990,13 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -78961,6 +86008,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSendersInput = {
@@ -78974,10 +86023,13 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -78988,6 +86040,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutSendersInput = {
@@ -79013,6 +86067,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUpdateManyWithoutOrganizationNestedInput
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -79022,6 +86077,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutSendersInput = {
@@ -79036,6 +86093,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutOrganizationNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -79045,6 +86103,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type SenderCooldownUpsertWithoutSenderInput = {
@@ -79353,11 +86413,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     callingEnabled?: boolean
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -79369,6 +86432,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCampaignsInput = {
@@ -79381,11 +86446,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     activeOrganizationId?: string | null
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -79396,6 +86464,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCampaignsInput = {
@@ -79415,6 +86485,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -79424,6 +86495,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutCampaignsInput = {
@@ -79438,6 +86511,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -79447,6 +86521,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutCampaignsInput = {
@@ -79613,6 +86689,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutCallTasksInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedCallTasksInput
     organization?: OrganizationCreateNestedOneWithoutCallTasksInput
     contact: ContactCreateNestedOneWithoutCallTasksInput
     contactList?: ContactListCreateNestedOneWithoutCallTasksInput
@@ -79628,6 +86705,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -79785,11 +86863,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -79801,6 +86882,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCampaignsInput = {
@@ -79813,11 +86896,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -79828,6 +86914,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutCampaignsInput = {
@@ -79853,6 +86941,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -79862,6 +86951,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutCampaignsInput = {
@@ -79876,6 +86967,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -79885,6 +86977,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type EmailJobUpsertWithWhereUniqueWithoutCampaignInput = {
@@ -80013,6 +87107,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -80045,6 +87140,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -80225,6 +87321,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -80257,6 +87354,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -80425,6 +87523,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     sender?: SenderCreateNestedOneWithoutCampaignsInput
@@ -80457,6 +87556,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
@@ -80566,6 +87666,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
@@ -80598,6 +87699,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
@@ -80690,10 +87792,13 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -80705,6 +87810,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -80718,10 +87825,13 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -80732,6 +87842,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -80760,10 +87872,13 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -80775,6 +87890,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -80788,10 +87905,13 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -80802,6 +87922,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type EmailCampaignCreateWithoutAttachmentsInput = {
@@ -80821,6 +87943,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
     sender?: SenderCreateNestedOneWithoutCampaignsInput
@@ -80853,6 +87976,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
     emails?: EmailJobUncheckedCreateNestedManyWithoutCampaignInput
@@ -80895,6 +88019,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
     sender?: SenderUpdateOneWithoutCampaignsNestedInput
@@ -80927,6 +88052,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
     emails?: EmailJobUncheckedUpdateManyWithoutCampaignNestedInput
@@ -80945,11 +88071,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -80961,6 +88090,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTemplatesInput = {
@@ -80973,11 +88104,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -80988,6 +88122,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTemplatesInput = {
@@ -81007,6 +88143,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignCreateNestedManyWithoutOrganizationInput
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -81016,6 +88153,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutTemplatesInput = {
@@ -81030,6 +88169,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutOrganizationInput
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -81039,6 +88179,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutTemplatesInput = {
@@ -81066,11 +88208,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -81082,6 +88227,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTemplatesInput = {
@@ -81094,11 +88241,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -81109,6 +88259,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutTemplatesInput = {
@@ -81134,6 +88286,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUpdateManyWithoutOrganizationNestedInput
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -81143,6 +88296,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutTemplatesInput = {
@@ -81157,6 +88312,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutOrganizationNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -81166,6 +88322,272 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type UserCreateWithoutFollowUpTemplatesInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    senders?: SenderCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionCreateNestedOneWithoutUserInput
+    tags?: TagCreateNestedManyWithoutUserInput
+    contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
+    bounceList?: BounceListCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
+    activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutFollowUpTemplatesInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    activeOrganizationId?: string | null
+    campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    senders?: SenderUncheckedCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
+    tags?: TagUncheckedCreateNestedManyWithoutUserInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
+    bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutFollowUpTemplatesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutFollowUpTemplatesInput, UserUncheckedCreateWithoutFollowUpTemplatesInput>
+  }
+
+  export type OrganizationCreateWithoutFollowUpTemplatesInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedOrganizationsInput
+    users?: UserCreateNestedManyWithoutActiveOrganizationInput
+    members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
+    invites?: OrganizationInviteCreateNestedManyWithoutOrganizationInput
+    campaigns?: EmailCampaignCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactCreateNestedManyWithoutOrganizationInput
+    senders?: SenderCreateNestedManyWithoutOrganizationInput
+    templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
+    tags?: TagCreateNestedManyWithoutOrganizationInput
+    callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
+    prmSegments?: PrmSegmentCreateNestedManyWithoutOrganizationInput
+    webhooks?: WebhookCreateNestedManyWithoutOrganizationInput
+    mcpApiKeys?: McpApiKeyCreateNestedManyWithoutOrganizationInput
+    bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
+    inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
+    inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationUncheckedCreateWithoutFollowUpTemplatesInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownerId: string
+    users?: UserUncheckedCreateNestedManyWithoutActiveOrganizationInput
+    members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
+    invites?: OrganizationInviteUncheckedCreateNestedManyWithoutOrganizationInput
+    campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
+    senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
+    templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
+    tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
+    prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutOrganizationInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutOrganizationInput
+    mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
+    bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
+    inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
+    inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationCreateOrConnectWithoutFollowUpTemplatesInput = {
+    where: OrganizationWhereUniqueInput
+    create: XOR<OrganizationCreateWithoutFollowUpTemplatesInput, OrganizationUncheckedCreateWithoutFollowUpTemplatesInput>
+  }
+
+  export type UserUpsertWithoutFollowUpTemplatesInput = {
+    update: XOR<UserUpdateWithoutFollowUpTemplatesInput, UserUncheckedUpdateWithoutFollowUpTemplatesInput>
+    create: XOR<UserCreateWithoutFollowUpTemplatesInput, UserUncheckedCreateWithoutFollowUpTemplatesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutFollowUpTemplatesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutFollowUpTemplatesInput, UserUncheckedUpdateWithoutFollowUpTemplatesInput>
+  }
+
+  export type UserUpdateWithoutFollowUpTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    senders?: SenderUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUpdateOneWithoutUserNestedInput
+    tags?: TagUpdateManyWithoutUserNestedInput
+    contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
+    activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutFollowUpTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+    tags?: TagUncheckedUpdateManyWithoutUserNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUncheckedUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type OrganizationUpsertWithoutFollowUpTemplatesInput = {
+    update: XOR<OrganizationUpdateWithoutFollowUpTemplatesInput, OrganizationUncheckedUpdateWithoutFollowUpTemplatesInput>
+    create: XOR<OrganizationCreateWithoutFollowUpTemplatesInput, OrganizationUncheckedCreateWithoutFollowUpTemplatesInput>
+    where?: OrganizationWhereInput
+  }
+
+  export type OrganizationUpdateToOneWithWhereWithoutFollowUpTemplatesInput = {
+    where?: OrganizationWhereInput
+    data: XOR<OrganizationUpdateWithoutFollowUpTemplatesInput, OrganizationUncheckedUpdateWithoutFollowUpTemplatesInput>
+  }
+
+  export type OrganizationUpdateWithoutFollowUpTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedOrganizationsNestedInput
+    users?: UserUpdateManyWithoutActiveOrganizationNestedInput
+    members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
+    invites?: OrganizationInviteUpdateManyWithoutOrganizationNestedInput
+    campaigns?: EmailCampaignUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUpdateManyWithoutOrganizationNestedInput
+    senders?: SenderUpdateManyWithoutOrganizationNestedInput
+    templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
+    tags?: TagUpdateManyWithoutOrganizationNestedInput
+    callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
+    prmSegments?: PrmSegmentUpdateManyWithoutOrganizationNestedInput
+    webhooks?: WebhookUpdateManyWithoutOrganizationNestedInput
+    mcpApiKeys?: McpApiKeyUpdateManyWithoutOrganizationNestedInput
+    bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
+    inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
+    inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type OrganizationUncheckedUpdateWithoutFollowUpTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    users?: UserUncheckedUpdateManyWithoutActiveOrganizationNestedInput
+    members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
+    invites?: OrganizationInviteUncheckedUpdateManyWithoutOrganizationNestedInput
+    campaigns?: EmailCampaignUncheckedUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
+    senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
+    templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
+    tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmSegments?: PrmSegmentUncheckedUpdateManyWithoutOrganizationNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutOrganizationNestedInput
+    mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
+    bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
+    inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
+    inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type EmailJobCreateWithoutSequenceStepInput = {
@@ -81235,6 +88657,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -81267,6 +88690,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -81325,6 +88749,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -81357,6 +88782,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -81383,6 +88809,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -81415,6 +88842,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -81457,6 +88885,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -81489,6 +88918,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -81972,10 +89402,13 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -81987,6 +89420,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTagsInput = {
@@ -82000,10 +89435,13 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -82014,6 +89452,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTagsInput = {
@@ -82034,6 +89474,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
     prmSegments?: PrmSegmentCreateNestedManyWithoutOrganizationInput
@@ -82042,6 +89483,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutTagsInput = {
@@ -82057,6 +89500,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
     prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutOrganizationInput
@@ -82065,6 +89509,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutTagsInput = {
@@ -82075,15 +89521,22 @@ export namespace Prisma {
   export type ContactCreateWithoutTagsInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     notes?: NoteCreateNestedManyWithoutContactInput
@@ -82098,12 +89551,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -82140,10 +89600,13 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -82155,6 +89618,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTagsInput = {
@@ -82168,10 +89633,13 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -82182,6 +89650,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutTagsInput = {
@@ -82208,6 +89678,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
     prmSegments?: PrmSegmentUpdateManyWithoutOrganizationNestedInput
@@ -82216,6 +89687,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutTagsInput = {
@@ -82231,6 +89704,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
     prmSegments?: PrmSegmentUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -82239,6 +89713,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type ContactUpsertWithWhereUniqueWithoutTagsInput = {
@@ -82267,10 +89743,13 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -82282,6 +89761,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutContactsInput = {
@@ -82295,10 +89776,13 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -82309,11 +89793,82 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutContactsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutContactsInput, UserUncheckedCreateWithoutContactsInput>
+  }
+
+  export type UserCreateWithoutAssignedContactsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    senders?: SenderCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionCreateNestedOneWithoutUserInput
+    tags?: TagCreateNestedManyWithoutUserInput
+    contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
+    bounceList?: BounceListCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
+    activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAssignedContactsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    activeOrganizationId?: string | null
+    campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    senders?: SenderUncheckedCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
+    tags?: TagUncheckedCreateNestedManyWithoutUserInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
+    bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAssignedContactsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAssignedContactsInput, UserUncheckedCreateWithoutAssignedContactsInput>
   }
 
   export type OrganizationCreateWithoutContactsInput = {
@@ -82328,6 +89883,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -82337,6 +89893,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutContactsInput = {
@@ -82351,6 +89909,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -82360,6 +89919,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutContactsInput = {
@@ -82498,6 +90059,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutCallTasksInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedCallTasksInput
     organization?: OrganizationCreateNestedOneWithoutCallTasksInput
     campaign?: EmailCampaignCreateNestedOneWithoutCallTasksInput
     contactList?: ContactListCreateNestedOneWithoutCallTasksInput
@@ -82512,6 +90074,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -82600,10 +90163,13 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -82615,6 +90181,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutContactsInput = {
@@ -82628,10 +90196,13 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -82642,6 +90213,83 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutAssignedContactsInput = {
+    update: XOR<UserUpdateWithoutAssignedContactsInput, UserUncheckedUpdateWithoutAssignedContactsInput>
+    create: XOR<UserCreateWithoutAssignedContactsInput, UserUncheckedCreateWithoutAssignedContactsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAssignedContactsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAssignedContactsInput, UserUncheckedUpdateWithoutAssignedContactsInput>
+  }
+
+  export type UserUpdateWithoutAssignedContactsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    senders?: SenderUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUpdateOneWithoutUserNestedInput
+    tags?: TagUpdateManyWithoutUserNestedInput
+    contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
+    activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAssignedContactsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+    tags?: TagUncheckedUpdateManyWithoutUserNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUncheckedUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutContactsInput = {
@@ -82667,6 +90315,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -82676,6 +90325,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutContactsInput = {
@@ -82690,6 +90341,7 @@ export namespace Prisma {
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -82699,6 +90351,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type ContactActivityUpsertWithWhereUniqueWithoutContactInput = {
@@ -82845,6 +90499,270 @@ export namespace Prisma {
     data: XOR<CallSessionUpdateManyMutationInput, CallSessionUncheckedUpdateManyWithoutContactInput>
   }
 
+  export type UserCreateWithoutPrmCompaniesInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    senders?: SenderCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionCreateNestedOneWithoutUserInput
+    tags?: TagCreateNestedManyWithoutUserInput
+    contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
+    bounceList?: BounceListCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
+    activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPrmCompaniesInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    activeOrganizationId?: string | null
+    campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    senders?: SenderUncheckedCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
+    tags?: TagUncheckedCreateNestedManyWithoutUserInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
+    bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPrmCompaniesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPrmCompaniesInput, UserUncheckedCreateWithoutPrmCompaniesInput>
+  }
+
+  export type OrganizationCreateWithoutPrmCompaniesInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    owner: UserCreateNestedOneWithoutOwnedOrganizationsInput
+    users?: UserCreateNestedManyWithoutActiveOrganizationInput
+    members?: OrganizationMemberCreateNestedManyWithoutOrganizationInput
+    invites?: OrganizationInviteCreateNestedManyWithoutOrganizationInput
+    campaigns?: EmailCampaignCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactCreateNestedManyWithoutOrganizationInput
+    senders?: SenderCreateNestedManyWithoutOrganizationInput
+    templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
+    contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
+    tags?: TagCreateNestedManyWithoutOrganizationInput
+    callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
+    prmSegments?: PrmSegmentCreateNestedManyWithoutOrganizationInput
+    webhooks?: WebhookCreateNestedManyWithoutOrganizationInput
+    mcpApiKeys?: McpApiKeyCreateNestedManyWithoutOrganizationInput
+    bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
+    inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
+    inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationUncheckedCreateWithoutPrmCompaniesInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ownerId: string
+    users?: UserUncheckedCreateNestedManyWithoutActiveOrganizationInput
+    members?: OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
+    invites?: OrganizationInviteUncheckedCreateNestedManyWithoutOrganizationInput
+    campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
+    senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
+    templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
+    tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
+    prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutOrganizationInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutOrganizationInput
+    mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
+    bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
+    inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
+    inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationCreateOrConnectWithoutPrmCompaniesInput = {
+    where: OrganizationWhereUniqueInput
+    create: XOR<OrganizationCreateWithoutPrmCompaniesInput, OrganizationUncheckedCreateWithoutPrmCompaniesInput>
+  }
+
+  export type UserUpsertWithoutPrmCompaniesInput = {
+    update: XOR<UserUpdateWithoutPrmCompaniesInput, UserUncheckedUpdateWithoutPrmCompaniesInput>
+    create: XOR<UserCreateWithoutPrmCompaniesInput, UserUncheckedCreateWithoutPrmCompaniesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPrmCompaniesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPrmCompaniesInput, UserUncheckedUpdateWithoutPrmCompaniesInput>
+  }
+
+  export type UserUpdateWithoutPrmCompaniesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    senders?: SenderUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUpdateOneWithoutUserNestedInput
+    tags?: TagUpdateManyWithoutUserNestedInput
+    contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
+    activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPrmCompaniesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+    tags?: TagUncheckedUpdateManyWithoutUserNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUncheckedUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type OrganizationUpsertWithoutPrmCompaniesInput = {
+    update: XOR<OrganizationUpdateWithoutPrmCompaniesInput, OrganizationUncheckedUpdateWithoutPrmCompaniesInput>
+    create: XOR<OrganizationCreateWithoutPrmCompaniesInput, OrganizationUncheckedCreateWithoutPrmCompaniesInput>
+    where?: OrganizationWhereInput
+  }
+
+  export type OrganizationUpdateToOneWithWhereWithoutPrmCompaniesInput = {
+    where?: OrganizationWhereInput
+    data: XOR<OrganizationUpdateWithoutPrmCompaniesInput, OrganizationUncheckedUpdateWithoutPrmCompaniesInput>
+  }
+
+  export type OrganizationUpdateWithoutPrmCompaniesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutOwnedOrganizationsNestedInput
+    users?: UserUpdateManyWithoutActiveOrganizationNestedInput
+    members?: OrganizationMemberUpdateManyWithoutOrganizationNestedInput
+    invites?: OrganizationInviteUpdateManyWithoutOrganizationNestedInput
+    campaigns?: EmailCampaignUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUpdateManyWithoutOrganizationNestedInput
+    senders?: SenderUpdateManyWithoutOrganizationNestedInput
+    templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
+    contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
+    tags?: TagUpdateManyWithoutOrganizationNestedInput
+    callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
+    prmSegments?: PrmSegmentUpdateManyWithoutOrganizationNestedInput
+    webhooks?: WebhookUpdateManyWithoutOrganizationNestedInput
+    mcpApiKeys?: McpApiKeyUpdateManyWithoutOrganizationNestedInput
+    bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
+    inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
+    inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type OrganizationUncheckedUpdateWithoutPrmCompaniesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ownerId?: StringFieldUpdateOperationsInput | string
+    users?: UserUncheckedUpdateManyWithoutActiveOrganizationNestedInput
+    members?: OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
+    invites?: OrganizationInviteUncheckedUpdateManyWithoutOrganizationNestedInput
+    campaigns?: EmailCampaignUncheckedUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
+    senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
+    templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
+    tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmSegments?: PrmSegmentUncheckedUpdateManyWithoutOrganizationNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutOrganizationNestedInput
+    mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
+    bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
+    inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
+    inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
   export type UserCreateWithoutCallTasksInput = {
     id?: string
     email: string
@@ -82855,11 +90773,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -82870,6 +90791,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCallTasksInput = {
@@ -82883,11 +90806,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -82897,11 +90823,82 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCallTasksInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutCallTasksInput, UserUncheckedCreateWithoutCallTasksInput>
+  }
+
+  export type UserCreateWithoutAssignedCallTasksInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    senders?: SenderCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionCreateNestedOneWithoutUserInput
+    tags?: TagCreateNestedManyWithoutUserInput
+    contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
+    bounceList?: BounceListCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
+    activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAssignedCallTasksInput = {
+    id?: string
+    email: string
+    name?: string | null
+    avatarUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    callingEnabled?: boolean
+    activeOrganizationId?: string | null
+    campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
+    templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    senders?: SenderUncheckedCreateNestedManyWithoutUserInput
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
+    tags?: TagUncheckedCreateNestedManyWithoutUserInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
+    mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
+    bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
+    prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutUserInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedCreateNestedManyWithoutUserInput
+    callTasks?: CallTaskUncheckedCreateNestedManyWithoutUserInput
+    callProviderConnections?: CallProviderConnectionUncheckedCreateNestedManyWithoutUserInput
+    callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
+    organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+    ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAssignedCallTasksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAssignedCallTasksInput, UserUncheckedCreateWithoutAssignedCallTasksInput>
   }
 
   export type OrganizationCreateWithoutCallTasksInput = {
@@ -82917,6 +90914,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     prmSegments?: PrmSegmentCreateNestedManyWithoutOrganizationInput
@@ -82925,6 +90923,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutCallTasksInput = {
@@ -82940,6 +90940,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutOrganizationInput
@@ -82948,6 +90949,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutCallTasksInput = {
@@ -82958,15 +90961,22 @@ export namespace Prisma {
   export type ContactCreateWithoutCallTasksInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     notes?: NoteCreateNestedManyWithoutContactInput
@@ -82981,12 +90991,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -83019,6 +91036,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -83051,6 +91069,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -83186,11 +91205,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -83201,6 +91223,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCallTasksInput = {
@@ -83214,11 +91238,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -83228,6 +91255,83 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutAssignedCallTasksInput = {
+    update: XOR<UserUpdateWithoutAssignedCallTasksInput, UserUncheckedUpdateWithoutAssignedCallTasksInput>
+    create: XOR<UserCreateWithoutAssignedCallTasksInput, UserUncheckedCreateWithoutAssignedCallTasksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAssignedCallTasksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAssignedCallTasksInput, UserUncheckedUpdateWithoutAssignedCallTasksInput>
+  }
+
+  export type UserUpdateWithoutAssignedCallTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    senders?: SenderUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUpdateOneWithoutUserNestedInput
+    tags?: TagUpdateManyWithoutUserNestedInput
+    contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
+    activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAssignedCallTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
+    templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
+    subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+    tags?: TagUncheckedUpdateManyWithoutUserNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
+    mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
+    prmSegments?: PrmSegmentUncheckedUpdateManyWithoutUserNestedInput
+    prmBulkActionLogs?: PrmBulkActionLogUncheckedUpdateManyWithoutUserNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutUserNestedInput
+    callProviderConnections?: CallProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
+    organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+    ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutCallTasksInput = {
@@ -83254,6 +91358,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     prmSegments?: PrmSegmentUpdateManyWithoutOrganizationNestedInput
@@ -83262,6 +91367,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutCallTasksInput = {
@@ -83277,6 +91384,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     prmSegments?: PrmSegmentUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -83285,6 +91393,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type ContactUpsertWithoutCallTasksInput = {
@@ -83301,15 +91411,22 @@ export namespace Prisma {
   export type ContactUpdateWithoutCallTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
@@ -83324,12 +91441,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -83368,6 +91492,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -83400,6 +91525,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -83501,11 +91627,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -83516,6 +91645,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCallProviderConnectionsInput = {
@@ -83529,11 +91660,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -83543,6 +91677,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCallProviderConnectionsInput = {
@@ -83617,11 +91753,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -83632,6 +91771,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCallProviderConnectionsInput = {
@@ -83645,11 +91786,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -83659,6 +91803,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CallSessionUpsertWithWhereUniqueWithoutProviderConnectionInput = {
@@ -83687,11 +91833,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -83702,6 +91851,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCallSessionsInput = {
@@ -83715,11 +91866,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -83729,6 +91883,8 @@ export namespace Prisma {
     callProviderConnections?: CallProviderConnectionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCallSessionsInput = {
@@ -83739,15 +91895,22 @@ export namespace Prisma {
   export type ContactCreateWithoutCallSessionsInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     notes?: NoteCreateNestedManyWithoutContactInput
@@ -83762,12 +91925,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -83794,6 +91964,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutCallTasksInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedCallTasksInput
     organization?: OrganizationCreateNestedOneWithoutCallTasksInput
     contact: ContactCreateNestedOneWithoutCallTasksInput
     campaign?: EmailCampaignCreateNestedOneWithoutCallTasksInput
@@ -83809,6 +91980,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -83886,11 +92058,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -83901,6 +92076,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCallSessionsInput = {
@@ -83914,11 +92091,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -83928,6 +92108,8 @@ export namespace Prisma {
     callProviderConnections?: CallProviderConnectionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ContactUpsertWithoutCallSessionsInput = {
@@ -83944,15 +92126,22 @@ export namespace Prisma {
   export type ContactUpdateWithoutCallSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
@@ -83967,12 +92156,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -84005,6 +92201,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCallTasksNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedCallTasksNestedInput
     organization?: OrganizationUpdateOneWithoutCallTasksNestedInput
     contact?: ContactUpdateOneRequiredWithoutCallTasksNestedInput
     campaign?: EmailCampaignUpdateOneWithoutCallTasksNestedInput
@@ -84020,6 +92217,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -84087,11 +92285,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -84102,6 +92303,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPrmSegmentsInput = {
@@ -84115,11 +92318,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -84129,6 +92335,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPrmSegmentsInput = {
@@ -84149,6 +92357,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -84157,6 +92366,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutPrmSegmentsInput = {
@@ -84172,6 +92383,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -84180,6 +92392,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutPrmSegmentsInput = {
@@ -84220,6 +92434,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutCallTasksInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedCallTasksInput
     organization?: OrganizationCreateNestedOneWithoutCallTasksInput
     contact: ContactCreateNestedOneWithoutCallTasksInput
     campaign?: EmailCampaignCreateNestedOneWithoutCallTasksInput
@@ -84235,6 +92450,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -84276,11 +92492,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -84291,6 +92510,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPrmSegmentsInput = {
@@ -84304,11 +92525,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -84318,6 +92542,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutPrmSegmentsInput = {
@@ -84344,6 +92570,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -84352,6 +92579,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutPrmSegmentsInput = {
@@ -84367,6 +92596,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -84375,6 +92605,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type PrmSegmentContactUpsertWithWhereUniqueWithoutSegmentInput = {
@@ -84441,15 +92673,22 @@ export namespace Prisma {
   export type ContactCreateWithoutSegmentMembershipsInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     notes?: NoteCreateNestedManyWithoutContactInput
@@ -84464,12 +92703,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -84534,15 +92780,22 @@ export namespace Prisma {
   export type ContactUpdateWithoutSegmentMembershipsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
@@ -84557,12 +92810,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -84583,11 +92843,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
@@ -84598,6 +92861,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPrmBulkActionLogsInput = {
@@ -84611,11 +92876,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
@@ -84625,6 +92893,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPrmBulkActionLogsInput = {
@@ -84653,11 +92923,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -84668,6 +92941,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPrmBulkActionLogsInput = {
@@ -84681,11 +92956,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -84695,20 +92973,29 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ContactCreateWithoutNotesInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     tags?: TagCreateNestedManyWithoutContactsInput
@@ -84723,12 +93010,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -84758,15 +93052,22 @@ export namespace Prisma {
   export type ContactUpdateWithoutNotesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     tags?: TagUpdateManyWithoutContactsNestedInput
@@ -84781,12 +93082,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -84800,15 +93108,22 @@ export namespace Prisma {
   export type ContactCreateWithoutActivitiesInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     notes?: NoteCreateNestedManyWithoutContactInput
     tags?: TagCreateNestedManyWithoutContactsInput
@@ -84823,12 +93138,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     notes?: NoteUncheckedCreateNestedManyWithoutContactInput
@@ -84858,15 +93180,22 @@ export namespace Prisma {
   export type ContactUpdateWithoutActivitiesInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
     tags?: TagUpdateManyWithoutContactsNestedInput
@@ -84881,12 +93210,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     notes?: NoteUncheckedUpdateManyWithoutContactNestedInput
@@ -84907,11 +93243,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
     prmSegments?: PrmSegmentCreateNestedManyWithoutUserInput
@@ -84922,6 +93261,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutContactListsInput = {
@@ -84935,11 +93276,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
     prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutUserInput
@@ -84949,6 +93293,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutContactListsInput = {
@@ -84969,6 +93315,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
     prmSegments?: PrmSegmentCreateNestedManyWithoutOrganizationInput
@@ -84977,6 +93324,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutContactListsInput = {
@@ -84992,6 +93341,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
     prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutOrganizationInput
@@ -85000,6 +93350,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutContactListsInput = {
@@ -85010,15 +93362,22 @@ export namespace Prisma {
   export type ContactCreateWithoutListsInput = {
     id?: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContactsInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedContactsInput
     organization?: OrganizationCreateNestedOneWithoutContactsInput
     activities?: ContactActivityCreateNestedManyWithoutContactInput
     notes?: NoteCreateNestedManyWithoutContactInput
@@ -85033,12 +93392,19 @@ export namespace Prisma {
     userId: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     activities?: ContactActivityUncheckedCreateNestedManyWithoutContactInput
@@ -85065,6 +93431,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutCallTasksInput
+    assignedTo?: UserCreateNestedOneWithoutAssignedCallTasksInput
     organization?: OrganizationCreateNestedOneWithoutCallTasksInput
     contact: ContactCreateNestedOneWithoutCallTasksInput
     campaign?: EmailCampaignCreateNestedOneWithoutCallTasksInput
@@ -85080,6 +93447,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -85121,11 +93489,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
     prmSegments?: PrmSegmentUpdateManyWithoutUserNestedInput
@@ -85136,6 +93507,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutContactListsInput = {
@@ -85149,11 +93522,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
     prmSegments?: PrmSegmentUncheckedUpdateManyWithoutUserNestedInput
@@ -85163,6 +93539,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutContactListsInput = {
@@ -85189,6 +93567,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
     prmSegments?: PrmSegmentUpdateManyWithoutOrganizationNestedInput
@@ -85197,6 +93576,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutContactListsInput = {
@@ -85212,6 +93593,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
     prmSegments?: PrmSegmentUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -85220,6 +93602,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type ContactUpsertWithWhereUniqueWithoutListsInput = {
@@ -85271,6 +93655,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderCreateNestedManyWithoutCampaignInput
@@ -85303,6 +93688,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     attachments?: AttachmentUncheckedCreateNestedManyWithoutCampaignInput
     campaignSenders?: CampaignSenderUncheckedCreateNestedManyWithoutCampaignInput
@@ -85412,6 +93798,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -85444,6 +93831,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -85679,6 +94067,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -85687,6 +94076,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutWebhooksInput = {
@@ -85702,6 +94093,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -85710,6 +94102,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutWebhooksInput = {
@@ -85741,6 +94135,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -85749,6 +94144,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutWebhooksInput = {
@@ -85764,6 +94161,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -85772,6 +94170,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type SenderCreateWithoutInboxEmailsInput = {
@@ -85854,6 +94254,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -85862,6 +94263,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutOrganizationInput
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutInboxEmailsInput = {
@@ -85877,6 +94280,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -85885,6 +94289,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutInboxEmailsInput = {
@@ -85989,6 +94395,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -85997,6 +94404,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUpdateManyWithoutOrganizationNestedInput
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutInboxEmailsInput = {
@@ -86012,6 +94421,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -86020,6 +94430,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type SenderCreateWithoutInboxThreadsInput = {
@@ -86102,6 +94514,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -86110,6 +94523,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutOrganizationInput
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutInboxThreadsInput = {
@@ -86125,6 +94540,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -86133,6 +94549,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutInboxThreadsInput = {
@@ -86237,6 +94655,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -86245,6 +94664,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUpdateManyWithoutOrganizationNestedInput
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutInboxThreadsInput = {
@@ -86260,6 +94681,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -86268,6 +94690,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type SenderCreateWithoutInboxSyncJobsInput = {
@@ -86420,11 +94844,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     bounceList?: BounceListCreateNestedManyWithoutUserInput
     prmSegments?: PrmSegmentCreateNestedManyWithoutUserInput
@@ -86435,6 +94862,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMcpApiKeysInput = {
@@ -86448,11 +94877,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     bounceList?: BounceListUncheckedCreateNestedManyWithoutUserInput
     prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutUserInput
@@ -86462,6 +94894,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMcpApiKeysInput = {
@@ -86482,6 +94916,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -86490,6 +94925,8 @@ export namespace Prisma {
     bounceList?: BounceListCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutMcpApiKeysInput = {
@@ -86505,6 +94942,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -86513,6 +94951,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutMcpApiKeysInput = {
@@ -86541,11 +94981,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
     prmSegments?: PrmSegmentUpdateManyWithoutUserNestedInput
@@ -86556,6 +94999,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMcpApiKeysInput = {
@@ -86569,11 +95014,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
     prmSegments?: PrmSegmentUncheckedUpdateManyWithoutUserNestedInput
@@ -86583,6 +95031,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutMcpApiKeysInput = {
@@ -86609,6 +95059,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -86617,6 +95068,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutMcpApiKeysInput = {
@@ -86632,6 +95085,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -86640,6 +95094,8 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutBounceListInput = {
@@ -86652,11 +95108,14 @@ export namespace Prisma {
     callingEnabled?: boolean
     campaigns?: EmailCampaignCreateNestedManyWithoutUserInput
     templates?: EmailTemplateCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
     senders?: SenderCreateNestedManyWithoutUserInput
     subscription?: SubscriptionCreateNestedOneWithoutUserInput
     tags?: TagCreateNestedManyWithoutUserInput
     contacts?: ContactCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutUserInput
     prmSegments?: PrmSegmentCreateNestedManyWithoutUserInput
@@ -86667,6 +95126,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationCreateNestedManyWithoutOwnerInput
     activeOrganization?: OrganizationCreateNestedOneWithoutUsersInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBounceListInput = {
@@ -86680,11 +95141,14 @@ export namespace Prisma {
     activeOrganizationId?: string | null
     campaigns?: EmailCampaignUncheckedCreateNestedManyWithoutUserInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutUserInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
     senders?: SenderUncheckedCreateNestedManyWithoutUserInput
     subscription?: SubscriptionUncheckedCreateNestedOneWithoutUserInput
     tags?: TagUncheckedCreateNestedManyWithoutUserInput
     contacts?: ContactUncheckedCreateNestedManyWithoutUserInput
+    assignedContacts?: ContactUncheckedCreateNestedManyWithoutAssignedToInput
+    assignedCallTasks?: CallTaskUncheckedCreateNestedManyWithoutAssignedToInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutUserInput
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutUserInput
     prmSegments?: PrmSegmentUncheckedCreateNestedManyWithoutUserInput
@@ -86694,6 +95158,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedCreateNestedManyWithoutUserInput
     organizationMemberships?: OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
     ownedOrganizations?: OrganizationUncheckedCreateNestedManyWithoutOwnerInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutUserInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBounceListInput = {
@@ -86714,6 +95180,7 @@ export namespace Prisma {
     contacts?: ContactCreateNestedManyWithoutOrganizationInput
     senders?: SenderCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListCreateNestedManyWithoutOrganizationInput
     tags?: TagCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskCreateNestedManyWithoutOrganizationInput
@@ -86722,6 +95189,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutBounceListInput = {
@@ -86737,6 +95206,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
     senders?: SenderUncheckedCreateNestedManyWithoutOrganizationInput
     templates?: EmailTemplateUncheckedCreateNestedManyWithoutOrganizationInput
+    followUpTemplates?: FollowUpTemplateUncheckedCreateNestedManyWithoutOrganizationInput
     contactLists?: ContactListUncheckedCreateNestedManyWithoutOrganizationInput
     tags?: TagUncheckedCreateNestedManyWithoutOrganizationInput
     callTasks?: CallTaskUncheckedCreateNestedManyWithoutOrganizationInput
@@ -86745,6 +95215,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUncheckedCreateNestedManyWithoutOrganizationInput
     inboxEmails?: InboxEmailUncheckedCreateNestedManyWithoutOrganizationInput
     inboxThreads?: InboxThreadUncheckedCreateNestedManyWithoutOrganizationInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedCreateNestedManyWithoutOrganizationInput
+    prmCompanies?: PrmCompanyUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutBounceListInput = {
@@ -86773,11 +95245,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     prmSegments?: PrmSegmentUpdateManyWithoutUserNestedInput
@@ -86788,6 +95263,8 @@ export namespace Prisma {
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
     activeOrganization?: OrganizationUpdateOneWithoutUsersNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBounceListInput = {
@@ -86801,11 +95278,14 @@ export namespace Prisma {
     activeOrganizationId?: NullableStringFieldUpdateOperationsInput | string | null
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     prmSegments?: PrmSegmentUncheckedUpdateManyWithoutUserNestedInput
@@ -86815,6 +95295,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrganizationUpsertWithoutBounceListInput = {
@@ -86841,6 +95323,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -86849,6 +95332,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutBounceListInput = {
@@ -86864,6 +95349,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -86872,6 +95358,8 @@ export namespace Prisma {
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type EmailCampaignCreateManyUserInput = {
@@ -86893,6 +95381,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -86902,6 +95391,16 @@ export namespace Prisma {
     name: string
     subject: string
     body: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FollowUpTemplateCreateManyUserInput = {
+    id?: string
+    organizationId?: string | null
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -86948,12 +95447,58 @@ export namespace Prisma {
     id?: string
     organizationId?: string | null
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContactCreateManyAssignedToInput = {
+    id?: string
+    userId: string
+    organizationId?: string | null
+    email: string
+    website?: string | null
+    companyDomain?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    company?: string | null
+    phone?: string | null
+    jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
+    stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CallTaskCreateManyAssignedToInput = {
+    id?: string
+    userId: string
+    organizationId?: string | null
+    contactId: string
+    status?: $Enums.CallTaskStatus
+    priority?: number
+    dueAt: Date | string
+    lastOutcome?: string | null
+    lastDisposition?: string | null
+    lastNote?: string | null
+    campaignId?: string | null
+    contactListId?: string | null
+    prmSegmentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -87015,6 +95560,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -87075,6 +95621,45 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type TrackingDomainSettingCreateManyUserInput = {
+    id?: string
+    scopeKey: string
+    organizationId?: string | null
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrmCompanyCreateManyUserInput = {
+    id?: string
+    organizationId?: string | null
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type EmailCampaignUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     subject?: StringFieldUpdateOperationsInput | string
@@ -87092,6 +95677,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -87123,6 +95709,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -87152,6 +95739,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -87181,6 +95769,36 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     subject?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneWithoutFollowUpTemplatesNestedInput
+  }
+
+  export type FollowUpTemplateUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -87324,14 +95942,21 @@ export namespace Prisma {
   export type ContactUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
@@ -87346,12 +95971,19 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -87367,12 +95999,152 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContactUpdateWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
+    stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    organization?: OrganizationUpdateOneWithoutContactsNestedInput
+    activities?: ContactActivityUpdateManyWithoutContactNestedInput
+    notes?: NoteUpdateManyWithoutContactNestedInput
+    tags?: TagUpdateManyWithoutContactsNestedInput
+    lists?: ContactListUpdateManyWithoutContactsNestedInput
+    segmentMemberships?: PrmSegmentContactUpdateManyWithoutContactNestedInput
+    callTasks?: CallTaskUpdateManyWithoutContactNestedInput
+    callSessions?: CallSessionUpdateManyWithoutContactNestedInput
+  }
+
+  export type ContactUncheckedUpdateWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
+    stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
+    notes?: NoteUncheckedUpdateManyWithoutContactNestedInput
+    tags?: TagUncheckedUpdateManyWithoutContactsNestedInput
+    lists?: ContactListUncheckedUpdateManyWithoutContactsNestedInput
+    segmentMemberships?: PrmSegmentContactUncheckedUpdateManyWithoutContactNestedInput
+    callTasks?: CallTaskUncheckedUpdateManyWithoutContactNestedInput
+    callSessions?: CallSessionUncheckedUpdateManyWithoutContactNestedInput
+  }
+
+  export type ContactUncheckedUpdateManyWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
+    stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CallTaskUpdateWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
+    lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
+    lastNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutCallTasksNestedInput
+    organization?: OrganizationUpdateOneWithoutCallTasksNestedInput
+    contact?: ContactUpdateOneRequiredWithoutCallTasksNestedInput
+    campaign?: EmailCampaignUpdateOneWithoutCallTasksNestedInput
+    contactList?: ContactListUpdateOneWithoutCallTasksNestedInput
+    prmSegment?: PrmSegmentUpdateOneWithoutCallTasksNestedInput
+    callSessions?: CallSessionUpdateManyWithoutTaskNestedInput
+  }
+
+  export type CallTaskUncheckedUpdateWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    contactId?: StringFieldUpdateOperationsInput | string
+    status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
+    lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
+    lastNote?: NullableStringFieldUpdateOperationsInput | string | null
+    campaignId?: NullableStringFieldUpdateOperationsInput | string | null
+    contactListId?: NullableStringFieldUpdateOperationsInput | string | null
+    prmSegmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    callSessions?: CallSessionUncheckedUpdateManyWithoutTaskNestedInput
+  }
+
+  export type CallTaskUncheckedUpdateManyWithoutAssignedToInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    contactId?: StringFieldUpdateOperationsInput | string
+    status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
+    lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
+    lastNote?: NullableStringFieldUpdateOperationsInput | string | null
+    campaignId?: NullableStringFieldUpdateOperationsInput | string | null
+    contactListId?: NullableStringFieldUpdateOperationsInput | string | null
+    prmSegmentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -87545,6 +96317,7 @@ export namespace Prisma {
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedTo?: UserUpdateOneWithoutAssignedCallTasksNestedInput
     organization?: OrganizationUpdateOneWithoutCallTasksNestedInput
     contact?: ContactUpdateOneRequiredWithoutCallTasksNestedInput
     campaign?: EmailCampaignUpdateOneWithoutCallTasksNestedInput
@@ -87560,6 +96333,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -87578,6 +96352,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -87731,6 +96506,7 @@ export namespace Prisma {
     contacts?: ContactUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUpdateManyWithoutOrganizationNestedInput
     tags?: TagUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUpdateManyWithoutOrganizationNestedInput
@@ -87740,6 +96516,8 @@ export namespace Prisma {
     bounceList?: BounceListUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutOwnerInput = {
@@ -87754,6 +96532,7 @@ export namespace Prisma {
     contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
     senders?: SenderUncheckedUpdateManyWithoutOrganizationNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutOrganizationNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutOrganizationNestedInput
     tags?: TagUncheckedUpdateManyWithoutOrganizationNestedInput
     callTasks?: CallTaskUncheckedUpdateManyWithoutOrganizationNestedInput
@@ -87763,11 +96542,130 @@ export namespace Prisma {
     bounceList?: BounceListUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxEmails?: InboxEmailUncheckedUpdateManyWithoutOrganizationNestedInput
     inboxThreads?: InboxThreadUncheckedUpdateManyWithoutOrganizationNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateManyWithoutOwnerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingDomainSettingUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneWithoutTrackingDomainSettingsNestedInput
+  }
+
+  export type TrackingDomainSettingUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingDomainSettingUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrmCompanyUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneWithoutPrmCompaniesNestedInput
+  }
+
+  export type PrmCompanyUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrmCompanyUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -87822,6 +96720,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -87829,12 +96728,19 @@ export namespace Prisma {
     id?: string
     userId: string
     email: string
+    website?: string | null
+    companyDomain?: string | null
     firstName?: string | null
     lastName?: string | null
     company?: string | null
     phone?: string | null
     jobTitle?: string | null
+    techStack?: ContactCreatetechStackInput | string[]
     stage?: string
+    nextAction?: string | null
+    nextActionDueAt?: Date | string | null
+    assignedToId?: string | null
+    lastEnrichedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -87870,6 +96776,16 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type FollowUpTemplateCreateManyOrganizationInput = {
+    id?: string
+    userId: string
+    name: string
+    description?: string | null
+    steps: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type ContactListCreateManyOrganizationInput = {
     id?: string
     userId: string
@@ -87894,6 +96810,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -87941,7 +96858,7 @@ export namespace Prisma {
 
   export type BounceListCreateManyOrganizationInput = {
     id?: string
-    userId: string
+    userId?: string | null
     email: string
     bouncedAt?: Date | string
     bounceCode?: string | null
@@ -87986,6 +96903,45 @@ export namespace Prisma {
     hasAttachments?: boolean
   }
 
+  export type TrackingDomainSettingCreateManyOrganizationInput = {
+    id?: string
+    scopeKey: string
+    userId: string
+    rootDomain: string
+    subdomain: string
+    fullDomain: string
+    cnameTarget: string
+    status?: $Enums.TrackingDomainStatus
+    lastCheckedAt?: Date | string | null
+    lastCheckedValue?: string | null
+    verifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PrmCompanyCreateManyOrganizationInput = {
+    id?: string
+    userId: string
+    name: string
+    website?: string | null
+    domain: string
+    primaryEmail?: string | null
+    phone?: string | null
+    linkedinUrl?: string | null
+    twitterUrl?: string | null
+    githubUrl?: string | null
+    facebookUrl?: string | null
+    instagramUrl?: string | null
+    techStack?: PrmCompanyCreatetechStackInput | string[]
+    whoisRegistrar?: string | null
+    whoisCreatedAt?: Date | string | null
+    whoisUpdatedAt?: Date | string | null
+    whoisExpiresAt?: Date | string | null
+    lastEnrichedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserUpdateWithoutActiveOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -87996,11 +96952,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
     senders?: SenderUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUpdateOneWithoutUserNestedInput
     tags?: TagUpdateManyWithoutUserNestedInput
     contacts?: ContactUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUpdateManyWithoutUserNestedInput
@@ -88011,6 +96970,8 @@ export namespace Prisma {
     callSessions?: CallSessionUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActiveOrganizationInput = {
@@ -88023,11 +96984,14 @@ export namespace Prisma {
     callingEnabled?: BoolFieldUpdateOperationsInput | boolean
     campaigns?: EmailCampaignUncheckedUpdateManyWithoutUserNestedInput
     templates?: EmailTemplateUncheckedUpdateManyWithoutUserNestedInput
+    followUpTemplates?: FollowUpTemplateUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
     senders?: SenderUncheckedUpdateManyWithoutUserNestedInput
     subscription?: SubscriptionUncheckedUpdateOneWithoutUserNestedInput
     tags?: TagUncheckedUpdateManyWithoutUserNestedInput
     contacts?: ContactUncheckedUpdateManyWithoutUserNestedInput
+    assignedContacts?: ContactUncheckedUpdateManyWithoutAssignedToNestedInput
+    assignedCallTasks?: CallTaskUncheckedUpdateManyWithoutAssignedToNestedInput
     contactLists?: ContactListUncheckedUpdateManyWithoutUserNestedInput
     mcpApiKeys?: McpApiKeyUncheckedUpdateManyWithoutUserNestedInput
     bounceList?: BounceListUncheckedUpdateManyWithoutUserNestedInput
@@ -88038,6 +97002,8 @@ export namespace Prisma {
     callSessions?: CallSessionUncheckedUpdateManyWithoutUserNestedInput
     organizationMemberships?: OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
     ownedOrganizations?: OrganizationUncheckedUpdateManyWithoutOwnerNestedInput
+    trackingDomainSettings?: TrackingDomainSettingUncheckedUpdateManyWithoutUserNestedInput
+    prmCompanies?: PrmCompanyUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutActiveOrganizationInput = {
@@ -88130,6 +97096,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -88161,6 +97128,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -88190,21 +97158,29 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContactUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
     tags?: TagUpdateManyWithoutContactsNestedInput
@@ -88218,12 +97194,19 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -88239,12 +97222,19 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -88362,6 +97352,36 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FollowUpTemplateUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutFollowUpTemplatesNestedInput
+  }
+
+  export type FollowUpTemplateUncheckedUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FollowUpTemplateUncheckedUpdateManyWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    steps?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ContactListUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -88430,6 +97450,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCallTasksNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedCallTasksNestedInput
     contact?: ContactUpdateOneRequiredWithoutCallTasksNestedInput
     campaign?: EmailCampaignUpdateOneWithoutCallTasksNestedInput
     contactList?: ContactListUpdateOneWithoutCallTasksNestedInput
@@ -88444,6 +97465,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -88462,6 +97484,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -88587,12 +97610,12 @@ export namespace Prisma {
     bouncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bounceCode?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: NullableStringFieldUpdateOperationsInput | string | null
-    user?: UserUpdateOneRequiredWithoutBounceListNestedInput
+    user?: UserUpdateOneWithoutBounceListNestedInput
   }
 
   export type BounceListUncheckedUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     bouncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bounceCode?: NullableStringFieldUpdateOperationsInput | string | null
@@ -88601,7 +97624,7 @@ export namespace Prisma {
 
   export type BounceListUncheckedUpdateManyWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     bouncedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bounceCode?: NullableStringFieldUpdateOperationsInput | string | null
@@ -88722,6 +97745,123 @@ export namespace Prisma {
     hasAttachments?: BoolFieldUpdateOperationsInput | boolean
   }
 
+  export type TrackingDomainSettingUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTrackingDomainSettingsNestedInput
+  }
+
+  export type TrackingDomainSettingUncheckedUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingDomainSettingUncheckedUpdateManyWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scopeKey?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    rootDomain?: StringFieldUpdateOperationsInput | string
+    subdomain?: StringFieldUpdateOperationsInput | string
+    fullDomain?: StringFieldUpdateOperationsInput | string
+    cnameTarget?: StringFieldUpdateOperationsInput | string
+    status?: EnumTrackingDomainStatusFieldUpdateOperationsInput | $Enums.TrackingDomainStatus
+    lastCheckedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastCheckedValue?: NullableStringFieldUpdateOperationsInput | string | null
+    verifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrmCompanyUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPrmCompaniesNestedInput
+  }
+
+  export type PrmCompanyUncheckedUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PrmCompanyUncheckedUpdateManyWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    domain?: StringFieldUpdateOperationsInput | string
+    primaryEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedinUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    twitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    facebookUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: PrmCompanyUpdatetechStackInput | string[]
+    whoisRegistrar?: NullableStringFieldUpdateOperationsInput | string | null
+    whoisCreatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisUpdatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    whoisExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CampaignSenderCreateManySenderInput = {
     id?: string
     campaignId: string
@@ -88747,6 +97887,7 @@ export namespace Prisma {
     businessStartHour?: number | null
     businessEndHour?: number | null
     isPriority?: boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -88874,6 +98015,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUpdateManyWithoutCampaignNestedInput
@@ -88905,6 +98047,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     attachments?: AttachmentUncheckedUpdateManyWithoutCampaignNestedInput
     campaignSenders?: CampaignSenderUncheckedUpdateManyWithoutCampaignNestedInput
@@ -88934,6 +98077,7 @@ export namespace Prisma {
     businessStartHour?: NullableIntFieldUpdateOperationsInput | number | null
     businessEndHour?: NullableIntFieldUpdateOperationsInput | number | null
     isPriority?: BoolFieldUpdateOperationsInput | boolean
+    sequenceConfig?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -89280,6 +98424,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -89502,6 +98647,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCallTasksNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedCallTasksNestedInput
     organization?: OrganizationUpdateOneWithoutCallTasksNestedInput
     contact?: ContactUpdateOneRequiredWithoutCallTasksNestedInput
     contactList?: ContactListUpdateOneWithoutCallTasksNestedInput
@@ -89517,6 +98663,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -89535,6 +98682,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -89801,15 +98949,22 @@ export namespace Prisma {
   export type ContactUpdateWithoutTagsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
@@ -89824,12 +98979,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -89845,12 +99007,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -89882,6 +99051,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -90040,6 +99210,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCallTasksNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedCallTasksNestedInput
     organization?: OrganizationUpdateOneWithoutCallTasksNestedInput
     campaign?: EmailCampaignUpdateOneWithoutCallTasksNestedInput
     contactList?: ContactListUpdateOneWithoutCallTasksNestedInput
@@ -90054,6 +99225,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -90072,6 +99244,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -90294,6 +99467,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -90332,6 +99506,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCallTasksNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedCallTasksNestedInput
     organization?: OrganizationUpdateOneWithoutCallTasksNestedInput
     contact?: ContactUpdateOneRequiredWithoutCallTasksNestedInput
     campaign?: EmailCampaignUpdateOneWithoutCallTasksNestedInput
@@ -90347,6 +99522,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -90365,6 +99541,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -90382,6 +99559,7 @@ export namespace Prisma {
     status?: $Enums.CallTaskStatus
     priority?: number
     dueAt: Date | string
+    assignedToId?: string | null
     lastOutcome?: string | null
     lastDisposition?: string | null
     lastNote?: string | null
@@ -90394,15 +99572,22 @@ export namespace Prisma {
   export type ContactUpdateWithoutListsInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContactsNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedContactsNestedInput
     organization?: OrganizationUpdateOneWithoutContactsNestedInput
     activities?: ContactActivityUpdateManyWithoutContactNestedInput
     notes?: NoteUpdateManyWithoutContactNestedInput
@@ -90417,12 +99602,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activities?: ContactActivityUncheckedUpdateManyWithoutContactNestedInput
@@ -90438,12 +99630,19 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    companyDomain?: NullableStringFieldUpdateOperationsInput | string | null
     firstName?: NullableStringFieldUpdateOperationsInput | string | null
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     company?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    techStack?: ContactUpdatetechStackInput | string[]
     stage?: StringFieldUpdateOperationsInput | string
+    nextAction?: NullableStringFieldUpdateOperationsInput | string | null
+    nextActionDueAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEnrichedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -90459,6 +99658,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutCallTasksNestedInput
+    assignedTo?: UserUpdateOneWithoutAssignedCallTasksNestedInput
     organization?: OrganizationUpdateOneWithoutCallTasksNestedInput
     contact?: ContactUpdateOneRequiredWithoutCallTasksNestedInput
     campaign?: EmailCampaignUpdateOneWithoutCallTasksNestedInput
@@ -90474,6 +99674,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -90492,6 +99693,7 @@ export namespace Prisma {
     status?: EnumCallTaskStatusFieldUpdateOperationsInput | $Enums.CallTaskStatus
     priority?: IntFieldUpdateOperationsInput | number
     dueAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
     lastOutcome?: NullableStringFieldUpdateOperationsInput | string | null
     lastDisposition?: NullableStringFieldUpdateOperationsInput | string | null
     lastNote?: NullableStringFieldUpdateOperationsInput | string | null

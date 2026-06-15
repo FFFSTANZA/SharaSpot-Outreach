@@ -13,8 +13,14 @@ import { resolveForRecipient } from "../utils/variableResolver";
 import { isWithinBusinessHours, getDelayUntilBusinessHours } from "../utils/businessHours";
 import { buildThreadingHeaders, extractDomain } from "../utils/emailThreading";
 import { logContactActivityByEmail, updateContactStageByEmail } from "../utils/contactService";
-import { quickSpamScore } from "../utils/spamDetector";
+import { assessDeliverability } from "../utils/deliverabilityGuard";
 import { checkAndCompleteCampaign } from "../utils/campaignCompletion";
+import {
+  buildBounceSuppressionUniqueWhere,
+  upsertBounceSuppression,
+} from "../utils/bounceSuppression";
+import { buildTrackingBaseUrlForDomain } from "../utils/trackingDomain";
+import { logger } from "../utils/logger";
 
 // ---------------------------------------------------------------------------
 // A/B Variant Selection — deterministic per recipient + step
@@ -90,6 +96,8 @@ interface SmtpPoolEntry {
 }
 
 const smtpPool = new Map<string, SmtpPoolEntry>();
+const SEND_SLOT_TTL_MS = 120_000;
+const SMTP_ACCEPTED_MARKER_TTL_SECONDS = 24 * 60 * 60;
 
 export function clearSmtpPool(): void {
   for (const entry of smtpPool.values()) {
@@ -155,6 +163,46 @@ function evictExpiredSmtpEntries(): void {
   }
 }
 
+async function acquireSenderSendSlot(senderId: string): Promise<void> {
+  const sentinelKey = `sender:${senderId}:send_gap`;
+
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const acquired = await redis.set(sentinelKey, "sending", "PX", SEND_SLOT_TTL_MS, "NX");
+    if (acquired) return;
+
+    const ttl = await redis.pttl(sentinelKey);
+    const waitMs = ttl > 0 ? Math.min(ttl + 200, 2000) : 1000;
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
+
+  throw new Error(`Unable to acquire send slot for sender ${senderId}`);
+}
+
+async function holdSenderCooldown(senderId: string): Promise<void> {
+  const sentinelKey = `sender:${senderId}:send_gap`;
+  const cooldownMs = 4000 + Math.random() * 4000;
+  await redis.set(sentinelKey, "cooldown", "PX", cooldownMs);
+}
+
+async function markSmtpAccepted(
+  emailJobId: string,
+  payload: {
+    sentAt: string;
+    messageId?: string;
+    inReplyTo?: string;
+    references?: string;
+  },
+): Promise<boolean> {
+  const markerKey = `emailJob:smtp_accepted:${emailJobId}`;
+  try {
+    await redis.set(markerKey, JSON.stringify(payload), "EX", SMTP_ACCEPTED_MARKER_TTL_SECONDS);
+    return true;
+  } catch (err) {
+    logger.error({ err }, `[EmailWorker] Failed to write SMTP accepted marker for ${emailJobId}:`);
+    return false;
+  }
+}
+
 // Proactive cleanup: Run every 60 seconds to ensure idle connections are closed
 setInterval(evictExpiredSmtpEntries, 60000).unref();
 
@@ -178,7 +226,8 @@ export function createSmtpTransporter(sender: {
 
   return nodemailer.createTransport({
     pool: true,
-    maxConnections: 5,
+    maxConnections: 1,
+    maxMessages: 20,
     host: sender.smtpHost,
     port: sender.smtpPort,
     secure: isSecure,
@@ -227,7 +276,7 @@ export async function processEmailJob(job: Job): Promise<void> {
 
   // If EmailJob not found → log warning, return (skip)
   if (!emailJob) {
-    console.warn(`EmailJob not found, skipping: ${emailJobId}`);
+    logger.warn(`EmailJob not found, skipping: ${emailJobId}`);
     return;
   }
 
@@ -235,7 +284,7 @@ export async function processEmailJob(job: Job): Promise<void> {
 
   // If Campaign not found → log warning, return (skip)
   if (!campaign) {
-    console.warn(`Campaign not found for EmailJob ${emailJobId}, skipping`);
+    logger.warn(`Campaign not found for EmailJob ${emailJobId}, skipping`);
     return;
   }
 
@@ -245,7 +294,7 @@ export async function processEmailJob(job: Job): Promise<void> {
   const { requirePremium } = await import("../utils/premiumCheck");
   const premiumCheck = await requirePremium(campaign.userId, "Campaign Delivery");
   if (!premiumCheck.allowed) {
-    console.warn(`Premium check failed for user ${campaign.userId}. Pausing campaign ${campaign.id}. Reason: ${premiumCheck.message}`);
+    logger.warn(`Premium check failed for user ${campaign.userId}. Pausing campaign ${campaign.id}. Reason: ${premiumCheck.message}`);
 
     // Reset job to PENDING so it can be resumed later, but pause the campaign
     await prisma.emailJob.update({
@@ -265,12 +314,12 @@ export async function processEmailJob(job: Job): Promise<void> {
   // ---------------------------------------------------------------------------
 
   if (campaign.status === "PAUSED") {
-    console.log(`Campaign ${campaign.id} is PAUSED, skipping EmailJob ${emailJobId}`);
+    logger.info(`Campaign ${campaign.id} is PAUSED, skipping EmailJob ${emailJobId}`);
     return;
   }
 
   if (campaign.status === "CANCELLED") {
-    console.log(`Campaign ${campaign.id} is CANCELLED, skipping EmailJob ${emailJobId}`);
+    logger.info(`Campaign ${campaign.id} is CANCELLED, skipping EmailJob ${emailJobId}`);
     return;
   }
 
@@ -280,7 +329,7 @@ export async function processEmailJob(job: Job): Promise<void> {
 
   // If EmailJob status is SENT → already processed, skip (idempotent)
   if (emailJob.status === "SENT") {
-    console.log(`EmailJob ${emailJobId} already SENT, skipping`);
+    logger.info(`EmailJob ${emailJobId} already SENT, skipping`);
     // Still perform completion check in case this was the last job and worker crashed before check
     await checkCampaignCompletion(campaign.id);
     return;
@@ -288,7 +337,7 @@ export async function processEmailJob(job: Job): Promise<void> {
 
   // If EmailJob status is CANCELLED → stale queue entry from cancel operation
   if (emailJob.status === "CANCELLED") {
-    console.log(`EmailJob ${emailJobId} already CANCELLED (stale queue entry), skipping`);
+    logger.info(`EmailJob ${emailJobId} already CANCELLED (stale queue entry), skipping`);
     return;
   }
 
@@ -299,11 +348,11 @@ export async function processEmailJob(job: Job): Promise<void> {
   if (emailJob.status !== "PENDING") {
     const isRetry = (job.attemptsMade ?? 0) > 0;
     if (emailJob.status === "SENDING" && isRetry) {
-      console.log(
+      logger.info(
         `EmailJob ${emailJobId} is SENDING but this is a retry attempt (attempt ${job.attemptsMade}) — proceeding`,
       );
     } else {
-      console.log(
+      logger.info(
         `EmailJob ${emailJobId} status is ${emailJob.status}, not PENDING — skipping`,
       );
       return;
@@ -330,7 +379,7 @@ export async function processEmailJob(job: Job): Promise<void> {
   });
 
   if (claimResult.count === 0) {
-    console.log(
+    logger.info(
       `EmailJob ${emailJobId} already claimed or finished by another worker, skipping`,
     );
     return;
@@ -388,29 +437,14 @@ export async function processEmailJob(job: Job): Promise<void> {
   // Hard bounces (5xx) are permanent — re-sending destroys sender reputation.
   // ---------------------------------------------------------------------------
   const bounceRecord = await prisma.bounceList.findUnique({
-    where: { userId_email: { userId: campaign.userId, email: emailJob.toEmail } },
+    where: buildBounceSuppressionUniqueWhere(
+      { userId: campaign.userId, organizationId: campaign.organizationId },
+      emailJob.toEmail,
+    ),
   });
   if (bounceRecord) {
     await markFailed(emailJobId, "suppressed-bounce", campaign.id);
     return;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Minimum inter-send gap (4–8 seconds, randomised, atomic)
-  // ---------------------------------------------------------------------------
-  // Uses SET NX with a TTL equal to the random gap window. Only the first
-  // worker to acquire the sentinel key proceeds; others wait for the TTL to
-  // expire. This prevents the TOCTOU race where multiple workers for the same
-  // sender all read the same last_sent_at and fire nearly simultaneously.
-  // ---------------------------------------------------------------------------
-  const sentinelKey = `sender:${sender.id}:send_gap`;
-  const minGapMs = 4000 + Math.random() * 4000;
-  const acquired = await redis.set(sentinelKey, "1", "PX", minGapMs, "NX");
-  if (!acquired) {
-    const ttl = await redis.pttl(sentinelKey);
-    if (ttl > 0 && ttl < 60000) {
-      await new Promise(resolve => setTimeout(resolve, ttl + 200));
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -443,7 +477,7 @@ export async function processEmailJob(job: Job): Promise<void> {
           data: { senderId: availableSenderId, status: "PENDING" },
         });
         await emailQueue.add("send-email", { emailJobId }, { delay: 1000 });
-        console.log(`EmailJob ${emailJobId} reassigned from ${sender.id} to ${availableSenderId}`);
+        logger.info(`EmailJob ${emailJobId} reassigned from ${sender.id} to ${availableSenderId}`);
         return;
       } else {
         // All senders exhausted — leave as PENDING, pause campaign
@@ -455,7 +489,7 @@ export async function processEmailJob(job: Job): Promise<void> {
           where: { id: campaign.id, status: "SENDING" },
           data: { status: "PAUSED", pauseReason: "ALL_SENDERS_EXHAUSTED" },
         });
-        console.warn(`All senders exhausted for campaign ${campaign.id}, pausing`);
+        logger.warn(`All senders exhausted for campaign ${campaign.id}, pausing`);
         return;
       }
     } else {
@@ -464,38 +498,9 @@ export async function processEmailJob(job: Job): Promise<void> {
         where: { id: emailJobId },
         data: { status: "PENDING" },
       });
-      console.warn(`Sender ${sender.id} at daily limit, no pool available for campaign ${campaign.id}`);
+      logger.warn(`Sender ${sender.id} at daily limit, no pool available for campaign ${campaign.id}`);
       return;
     }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Per-Domain Rate Cap
-  // ---------------------------------------------------------------------------
-  const domainDecision = await checkDomainRateCap(sender.id, emailJob.toEmail);
-  if (!domainDecision.allowed) {
-    await prisma.emailJob.update({
-      where: { id: emailJobId },
-      data: { status: "PENDING" },
-    });
-
-    const baseDelayMs = domainDecision.retryAfterMs ?? 3600_000;
-    const delay = Math.max(0, baseDelayMs);
-
-    await emailQueue.add(
-      "send-email",
-      { emailJobId },
-      {
-        jobId: `${emailJobId}-${crypto.randomUUID()}`,
-        delay,
-      },
-    );
-
-    const domain = emailJob.toEmail.split("@")[1]?.toLowerCase();
-    console.log(
-      `[DOMAIN-CAP] ${sender.email} → ${domain} (cap reached this hour), delaying emailJob ${emailJobId} by ${Math.round(delay/60000)}min`,
-    );
-    return;
   }
 
   // ---------------------------------------------------------------------------
@@ -524,7 +529,7 @@ export async function processEmailJob(job: Job): Promise<void> {
       },
     );
 
-    console.log(
+    logger.info(
       `EmailJob ${emailJobId} throttled (${throttleDecision.reason}), rescheduled with ${delay}ms delay`,
     );
     return;
@@ -556,7 +561,7 @@ export async function processEmailJob(job: Job): Promise<void> {
         },
       );
 
-      console.log(
+      logger.info(
         `EmailJob ${emailJobId} outside business hours (${timezone} ${startHour}:00-${endHour}:00), rescheduled with ${delayMs}ms delay`,
       );
       return;
@@ -580,6 +585,15 @@ export async function processEmailJob(job: Job): Promise<void> {
   // Create per-job transporter and send email
   // ---------------------------------------------------------------------------
 
+  let senderSlotAcquired = false;
+  let smtpAccepted = false;
+  let smtpAcceptedPayload: {
+    sentAt: string;
+    messageId?: string;
+    inReplyTo?: string;
+    references?: string;
+  } | null = null;
+
   try {
     const transporter = acquireSmtpTransporter({
       smtpHost: sender.smtpHost,
@@ -589,9 +603,9 @@ export async function processEmailJob(job: Job): Promise<void> {
     });
 
     // ---------------------------------------------------------------------------
-    // Download attachments from Supabase Storage (if any)
+    // Download attachments (if any)
     // ---------------------------------------------------------------------------
-    // WHY download at send time: Attachments are stored in Supabase, not locally.
+    // WHY download at send time: Attachments are stored remotely.
     // We download them into memory as Buffers and pass them to Nodemailer.
     // This keeps the worker stateless — no local file storage needed.
     // ---------------------------------------------------------------------------
@@ -601,7 +615,7 @@ export async function processEmailJob(job: Job): Promise<void> {
 
     for (const attachment of campaignAttachments) {
       try {
-        console.log(`Downloading attachment: ${attachment.filename}`);
+        logger.info(`Downloading attachment: ${attachment.filename}`);
         const response = await fetch(attachment.url);
         if (!response.ok) {
           const body = await response.text().catch(() => "");
@@ -613,7 +627,7 @@ export async function processEmailJob(job: Job): Promise<void> {
           content: Buffer.from(arrayBuffer),
         });
       } catch (downloadErr: any) {
-        console.error(`Attachment download error for ${attachment.filename}:`, downloadErr.message);
+        logger.error({ downloadErr: downloadErr.message }, `Attachment download error for ${attachment.filename}:`);
         await markFailed(
           emailJobId,
           `Failed to download attachment: ${attachment.filename}`,
@@ -643,23 +657,31 @@ export async function processEmailJob(job: Job): Promise<void> {
     });
     const emailSubject = resolved.subject;
     const emailBody = resolved.body;
+    const plainTextBody = htmlToPlainText(emailBody);
 
     // ---------------------------------------------------------------------------
-    // Spam Score Check (pre-send) - Log warning if high risk
+    // Deliverability guard (pre-send)
     // ---------------------------------------------------------------------------
-    // Use the spam detector to check email content before sending
-    // This is a warning only - we don't block sending (that would be too aggressive)
+    // Highly risky copy is blocked before it damages sender reputation. Warning
+    // scores are logged only; the adaptive throttle still handles live signals.
     // ---------------------------------------------------------------------------
     try {
-      const spamScore = quickSpamScore(emailSubject, emailBody.replace(/<[^>]*>?/gm, ''));
+      const assessment = assessDeliverability(emailSubject, plainTextBody);
 
-      // Log warning for scores >= 40
-      if (spamScore >= 40) {
-        console.warn(`[SPAM CHECK] EmailJob ${emailJobId} has spam score ${spamScore} (threshold: 40)`);
+      if (assessment.blocked) {
+        const reason = `deliverability-blocked: ${assessment.warnings.join("; ")}`;
+        logger.warn(`[DELIVERABILITY] EmailJob ${emailJobId} blocked. ${reason}`);
+        releaseSmtpTransporter(sender);
+        evictExpiredSmtpEntries();
+        await markFailed(emailJobId, reason, campaign.id);
+        return;
       }
-    } catch (spamCheckError) {
-      // Non-blocking - spam check failure shouldn't stop sending
-      console.error(`[SPAM CHECK] Failed for ${emailJobId}:`, spamCheckError);
+
+      if (assessment.warnings.length > 0) {
+        logger.warn(`[DELIVERABILITY] EmailJob ${emailJobId} warning: ${assessment.warnings.join("; ")}`);
+      }
+    } catch (deliverabilityError) {
+      logger.error({ deliverabilityError }, `[DELIVERABILITY] Check failed for ${emailJobId}:`);
     }
 
     // ---------------------------------------------------------------------------
@@ -716,11 +738,30 @@ export async function processEmailJob(job: Job): Promise<void> {
     // (e.g., https://sharaspot-api.onrender.com). 
     let trackingBaseUrl = process.env.TRACKING_BASE_URL;
 
+    let trackingDomainSetting = await prisma.trackingDomainSetting.findFirst({
+      where: campaign.organizationId
+        ? { organizationId: campaign.organizationId, status: "VERIFIED" }
+        : { organizationId: null, userId: campaign.userId, status: "VERIFIED" },
+      select: { fullDomain: true },
+    });
+
+    // Fallback: if org has no verified tracking domain, try user-level
+    if (!trackingDomainSetting && campaign.organizationId) {
+      trackingDomainSetting = await prisma.trackingDomainSetting.findFirst({
+        where: { organizationId: null, userId: campaign.userId, status: "VERIFIED" },
+        select: { fullDomain: true },
+      });
+    }
+
+    if (trackingDomainSetting?.fullDomain) {
+      trackingBaseUrl = buildTrackingBaseUrlForDomain(trackingDomainSetting.fullDomain) || trackingBaseUrl;
+    }
+
     // Validate that tracking URL is properly configured
     if (!trackingBaseUrl) {
-      console.warn(`[Tracking] NOTICE: TRACKING_BASE_URL is not set. Open/Click tracking will be disabled for EmailJob ${emailJobId}.`);
+      logger.warn(`[Tracking] NOTICE: TRACKING_BASE_URL is not set. Open/Click tracking will be disabled for EmailJob ${emailJobId}.`);
     } else if (trackingBaseUrl.includes('localhost') && process.env.NODE_ENV === 'production') {
-      console.error(`[Tracking] CRITICAL: TRACKING_BASE_URL points to localhost in production for EmailJob ${emailJobId}! Tracking disabled.`);
+      logger.error(`[Tracking] CRITICAL: TRACKING_BASE_URL points to localhost in production for EmailJob ${emailJobId}! Tracking disabled.`);
       trackingBaseUrl = undefined;
     }
 
@@ -729,16 +770,11 @@ export async function processEmailJob(job: Job): Promise<void> {
       {
         emailJobId,
         trackingBaseUrl,
-        trackOpens: (campaign as any).trackOpens ?? true,
+        trackOpens: (campaign as any).trackOpens === true,
         // trackClicks defaults to FALSE — link rewriting signals "bulk mail" to spam filters
         trackClicks: (campaign as any).trackClicks === true,
       }
     ) : emailBody; // Skip tracking injection if no safe URL is available
-
-    // Generate clean plain text from HTML for the text/plain MIME part.
-    // SpamAssassin penalises HTML-only emails with no plain-text alternative.
-    // htmlToPlainText preserves paragraph breaks and bullet structure.
-    const plainTextBody = htmlToPlainText(emailBody);
 
     // Pre-send reply check for follow-ups: if the recipient has replied since
     // this job was enqueued, cancel the job to avoid sending after a reply.
@@ -764,13 +800,78 @@ export async function processEmailJob(job: Job): Promise<void> {
           data: { replied: true },
         });
 
-        console.log(
+        logger.info(
           `[EmailWorker] Cancelled follow-up for ${emailJob.toEmail} — reply detected after enqueue`
         );
         releaseSmtpTransporter(sender);
         evictExpiredSmtpEntries();
         return;
       }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Per-sender send slot and per-domain cap are checked last so deferred,
+    // cancelled, or blocked messages do not consume capacity. The domain cap
+    // increments on success, so acquire the sender slot first and then send
+    // immediately after the domain check.
+    // ---------------------------------------------------------------------------
+    try {
+      await acquireSenderSendSlot(sender.id);
+      senderSlotAcquired = true;
+    } catch (slotError) {
+      await prisma.emailJob.update({
+        where: { id: emailJobId },
+        data: { status: "PENDING" },
+      });
+
+      await emailQueue.add(
+        "send-email",
+        { emailJobId },
+        {
+          jobId: `${emailJobId}-${crypto.randomUUID()}`,
+          delay: 5000,
+        },
+      );
+
+      logger.warn({ slotError }, `[EmailWorker] Could not acquire send slot for ${sender.email}; requeued ${emailJobId}`);
+      releaseSmtpTransporter(sender);
+      evictExpiredSmtpEntries();
+      return;
+    }
+
+    const domainDecision = await checkDomainRateCap(sender.id, emailJob.toEmail);
+    if (!domainDecision.allowed) {
+      await prisma.emailJob.update({
+        where: { id: emailJobId },
+        data: { status: "PENDING" },
+      });
+
+      const baseDelayMs = domainDecision.retryAfterMs ?? 3600_000;
+      const delay = Math.max(0, baseDelayMs);
+
+      await emailQueue.add(
+        "send-email",
+        { emailJobId },
+        {
+          jobId: `${emailJobId}-${crypto.randomUUID()}`,
+          delay,
+        },
+      );
+
+      try {
+        await holdSenderCooldown(sender.id);
+      } catch (cooldownError) {
+        logger.error({ cooldownError }, `[EmailWorker] Failed to set sender cooldown for ${sender.email}:`);
+      }
+      senderSlotAcquired = false;
+
+      const domain = emailJob.toEmail.split("@")[1]?.toLowerCase();
+      logger.info(
+        `[DOMAIN-CAP] ${sender.email} → ${domain} (cap reached this hour), delaying emailJob ${emailJobId} by ${Math.round(delay/60000)}min`,
+      );
+      releaseSmtpTransporter(sender);
+      evictExpiredSmtpEntries();
+      return;
     }
 
     await transporter.sendMail({
@@ -788,39 +889,54 @@ export async function processEmailJob(job: Job): Promise<void> {
       headers: { "X-Mailer": "SharaSpot Outreach" },
     });
 
+    const acceptedAt = new Date();
+    smtpAcceptedPayload = {
+      sentAt: acceptedAt.toISOString(),
+      ...(messageId ? { messageId } : {}),
+      ...(inReplyTo ? { inReplyTo } : {}),
+      ...(references ? { references } : {}),
+    };
+    await markSmtpAccepted(emailJobId, smtpAcceptedPayload);
+    smtpAccepted = true;
+
+    try {
+      await holdSenderCooldown(sender.id);
+    } catch (cooldownError) {
+      logger.error({ cooldownError }, `[EmailWorker] Failed to set sender cooldown for ${sender.email}:`);
+    }
+    senderSlotAcquired = false;
+
     // ---------------------------------------------------------------------------
     // Success: Re-read status, then atomic SENT + counter increment
     // ---------------------------------------------------------------------------
 
-    const currentJob = await prisma.emailJob.findUnique({
+    await prisma.emailJob.update({
       where: { id: emailJobId },
-      select: { status: true },
+      data: { status: "SENT", sentAt: acceptedAt, messageId, inReplyTo, references },
     });
 
-    // If status was changed to CANCELLED by a concurrent cancel, don't overwrite
-    if (currentJob && currentJob.status === "CANCELLED") {
-      console.log(`EmailJob ${emailJobId} was CANCELLED during send, skipping SENT update`);
-    } else {
-      await prisma.emailJob.update({
-        where: { id: emailJobId },
-        data: { status: "SENT", sentAt: new Date(), messageId, inReplyTo, references },
+    logger.info(`EmailJob ${emailJobId} sent successfully to ${emailJob.toEmail}`);
+
+    try {
+      await logContactActivityByEmail(campaign.userId, emailJob.toEmail, "EMAIL_SENT", {
+        campaignId: campaign.id,
+        emailJobId: emailJob.id,
+        subject: emailSubject,
       });
+      await updateContactStageByEmail(campaign.userId, emailJob.toEmail, "CONTACTED");
+    } catch (contactError) {
+      logger.error({ contactError }, `[EmailWorker] Failed to update contact activity for sent EmailJob ${emailJobId}:`);
     }
-
-    console.log(`EmailJob ${emailJobId} sent successfully to ${emailJob.toEmail}`);
-
-    await logContactActivityByEmail(campaign.userId, emailJob.toEmail, "EMAIL_SENT", {
-      campaignId: campaign.id,
-      emailJobId: emailJob.id,
-      subject: emailSubject,
-    });
-    await updateContactStageByEmail(campaign.userId, emailJob.toEmail, "CONTACTED");
 
     releaseSmtpTransporter(sender);
     evictExpiredSmtpEntries();
 
     // Record successful send for adaptive throttle tracking
-    await recordSendResult(sender.id, true, false);
+    try {
+      await recordSendResult(sender.id, true, false);
+    } catch (throttleError) {
+      logger.error({ throttleError }, `[EmailWorker] Failed to record successful send result for ${sender.email}:`);
+    }
 
     // Update RecipientSequenceState if this is a sequence job
     if (emailJob.sequenceStepId) {
@@ -842,70 +958,120 @@ export async function processEmailJob(job: Job): Promise<void> {
           }
         }
       } catch (seqErr) {
-        console.error(`Error updating sequence state for ${emailJobId}:`, seqErr);
+        logger.error({ seqErr }, `Error updating sequence state for ${emailJobId}:`);
       }
     }
   } catch (smtpError: any) {
-    // Determine if this is a bounce (5xx SMTP response code)
+    if (senderSlotAcquired) {
+      try {
+        await holdSenderCooldown(sender.id);
+      } catch (cooldownError) {
+        logger.error({ cooldownError }, `[EmailWorker] Failed to set sender cooldown for ${sender.email}:`);
+      }
+      senderSlotAcquired = false;
+    }
+
+    if (smtpAccepted) {
+      if (smtpAcceptedPayload) {
+        await markSmtpAccepted(emailJobId, smtpAcceptedPayload);
+        try {
+          const sentAt = new Date(smtpAcceptedPayload.sentAt);
+          await prisma.emailJob.updateMany({
+            where: { id: emailJobId, status: "SENDING" },
+            data: {
+              status: "SENT",
+              sentAt: Number.isNaN(sentAt.getTime()) ? new Date() : sentAt,
+              ...(smtpAcceptedPayload.messageId ? { messageId: smtpAcceptedPayload.messageId } : {}),
+              ...(smtpAcceptedPayload.inReplyTo ? { inReplyTo: smtpAcceptedPayload.inReplyTo } : {}),
+              ...(smtpAcceptedPayload.references ? { references: smtpAcceptedPayload.references } : {}),
+            },
+          });
+        } catch (recoveryError) {
+          logger.error({ recoveryError }, `[EmailWorker] Failed immediate SENT recovery for SMTP-accepted EmailJob ${emailJobId}:`);
+        }
+      }
+
+      logger.error(
+        { smtpError },
+        `[EmailWorker] Post-SMTP persistence failed for ${emailJobId}; SMTP accepted marker will let recovery mark it SENT.`,
+      );
+      releaseSmtpTransporter(sender);
+      evictExpiredSmtpEntries();
+      return;
+    }
+
     const errorMsg = (smtpError.message || "").toLowerCase();
     const isBounce =
       /5\d{2}/.test(errorMsg) ||
       errorMsg.includes("bounce");
 
-    // Record failed send for adaptive throttle tracking
-    await recordSendResult(sender.id, false, isBounce);
+    try {
+      await recordSendResult(sender.id, false, isBounce);
+    } catch (throttleError) {
+      logger.error({ throttleError }, `[EmailWorker] Failed to record failed send result for ${sender.email}:`);
+    }
 
-    await logContactActivityByEmail(campaign.userId, emailJob.toEmail, "EMAIL_FAILED", {
-      campaignId: campaign.id,
-      emailJobId: emailJob.id,
-      error: smtpError.message || "SMTP send failed",
-      isBounce,
-    });
-    if (isBounce) {
-      await updateContactStageByEmail(campaign.userId, emailJob.toEmail, "BOUNCED");
-      // Add to BounceList to permanently suppress this address for this user
-      try {
-        await prisma.bounceList.upsert({
-          where: { userId_email: { userId: campaign.userId, email: emailJob.toEmail } },
-          update: { bouncedAt: new Date(), reason: smtpError.message || "SMTP bounce" },
-          create: { userId: campaign.userId, email: emailJob.toEmail, reason: smtpError.message || "SMTP bounce" },
-        });
-      } catch (bounceErr) {
-        console.error(`Failed to add ${emailJob.toEmail} to BounceList:`, bounceErr);
-      }
+    try {
+      await logContactActivityByEmail(campaign.userId, emailJob.toEmail, "EMAIL_FAILED", {
+        campaignId: campaign.id,
+        emailJobId: emailJob.id,
+        error: smtpError.message || "SMTP send failed",
+        isBounce,
+      });
+    } catch (contactError) {
+      logger.error({ contactError }, `[EmailWorker] Failed to log EMAIL_FAILED for ${emailJobId}:`);
     }
 
     releaseSmtpTransporter(sender);
     evictExpiredSmtpEntries();
 
-    // Permanent SMTP failure — mark FAILED with error message
-    await markFailed(emailJobId, smtpError.message || "SMTP send failed", campaign.id);
-
-    // Update RecipientSequenceState on failure
-    if (emailJob.sequenceStepId) {
+    if (isBounce) {
       try {
-        const state = await prisma.recipientSequenceState.findFirst({
-          where: { campaignId: campaign.id, recipientEmail: emailJob.toEmail },
-        });
-        if (state) {
-          const statuses = state.stepStatuses as any[];
-          const stepIdx = statuses.findIndex(
-            (s: any) => s.emailJobId === emailJobId || s.stepNumber === state.currentStep
-          );
-          if (stepIdx >= 0) {
-            statuses[stepIdx] = { ...statuses[stepIdx], status: "FAILED", error: smtpError.message || "SMTP send failed" };
-            await prisma.recipientSequenceState.update({
-              where: { id: state.id },
-              data: { stepStatuses: statuses },
-            });
-          }
-        }
-      } catch (seqErr) {
-        console.error(`Error updating sequence state for ${emailJobId}:`, seqErr);
+        await updateContactStageByEmail(campaign.userId, emailJob.toEmail, "BOUNCED");
+      } catch (contactError) {
+        logger.error({ contactError }, `[EmailWorker] Failed to mark contact bounced for ${emailJob.toEmail}:`);
       }
-    }
+      try {
+        await upsertBounceSuppression(
+          { userId: campaign.userId, organizationId: campaign.organizationId },
+          emailJob.toEmail,
+          smtpError.message || "SMTP bounce",
+        );
+      } catch (bounceErr) {
+        logger.error({ bounceErr }, `Failed to add ${emailJob.toEmail} to BounceList:`);
+      }
 
-    // Don't return here — fall through to the campaign completion check below
+      await markFailed(emailJobId, smtpError.message || "SMTP send failed", campaign.id);
+
+      if (emailJob.sequenceStepId) {
+        try {
+          const state = await prisma.recipientSequenceState.findFirst({
+            where: { campaignId: campaign.id, recipientEmail: emailJob.toEmail },
+          });
+          if (state) {
+            const statuses = state.stepStatuses as any[];
+            const stepIdx = statuses.findIndex(
+              (s: any) => s.emailJobId === emailJobId || s.stepNumber === state.currentStep
+            );
+            if (stepIdx >= 0) {
+              statuses[stepIdx] = { ...statuses[stepIdx], status: "FAILED", error: smtpError.message || "SMTP send failed" };
+              await prisma.recipientSequenceState.update({
+                where: { id: state.id },
+                data: { stepStatuses: statuses },
+              });
+            }
+          }
+        } catch (seqErr) {
+          logger.error({ seqErr }, `Error updating sequence state for ${emailJobId}:`);
+        }
+      }
+    } else {
+      logger.warn(
+        { smtpError, attempt: job.attemptsMade },
+        `[EmailWorker] Transient SMTP failure for ${emailJobId} (attempt ${job.attemptsMade}), will retry via BullMQ`,
+      );
+      throw smtpError;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -924,7 +1090,7 @@ export async function checkCampaignCompletion(campaignId: string): Promise<void>
   try {
     await checkAndCompleteCampaign(campaignId, { skipSequences: true });
   } catch (err) {
-    console.error(`Error checking campaign completion for ${campaignId}:`, err);
+    logger.error({ err }, `Error checking campaign completion for ${campaignId}:`);
   }
 }
 
@@ -943,7 +1109,7 @@ async function markFailed(emailJobId: string, errorMessage: string, campaignId?:
       where: { id: emailJobId },
       data: { status: "FAILED", error: errorMessage },
     });
-    console.log(`EmailJob ${emailJobId} marked FAILED: ${errorMessage}`);
+    logger.info(`EmailJob ${emailJobId} marked FAILED: ${errorMessage}`);
     
     // If we have a campaignId, check if this failure finishes the campaign
     if (campaignId) {
@@ -952,9 +1118,9 @@ async function markFailed(emailJobId: string, errorMessage: string, campaignId?:
   } catch (err) {
     // If marking FAILED itself throws (e.g., DB connection lost), log but don't crash.
     // The job will remain in SENDING state and be recovered by the startup sweep.
-    console.error(
+    logger.error(
+      { err },
       `Failed to mark EmailJob ${emailJobId} as FAILED (${errorMessage}):`,
-      err,
     );
   }
 }
@@ -1005,7 +1171,7 @@ emailWorker.on('failed', async (job, err) => {
   const { emailJobId } = job.data;
   const errorMessage = `Job failed after all retry attempts: ${err.message}`;
 
-  console.error(`[DLQ] Job ${job.id} (${emailJobId}) failed permanently:`, err.message);
+  logger.error({ err: err.message }, `[DLQ] Job ${job.id} (${emailJobId}) failed permanently:`);
 
   // Fetch campaignId to ensure we check for completion
   const jobRecord = await prisma.emailJob.findUnique({
@@ -1024,7 +1190,7 @@ emailWorker.on('failed', async (job, err) => {
 });
 
 emailWorker.on('error', (err) => {
-  console.error(`[Worker] Fatal worker error:`, err);
+  logger.error({ err }, `[Worker] Fatal worker error:`);
   sysLog.critical("INFRASTRUCTURE", `Fatal email worker error: ${err.message}`);
 });
 
@@ -1040,11 +1206,11 @@ emailWorker.on('error', (err) => {
 // ---------------------------------------------------------------------------
 
 async function gracefulShutdown(signal: string): Promise<void> {
-  console.log(`Received ${signal}, shutting down gracefully...`);
+  logger.info(`Received ${signal}, shutting down gracefully...`);
   await emailWorker.close();
   await prisma.$disconnect();
   await redis.quit();
-  console.log("Graceful shutdown complete");
+  logger.info("Graceful shutdown complete");
   process.exit(0);
 }
 
@@ -1061,9 +1227,9 @@ process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 // ---------------------------------------------------------------------------
 
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception in worker:", err);
+  logger.error({ err }, "Uncaught Exception in worker:");
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("Unhandled Rejection in worker:", reason);
+  logger.error({ reason }, "Unhandled Rejection in worker:");
 });

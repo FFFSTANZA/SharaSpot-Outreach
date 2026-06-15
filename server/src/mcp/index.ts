@@ -15,16 +15,17 @@ import { registerPrmTools } from "./tools/prmOps";
 import { registerValidationTools } from "./tools/validationOps";
 import { registerCallTools } from "./tools/callOps";
 import { registerFollowUpTemplateTools } from "./tools/followUpTemplates";
+import { logger } from "../utils/logger";
 
 export * from "./types";
 export { toolRegistry, mcpRequestHandler };
 
 export function initializeMCP() {
   validateMcpEncryptionKey();
-  console.log("[MCP] Initializing MCP Server...");
+  logger.info("[MCP] Initializing MCP Server...");
   if (toolRegistry.getAll().length > 0) {
     const toolCount = toolRegistry.getAll().length;
-    console.log(`[MCP] Already initialized with ${toolCount} tools`);
+    logger.info(`[MCP] Already initialized with ${toolCount} tools`);
     return {
       toolCount,
       tools: toolRegistry.listTools(),
@@ -47,7 +48,7 @@ export function initializeMCP() {
   registerFollowUpTemplateTools();
 
   const toolCount = toolRegistry.getAll().length;
-  console.log(`[MCP] Registered ${toolCount} tools`);
+  logger.info(`[MCP] Registered ${toolCount} tools`);
 
   return {
     toolCount,

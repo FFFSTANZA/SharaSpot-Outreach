@@ -97,8 +97,8 @@ services:
       context: .
       dockerfile: deploy/Dockerfile.client
       args:
-        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost}
-        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-354664818470-veljl4900p28hf0i81u0r959ra11ihjt.apps.googleusercontent.com}
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://sharaspot.in}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
         NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID}
     container_name: sharaspot-frontend
     restart: unless-stopped

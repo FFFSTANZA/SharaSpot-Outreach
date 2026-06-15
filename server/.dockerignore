@@ -4,5 +4,7 @@ build
 .env
 *.log
 docker-compose.yml
-Dockerfile
+Dockerfile*
 .dockerignore
+.git
+uploads

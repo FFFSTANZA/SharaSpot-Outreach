@@ -106,24 +106,24 @@ export default function AddContactModal({ listFilterId, onClose, onSuccess }: Ad
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl border border-border-light w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-primary/10 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-premium-lg w-full max-w-3xl max-h-[80vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="px-5 py-4 border-b border-border-light flex items-center justify-between">
           <h2 className="text-base font-bold text-text-primary">Add Contact to Call Queue</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg"><X size={18} className="text-text-muted" /></button>
+          <button onClick={onClose} className="p-1 hover:bg-[#F0F1F3] rounded-md"><X size={18} className="text-text-muted" /></button>
         </div>
 
         <div className="flex flex-1 min-h-0">
-          <div className="w-48 border-r border-border-light bg-gray-50/50 p-3 space-y-2 overflow-y-auto">
+          <div className="w-48 border-r border-border-light bg-[#F8F9FA]/50 p-3 space-y-2 overflow-y-auto">
             <button onClick={() => { setSelectedListId(null); setSearchQuery(""); }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-left transition-all ${selectedListId === null ? "bg-brand-light text-brand" : "text-gray-500 hover:bg-gray-100"}`}>
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-left transition-all ${selectedListId === null ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F0F1F3]"}`}>
               <Hash size={14} /> All Contacts
             </button>
             {lists.map((list) => (
               <button key={list.id} onClick={() => setSelectedListId(list.id)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-left transition-all ${selectedListId === list.id ? "bg-brand-light text-brand" : "text-gray-500 hover:bg-gray-100"}`}>
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-left transition-all ${selectedListId === list.id ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F0F1F3]"}`}>
                 <span className="flex items-center gap-2 truncate"><Folder size={14} className="shrink-0" />{list.name}</span>
-                <span className="text-[10px] text-gray-400">{list._count?.contacts || 0}</span>
+                <span className="text-[10px] text-text-muted">{list._count?.contacts || 0}</span>
               </button>
             ))}
           </div>
@@ -131,9 +131,9 @@ export default function AddContactModal({ listFilterId, onClose, onSuccess }: Ad
           <div className="flex-1 flex flex-col min-w-0">
             <div className="p-3 border-b border-border-light">
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input type="text" placeholder="Search contacts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} aria-label="Search contacts"
-                  className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-border-light rounded-lg text-sm outline-none focus:bg-white focus:border-brand-muted transition-all" />
+                  className="w-full pl-9 pr-3 py-2 bg-[#F8F9FA] border border-border-light rounded-lg text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 placeholder:text-text-muted" />
               </div>
             </div>
 
@@ -142,7 +142,7 @@ export default function AddContactModal({ listFilterId, onClose, onSuccess }: Ad
                 <div className="flex items-center justify-center h-32 text-sm text-text-muted">Loading...</div>
               ) : contacts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-sm text-text-muted">
-                  <PhoneCall size={24} className="text-gray-200 mb-2" />
+                  <PhoneCall size={24} className="text-text-muted mb-2" />
                   No contacts found
                 </div>
               ) : (
@@ -151,7 +151,7 @@ export default function AddContactModal({ listFilterId, onClose, onSuccess }: Ad
                     const name = (c.firstName || c.lastName) ? `${c.firstName || ""} ${c.lastName || ""}`.trim() : c.email;
                     return (
                       <button key={c.id} onClick={() => setSelectedContact(c)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left transition-all ${selectedContact?.id === c.id ? "bg-brand/5" : ""}`}>
+                        className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F0F1F3] text-left transition-all ${selectedContact?.id === c.id ? "bg-brand/5" : ""}`}>
                         <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center text-xs font-bold text-brand shrink-0">
                           {(c.firstName?.[0] || c.email?.[0] || "?").toUpperCase()}
                         </div>
@@ -172,27 +172,27 @@ export default function AddContactModal({ listFilterId, onClose, onSuccess }: Ad
                 <span className="text-xs text-text-muted">{totalContacts} contacts</span>
                 <div className="flex items-center gap-1">
                   <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage <= 1}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30"><ChevronLeft size={16} /></button>
+                    className="p-1.5 rounded-md hover:bg-[#F0F1F3] disabled:opacity-30"><ChevronLeft size={16} /></button>
                   <span className="px-2 text-xs font-semibold text-text-secondary">{currentPage} / {totalPages}</span>
                   <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30"><ChevronRight size={16} /></button>
+                    className="p-1.5 rounded-md hover:bg-[#F0F1F3] disabled:opacity-30"><ChevronRight size={16} /></button>
                 </div>
               </div>
             )}
 
             {selectedContact && (
-              <div className="px-4 py-3 border-t border-border-light bg-gray-50/50 space-y-3">
+              <div className="px-4 py-3 border-t border-border-light bg-[#F8F9FA]/50 space-y-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
                   <CalendarClock size={15} className="text-brand" />
                   Schedule call with <span className="text-brand">{(selectedContact.firstName || selectedContact.lastName) ? `${selectedContact.firstName || ""} ${selectedContact.lastName || ""}`.trim() : selectedContact.email}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="date" value={callDate} onChange={(e) => setCallDate(e.target.value)}
-                    className="flex-1 h-9 rounded-lg border border-border-light px-3 text-sm" />
+                    className="flex-1 h-9 rounded-lg border border-border-light px-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10" />
                   <input type="time" value={callTime} onChange={(e) => setCallTime(e.target.value)}
-                    className="flex-1 h-9 rounded-lg border border-border-light px-3 text-sm" />
+                    className="flex-1 h-9 rounded-lg border border-border-light px-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10" />
                   <button onClick={handleCreate} disabled={isCreating}
-                    className="h-9 px-4 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90 disabled:opacity-60 inline-flex items-center gap-2 shrink-0">
+                    className="h-9 px-4 rounded-md bg-brand text-white text-sm font-semibold hover:bg-brand/90 disabled:opacity-60 inline-flex items-center gap-2 shrink-0">
                     <Plus size={14} /> {isCreating ? "Scheduling..." : "Schedule Call"}
                   </button>
                 </div>

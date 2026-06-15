@@ -1,4 +1,5 @@
 import DodoPayments from "dodopayments";
+import { logger } from "../utils/logger";
 
 const apiKey = process.env.DODO_PAYMENTS_API_KEY;
 const isProduction = process.env.NODE_ENV === "production";
@@ -16,10 +17,10 @@ export const dodo = new DodoPayments({
     : (isLiveKey ? "live_mode" : "test_mode"),
 });
 
-console.log(`[DODO-BOOT] Mode: ${isLiveKey ? "LIVE" : "TEST"} (Prefix: ${apiKey?.substring(0, 4)}...)`);
+logger.info(`[DODO-BOOT] Mode: ${isLiveKey ? "LIVE" : "TEST"} (Prefix: ${apiKey?.substring(0, 4)}...)`);
 
 export const DODO_WEBHOOK_SECRET = process.env.DODO_WEBHOOK_SECRET || "";
 
 if (!DODO_WEBHOOK_SECRET && isProduction) {
-  console.warn("WARNING: DODO_WEBHOOK_SECRET is missing in production. Webhooks will fail verification.");
+  logger.warn("WARNING: DODO_WEBHOOK_SECRET is missing in production. Webhooks will fail verification.");
 }

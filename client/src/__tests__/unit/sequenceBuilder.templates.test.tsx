@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import SequenceBuilder from "@/app/dashboard/compose/SequenceBuilder";
 import type { SequenceStepInput } from "@/types";
 
@@ -62,7 +62,9 @@ describe("SequenceBuilder follow-up template import", () => {
       expect(screen.getByText("Advanced Branch Template")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Advanced Branch Template"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Advanced Branch Template"));
+    });
 
     expect(onChange).toHaveBeenCalledTimes(1);
     const nextSteps = onChange.mock.calls[0][0];

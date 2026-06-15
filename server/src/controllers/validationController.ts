@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { validateEmailsBatch, BatchValidationResult } from "../utils/emailValidator";
 import { requirePremium } from "../utils/premiumCheck";
+import { logger } from "../utils/logger";
 
 export const validateRecipients = async (
   req: Request,
@@ -51,7 +52,7 @@ export const validateRecipients = async (
       originalCount: emails.length,
     });
   } catch (error: unknown) {
-    console.error("Email validation error:", error);
+    logger.error({ error }, "Email validation error");
     res.status(500).json({
       message: "Error validating emails",
     });

@@ -3,30 +3,32 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
-import { SidebarProvider } from "@/context/SidebarContext";
-import { Sidebar } from "../Sidebar";
-import { TopBar } from "../Topbar";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
-    User, CreditCard, Inbox, Star, Clock, Send, Save, Loader2, ExternalLink
+    User, Save, Loader2, ExternalLink, Menu
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { updateUserName } from "@/lib/apis/auth";
 import {
     getSubscription, createSubscription, cancelSubscription,
     reactivateSubscription, createBillingPortalSession, SubscriptionResponse
 } from "@/lib/apis/subscription";
 import { useToast } from "@/context/ToastContext";
+import { useSidebar } from "@/hooks/useSidebar";
+import axios from "axios";
 
 const PRICING: Record<string, { symbol: string; price: number }> = {
-    global: { symbol: "$", price: 19 },
+    global: { symbol: "$", price: 29 },
     india: { symbol: "₹", price: 999 },
 };
 
 function getErrorMessage(error: unknown, fallback: string): string {
-    return error instanceof Error ? error.message : fallback;
+    return axios.isAxiosError(error)
+        ? error.response?.data?.message || fallback
+        : fallback;
 }
 
-export default function SettingsPage() {
+function SettingsContent() {
+    const { toggle } = useSidebar();
     const { user, refreshUser } = useAuth();
     const { addToast } = useToast();
     const [name, setName] = useState("");
@@ -55,79 +57,67 @@ export default function SettingsPage() {
     };
 
     return (
-        <AuthGuard requirePremium={true}>
-            <SidebarProvider>
-                <div className="flex h-screen bg-background font-sans text-text-primary">
-                    <Sidebar
-                        currentLabel="Settings"
-                        setLabel={() => { }}
-                        items={[
-                            { label: "All", icon: <Inbox size={18} /> },
-                            { label: "Starred", icon: <Star size={18} /> },
-                            { label: "Scheduled", icon: <Clock size={18} /> },
-                            { label: "Sent", icon: <Send size={18} /> },
-                        ]}
-                        profile={{
-                            name: user?.name ?? "User",
-                            email: user?.email ?? "",
-                            avatarUrl: user?.avatarUrl ?? "",
-                        }}
-                    />
-
-                    <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-interactive-hover/40 p-4 lg:p-6">
-                        <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col grow overflow-hidden">
-                            <TopBar placeholder="Search settings..." />
-
-                            <div className="flex-1 overflow-y-auto p-8 max-w-3xl mx-auto w-full custom-scrollbar space-y-10">
-                                <div>
-                                    <h1 className="text-2xl font-bold text-text-primary tracking-tight">Settings</h1>
-                                    <p className="text-sm font-medium text-text-secondary mt-1">Your profile and account details</p>
-                                </div>
-
-                                <Section title="Profile">
-                                    <div className="flex items-center gap-6 p-6 bg-white rounded-2xl border border-border-light shadow-sm">
-                                        <div className="h-16 w-16 rounded-2xl bg-interactive-hover flex items-center justify-center overflow-hidden border-2 border-white shadow-sm shrink-0">
-                                            {user?.avatarUrl ? (
-                                                <img src={user.avatarUrl} alt={user?.name || "User"} className="h-full w-full object-cover" />
-                                            ) : (
-                                                <User className="text-text-muted" size={32} />
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0 space-y-2">
-                                            <input
-                                                type="text"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); }}
-                                                className="w-full text-lg font-bold text-text-primary bg-transparent border-b-2 border-transparent focus:border-brand/50 focus:outline-none pb-0.5 transition-colors placeholder:text-text-muted"
-                                                placeholder="Your name"
-                                            />
-                                            <p className="text-sm text-text-muted font-medium">{user?.email}</p>
-                                        </div>
-                                        <button
-                                            onClick={handleSaveName}
-                                            disabled={saving || name.trim() === (user?.name || "")}
-                                            className="px-4 py-2 text-sm font-semibold text-white bg-brand rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-40 shrink-0"
-                                        >
-                                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                            Save
-                                        </button>
-                                    </div>
-                                </Section>
-
-                                <SubscriptionSection />
+        <div className="mx-auto w-full max-w-[1600px] flex flex-1 flex-col overflow-hidden rounded-lg border border-border-light bg-white">
+                {/* Header */}
+                <div className="sticky top-0 z-10 bg-white border-b border-border-light px-4 py-3 sm:px-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={toggle}
+                                    aria-label="Open sidebar"
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[#F0F1F3] lg:hidden"
+                                >
+                                    <Menu size={14} />
+                                </button>
+                                <h1 className="text-base font-semibold text-text-primary">Settings</h1>
                             </div>
                         </div>
-                    </main>
+                    </div>
+
+                    {/* Content */}
+                    <div className="px-4 py-4 sm:px-6">
+                        <div className="max-w-3xl mx-auto space-y-8">
+                            <Section title="Profile">
+                                <div className="flex flex-col gap-4 rounded-lg border border-border-light bg-white p-4 sm:flex-row sm:items-center sm:gap-6 sm:p-5">
+                                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#F0F1F3] overflow-hidden">
+                                        {user?.avatarUrl ? (
+                                            <img src={user.avatarUrl} alt={user?.name || "User"} className="h-full w-full object-cover" />
+                                        ) : (
+                                            <User className="text-text-muted" size={24} />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0 space-y-2">
+                                        <input
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); }}
+                                            className="w-full text-base font-semibold text-text-primary bg-transparent border-b-2 border-transparent focus:border-brand/50 focus:outline-none pb-0.5 transition-colors placeholder:text-text-muted"
+                                            placeholder="Your name"
+                                        />
+                                        <p className="text-sm text-text-muted">{user?.email}</p>
+                                    </div>
+                                    <button
+                                        onClick={handleSaveName}
+                                        disabled={saving || name.trim() === (user?.name || "")}
+                                        className="flex h-8 items-center gap-1.5 rounded-md bg-brand px-3 text-xs font-medium text-white transition-all hover:bg-brand/90 disabled:opacity-50 shrink-0"
+                                    >
+                                        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                                        Save
+                                    </button>
+                                </div>
+                            </Section>
+
+                            <SubscriptionSection />
+                        </div>
+                    </div>
                 </div>
-            </SidebarProvider>
-        </AuthGuard>
     );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">{title}</h3>
             {children}
         </div>
@@ -222,7 +212,7 @@ function SubscriptionSection() {
         return (
             <Section title="Subscription">
                 <div className="flex items-center justify-center py-10">
-                    <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                    <Loader2 className="h-6 w-6 animate-spin text-text-muted" />
                 </div>
             </Section>
         );
@@ -238,133 +228,141 @@ function SubscriptionSection() {
     const pricing = PRICING[region] || PRICING.global;
 
     const statusBadge = () => {
-        if (needsBillingAction) return <span className="px-2.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Past Due</span>;
-        if (isTrialing) return <span className="px-2.5 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">Trial</span>;
-        if (isCanceled) return <span className="px-2.5 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">Cancelling</span>;
-        if (isPremium) return <span className="px-2.5 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Active</span>;
-        return <span className="px-2.5 py-0.5 bg-slate-100 text-slate-500 rounded-full text-xs font-semibold">Inactive</span>;
+        if (needsBillingAction) return <span className="inline-flex items-center rounded-full bg-error-bg px-2 py-0.5 text-[11px] font-semibold text-error-text">Past Due</span>;
+        if (isTrialing) return <span className="inline-flex items-center rounded-full bg-brand-light px-2 py-0.5 text-[11px] font-semibold text-brand">Trial</span>;
+        if (isCanceled) return <span className="inline-flex items-center rounded-full bg-[#F8F9FA] px-2 py-0.5 text-[11px] font-semibold text-text-secondary">Cancelling</span>;
+        if (isPremium) return <span className="inline-flex items-center rounded-full bg-brand-light px-2 py-0.5 text-[11px] font-semibold text-brand">Active</span>;
+        return <span className="inline-flex items-center rounded-full bg-[#F0F1F3] px-2 py-0.5 text-[11px] font-semibold text-text-muted">Inactive</span>;
     };
 
     return (
-        <Section title="Subscription">
-            <div className="rounded-2xl border border-border-light shadow-sm p-6 bg-white">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        <span className="font-bold text-text-primary">SharaSpot Pro</span>
-                        {statusBadge()}
+        <>
+            <Section title="Subscription">
+                <div className="rounded-lg border border-border-light bg-white p-5">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-semibold text-text-primary">SharaSpot Pro</span>
+                            {statusBadge()}
+                        </div>
+                        <span className="text-sm font-medium text-text-primary">{pricing.symbol}{pricing.price}/mo</span>
                     </div>
-                    <span className="text-sm font-semibold text-text-primary">{pricing.symbol}{pricing.price}/mo</span>
-                </div>
 
-                {!isPremium && !needsBillingAction ? (
-                    <div>
-                        <p className="text-sm text-text-muted mb-4">
-                            Subscribe to access all premium features. {pricing.symbol}{pricing.price}/mo, 7-day trial included.
-                        </p>
-                        <button
-                            onClick={handleSubscribe}
-                            disabled={checkoutLoading}
-                            className="px-4 py-2 text-sm font-semibold text-white bg-brand rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-40"
-                        >
-                            {checkoutLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                            Subscribe
-                        </button>
-                    </div>
-                ) : needsBillingAction && subscription ? (
-                    <div>
-                        <p className="text-sm text-text-muted mb-4">
-                            Payment issue. Update your billing method to continue premium access.
-                        </p>
-                        <div className="flex flex-wrap gap-3">
-                            {subscription.dodoCustomerId && (
-                                <button onClick={handlePortal} disabled={portalLoading}
-                                    className="px-4 py-2 text-sm font-semibold text-white bg-brand rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-40"
-                                >
-                                    {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-                                    Manage Billing
-                                </button>
-                            )}
-                            <button onClick={handleSubscribe} disabled={checkoutLoading}
-                                className="px-4 py-2 text-sm font-semibold text-brand bg-brand/10 rounded-lg hover:bg-brand/20 transition-colors flex items-center gap-2 disabled:opacity-40"
+                    {!isPremium && !needsBillingAction ? (
+                        <div>
+                            <p className="text-sm text-text-muted mb-4">
+                                Subscribe to access all premium features. {pricing.symbol}{pricing.price}/mo, 7-day trial included.
+                            </p>
+                            <button
+                                onClick={handleSubscribe}
+                                disabled={checkoutLoading}
+                                className="flex h-8 items-center gap-1.5 rounded-md bg-brand px-3 text-xs font-medium text-white transition-all hover:bg-brand/90 disabled:opacity-50"
                             >
-                                {checkoutLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                New Subscription
+                                {checkoutLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                Subscribe
                             </button>
                         </div>
-                    </div>
-                ) : (
-                    <div className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-text-muted">Subscription ID</span>
-                            <span className="font-mono text-text-primary">{subscription?.dodoSubscriptionId || "N/A"}</span>
+                    ) : needsBillingAction && subscription ? (
+                        <div>
+                            <p className="text-sm text-text-muted mb-4">
+                                Payment issue. Update your billing method to continue premium access.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {subscription.hasDodoCustomerId && (
+                                    <button onClick={handlePortal} disabled={portalLoading}
+                                        className="flex h-8 items-center gap-1.5 rounded-md bg-brand px-3 text-xs font-medium text-white transition-all hover:bg-brand/90 disabled:opacity-50"
+                                    >
+                                        {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
+                                        Manage Billing
+                                    </button>
+                                )}
+                                <button onClick={handleSubscribe} disabled={checkoutLoading}
+                                    className="flex h-8 items-center gap-1.5 rounded-md bg-brand-light px-3 text-xs font-medium text-brand transition-all hover:bg-brand/20 disabled:opacity-50"
+                                >
+                                    {checkoutLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                    New Subscription
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-text-muted">Next billing</span>
-                            <span className="text-text-primary">
-                                {periodEnd?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) || "N/A"}
-                            </span>
-                        </div>
-                        {isTrialing && trialEnd && (
+                    ) : (
+                        <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-text-muted">Trial ends</span>
+                                <span className="text-text-muted">Next billing</span>
                                 <span className="text-text-primary">
-                                    {trialEnd.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                                    {periodEnd?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) || "N/A"}
                                 </span>
                             </div>
-                        )}
+                            {isTrialing && trialEnd && (
+                                <div className="flex justify-between">
+                                    <span className="text-text-muted">Trial ends</span>
+                                    <span className="text-text-primary">
+                                        {trialEnd.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                                    </span>
+                                </div>
+                            )}
 
-                        <div className="pt-4 border-t border-border-light flex flex-wrap gap-3">
-                            {subscription?.dodoCustomerId && (
-                                <button onClick={handlePortal} disabled={portalLoading}
-                                    className="px-4 py-2 text-sm font-semibold text-white bg-brand rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-40"
-                                >
-                                    {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-                                    Billing Portal
-                                </button>
-                            )}
-                            {!isCanceled ? (
-                                <button onClick={() => setShowCancelModal(true)}
-                                    className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                                >
-                                    Cancel Subscription
-                                </button>
-                            ) : (
-                                <button onClick={handleReactivate} disabled={actionLoading}
-                                    className="px-4 py-2 text-sm font-semibold text-brand bg-brand/10 rounded-lg hover:bg-brand/20 transition-colors flex items-center gap-2 disabled:opacity-40"
-                                >
-                                    {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    Reactivate
-                                </button>
-                            )}
+                            <div className="pt-3 border-t border-border-light flex flex-wrap gap-2">
+                                {subscription?.hasDodoCustomerId && (
+                                    <button onClick={handlePortal} disabled={portalLoading}
+                                        className="flex h-8 items-center gap-1.5 rounded-md bg-brand px-3 text-xs font-medium text-white transition-all hover:bg-brand/90 disabled:opacity-50"
+                                    >
+                                        {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
+                                        Billing Portal
+                                    </button>
+                                )}
+                                {!isCanceled ? (
+                                    <button onClick={() => setShowCancelModal(true)}
+                                        className="flex h-8 items-center gap-1.5 rounded-md bg-error-bg px-3 text-xs font-medium text-error-text transition-all hover:bg-error-bg/80"
+                                    >
+                                        Cancel Subscription
+                                    </button>
+                                ) : (
+                                    <button onClick={handleReactivate} disabled={actionLoading}
+                                        className="flex h-8 items-center gap-1.5 rounded-md bg-brand-light px-3 text-xs font-medium text-brand transition-all hover:bg-brand/20 disabled:opacity-50"
+                                    >
+                                        {actionLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                        Reactivate
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            </Section>
 
             {showCancelModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">Cancel Subscription?</h3>
-                        <p className="text-sm text-slate-600 mb-6">
-                            Your subscription remains active until <strong>{periodEnd?.toLocaleDateString()}</strong>.
+                <div className="fixed inset-0 z-50 bg-text-primary/10 backdrop-blur-sm flex items-center justify-center" onClick={() => setShowCancelModal(false)}>
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-premium-lg" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-base font-semibold text-text-primary mb-2">Cancel Subscription?</h3>
+                        <p className="text-sm text-text-secondary mb-5">
+                            Your subscription remains active until <strong className="text-text-primary">{periodEnd?.toLocaleDateString()}</strong>.
                             After that you&apos;ll lose premium access.
                         </p>
-                        <div className="flex gap-4">
+                        <div className="flex gap-3">
                             <button onClick={() => setShowCancelModal(false)}
-                                className="flex-1 py-3 px-4 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-colors"
+                                className="flex-1 flex h-9 items-center justify-center rounded-md border border-border-light bg-white px-4 text-xs font-medium text-text-secondary transition-all hover:bg-[#F0F1F3]"
                             >
                                 Keep
                             </button>
                             <button onClick={handleCancel} disabled={actionLoading}
-                                className="flex-1 py-3 px-4 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                                className="flex-1 flex h-9 items-center justify-center gap-1.5 rounded-md bg-error-text px-4 text-xs font-medium text-white transition-all hover:bg-error-text/90 disabled:opacity-50"
                             >
-                                {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                {actionLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                                 Yes, Cancel
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-        </Section>
+        </>
+    );
+}
+
+export default function SettingsPage() {
+    return (
+        <AuthGuard requirePremium={true}>
+            <ErrorBoundary>
+                    <SettingsContent />
+            </ErrorBoundary>
+        </AuthGuard>
     );
 }

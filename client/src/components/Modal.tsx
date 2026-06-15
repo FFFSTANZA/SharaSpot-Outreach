@@ -55,15 +55,15 @@ export default function Modal({
     return (
       <div
         className={cn(
-          "absolute right-0 top-12 z-50 w-[360px] rounded-xl bg-white p-5 border border-gray-100 shadow-xl",
-          "animate-[fadeInUp_0.2s_ease-out]",
+          "absolute right-0 top-12 z-50 w-[360px] rounded-lg bg-white p-5 border border-border-light shadow-premium-lg",
+          "animate-[fade-in-up_0.2s_ease-out]",
           className,
         )}
       >
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute right-3 top-3 p-1 text-text-muted hover:text-text-secondary transition-colors"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -78,7 +78,7 @@ export default function Modal({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black/40 transition-opacity duration-200"
+        className="fixed inset-0 z-40 bg-text-primary/10 backdrop-blur-sm transition-opacity duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -90,15 +90,15 @@ export default function Modal({
           // Bottom-sheet variant (mobile)
           variant === "bottom-sheet" && [
             "inset-x-0 bottom-0",
-            "rounded-t-xl bg-white p-5 border-t border-gray-200",
-            "animate-[fadeInUp_0.3s_ease-out]",
+            "rounded-t-lg bg-white p-5 border-t border-border-light",
+            "animate-[fade-in-up_0.3s_ease-out]",
             "max-h-[85vh] overflow-y-auto",
           ],
           // Center variant (desktop)
           variant === "center" && [
             "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-            "w-[90vw] sm:w-full max-w-[480px] rounded-xl bg-white p-0 border border-gray-200",
-            "animate-[fadeInUp_0.2s_ease-out]",
+            "w-[90vw] sm:w-full max-w-[480px] rounded-lg bg-white p-0 shadow-premium-lg",
+            "animate-[fade-in-up_0.2s_ease-out]",
             "max-h-[90vh] overflow-y-auto",
           ],
           className,
@@ -109,7 +109,7 @@ export default function Modal({
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 min-h-[44px] min-w-[44px] flex items-center justify-center text-[#9AA0A6] hover:text-[#5F6368] transition-colors"
+            className="absolute right-3 top-3 min-h-[44px] min-w-[44px] flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />

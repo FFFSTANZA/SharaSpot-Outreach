@@ -42,17 +42,16 @@ function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`
-        h-10 w-10 md:h-8 md:w-8 flex-shrink-0
-        flex items-center justify-center rounded-lg md:rounded-md
-        transition-all duration-150 active:scale-95
-        ${isActive
-          ? "bg-green-100 text-green-700"
+      className={cn(
+        "h-10 w-10 md:h-8 md:w-8 flex-shrink-0",
+        "flex items-center justify-center rounded-lg md:rounded-md",
+        "transition-all duration-150 active:scale-95",
+        isActive
+          ? "bg-brand/10 text-brand"
           : disabled
-            ? "text-gray-400 cursor-not-allowed"
-            : "text-gray-600 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200"
-        }
-      `}
+            ? "text-text-muted cursor-not-allowed"
+            : "text-text-secondary hover:text-text-primary hover:bg-[#F0F1F3] active:bg-[#E2E4E9]"
+      )}
     >
       {children}
     </button>
@@ -60,7 +59,7 @@ function ToolbarButton({
 }
 
 function ToolbarDivider() {
-  return <div className="mx-0.5 md:mx-1 h-5 w-px bg-gray-200 flex-shrink-0" />;
+  return <div className="mx-0.5 md:mx-1 h-5 w-px bg-border-light flex-shrink-0" />;
 }
 
 function LinkModal({
@@ -70,18 +69,18 @@ function LinkModal({
 }) {
   const [url, setUrl] = useState(initialUrl);
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/30" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-text-primary/10 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="bg-white rounded-t-2xl md:rounded-xl shadow-xl p-5 w-full max-w-sm md:mx-4 pb-8 md:pb-5"
+        className="bg-white rounded-t-2xl md:rounded-lg shadow-premium-lg p-5 w-full max-w-sm md:mx-4 pb-8 md:pb-5"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Insert Link</h3>
+        <h3 className="text-sm font-semibold text-text-primary mb-3">Insert Link</h3>
         <input
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://example.com"
-          className="w-full px-3 py-3 md:py-2 text-base md:text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-100"
+          className="w-full rounded-md border border-border-light bg-white px-3 py-3 md:py-2 text-base md:text-sm text-text-primary outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 placeholder:text-text-muted"
           autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter" && url) onSubmit(url);
@@ -90,11 +89,11 @@ function LinkModal({
         />
         <div className="flex justify-end gap-2 mt-4">
           <button type="button" onClick={onClose}
-            className="px-4 py-2.5 md:py-1.5 text-sm text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-50">
+            className="px-4 py-2.5 md:py-1.5 text-sm text-text-secondary hover:text-text-primary rounded-md hover:bg-[#F0F1F3]">
             Cancel
           </button>
           <button type="button" onClick={() => url && onSubmit(url)} disabled={!url}
-            className="px-4 py-2.5 md:py-1.5 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50">
+            className="px-4 py-2.5 md:py-1.5 text-sm bg-brand text-white rounded-md hover:bg-brand/90 disabled:opacity-50">
             Insert
           </button>
         </div>
@@ -154,40 +153,40 @@ function TableModal({
   const [cols, setCols] = useState(3);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/30" onClick={onClose}>
-      <div className="bg-white rounded-t-2xl md:rounded-xl shadow-xl p-5 w-full max-w-sm md:mx-4 pb-8 md:pb-5" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-sm font-semibold text-gray-900 mb-4">Insert Table</h3>
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-text-primary/10 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-t-2xl md:rounded-lg shadow-premium-lg p-5 w-full max-w-sm md:mx-4 pb-8 md:pb-5" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-sm font-semibold text-text-primary mb-4">Insert Table</h3>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Rows</label>
+            <label className="block text-xs text-text-muted mb-1.5">Rows</label>
             <input
               type="number"
               min={1}
               max={20}
               value={rows}
               onChange={(e) => setRows(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+              className="w-full rounded-md border border-border-light bg-white px-3 py-2 text-sm text-text-primary outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Columns</label>
+            <label className="block text-xs text-text-muted mb-1.5">Columns</label>
             <input
               type="number"
               min={1}
               max={10}
               value={cols}
               onChange={(e) => setCols(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+              className="w-full rounded-md border border-border-light bg-white px-3 py-2 text-sm text-text-primary outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
             />
           </div>
         </div>
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-50">
+            className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary rounded-md hover:bg-[#F0F1F3]">
             Cancel
           </button>
           <button type="button" onClick={() => { onSubmit(rows, cols); onClose(); }}
-            className="px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+            className="px-4 py-2 text-sm bg-brand text-white rounded-md hover:bg-brand/90">
             Insert
           </button>
         </div>
@@ -215,7 +214,7 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
         orderedList: { keepMarks: true },
         link: {
           openOnClick: false,
-          HTMLAttributes: { class: "text-emerald-600 underline cursor-pointer" },
+          HTMLAttributes: { class: "text-brand underline cursor-pointer" },
         },
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
@@ -236,11 +235,11 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] md:min-h-[380px] px-3 md:px-5 py-3 md:py-5 text-gray-800 outline-none leading-relaxed " +
-          "prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 " +
-          "prose-blockquote:border-l-emerald-500 prose-blockquote:text-gray-600 " +
-          "prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-emerald-600 prose-code:text-xs " +
-          "prose-a:text-emerald-600 prose-a:underline",
+          "min-h-[200px] md:min-h-[380px] px-3 md:px-5 py-3 md:py-5 text-text-primary outline-none leading-relaxed " +
+          "prose prose-sm max-w-none prose-headings:text-text-primary prose-p:my-1 prose-ul:my-1 prose-ol:my-1 " +
+          "prose-blockquote:border-l-brand prose-blockquote:text-text-secondary " +
+          "prose-code:bg-[#F0F1F3] prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-brand prose-code:text-xs " +
+          "prose-a:text-brand prose-a:underline",
       },
       handlePaste: (view, event) => {
         const clipboardData = event.clipboardData;
@@ -293,7 +292,7 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
         username: calendlyUsername.trim(),
         eventType: calendlyEventType.trim() || undefined,
       });
-      const calendlyHtml = `<p><a href="${result.url}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #00A63E; color: white; text-decoration: none; border-radius: 4px; font-weight: 600;">${result.button.text || "Book a Meeting"}</a></p>`;
+      const calendlyHtml = `<p><a href="${result.url}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #3B82F6; color: white; text-decoration: none; border-radius: 4px; font-weight: 600;">${result.button.text || "Book a Meeting"}</a></p>`;
       editor.chain().focus().insertContent(calendlyHtml).run();
       setShowCalendlyModal(false);
       setCalendlyUsername("");
@@ -328,7 +327,7 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
     <div className="relative">
       {/* Toolbar - horizontally scrollable on mobile, wraps on desktop */}
       <div className="overflow-x-auto md:overflow-x-visible scrollbar-none">
-        <div className="flex items-center gap-0.5 px-2 md:px-3 py-2 border-b border-gray-100 bg-gray-50 md:flex-wrap min-w-max md:min-w-0">
+        <div className="flex items-center gap-0.5 px-2 md:px-3 py-2 border-b border-border-light bg-[#F8F9FA] md:flex-wrap min-w-max md:min-w-0">
           {/* Undo / Redo */}
           <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo">
             <Undo2 className={iconSize} />
@@ -385,7 +384,7 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
               </div>
             </ToolbarButton>
             {showColorPicker && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white rounded-lg border border-gray-200 p-2 z-50 flex gap-1.5">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white rounded-lg border border-border-light p-2 z-50 flex gap-1.5">
                 {FONT_COLORS.map((c) => (
                   <button key={c.label} type="button" title={c.label}
                     onClick={() => {
@@ -396,7 +395,7 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
                       }
                       setShowColorPicker(false);
                     }}
-                    className="h-7 w-7 md:h-6 md:w-6 rounded-full border border-gray-200 hover:scale-110 active:scale-95 transition-transform"
+                    className="h-7 w-7 md:h-6 md:w-6 rounded-full border border-border-light hover:scale-110 active:scale-95 transition-transform"
                     style={{ backgroundColor: c.value || "#1f2937" }} />
                 ))}
               </div>
@@ -459,7 +458,7 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
                 onClick={() => editor.chain().focus().deleteTable().run()}
                 title="Delete table"
               >
-                <Trash2 className={cn(iconSize, "text-red-500")} />
+                <Trash2 className={cn(iconSize, "text-error-text")} />
               </ToolbarButton>
             )}
           </div>
@@ -473,7 +472,7 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
               onClick={() => setShowVariableMenu(!showVariableMenu)}
               className={cn(
                 "h-10 md:h-8 px-2 flex items-center gap-1.5 rounded-lg md:rounded-md transition-all active:scale-95",
-                showVariableMenu ? "bg-green-100 text-green-700" : "text-gray-600 hover:bg-gray-100"
+                showVariableMenu ? "bg-brand/10 text-brand" : "text-text-secondary hover:bg-[#F0F1F3]"
               )}
               title="Insert variable"
             >
@@ -481,9 +480,9 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
             </button>
 
             {showVariableMenu && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 py-2 animate-in fade-in zoom-in-95 slide-in-from-top-2">
-                <div className="px-3 py-1.5 border-b border-gray-50 mb-1">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Available Variables</p>
+              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-border-light rounded-lg shadow-premium-lg z-50 py-2 animate-in fade-in zoom-in-95 slide-in-from-top-2">
+                <div className="px-3 py-1.5 border-b border-border-light/50 mb-1">
+                  <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Available Variables</p>
                 </div>
                 <div className="max-h-60 overflow-y-auto custom-scrollbar">
                   {availableVariables.length > 0 ? (
@@ -492,15 +491,15 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
                         key={v}
                         type="button"
                         onClick={() => insertVariable(v)}
-                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors flex items-center gap-2"
+                        className="w-full px-3 py-2 text-left text-sm text-text-secondary hover:bg-brand/10 hover:text-brand transition-colors flex items-center gap-2"
                       >
-                        <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand" />
                         {v}
                       </button>
                     ))
                   ) : (
                     <div className="px-3 py-4 text-center">
-                      <p className="text-[10px] text-gray-400 italic">No variables found.<br />Import a CSV to see more.</p>
+                      <p className="text-[10px] text-text-muted italic">No variables found.<br />Import a CSV to see more.</p>
                     </div>
                   )}
                   {/* Default system variables */}
@@ -508,7 +507,7 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
                     <button
                       type="button"
                       onClick={() => insertVariable('email')}
-                      className="w-full px-3 py-2 text-left text-sm text-gray-500 hover:bg-gray-50 transition-colors border-t border-gray-50"
+                      className="w-full px-3 py-2 text-left text-sm text-text-muted hover:bg-[#F0F1F3] transition-colors border-t border-border-light/50"
                     >
                       email (default)
                     </button>
@@ -582,42 +581,42 @@ export function Editor({ value = "", onChange, availableVariables = [] }: Editor
 
       {/* Calendly modal */}
       {showCalendlyModal && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/30" onClick={() => setShowCalendlyModal(false)}>
-          <div className="bg-white rounded-t-2xl md:rounded-xl shadow-xl p-5 w-full max-w-sm md:mx-4 pb-8 md:pb-5" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Insert Calendly Meeting</h3>
-            <p className="text-xs text-gray-500 mb-4">Add a meeting booking button to your email.</p>
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-text-primary/10 backdrop-blur-sm" onClick={() => setShowCalendlyModal(false)}>
+          <div className="bg-white rounded-t-2xl md:rounded-lg shadow-premium-lg p-5 w-full max-w-sm md:mx-4 pb-8 md:pb-5" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-text-primary mb-3">Insert Calendly Meeting</h3>
+            <p className="text-xs text-text-muted mb-4">Add a meeting booking button to your email.</p>
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Your Calendly Username</label>
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Your Calendly Username</label>
                 <input
                   type="text"
                   value={calendlyUsername}
                   onChange={(e) => setCalendlyUsername(e.target.value)}
                   placeholder="yourusername"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-100 mt-1"
+                  className="w-full rounded-md border border-border-light bg-white px-3 py-2 text-sm text-text-primary outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 mt-1 placeholder:text-text-muted"
                 />
-                <p className="text-[10px] text-gray-400 mt-1">Just the username, not the full URL</p>
+                <p className="text-[10px] text-text-muted mt-1">Just the username, not the full URL</p>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Event Type (optional)</label>
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Event Type (optional)</label>
                 <input
                   type="text"
                   value={calendlyEventType}
                   onChange={(e) => setCalendlyEventType(e.target.value)}
                   placeholder="30-minute-call"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-100 mt-1"
+                  className="w-full rounded-md border border-border-light bg-white px-3 py-2 text-sm text-text-primary outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 mt-1 placeholder:text-text-muted"
                 />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
-              <button type="button" onClick={() => setShowCalendlyModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-50">
+              <button type="button" onClick={() => setShowCalendlyModal(false)} className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary rounded-md hover:bg-[#F0F1F3]">
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleInsertCalendly}
                 disabled={!calendlyUsername.trim() || isGeneratingCalendly}
-                className="px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm bg-brand text-white rounded-md hover:bg-brand/90 disabled:opacity-50"
               >
                 {isGeneratingCalendly ? "Generating..." : "Insert"}
               </button>

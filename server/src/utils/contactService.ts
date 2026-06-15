@@ -7,30 +7,63 @@ export const upsertContact = async (
   userId: string,
   email: string,
   data: {
+    website?: string | null;
+    companyDomain?: string | null;
     firstName?: string;
     lastName?: string;
-    company?: string;
-    phone?: string;
+    company?: string | null;
+    phone?: string | null;
     jobTitle?: string;
+    techStack?: string[];
     stage?: string;
+    nextAction?: string | null;
+    nextActionDueAt?: Date | string | null;
+    assignedToId?: string | null;
+    lastEnrichedAt?: Date | null;
     tags?: string[];
     organizationId?: string | null;
+    enrichmentSources?: {
+      website?: "direct" | "enriched" | "none";
+      companyDomain?: "direct" | "enriched" | "none";
+      company?: "direct" | "enriched" | "none";
+      phone?: "direct" | "enriched" | "none";
+      techStack?: "direct" | "enriched" | "none";
+    };
   },
   db: DbClient = prisma
 ) => {
-  const { tags, stage, organizationId, ...rest } = data;
-  return db.contact.upsert({
-    where: { userId_email: { userId, email } },
-    update: {
-      ...rest,
-      stage: stage || undefined,
-      ...(organizationId ? { organizationId } : {}),
-      tags: tags ? { set: tags.map((tagId: string) => ({ id: tagId })) } : undefined,
-    },
-    create: {
+  const { tags, stage, organizationId, enrichmentSources, ...rest } = data;
+  const existing = await db.contact.findUnique({ where: { userId_email: { userId, email } } });
+
+  const mergedRest = existing ? {
+    ...rest,
+    website: enrichmentSources?.website === "enriched" && existing.website ? existing.website : rest.website,
+    companyDomain: enrichmentSources?.companyDomain === "enriched" && existing.companyDomain ? existing.companyDomain : rest.companyDomain,
+    company: enrichmentSources?.company === "enriched" && existing.company ? existing.company : rest.company,
+    phone: enrichmentSources?.phone === "enriched" && existing.phone ? existing.phone : rest.phone,
+    techStack: enrichmentSources?.techStack === "enriched"
+      ? Array.from(new Set([...(existing.techStack ?? []), ...(rest.techStack ?? [])]))
+      : rest.techStack,
+  } : rest;
+
+  if (existing) {
+    return db.contact.update({
+      where: { id: existing.id },
+      data: {
+        ...mergedRest,
+        stage: stage || undefined,
+        ...(organizationId ? { organizationId } : {}),
+        tags: tags ? { set: tags.map((tagId: string) => ({ id: tagId })) } : undefined,
+      },
+      include: { tags: true },
+    });
+  }
+
+  return db.contact.create({
+    data: {
       userId,
       email,
-      ...rest,
+      ...mergedRest,
       stage: stage || "COLD",
       ...(organizationId ? { organizationId } : {}),
       tags: tags ? { connect: tags.map((tagId: string) => ({ id: tagId })) } : undefined,

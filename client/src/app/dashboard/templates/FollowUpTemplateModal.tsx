@@ -47,27 +47,27 @@ export default function FollowUpTemplateModal({ template, onClose, onSave }: Fol
   return (
     <Modal isOpen onClose={onClose} className="max-w-[640px] w-[90vw] sm:w-full">
       <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
-        <h2 className="text-lg font-semibold text-gray-900">{template ? "Edit" : "New"} Follow-up Template</h2>
+        <h2 className="text-lg font-semibold text-text-primary">{template ? "Edit" : "New"} Follow-up Template</h2>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">Template name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm" placeholder="e.g. Event follow-up flow" />
+          <label className="mb-1.5 block text-sm font-medium text-text-secondary">Template name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} className="w-full h-10 rounded-lg border border-border-light px-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 placeholder:text-text-muted" placeholder="e.g. Event follow-up flow" />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">Description</label>
-          <input value={description} onChange={(e) => setDescription(e.target.value)} className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm" placeholder="Optional" />
+          <label className="mb-1.5 block text-sm font-medium text-text-secondary">Description</label>
+          <input value={description} onChange={(e) => setDescription(e.target.value)} className="w-full h-10 rounded-lg border border-border-light px-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 placeholder:text-text-muted" placeholder="Optional" />
         </div>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">Steps</p>
+            <p className="text-sm font-medium text-text-secondary">Steps</p>
             {steps.length < MAX_STEPS && (
               <button onClick={() => {
                 const idx = steps.length;
                 setSteps((prev) => [...prev, { waitDays: 3, condition: { type: "opened" }, subject: "", body: "" }]);
                 setExpandedStep(idx);
-              }} className="inline-flex items-center gap-1 text-xs font-medium text-[#00A63E] hover:underline">
+              }} className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline">
                 <Plus className="h-3.5 w-3.5" /> Add Step
               </button>
             )}
@@ -79,54 +79,52 @@ export default function FollowUpTemplateModal({ template, onClose, onSave }: Fol
             const condOpt = CONDITION_OPTIONS.find(o => o.value === ct);
 
             return (
-              <div key={i} className="border border-gray-200 rounded-lg bg-white">
+              <div key={i} className="border border-border-light rounded-lg bg-white">
                 <div
                   className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
                   onClick={() => setExpandedStep(isExpanded ? null : i)}
                 >
-                  <span className="text-xs font-semibold text-gray-400 shrink-0 w-16">Step {i + 1}</span>
+                  <span className="text-xs font-semibold text-text-muted shrink-0 w-16">Step {i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={cn("text-sm font-semibold", step.subject ? "text-gray-900" : "text-gray-400")}>
+                      <span className={cn("text-sm font-semibold", step.subject ? "text-text-primary" : "text-text-muted")}>
                         {step.subject || "Empty step"}
                       </span>
                       {condOpt && ct !== "none" && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-600">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#F8F9FA] text-text-secondary">
                           <condOpt.icon className="h-3 w-3" />{condOpt.label}
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-text-muted">
                       <span>{step.waitDays || 3}d</span>
                     </div>
                   </div>
-                  <ChevronDown className={cn("h-4 w-4 text-gray-300 transition-transform shrink-0", isExpanded && "rotate-180")} />
+                  <ChevronDown className={cn("h-4 w-4 text-text-muted transition-transform shrink-0", isExpanded && "rotate-180")} />
                 </div>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
+                  <div className="px-4 pb-4 space-y-4 border-t border-border-light">
                     <div className="flex items-center gap-4 pt-4">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
+                        <Clock className="h-4 w-4 text-text-muted" />
                         <input type="number" min={1} max={60} value={step.waitDays || 3}
                           onChange={(e) => updateStep(i, "waitDays", parseInt(e.target.value) || 1)}
-                          className="h-8 w-16 rounded-lg border border-gray-200 bg-white text-center text-xs font-semibold text-gray-900 outline-none focus:border-gray-400" />
-                        <span className="text-xs text-gray-500">days</span>
+                          className="h-8 w-16 rounded-lg border border-border-light bg-white text-center text-xs font-semibold text-text-primary outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10" />
+                        <span className="text-xs text-text-muted">days</span>
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-xs font-medium text-gray-500 mb-2 block">When to send</label>
+                      <label className="text-xs font-medium text-text-muted mb-2 block">When to send</label>
                       <div className="flex flex-wrap gap-2">
                         {CONDITION_OPTIONS.map(opt => (
                           <button key={opt.value} onClick={() => updateStep(i, "condition", opt.value)}
                             className={cn(
                               "inline-flex items-center gap-1.5 px-3 h-8 rounded-lg border text-xs font-medium transition-all",
                               ct === opt.value
-                                ? opt.value === "none"
-                                  ? "bg-gray-800 text-white border-gray-800"
-                                  : "bg-gray-900 text-white border-gray-900"
-                                : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-800"
+                                ? "bg-brand text-white border-brand"
+                                : "bg-white border-border-light text-text-secondary hover:border-border-medium hover:text-text-primary"
                             )}>
                             <opt.icon className="h-3.5 w-3.5" />{opt.label}
                           </button>
@@ -135,15 +133,15 @@ export default function FollowUpTemplateModal({ template, onClose, onSave }: Fol
                     </div>
 
                     <div>
-                      <label className="text-xs font-medium text-gray-500 mb-2 block">Subject</label>
+                      <label className="text-xs font-medium text-text-muted mb-2 block">Subject</label>
                       <input value={step.subject || ""} onChange={(e) => updateStep(i, "subject", e.target.value)}
                         placeholder="e.g. Quick follow-up regarding {{company}}"
-                        className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-900" />
+                        className="w-full h-10 px-3 text-sm border border-border-light rounded-lg outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 text-text-primary placeholder:text-text-muted" />
                     </div>
 
                     <div>
-                      <label className="text-xs font-medium text-gray-500 mb-2 block">Body</label>
-                      <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <label className="text-xs font-medium text-text-muted mb-2 block">Body</label>
+                      <div className="border border-border-light rounded-lg overflow-hidden">
                         <Editor value={step.body || ""} onChange={(html) => updateStep(i, "body", html)} />
                       </div>
                     </div>
@@ -151,7 +149,7 @@ export default function FollowUpTemplateModal({ template, onClose, onSave }: Fol
                     <button onClick={() => {
                       setSteps((prev) => prev.filter((_, idx) => idx !== i));
                       if (expandedStep === i) setExpandedStep(null);
-                    }} className="inline-flex items-center gap-1 text-xs text-red-500 hover:underline">
+                    }} className="inline-flex items-center gap-1 text-xs text-error-text hover:underline">
                       <Trash2 className="h-3.5 w-3.5" /> Remove step
                     </button>
                   </div>
@@ -161,7 +159,7 @@ export default function FollowUpTemplateModal({ template, onClose, onSave }: Fol
           })}
 
           {steps.length === 0 && (
-            <p className="text-xs text-gray-400">No steps yet. Add at least one step.</p>
+            <p className="text-xs text-text-muted">No steps yet. Add at least one step.</p>
           )}
         </div>
 

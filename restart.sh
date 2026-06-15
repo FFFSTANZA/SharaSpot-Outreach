@@ -12,11 +12,11 @@ pkill -f "next" || true
 sleep 2
 
 # Start Client
-cd /home/fffstanza/Folonite/SharaSpot-Outreach/client
+cd /home/fffstanza/SharaSpot/SharaSpot-Outreach/client
 nohup npm run dev > /tmp/sharaspot-client.log 2>&1 &
 echo "Client started in background (logs at /tmp/sharaspot-client.log)"
 
 # Start API in FOREGROUND for debugging
 echo "Starting API in FOREGROUND... Watch for [SERVER-DEBUG] logs below."
-cd /home/fffstanza/Folonite/SharaSpot-Outreach/server
+cd /home/fffstanza/SharaSpot/SharaSpot-Outreach/server
 npm run dev

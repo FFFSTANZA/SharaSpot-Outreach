@@ -6,6 +6,7 @@ export const getCallQueue = async (params: {
   due?: "all" | "today" | "overdue";
   search?: string;
   listId?: string;
+  assignedToId?: string;
   page?: number;
   limit?: number;
 } = {}): Promise<CallQueueResponse> => {
@@ -14,6 +15,7 @@ export const getCallQueue = async (params: {
   if (params.due) qs.set("due", params.due);
   if (params.search) qs.set("search", params.search);
   if (params.listId) qs.set("listId", params.listId);
+  if (params.assignedToId) qs.set("assignedToId", params.assignedToId);
   if (params.page) qs.set("page", String(params.page));
   if (params.limit) qs.set("limit", String(params.limit));
   const suffix = qs.toString() ? `?${qs.toString()}` : "";
@@ -21,8 +23,13 @@ export const getCallQueue = async (params: {
   return res.data;
 };
 
-export const createCallTask = async (payload: { contactId: string; dueAt: string; priority?: number; contactListId?: string }): Promise<CallTask> => {
+export const createCallTask = async (payload: { contactId: string; dueAt: string; priority?: number; contactListId?: string; assignedToId?: string | null }): Promise<CallTask> => {
   const res = await api.post("/api/calls/tasks", payload);
+  return res.data;
+};
+
+export const updateCallTask = async (id: string, payload: { assignedToId?: string | null }): Promise<CallTask> => {
+  const res = await api.patch(`/api/calls/tasks/${id}`, payload);
   return res.data;
 };
 

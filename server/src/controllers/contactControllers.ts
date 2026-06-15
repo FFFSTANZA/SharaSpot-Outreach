@@ -2,11 +2,127 @@ import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
 import { logContactActivity, upsertContact } from "../utils/contactService";
 import { getOrgScope, getOrgId } from "../utils/orgScope";
+import { normalizeDomain, normalizeEmailAddress, normalizeWebsite } from "../utils/contactEnrichment";
 import * as XLSX from "xlsx";
 import fs from "fs";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PAGE_SIZE_DEFAULT = 50;
+const CONTACT_INCLUDE = {
+  tags: true,
+  lists: true,
+  assignedTo: { select: { id: true, name: true, email: true, avatarUrl: true } },
+};
+
+const parseOptionalDate = (value: unknown): Date | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  const parsed = new Date(String(value));
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+};
+
+const normalizeOptionalText = (value: unknown): string | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const text = String(value).trim();
+  return text.length > 0 ? text : null;
+};
+
+const normalizeTechStack = (value: unknown): string[] | undefined => {
+  if (!Array.isArray(value)) return undefined;
+  return value
+    .map((item) => String(item).trim())
+    .filter(Boolean)
+    .slice(0, 20);
+};
+
+async function resolveContactInputForSave(input: {
+  email?: unknown;
+  website?: unknown;
+  companyDomain?: unknown;
+  firstName?: unknown;
+  lastName?: unknown;
+  company?: unknown;
+  phone?: unknown;
+  jobTitle?: unknown;
+  stage?: unknown;
+  nextAction?: unknown;
+  nextActionDueAt?: unknown;
+  assignedToId?: string | null | undefined;
+  tags?: string[];
+  techStack?: unknown;
+}): Promise<{
+  email: string | null;
+  website: string | null;
+  companyDomain: string | null;
+  company: string | null;
+  phone: string | null;
+  techStack: string[];
+  lastEnrichedAt: Date | null;
+  enrichmentSources: {
+    website: "direct" | "enriched" | "none";
+    companyDomain: "direct" | "enriched" | "none";
+    company: "direct" | "enriched" | "none";
+    phone: "direct" | "enriched" | "none";
+    techStack: "direct" | "enriched" | "none";
+  };
+  firstName?: string;
+  lastName?: string;
+  jobTitle?: string;
+  stage?: string;
+  nextAction?: string | null;
+  nextActionDueAt?: Date | null | undefined;
+  assignedToId?: string | null;
+  tags?: string[];
+}> {
+  const directEmail = normalizeEmailAddress(input.email);
+  const directWebsite = normalizeWebsite(input.website);
+  const directDomain = normalizeDomain(input.companyDomain)
+    ?? (directWebsite ? new URL(directWebsite).hostname.replace(/^www\./, "") : null)
+    ?? (directEmail ? directEmail.split("@")[1] ?? null : null);
+
+  return {
+    email: directEmail,
+    website: directWebsite,
+    companyDomain: directDomain,
+    company: normalizeOptionalText(input.company) ?? null,
+    phone: normalizeOptionalText(input.phone) ?? null,
+    techStack: normalizeTechStack(input.techStack) ?? [],
+    lastEnrichedAt: null,
+    enrichmentSources: {
+      website: directWebsite ? "direct" : "none",
+      companyDomain: directDomain ? "direct" : "none",
+      company: normalizeOptionalText(input.company) ? "direct" : "none",
+      phone: normalizeOptionalText(input.phone) ? "direct" : "none",
+      techStack: normalizeTechStack(input.techStack)?.length ? "direct" : "none",
+    },
+    firstName: normalizeOptionalText(input.firstName) ?? undefined,
+    lastName: normalizeOptionalText(input.lastName) ?? undefined,
+    jobTitle: normalizeOptionalText(input.jobTitle) ?? undefined,
+    stage: normalizeOptionalText(input.stage) ?? undefined,
+    nextAction: normalizeOptionalText(input.nextAction),
+    nextActionDueAt: parseOptionalDate(input.nextActionDueAt),
+    assignedToId: input.assignedToId,
+    tags: input.tags,
+  };
+}
+
+const resolveAssigneeId = async (req: Request, assignedToId: unknown): Promise<string | null | undefined> => {
+  if (assignedToId === undefined) return undefined;
+  if (assignedToId === null || assignedToId === "") return null;
+
+  const userId = String(assignedToId);
+  const orgId = getOrgId(req);
+  if (!orgId) {
+    return userId === req.user!.id ? userId : undefined;
+  }
+
+  const member = await prisma.organizationMember.findUnique({
+    where: { organizationId_userId: { organizationId: orgId, userId } },
+    select: { userId: true },
+  });
+  return member ? userId : undefined;
+};
 
 export const getContacts = async (req: Request, res: Response) => {
   try {
@@ -23,6 +139,9 @@ export const getContacts = async (req: Request, res: Response) => {
       const s = search as string;
       where.OR = [
         { email: { contains: s, mode: "insensitive" } },
+        { website: { contains: s, mode: "insensitive" } },
+        { companyDomain: { contains: s, mode: "insensitive" } },
+        { techStack: { has: s } },
         { firstName: { contains: s, mode: "insensitive" } },
         { lastName: { contains: s, mode: "insensitive" } },
         { company: { contains: s, mode: "insensitive" } },
@@ -44,7 +163,7 @@ export const getContacts = async (req: Request, res: Response) => {
 
       const contacts = await prisma.contact.findMany({
         where: { id: { in: pageIds }, ...scope },
-        include: { tags: true, lists: true },
+        include: CONTACT_INCLUDE,
         orderBy: { updatedAt: "desc" },
       });
 
@@ -87,7 +206,7 @@ export const getContacts = async (req: Request, res: Response) => {
       prisma.contact.count({ where }),
       prisma.contact.findMany({
         where,
-        include: { tags: true, lists: true },
+        include: CONTACT_INCLUDE,
         orderBy: { updatedAt: "desc" },
         skip,
         take: limit,
@@ -125,7 +244,7 @@ export const getContacts = async (req: Request, res: Response) => {
 
     res.json({ contacts: enriched, total, page, limit, totalPages: Math.ceil(total / limit) });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: "error", message: "An internal server error occurred" });
   }
 };
 
@@ -138,6 +257,8 @@ export const getContactById = async (req: Request, res: Response) => {
       where: { id, ...scope },
       include: {
         tags: true,
+        lists: true,
+        assignedTo: { select: { id: true, name: true, email: true, avatarUrl: true } },
         notes: { orderBy: { createdAt: "desc" } },
         activities: { orderBy: { createdAt: "desc" } },
       },
@@ -165,8 +286,8 @@ export const getContactById = async (req: Request, res: Response) => {
       lastContactedAt,
       _count: { emailsSent: sent, emailsOpened: opened, emailsClicked: clicked, emailsReplied: replied },
     });
-  } catch (error: unknown) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+  } catch {
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };
 
@@ -181,9 +302,12 @@ export const createContact = async (req: Request, res: Response) => {
         upgradeRequired: true,
       });
     }
-    const { email, firstName, lastName, company, phone, jobTitle, stage, tags } = req.body;
-
-    const contact = await upsertContact(userId, email, {
+    const { email, website, companyDomain, firstName, lastName, company, phone, jobTitle, stage, tags, nextAction, nextActionDueAt, assignedToId } = req.body;
+    const resolvedAssigneeId = await resolveAssigneeId(req, assignedToId);
+    const prepared = await resolveContactInputForSave({
+      email,
+      website,
+      companyDomain,
       firstName,
       lastName,
       company,
@@ -191,12 +315,37 @@ export const createContact = async (req: Request, res: Response) => {
       jobTitle,
       stage,
       tags,
+      nextAction,
+      nextActionDueAt,
+      assignedToId: resolvedAssigneeId,
+    });
+
+    if (!prepared.email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const contact = await upsertContact(userId, prepared.email, {
+      website: prepared.website,
+      companyDomain: prepared.companyDomain,
+      firstName: prepared.firstName,
+      lastName: prepared.lastName,
+      company: prepared.company,
+      phone: prepared.phone,
+      jobTitle: prepared.jobTitle,
+      techStack: prepared.techStack,
+      enrichmentSources: prepared.enrichmentSources,
+      stage: prepared.stage,
+      nextAction: prepared.nextAction,
+      nextActionDueAt: prepared.nextActionDueAt,
+      assignedToId: prepared.assignedToId,
+      lastEnrichedAt: prepared.lastEnrichedAt,
+      tags: prepared.tags,
       organizationId: getOrgId(req),
     });
 
     res.status(201).json(contact);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: "error", message: "An internal server error occurred" });
   }
 };
 
@@ -204,32 +353,62 @@ export const updateContact = async (req: Request, res: Response) => {
   try {
     const scope = getOrgScope(req);
     const id = req.params.id as string;
-    const { firstName, lastName, company, phone, jobTitle, stage, tags } = req.body;
+    const { firstName, lastName, company, phone, jobTitle, stage, tags, nextAction, nextActionDueAt, assignedToId, website, companyDomain } = req.body;
+    const resolvedAssigneeId = await resolveAssigneeId(req, assignedToId);
 
     const oldContact = await prisma.contact.findFirst({ where: { id, ...scope } });
     if (!oldContact) return res.status(404).json({ message: "Contact not found" });
 
+    const prepared = await resolveContactInputForSave({
+      email: oldContact.email,
+      website,
+      companyDomain,
+      firstName,
+      lastName,
+      company,
+      phone,
+      jobTitle,
+      stage,
+      tags,
+      nextAction,
+      nextActionDueAt,
+      assignedToId: resolvedAssigneeId,
+    });
+
     const contact = await prisma.contact.update({
       where: { id },
       data: {
-        firstName,
-        lastName,
-        company,
-        phone,
-        jobTitle,
-        stage,
+        website: prepared.website,
+        companyDomain: prepared.companyDomain,
+        firstName: prepared.firstName,
+        lastName: prepared.lastName,
+        company: prepared.company,
+        phone: prepared.phone,
+        jobTitle: prepared.jobTitle,
+        techStack: prepared.techStack,
+        stage: prepared.stage,
+        nextAction: prepared.nextAction,
+        nextActionDueAt: prepared.nextActionDueAt,
+        assignedToId: prepared.assignedToId,
+        lastEnrichedAt: prepared.lastEnrichedAt,
         tags: tags ? { set: tags.map((tagId: string) => ({ id: tagId })) } : undefined,
       },
-      include: { tags: true },
+      include: CONTACT_INCLUDE,
     });
 
     if (stage && stage !== oldContact.stage) {
       await logContactActivity(id, "STAGE_CHANGED", { from: oldContact.stage, to: stage });
     }
+    if (prepared.nextAction !== undefined && prepared.nextAction !== oldContact.nextAction) {
+      await logContactActivity(id, "NEXT_ACTION_CHANGED", { from: oldContact.nextAction, to: prepared.nextAction });
+    }
+    if (resolvedAssigneeId !== undefined && resolvedAssigneeId !== oldContact.assignedToId) {
+      await logContactActivity(id, "ASSIGNEE_CHANGED", { from: oldContact.assignedToId, to: resolvedAssigneeId });
+    }
 
     res.json(contact);
   } catch (error: unknown) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };
 
@@ -246,7 +425,7 @@ export const deleteContact = async (req: Request, res: Response) => {
 
     res.json({ message: "Contact deleted successfully" });
   } catch (error: unknown) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };
 
@@ -298,7 +477,7 @@ export const bulkUpdateContacts = async (req: Request, res: Response) => {
 
     res.json({ message: `${validIds.length} contacts updated` });
   } catch (error: unknown) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };
 
@@ -315,7 +494,7 @@ export const bulkDeleteContacts = async (req: Request, res: Response) => {
 
     res.json({ message: `${result.count} contacts deleted` });
   } catch (error: unknown) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };
 
@@ -330,6 +509,8 @@ export const exportContacts = async (req: Request, res: Response) => {
       const s = search as string;
       where.OR = [
         { email: { contains: s, mode: "insensitive" } },
+        { website: { contains: s, mode: "insensitive" } },
+        { companyDomain: { contains: s, mode: "insensitive" } },
         { firstName: { contains: s, mode: "insensitive" } },
         { lastName: { contains: s, mode: "insensitive" } },
         { company: { contains: s, mode: "insensitive" } },
@@ -345,7 +526,10 @@ export const exportContacts = async (req: Request, res: Response) => {
 
     const contacts = await prisma.contact.findMany({
       where,
-      include: { tags: true },
+      include: {
+        tags: true,
+        assignedTo: { select: { name: true, email: true } },
+      },
       orderBy: { updatedAt: "desc" },
     });
 
@@ -370,14 +554,20 @@ export const exportContacts = async (req: Request, res: Response) => {
       const sentDates = contactJobs.filter((j) => j.sentAt).map((j) => j.sentAt!);
       const lastContactedAt = sentDates.length > 0 ? new Date(Math.max(...sentDates.map((d) => d.getTime()))).toISOString() : "";
 
-      return {
-        Email: contact.email,
-        "First Name": contact.firstName || "",
-        "Last Name": contact.lastName || "",
-        Company: contact.company || "",
-        Phone: contact.phone || "",
-        "Job Title": contact.jobTitle || "",
-        Stage: contact.stage,
+        return {
+          Email: contact.email,
+          Website: contact.website || "",
+          "Company Domain": contact.companyDomain || "",
+          "First Name": contact.firstName || "",
+          "Last Name": contact.lastName || "",
+          Company: contact.company || "",
+          Phone: contact.phone || "",
+          "Job Title": contact.jobTitle || "",
+          "Tech Stack": contact.techStack.join("; "),
+          "Relationship Stage": contact.stage,
+        "Next Action": contact.nextAction || "",
+        "Next Action Due": contact.nextActionDueAt ? contact.nextActionDueAt.toISOString() : "",
+        Assignee: contact.assignedTo?.name || contact.assignedTo?.email || "",
         Tags: contact.tags.map((t) => t.name).join("; "),
         "Emails Sent": sent,
         "Emails Opened": opened,
@@ -399,7 +589,7 @@ export const exportContacts = async (req: Request, res: Response) => {
     res.setHeader("Content-Disposition", `attachment; filename="contacts-export-${Date.now()}.csv"`);
     res.send(csv);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: "error", message: "An internal server error occurred" });
   }
 };
 
@@ -432,7 +622,7 @@ export const importContacts = async (req: Request, res: Response) => {
     const data = XLSX.utils.sheet_to_json(sheet);
     const headers = XLSX.utils.sheet_to_json(sheet, { header: 1 })[0] as string[];
 
-    if (!mapping) {
+    if (!mapping || (typeof mapping === "string" && mapping.trim() === "{}")) {
       fs.unlinkSync(file.path);
       return res.json({ headers });
     }
@@ -440,6 +630,10 @@ export const importContacts = async (req: Request, res: Response) => {
     let fieldMapping: Record<string, string> = {};
     try {
       fieldMapping = typeof mapping === "string" ? JSON.parse(mapping) : mapping;
+      if (!fieldMapping || Object.keys(fieldMapping).length === 0) {
+        fs.unlinkSync(file.path);
+        return res.json({ headers });
+      }
     } catch (e) {
       fs.unlinkSync(file.path);
       return res.status(400).json({ message: "Invalid field mapping" });
@@ -458,18 +652,39 @@ export const importContacts = async (req: Request, res: Response) => {
           }
         }
 
-        if (!contactData.email) {
-          errors.push({ row, error: "Missing email field" });
-          continue;
-        }
-
-        const contact = await upsertContact(userId, contactData.email, {
+        const prepared = await resolveContactInputForSave({
+          email: contactData.email,
+          website: contactData.website,
+          companyDomain: contactData.companyDomain,
           firstName: contactData.firstName,
           lastName: contactData.lastName,
           company: contactData.company,
           phone: contactData.phone,
           jobTitle: contactData.jobTitle,
           stage: contactData.stage || "COLD",
+          nextAction: contactData.nextAction,
+          nextActionDueAt: contactData.nextActionDueAt,
+        });
+
+        if (!prepared.email) {
+          errors.push({ row, error: "Missing email field" });
+          continue;
+        }
+
+        const contact = await upsertContact(userId, prepared.email, {
+          website: prepared.website,
+          companyDomain: prepared.companyDomain,
+          firstName: prepared.firstName,
+          lastName: prepared.lastName,
+          company: prepared.company,
+          phone: prepared.phone,
+          jobTitle: prepared.jobTitle,
+          techStack: prepared.techStack,
+          enrichmentSources: prepared.enrichmentSources,
+          stage: prepared.stage || "COLD",
+          nextAction: prepared.nextAction,
+          nextActionDueAt: prepared.nextActionDueAt,
+          lastEnrichedAt: prepared.lastEnrichedAt,
           organizationId: getOrgId(req),
         });
 
@@ -517,6 +732,6 @@ export const importContacts = async (req: Request, res: Response) => {
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ status: "error", message: "An internal server error occurred" });
   }
 };

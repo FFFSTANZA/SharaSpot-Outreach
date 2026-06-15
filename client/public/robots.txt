@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 
-# Block dashboard and API routes
 Disallow: /dashboard
 Disallow: /api
 Disallow: /auth
@@ -11,6 +10,7 @@ Disallow: /emails
 Disallow: /attachments
 Disallow: /templates
 Disallow: /track
+Disallow: /test-login
 
-# Sitemap
-Sitemap: https://sharaspot.com/sitemap.xml
+Sitemap: https://sharaspot.in/sitemap.xml
+Host: https://sharaspot.in

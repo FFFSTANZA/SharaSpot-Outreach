@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import multer from "multer";
 import { prisma } from "../config/prisma";
+import { getConfig } from "../config/env";
 import { getOrgScope } from "../utils/orgScope";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { logger } from "../utils/logger";
 
 // ---------------------------------------------------------------------------
 // Constants — file validation limits
@@ -41,9 +43,9 @@ const upload = multer({
   },
 }).array("files");
 
-// Base URL for attachments - uses TRACKING_BASE_URL (e.g., https://sharaspot.in)
+// Base URL for attachments - uses TRACKING_BASE_URL (e.g., https://yourdomain.com)
 const getBaseUrl = () => {
-  return process.env.TRACKING_BASE_URL || "http://localhost:8000";
+  return process.env.TRACKING_BASE_URL || "https://sharaspot.in";
 };
 
 /**
@@ -53,7 +55,8 @@ async function saveToLocal(
   buffer: Buffer,
   filename: string
 ): Promise<string> {
-  const uploadsDir = path.join(process.cwd(), "uploads");
+  const config = getConfig();
+  const uploadsDir = path.join(process.cwd(), config.UPLOAD_DIR);
   const filePath = path.join(uploadsDir, filename);
 
   await fs.writeFile(filePath, buffer);
@@ -124,7 +127,7 @@ export const uploadAttachments = (req: Request, res: Response): void => {
 
       res.status(200).json(results);
     } catch (error) {
-      console.error("Local upload error:", error);
+      logger.error({ error }, "Local upload error");
       res.status(500).json({ message: "Failed to upload attachments locally" });
     }
   });
@@ -162,19 +165,20 @@ export const deleteAttachment = async (req: Request, res: Response): Promise<voi
     }
 
     const filename = urlParts[1];
-    const filePath = path.join(process.cwd(), "uploads", filename);
+    const config = getConfig();
+    const filePath = path.join(process.cwd(), config.UPLOAD_DIR, filename);
 
     try {
       await fs.unlink(filePath);
     } catch (unlinkErr: any) {
       // If file not found, still return success to keep DB and disk in sync if possible
       if (unlinkErr.code !== "ENOENT") throw unlinkErr;
-      console.warn(`File not found on disk during deletion: ${filePath}`);
+      logger.warn(`File not found on disk during deletion: ${filePath}`);
     }
 
     res.status(200).json({ message: "Attachment deleted from local storage" });
   } catch (error) {
-    console.error("Failed to delete local attachment:", error);
+    logger.error({ error }, "Failed to delete local attachment");
     res.status(500).json({ message: "Failed to delete attachment" });
   }
 };

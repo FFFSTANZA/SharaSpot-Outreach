@@ -16,7 +16,7 @@ type SegmentExpression = {
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_STAGES = new Set(["COLD", "WARM", "HOT", "REPLIED", "CONVERTED", "BOUNCED"]);
+const ALLOWED_STAGES = new Set(["NEW", "CONTACTED", "REPLIED", "INTERESTED", "MEETING_BOOKED", "CONVERTED", "NOT_A_FIT", "BOUNCED", "COLD", "WARM", "HOT"]);
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 const UNDO_WINDOW_MS = 10 * 60 * 1000;
@@ -124,7 +124,7 @@ export const getPrmQualitySummary = async (req: Request, res: Response) => {
     const summary = await computeQualitySummary(scope);
     return res.json(summary);
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };
 
@@ -221,7 +221,7 @@ export const dedupePrmContacts = async (req: Request, res: Response) => {
       keptCount: keep.size,
     });
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };
 
@@ -256,7 +256,7 @@ export const createPrmSegment = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     if (error.code === "P2002") return res.status(400).json({ message: "Segment name already exists" });
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };
 
@@ -270,7 +270,7 @@ export const listPrmSegments = async (req: Request, res: Response) => {
     });
     return res.json(segments.map((s: any) => ({ ...s, previewCount: s.contacts.length })));
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };
 
@@ -305,7 +305,7 @@ export const updatePrmSegment = async (req: Request, res: Response) => {
 
     return res.json({ ...updated, previewCount: updated.contacts.length });
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };
 
@@ -317,7 +317,7 @@ export const previewPrmSegment = async (req: Request, res: Response) => {
     const matched = await evaluateSegment(scope, expression);
     return res.json({ previewCount: matched.length, ids: matched.map((c) => c.id) });
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };
 
@@ -382,7 +382,7 @@ export const executePrmBulkAction = async (req: Request, res: Response) => {
       }
 
       await (tx as any).prmBulkActionLog.create({
-        data: orgCreateData(req, {
+        data: {
           userId: req.user!.id,
           actionType,
           affectedCount,
@@ -397,7 +397,7 @@ export const executePrmBulkAction = async (req: Request, res: Response) => {
             })),
             next: { stage, tagId, listId },
           } as any,
-        }),
+        },
       });
     });
 
@@ -414,7 +414,7 @@ export const executePrmBulkAction = async (req: Request, res: Response) => {
       audit: { actor: userId, actionType, affectedCount, timestamp: new Date().toISOString() },
     });
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };
 
@@ -423,7 +423,7 @@ export const undoPrmBulkAction = async (req: Request, res: Response) => {
     const scope = getOrgScope(req);
     const undoToken = req.params.undoToken as string;
     const log = await (prisma as any).prmBulkActionLog.findFirst({
-      where: { ...scope, undoToken },
+      where: { userId: req.user!.id, undoToken },
     });
     if (!log || log.undoneAt) return res.status(404).json({ message: "Undo token not found or expired" });
     if (Date.now() - new Date(log.createdAt).getTime() > UNDO_WINDOW_MS) {
@@ -457,7 +457,7 @@ export const undoPrmBulkAction = async (req: Request, res: Response) => {
 
     return res.json({ message: "Bulk action rolled back", affectedCount: previous.length });
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };
 
@@ -487,6 +487,6 @@ export const getPrmLaunchGuardrails = async (req: Request, res: Response) => {
       recipientCount: contacts.length,
     });
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ status: "error", message: "Failed to process request" });
   }
 };

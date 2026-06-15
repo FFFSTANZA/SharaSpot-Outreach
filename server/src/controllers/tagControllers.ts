@@ -12,7 +12,7 @@ export const getTags = async (req: Request, res: Response) => {
     });
     res.json(tags);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred" });
   }
 };
 
@@ -26,7 +26,7 @@ export const createTag = async (req: Request, res: Response) => {
 
     res.status(201).json(tag);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred" });
   }
 };
 
@@ -49,7 +49,7 @@ export const updateTag = async (req: Request, res: Response) => {
 
     res.json(tag);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred" });
   }
 };
 
@@ -66,6 +66,6 @@ export const deleteTag = async (req: Request, res: Response) => {
 
     res.json({ message: "Tag deleted successfully" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred" });
   }
 };

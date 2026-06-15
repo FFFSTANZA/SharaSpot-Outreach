@@ -1,0 +1,21 @@
+[Unit]
+Description=SharaSpot Next.js Frontend
+After=network.target sharaspot-api.service
+Wants=sharaspot-api.service
+
+[Service]
+Type=simple
+User=sharaspot
+WorkingDirectory=/home/sharaspot/SharaSpot/client
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+# Security hardening
+ProtectSystem=full
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

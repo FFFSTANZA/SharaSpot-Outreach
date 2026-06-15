@@ -12,9 +12,10 @@ import {
 } from "../controllers/contactControllers";
 import { createNote, updateNote, deleteNote } from "../controllers/noteControllers";
 import multer from "multer";
+import os from "os";
 import path from "path";
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: path.join(os.tmpdir(), "sharaspot-imports") });
 
 const router = Router();
 

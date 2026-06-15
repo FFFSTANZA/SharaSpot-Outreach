@@ -63,7 +63,7 @@ function evaluateHealth(steps: SequenceStepInput[]) {
 }
 
 function DragHandle(p: { dragHandleProps?: any }) {
-  return <div {...p.dragHandleProps} className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"><GripVertical className="h-4 w-4 text-gray-300" /></div>;
+  return <div {...p.dragHandleProps} className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"><GripVertical className="h-4 w-4 text-text-muted" /></div>;
 }
 
 function StepCard({
@@ -106,69 +106,69 @@ function StepCard({
     <div className={cn("group", isDragging && "opacity-50")}>
       <div className={cn(
         "border rounded-lg bg-white transition-all",
-        isExpanded ? "border-gray-300" : "border-gray-200 hover:border-gray-300",
-        isEmpty && !isExpanded && "border-dashed border-gray-300"
+        isExpanded ? "border-border-light" : "border-border-light hover:border-border-light",
+        isEmpty && !isExpanded && "border-dashed border-border-light"
       )}>
         <div className={cn(
           "flex items-center gap-3 px-4 py-3 cursor-pointer select-none",
-          isExpanded && "border-b border-gray-100"
+          isExpanded && "border-b border-border-light"
         )} onClick={onToggle}>
           {showDrag && <DragHandle dragHandleProps={dragHandleProps} />}
-          <span className="text-xs font-semibold text-gray-400 shrink-0 w-12">Step {stepNumber}</span>
+          <span className="text-xs font-semibold text-text-muted shrink-0 w-12">Step {stepNumber}</span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className={cn(
                 "text-sm font-semibold",
-                isExpanded ? "text-gray-900" : "text-gray-800"
+                isExpanded ? "text-text-primary" : "text-text-primary"
               )}>
                 {isInitial ? "Initial Email" : `Follow-up #${stepNumber - 1}`}
               </span>
               {hasCondition && condOpt && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-gray-100 text-gray-600">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#F8F9FA] text-text-muted">
                   <condOpt.icon className="h-3 w-3" />{condOpt.label}
                 </span>
               )}
               {mode === "advanced" && hasAB && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-brand/10 text-brand">
                   <Beaker className="h-3 w-3" />A/B
                 </span>
               )}
               {mode === "advanced" && hasCustomTime && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-brand-light text-brand">
                   <Clock4 className="h-3 w-3" />{SEND_HOURS[step.sendHour as number].label}
                 </span>
               )}
             </div>
             {!isInitial && (
-              <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
+              <div className="flex items-center gap-2 mt-0.5 text-xs text-text-muted">
                 <span>{step.waitDays}d</span>
-                {step.subject && <><span className="text-gray-200">|</span><span className="truncate max-w-[200px]">{step.subject}</span></>}
-                {isEmpty && !isExpanded && <span className="italic text-gray-300">Empty — click to edit</span>}
+                {step.subject && <><span className="text-text-muted">|</span><span className="truncate max-w-[200px]">{step.subject}</span></>}
+                {isEmpty && !isExpanded && <span className="italic text-text-muted">Empty — click to edit</span>}
               </div>
             )}
-            {isInitial && <p className="text-xs text-gray-400 mt-0.5">Primary outreach message</p>}
+            {isInitial && <p className="text-xs text-text-muted mt-0.5">Primary outreach message</p>}
           </div>
           <ChevronDown className={cn(
-            "h-4 w-4 text-gray-300 transition-transform shrink-0",
-            isExpanded && "rotate-180 text-gray-500"
+            "h-4 w-4 text-text-muted transition-transform shrink-0",
+            isExpanded && "rotate-180 text-text-muted"
           )} />
         </div>
 
         {isExpanded && !isInitial && (
-          <div className="px-4 py-4 space-y-4 bg-gray-50/60">
+          <div className="px-4 py-4 space-y-4 bg-[#F8F9FA]/60">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
-                <Hourglass className="h-4 w-4 text-gray-400" />
+                <Hourglass className="h-4 w-4 text-text-muted" />
                 <input type="number" min={1} max={60} value={step.waitDays}
                   onChange={(e) => onUpdate("waitDays", parseInt(e.target.value) || 1)}
-                  className="h-8 w-16 rounded-lg border border-gray-200 bg-white text-center text-xs font-semibold text-gray-900 outline-none focus:border-gray-400" />
-                <span className="text-xs text-gray-500">days after previous</span>
+                  className="h-8 w-16 rounded-lg border border-border-light bg-white text-center text-xs font-semibold text-text-primary outline-none focus:border-brand/30" />
+                <span className="text-xs text-text-muted">days after previous</span>
               </div>
               {mode === "advanced" && (
                 <div className="flex items-center gap-2">
-                  <Clock4 className="h-4 w-4 text-gray-400" />
+                  <Clock4 className="h-4 w-4 text-text-muted" />
                   <select value={hasCustomTime ? step.sendHour : -1} onChange={(e) => onUpdate("sendHour", parseInt(e.target.value))}
-                    className="h-8 rounded-lg border border-gray-200 bg-white text-xs text-gray-700 outline-none px-2">
+                    className="h-8 rounded-lg border border-border-light bg-white text-xs text-text-secondary outline-none px-2">
                     <option value={-1}>Default time</option>
                     {SEND_HOURS.map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
                   </select>
@@ -177,17 +177,15 @@ function StepCard({
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-2 block">Trigger condition</label>
+              <label className="text-xs font-medium text-text-muted mb-2 block">Trigger condition</label>
               <div className="flex flex-wrap gap-2">
                 {CONDITION_OPTIONS.map(opt => (
                   <button key={opt.value} onClick={() => onUpdate("condition", opt.value === "none" ? "none" : opt.value)}
                     className={cn(
                       "inline-flex items-center gap-1.5 px-3 h-8 rounded-lg border text-xs font-medium transition-all",
                       (condType === opt.value) || (condType === "none" && opt.value === "none")
-                        ? opt.value === "none"
-                          ? "bg-gray-800 text-white border-gray-800"
-                          : "bg-gray-900 text-white border-gray-900"
-                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-800"
+                        ? "bg-brand text-white border-brand"
+                        : "bg-white border-border-light text-text-muted hover:border-border-light hover:text-text-primary"
                     )}>
                     <opt.icon className="h-3.5 w-3.5" />{opt.label}
                   </button>
@@ -195,13 +193,13 @@ function StepCard({
               </div>
 
               {mode === "advanced" && hasCondition && (
-                <div className="mt-4 rounded-xl border border-gray-200 bg-white overflow-hidden">
-                  <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                      <GitBranch className="h-3.5 w-3.5 text-gray-500" />
+                <div className="mt-4 rounded-xl border border-border-light bg-white overflow-hidden">
+                  <div className="px-4 py-2.5 bg-[#F8F9FA] border-b border-border-light flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
+                      <GitBranch className="h-3.5 w-3.5 text-text-muted" />
                       Flow routing
                     </div>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-gray-200 text-gray-600">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-[#F0F1F3] text-text-muted">
                       {condOpt?.icon && <condOpt.icon className="h-3 w-3" />}
                       {condOpt?.label}
                     </span>
@@ -211,42 +209,42 @@ function StepCard({
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium",
-                        "bg-white border-gray-200 text-gray-700"
+                        "bg-white border-border-light text-text-secondary"
                       )}>
-                        <div className="h-6 w-6 rounded-full bg-gray-800 text-white flex items-center justify-center text-[10px] font-bold">
+                        <div className="h-6 w-6 rounded-full bg-brand text-white flex items-center justify-center text-[10px] font-bold">
                           {stepNumber - 1}
                         </div>
                         <span>This step</span>
                       </div>
-                      <ArrowRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+                      <ArrowRight className="h-3.5 w-3.5 text-text-muted shrink-0" />
                       <span className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border",
-                        "bg-gray-900 text-white border-gray-900"
+                          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border",
+                          "bg-brand text-white border-brand"
                       )}>
                         <GitBranch className="h-3 w-3" />
                         {condOpt?.label}
                       </span>
-                      <div className="flex-1 h-px bg-gray-200" />
+                      <div className="flex-1 h-px bg-[#F0F1F3]" />
 
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] text-emerald-700 font-medium">Match</span>
+                        <span className="h-2 w-2 rounded-full bg-brand" />
+                        <span className="text-[10px] text-brand font-medium">Match</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-amber-400" />
-                        <span className="text-[10px] text-amber-600 font-medium">Fallback</span>
+                        <span className="h-2 w-2 rounded-full bg-amber-500" />
+                        <span className="text-[10px] text-text-muted font-medium">Fallback</span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="rounded-lg border border-emerald-200 overflow-hidden">
-                        <div className="px-3 py-2 bg-emerald-50 flex items-center gap-2 border-b border-emerald-100">
-                          <ArrowRight className="h-3 w-3 text-emerald-600" />
-                          <span className="text-[11px] font-semibold text-emerald-700">Condition met</span>
-                          <span className="text-[10px] text-emerald-500 ml-auto">Follow-up sends</span>
+                      <div className="rounded-lg border border-brand/20 overflow-hidden">
+                        <div className="px-3 py-2 bg-brand/10 flex items-center gap-2 border-b border-brand/10">
+                          <ArrowRight className="h-3 w-3 text-brand" />
+                          <span className="text-[11px] font-semibold text-brand">Condition met</span>
+                          <span className="text-[10px] text-brand ml-auto">Follow-up sends</span>
                         </div>
                         <div className="p-3 space-y-2">
-                          <p className="text-[11px] text-gray-600 leading-relaxed">
+                          <p className="text-[11px] text-text-muted leading-relaxed">
                             Recipient <strong>{condOpt?.label?.toLowerCase()}</strong> the email.
                             After sending this follow-up, route them to:
                           </p>
@@ -254,22 +252,22 @@ function StepCard({
                             <div className="flex-1 relative">
                               <select value={step.condition?.onMatchNodeId ?? ""}
                                 onChange={(e) => { onUpdate("condition", { ...(step.condition ?? { type: condType as SequenceConditionType, rules: { operator: "AND", operands: [{ type: condType as SequenceConditionType }] } }), onMatchNodeId: e.target.value || null }); }}
-                                className="w-full h-8 text-xs rounded-lg border border-emerald-200 bg-white px-2.5 outline-none focus:border-emerald-400 appearance-none">
+                                className="w-full h-8 text-xs rounded-lg border border-brand/20 bg-white px-2.5 outline-none focus:border-brand/30 appearance-none">
                                 <option value="">End sequence</option>
                                 {(steps ?? []).map((_, idx) => <option key={`m${idx}`} value={`n${idx + 1}`}>{`Step ${idx + 1}`}</option>)}
                               </select>
-                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
+                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-text-muted pointer-events-none" />
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <div className="h-1 w-1 rounded-full bg-emerald-400" />
-                            <span className="text-[10px] font-medium text-emerald-700">
+                            <div className="h-1 w-1 rounded-full bg-brand" />
+                            <span className="text-[10px] font-medium text-brand">
                               {matchStepNumber
                                 ? `Routes to Step ${matchStepNumber}`
                                 : "Routes to end of sequence"}
                             </span>
                             {matchStepNumber && steps?.[matchStepNumber - 1]?.subject && (
-                              <span className="text-[10px] text-gray-400 truncate max-w-[120px]">
+                              <span className="text-[10px] text-text-muted truncate max-w-[120px]">
                                 — {steps[matchStepNumber - 1].subject}
                               </span>
                             )}
@@ -277,14 +275,14 @@ function StepCard({
                         </div>
                       </div>
 
-                      <div className="rounded-lg border border-amber-200 overflow-hidden">
-                        <div className="px-3 py-2 bg-amber-50 flex items-center gap-2 border-b border-amber-100">
-                          <ArrowRight className="h-3 w-3 text-amber-600" />
-                          <span className="text-[11px] font-semibold text-amber-700">Condition not met</span>
-                          <span className="text-[10px] text-amber-500 ml-auto">Follow-up skipped</span>
+                      <div className="rounded-lg border border-border-light overflow-hidden">
+                        <div className="px-3 py-2 bg-[#F8F9FA] flex items-center gap-2 border-b border-border-light">
+                          <ArrowRight className="h-3 w-3 text-text-muted" />
+                          <span className="text-[11px] font-semibold text-text-secondary">Condition not met</span>
+                          <span className="text-[10px] text-text-muted ml-auto">Follow-up skipped</span>
                         </div>
                         <div className="p-3 space-y-2">
-                          <p className="text-[11px] text-gray-600 leading-relaxed">
+                          <p className="text-[11px] text-text-muted leading-relaxed">
                             Recipient did <strong>not</strong> {condOpt?.label?.toLowerCase()} the email.
                             Skip this follow-up and route them to:
                           </p>
@@ -292,22 +290,22 @@ function StepCard({
                             <div className="flex-1 relative">
                               <select value={step.condition?.onNoMatchNodeId ?? ""}
                                 onChange={(e) => { onUpdate("condition", { ...(step.condition ?? { type: condType as SequenceConditionType, rules: { operator: "AND", operands: [{ type: condType as SequenceConditionType }] } }), onNoMatchNodeId: e.target.value || null }); }}
-                                className="w-full h-8 text-xs rounded-lg border border-amber-200 bg-white px-2.5 outline-none focus:border-amber-400 appearance-none">
+                                className="w-full h-8 text-xs rounded-lg border border-border-light bg-white px-2.5 outline-none focus:border-brand/30 appearance-none">
                                 <option value="">End sequence</option>
                                 {(steps ?? []).map((_, idx) => <option key={`n${idx}`} value={`n${idx + 1}`}>{`Step ${idx + 1}`}</option>)}
                               </select>
-                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
+                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-text-muted pointer-events-none" />
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <div className="h-1 w-1 rounded-full bg-amber-400" />
-                            <span className="text-[10px] font-medium text-amber-700">
+                            <div className="h-1 w-1 rounded-full bg-amber-500" />
+                            <span className="text-[10px] font-medium text-text-secondary">
                               {noMatchStepNumber
                                 ? `Routes to Step ${noMatchStepNumber}`
                                 : "Routes to end of sequence"}
                             </span>
                             {noMatchStepNumber && steps?.[noMatchStepNumber - 1]?.subject && (
-                              <span className="text-[10px] text-gray-400 truncate max-w-[120px]">
+                              <span className="text-[10px] text-text-muted truncate max-w-[120px]">
                                 — {steps[noMatchStepNumber - 1].subject}
                               </span>
                             )}
@@ -317,11 +315,11 @@ function StepCard({
                     </div>
 
                     {(hasSelfRoute || hasBackwardRoute) && (
-                      <div className="rounded-lg border border-rose-200 bg-rose-50/50 px-3 py-2.5 flex items-start gap-2.5">
-                        <div className="h-6 w-6 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-                          <AlertTriangle className="h-3.5 w-3.5 text-rose-500" />
+                      <div className="rounded-lg border border-error-bg bg-error-bg/50 px-3 py-2.5 flex items-start gap-2.5">
+                        <div className="h-6 w-6 rounded-full bg-error-bg flex items-center justify-center shrink-0">
+                          <AlertTriangle className="h-3.5 w-3.5 text-error-text" />
                         </div>
-                        <div className="text-[11px] text-rose-700 leading-relaxed">
+                        <div className="text-[11px] text-error-text leading-relaxed">
                           {hasSelfRoute && <span>This step routes <strong>to itself</strong>, creating a loop. </span>}
                           {!hasSelfRoute && hasBackwardRoute && <span>This step routes <strong>backward</strong> to an earlier step. </span>}
                           {hasSelfRoute && hasBackwardRoute && <span>Routes point to this step or earlier steps. </span>}
@@ -336,9 +334,9 @@ function StepCard({
 
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-medium text-gray-500">Follow-up subject</span>
+                <span className="text-xs font-medium text-text-muted">Follow-up subject</span>
                 {mode === "advanced" && hasAB && (
-                  <span className="text-[11px] font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">
+                  <span className="text-[11px] font-medium text-brand bg-brand/10 px-1.5 py-0.5 rounded">
                     {step.altSubjects!.length + 1} variants
                   </span>
                 )}
@@ -347,36 +345,36 @@ function StepCard({
                 <input value={step.subject} onChange={(e) => onUpdate("subject", e.target.value)}
                   placeholder="e.g. Quick follow-up regarding {{company}}"
                   className={cn(
-                    "w-full h-10 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-900",
+                    "w-full h-10 px-3 text-sm border border-border-light rounded-lg focus:outline-none focus:border-brand/30 text-text-primary",
                     mode === "advanced" ? "pr-14" : "pr-3"
                   )} />
                 {mode === "advanced" && !hasAB && (
                   <button onClick={() => onUpdate("altSubjects", [""])}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 px-2 rounded text-[11px] font-medium text-purple-600 hover:bg-purple-50 border border-gray-200 bg-white flex items-center gap-1">
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 px-2 rounded text-[11px] font-medium text-brand hover:bg-brand/10 border border-border-light bg-white flex items-center gap-1">
                     <Beaker className="h-3 w-3" />A/B
                   </button>
                 )}
               </div>
               {mode === "advanced" && hasAB && step.altSubjects?.map((alt, ai) => (
-                <div key={ai} className="flex items-center gap-2 mt-2 pl-3 border-l-2 border-gray-200">
-                  <span className="text-[11px] font-medium text-gray-400 w-12 shrink-0">Var {ai + 1}</span>
+                <div key={ai} className="flex items-center gap-2 mt-2 pl-3 border-l-2 border-border-light">
+                  <span className="text-[11px] font-medium text-text-muted w-12 shrink-0">Var {ai + 1}</span>
                   <input value={alt} onChange={(e) => { const u = [...(step.altSubjects || [])]; u[ai] = e.target.value; onUpdate("altSubjects", u); }}
-                    placeholder="Alternate subject..." className="flex-1 h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-900" />
+                    placeholder="Alternate subject..." className="flex-1 h-9 px-3 text-sm border border-border-light rounded-lg focus:outline-none focus:border-brand/30 text-text-primary" />
                   <button onClick={() => { const u = (step.altSubjects || []).filter((_, j) => j !== ai); onUpdate("altSubjects", u.length > 0 ? u : undefined); }}
-                    className="h-8 w-8 flex items-center justify-center rounded text-gray-300 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button>
+                    className="h-8 w-8 flex items-center justify-center rounded text-text-muted hover:text-error-text"><Trash2 className="h-3.5 w-3.5" /></button>
                 </div>
               ))}
               {mode === "advanced" && hasAB && (step.altSubjects?.length || 0) < 3 && (
                 <button onClick={() => onUpdate("altSubjects", [...(step.altSubjects || []), ""])}
-                  className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-purple-600 hover:text-purple-700">
+                  className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-brand hover:text-brand">
                   <Plus className="h-3 w-3" /> Add variant
                 </button>
               )}
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-2 block">Follow-up body</label>
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <label className="text-xs font-medium text-text-muted mb-2 block">Follow-up body</label>
+              <div className="border border-border-light rounded-lg overflow-hidden">
                 <Editor value={step.body} onChange={(html) => onUpdate("body", html)} />
               </div>
             </div>
@@ -387,11 +385,11 @@ function StepCard({
       {!isInitial && (
         <div className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
           {onDuplicate && (
-            <button onClick={onDuplicate} className="inline-flex items-center gap-1 px-2 h-6 rounded text-[11px] text-gray-400 hover:text-gray-600 hover:bg-gray-50" title="Duplicate">
+            <button onClick={onDuplicate} className="inline-flex items-center gap-1 px-2 h-6 rounded text-[11px] text-text-muted hover:text-text-muted hover:bg-[#F0F1F3]" title="Duplicate">
               <Copy className="h-3 w-3" />Duplicate
             </button>
           )}
-          <button onClick={onRemove} className="inline-flex items-center gap-1 px-2 h-6 rounded text-[11px] text-gray-400 hover:text-red-500 hover:bg-red-50" title="Remove">
+          <button onClick={onRemove} className="inline-flex items-center gap-1 px-2 h-6 rounded text-[11px] text-text-muted hover:text-error-text hover:bg-error-bg" title="Remove">
             <Trash2 className="h-3 w-3" />Remove
           </button>
         </div>
@@ -417,62 +415,62 @@ function PresetSelector({ templates, onSelect }: { templates: FollowUpTemplate[]
 
   return (
     <div className="relative">
-      <button onClick={() => { setIsOpen(!isOpen); setSearchQuery(""); }} className="inline-flex items-center gap-2 px-3 h-8 bg-white border border-gray-200 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50">
-        <LayoutGrid className="h-3.5 w-3.5 text-gray-500" />Templates<ChevronDown className={cn("h-3 w-3 text-gray-400 transition-transform", isOpen && "rotate-180")} />
+      <button onClick={() => { setIsOpen(!isOpen); setSearchQuery(""); }} className="inline-flex items-center gap-2 px-3 h-8 bg-white border border-border-light text-text-secondary rounded-lg text-xs font-medium hover:bg-[#F0F1F3]">
+        <LayoutGrid className="h-3.5 w-3.5 text-text-muted" />Templates<ChevronDown className={cn("h-3 w-3 text-text-muted transition-transform", isOpen && "rotate-180")} />
       </button>
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 w-72 bg-white rounded-lg border border-gray-200 shadow-sm z-50 p-1 max-h-96 overflow-y-auto">
+        <div className="absolute left-0 top-full mt-1 w-72 bg-white rounded-lg border border-border-light shadow-sm z-50 p-1 max-h-96 overflow-y-auto">
           <div className="px-2 pb-1 pt-1">
-            <div className="flex items-center gap-1.5 px-2 h-8 rounded bg-gray-50 border border-gray-200 text-xs">
-              <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+            <div className="flex items-center gap-1.5 px-2 h-8 rounded bg-[#F8F9FA] border border-border-light text-xs">
+              <Search className="h-3.5 w-3.5 text-text-muted shrink-0" />
               <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search templates..."
-                className="flex-1 bg-transparent outline-none text-gray-700 placeholder:text-gray-400" />
+                className="flex-1 bg-transparent outline-none text-text-secondary placeholder:text-text-muted" />
             </div>
           </div>
-          {templates.length === 0 && <p className="px-3 py-4 text-[11px] text-gray-500 text-center">No saved follow-up templates yet.</p>}
-          {templates.length > 0 && filtered.length === 0 && <p className="px-3 py-4 text-[11px] text-gray-500 text-center">No matching templates.</p>}
+          {templates.length === 0 && <p className="px-3 py-4 text-[11px] text-text-muted text-center">No saved follow-up templates yet.</p>}
+          {templates.length > 0 && filtered.length === 0 && <p className="px-3 py-4 text-[11px] text-text-muted text-center">No matching templates.</p>}
           {recent.length > 0 && (
             <>
               <div className="px-3 py-1 flex items-center gap-1.5">
-                <History className="h-3 w-3 text-gray-400" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Recently used</span>
+                <History className="h-3 w-3 text-text-muted" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Recently used</span>
               </div>
               <div className="px-1 pb-1">
                 {recent.map(t => {
                   const p = followUpTemplateToPreset(t);
                   return <button key={p.name} onClick={() => { onSelect(p); setIsOpen(false); }}
-                    className="w-full text-left px-3 py-2 rounded hover:bg-blue-50 flex items-start gap-2">
-                    <History className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+                    className="w-full text-left px-3 py-2 rounded hover:bg-brand-light flex items-start gap-2">
+                    <History className="h-4 w-4 text-brand mt-0.5 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-gray-900">{p.label}</p>
-                      <p className="text-[11px] text-gray-500 truncate">{p.description}</p>
-                      <div className="flex gap-0.5 mt-1">{p.steps.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full bg-gray-200" />)}</div>
+                      <p className="text-xs font-semibold text-text-primary">{p.label}</p>
+                      <p className="text-[11px] text-text-muted truncate">{p.description}</p>
+                      <div className="flex gap-0.5 mt-1">{p.steps.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full bg-[#F0F1F3]" />)}</div>
                     </div>
                   </button>;
                 })}
               </div>
-              {rest.length > 0 && <div className="border-t border-gray-100 mx-2" />}
+              {rest.length > 0 && <div className="border-t border-border-light mx-2" />}
             </>
           )}
           {rest.length > 0 && (
             <>
               {recent.length > 0 && (
                 <div className="px-3 py-1 flex items-center gap-1.5">
-                  <LayoutGrid className="h-3 w-3 text-gray-400" />
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">All templates</span>
+                  <LayoutGrid className="h-3 w-3 text-text-muted" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">All templates</span>
                 </div>
               )}
               <div className="px-1 pb-1">
                 {rest.map(t => {
                   const p = followUpTemplateToPreset(t);
                   return <button key={p.name} onClick={() => { onSelect(p); setIsOpen(false); }}
-                    className="w-full text-left px-3 py-2 rounded hover:bg-gray-50 flex items-start gap-2">
-                    <ListOrdered className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
+                    className="w-full text-left px-3 py-2 rounded hover:bg-[#F0F1F3] flex items-start gap-2">
+                    <ListOrdered className="h-4 w-4 text-text-muted mt-0.5 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-gray-900">{p.label}</p>
-                      <p className="text-[11px] text-gray-500 truncate">{p.description}</p>
-                      <div className="flex gap-0.5 mt-1">{p.steps.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full bg-gray-200" />)}</div>
+                      <p className="text-xs font-semibold text-text-primary">{p.label}</p>
+                      <p className="text-[11px] text-text-muted truncate">{p.description}</p>
+                      <div className="flex gap-0.5 mt-1">{p.steps.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full bg-[#F0F1F3]" />)}</div>
                     </div>
                   </button>;
                 })}
@@ -491,35 +489,35 @@ function ScheduleConfigPanel({ config, onChange }: { config: SequenceScheduleCon
   const isActive = config.sendHour >= 0 || !config.skipWeekends;
   return (
     <div className="relative">
-      <button onClick={() => setIsOpen(!isOpen)} className={cn("inline-flex items-center gap-2 px-3 h-8 rounded-lg border text-xs font-medium transition-all", isActive ? "bg-gray-100 text-gray-700 border-gray-200" : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50")}>
-        <CalendarDays className="h-3.5 w-3.5 text-gray-500" />Send time{isActive && <span className="h-1.5 w-1.5 rounded-full bg-gray-500" />}
+      <button onClick={() => setIsOpen(!isOpen)} className={cn("inline-flex items-center gap-2 px-3 h-8 rounded-lg border text-xs font-medium transition-all", isActive ? "bg-[#F8F9FA] text-text-secondary border-border-light" : "bg-white border-border-light text-text-secondary hover:bg-[#F0F1F3]")}>
+        <CalendarDays className="h-3.5 w-3.5 text-text-muted" />Send time{isActive && <span className="h-1.5 w-1.5 rounded-full bg-text-muted" />}
       </button>
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 w-72 bg-white rounded-lg border border-gray-200 shadow-sm z-50 p-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-900">Follow-up send time</p>
-          <p className="text-[11px] text-gray-500">Controls <strong>when during the day</strong> follow-up emails are delivered. The per-step timing above (e.g. "3 days after") determines the date; this setting adjusts the time-of-day.</p>
+        <div className="absolute left-0 top-full mt-1 w-72 bg-white rounded-lg border border-border-light shadow-sm z-50 p-4 space-y-3">
+          <p className="text-xs font-semibold text-text-primary">Follow-up send time</p>
+          <p className="text-[11px] text-text-muted">Controls <strong>when during the day</strong> follow-up emails are delivered. The per-step timing above (e.g. "3 days after") determines the date; this setting adjusts the time-of-day.</p>
           <div>
-            <label className="text-[11px] font-medium text-gray-500 block mb-1">Default send hour</label>
+            <label className="text-[11px] font-medium text-text-muted block mb-1">Default send hour</label>
             <div className="flex items-center gap-2">
-              <select value={config.sendHour} onChange={(e) => onChange({ ...config, sendHour: parseInt(e.target.value) })} className="flex-1 h-8 rounded border border-gray-200 text-xs px-2 bg-white">
+              <select value={config.sendHour} onChange={(e) => onChange({ ...config, sendHour: parseInt(e.target.value) })} className="flex-1 h-8 rounded border border-border-light text-xs px-2 bg-white">
                 <option value={-1}>As soon as ready</option>
                 {SEND_HOURS.map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="text-[11px] font-medium text-gray-500 block mb-1">Allowed days</label>
+            <label className="text-[11px] font-medium text-text-muted block mb-1">Allowed days</label>
             <div className="flex gap-1">
               {DAYS.map((day, i) => (
                 <button key={i} onClick={() => { const cur = config.allowedDaysOfWeek || [1, 2, 3, 4, 5]; const nxt = cur.includes(i) ? cur.filter(d => d !== i) : [...cur, i].sort(); onChange({ ...config, allowedDaysOfWeek: nxt.length > 0 ? nxt : [i] }); }}
-                  className={cn("flex-1 h-7 rounded text-[11px] font-medium transition-all", (config.allowedDaysOfWeek || [1, 2, 3, 4, 5]).includes(i) ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-400")}>{day}</button>
+                  className={cn("flex-1 h-7 rounded text-[11px] font-medium transition-all", (config.allowedDaysOfWeek || [1, 2, 3, 4, 5]).includes(i) ? "bg-brand text-white" : "bg-[#F8F9FA] text-text-muted")}>{day}</button>
               ))}
             </div>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={config.skipWeekends !== false} onChange={(e) => onChange({ ...config, skipWeekends: e.target.checked })}
-              className="rounded border-gray-300 text-gray-800 h-4 w-4" />
-            <span className="text-xs text-gray-700">Skip weekends</span>
+              className="rounded border-border-light text-text-primary h-4 w-4" />
+            <span className="text-xs text-text-secondary">Skip weekends</span>
           </label>
         </div>
       )}
@@ -532,20 +530,20 @@ function FrequencyCapsPanel({ caps, onChange }: { caps: FrequencyCap; onChange: 
   const has = caps.maxPerRecipient > 0 || caps.maxPerDay > 0 || caps.maxPerWeek > 0;
   return (
     <div className="relative">
-      <button onClick={() => setIsOpen(!isOpen)} className={cn("inline-flex items-center gap-2 px-3 h-8 rounded-lg border text-xs font-medium transition-all", has ? "bg-gray-100 text-gray-700 border-gray-200" : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50")}>
-        <Ban className="h-3.5 w-3.5 text-gray-500" />Limits{has && <span className="h-1.5 w-1.5 rounded-full bg-gray-500" />}
+      <button onClick={() => setIsOpen(!isOpen)} className={cn("inline-flex items-center gap-2 px-3 h-8 rounded-lg border text-xs font-medium transition-all", has ? "bg-[#F8F9FA] text-text-secondary border-border-light" : "bg-white border-border-light text-text-secondary hover:bg-[#F0F1F3]")}>
+        <Ban className="h-3.5 w-3.5 text-text-muted" />Limits{has && <span className="h-1.5 w-1.5 rounded-full bg-text-muted" />}
       </button>
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 w-64 bg-white rounded-lg border border-gray-200 shadow-sm z-50 p-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-900">Follow-up limits</p>
-          <p className="text-[11px] text-gray-500">Control how many follow-ups a single recipient can receive across the sequence. These apply <strong>only to follow-up emails</strong>, not the initial message.</p>
+        <div className="absolute left-0 top-full mt-1 w-64 bg-white rounded-lg border border-border-light shadow-sm z-50 p-4 space-y-3">
+          <p className="text-xs font-semibold text-text-primary">Follow-up limits</p>
+          <p className="text-[11px] text-text-muted">Control how many follow-ups a single recipient can receive across the sequence. These apply <strong>only to follow-up emails</strong>, not the initial message.</p>
           {(["maxPerRecipient", "maxPerDay", "maxPerWeek"] as const).map(key => (
             <div key={key}>
-              <label className="text-[11px] font-medium text-gray-500 block mb-1">{key === 'maxPerRecipient' ? 'Per recipient (total)' : key === 'maxPerDay' ? 'Per recipient / day' : 'Per recipient / week'}</label>
+              <label className="text-[11px] font-medium text-text-muted block mb-1">{key === 'maxPerRecipient' ? 'Per recipient (total)' : key === 'maxPerDay' ? 'Per recipient / day' : 'Per recipient / week'}</label>
               <div className="flex items-center gap-2">
                 <input type="number" min={0} max={100} value={caps[key]} onChange={(e) => onChange({ ...caps, [key]: parseInt(e.target.value) || 0 })}
-                  className="w-16 h-8 rounded border border-gray-200 text-center text-xs font-medium text-gray-900 bg-white" />
-                <span className="text-[11px] text-gray-400">(0 = unlimited)</span>
+                  className="w-16 h-8 rounded border border-border-light text-center text-xs font-medium text-text-primary bg-white" />
+                <span className="text-[11px] text-text-muted">(0 = unlimited)</span>
               </div>
             </div>
           ))}
@@ -557,34 +555,34 @@ function FrequencyCapsPanel({ caps, onChange }: { caps: FrequencyCap; onChange: 
 
 function EmptyState({ onAddStep, onApplyPreset, templates }: { onAddStep: () => void; onApplyPreset: (p: SequencePreset) => void; templates: FollowUpTemplate[] }) {
   return (
-    <div className="border border-gray-200 rounded-lg bg-white">
+    <div className="border border-border-light rounded-lg bg-white">
       <div className="px-8 py-12 md:py-16 text-center max-w-md mx-auto">
-        <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
-          <Route className="h-6 w-6 text-gray-500" />
+        <div className="h-12 w-12 rounded-lg bg-[#F8F9FA] flex items-center justify-center mx-auto mb-4">
+          <Route className="h-6 w-6 text-text-muted" />
         </div>
-        <h3 className="text-base font-semibold text-gray-900 mb-1">Build a follow-up sequence</h3>
-        <p className="text-sm text-gray-500 mb-6">
-          Automated follow-ups can <span className="font-medium text-gray-700">3x your reply rate</span>.
+        <h3 className="text-base font-semibold text-text-primary mb-1">Build a follow-up sequence</h3>
+        <p className="text-sm text-text-muted mb-6">
+          Automated follow-ups can <span className="font-medium text-text-secondary">3x your reply rate</span>.
           Start from scratch, or import a saved follow-up template.
         </p>
         <button onClick={onAddStep}
-          className="inline-flex items-center gap-2 px-5 h-10 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-all mb-6">
+          className="inline-flex items-center gap-2 px-5 h-10 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand/90 transition-all mb-6">
           <Plus className="h-4 w-4" />Start from scratch
         </button>
-        <div className="border-t border-gray-100 pt-5">
-          <p className="text-xs font-medium text-gray-400 mb-3">Saved templates</p>
+        <div className="border-t border-border-light pt-5">
+          <p className="text-xs font-medium text-text-muted mb-3">Saved templates</p>
           {templates.length === 0 ? (
-            <p className="text-xs text-gray-500">Create templates from the Templates tab, then import them here.</p>
+            <p className="text-xs text-text-muted">Create templates from the Templates tab, then import them here.</p>
           ) : (
           <div className="grid grid-cols-2 gap-2">
             {templates.slice(0, 6).map((t) => {
               const p = followUpTemplateToPreset(t);
               return (
-              <button key={p.name} onClick={() => onApplyPreset(p)} className="flex items-center gap-3 px-3 py-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                <ListOrdered className="h-4 w-4 text-gray-400 shrink-0" />
+              <button key={p.name} onClick={() => onApplyPreset(p)} className="flex items-center gap-3 px-3 py-2.5 bg-white border border-border-light rounded-lg hover:bg-[#F0F1F3] text-left">
+                <ListOrdered className="h-4 w-4 text-text-muted shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-gray-900">{p.label}</p>
-                  <div className="flex gap-0.5 mt-1">{p.steps.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full bg-gray-200" />)}</div>
+                  <p className="text-xs font-semibold text-text-primary">{p.label}</p>
+                  <div className="flex gap-0.5 mt-1">{p.steps.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full bg-[#F0F1F3]" />)}</div>
                 </div>
               </button>
             )})}
@@ -598,7 +596,7 @@ function EmptyState({ onAddStep, onApplyPreset, templates }: { onAddStep: () => 
 
 function HealthNote({ score, issues }: { score: number; issues: string[] }) {
   if (score >= 80) return null;
-  const color = score >= 60 ? "text-amber-700 bg-amber-50 border-amber-200" : "text-red-700 bg-red-50 border-red-200";
+  const color = score >= 60 ? "text-text-secondary bg-[#F8F9FA] border-border-light" : "text-error-text bg-error-bg border-error-bg";
   return (
     <div className={cn("border rounded-lg px-3 py-2 text-xs", color)}>
       {issues.length > 0 ? issues[0] : "Review your sequence setup."}
@@ -651,21 +649,21 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
   });
 
   return (
-    <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-4">
+    <div className="border border-border-light rounded-lg bg-white overflow-hidden">
+      <div className="px-4 py-3 border-b border-border-light flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-gray-400" />
-          <span className="text-xs font-semibold text-gray-800">Path Preview</span>
+          <BarChart3 className="h-4 w-4 text-text-muted" />
+          <span className="text-xs font-semibold text-text-primary">Path Preview</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-gray-400">If recipient:</span>
-          <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
+          <span className="text-[11px] text-text-muted">If recipient:</span>
+          <div className="flex bg-[#F8F9FA] rounded-lg p-0.5 gap-0.5">
             {scenarioConfig.map(s => (
               <button key={s.value} onClick={() => setScenario(s.value)}
                 className={cn("inline-flex items-center gap-1 px-2 h-7 rounded text-[11px] font-medium transition-all whitespace-nowrap",
                   scenario === s.value
-                    ? "bg-white text-gray-900 border border-gray-200 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700")}>
+                    ? "bg-white text-text-primary border border-border-light shadow-sm"
+                    : "text-text-muted hover:text-text-secondary")}>
                 <s.icon className="h-3 w-3" />{s.label}
               </button>
             ))}
@@ -673,14 +671,14 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
         </div>
       </div>
       <div className="px-6 py-4">
-        <div className="text-xs text-gray-500 mb-4 leading-relaxed">
-          If recipient <strong className="text-gray-700">{currentScenario.label.toLowerCase()}</strong>, the <strong className="text-blue-700">highlighted path</strong> is taken.
-          Faded steps are skipped. Each step shows <span className="text-emerald-600 font-medium">match</span> and <span className="text-amber-600 font-medium">fallback</span> routes.
+        <div className="text-xs text-text-muted mb-4 leading-relaxed">
+          If recipient <strong className="text-text-secondary">{currentScenario.label.toLowerCase()}</strong>, the <strong className="text-brand">highlighted path</strong> is taken.
+          Faded steps are skipped. Each step shows <span className="text-brand font-medium">match</span> and <span className="text-text-muted font-medium">fallback</span> routes.
         </div>
 
         <div className="relative">
           {steps.length > 1 && (
-            <div className="absolute left-[15px] top-3 bottom-4 w-0.5 bg-gray-200 z-0" />
+            <div className="absolute left-[15px] top-3 bottom-4 w-0.5 bg-[#F0F1F3] z-0" />
           )}
           <div className="space-y-0 relative z-10">
             {steps.map((s, i) => {
@@ -695,20 +693,20 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
                     <div className="flex flex-col items-center shrink-0 w-[30px]">
                       <div className={cn(
                         "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold z-10 ring-4",
-                        stepFires ? "bg-blue-600 text-white ring-white" : "bg-gray-200 text-gray-400 ring-white"
+                        stepFires ? "bg-brand text-white ring-white" : "bg-[#F0F1F3] text-text-muted ring-white"
                       )}>
                         {i + 1}
                       </div>
                     </div>
 
-                    <div className="flex-1 min-w-0 pb-2 border-b border-gray-100 last:border-b-0">
+                    <div className="flex-1 min-w-0 pb-2 border-b border-border-light last:border-b-0">
                       <div className="flex items-center gap-2 pt-0.5">
                         {s.subject ? (
-                          <p className="text-xs font-semibold text-gray-900 truncate max-w-[200px]">{s.subject}</p>
+                          <p className="text-xs font-semibold text-text-primary truncate max-w-[200px]">{s.subject}</p>
                         ) : (
-                          <p className="text-xs font-semibold italic text-gray-400">Step {i + 1}</p>
+                          <p className="text-xs font-semibold italic text-text-muted">Step {i + 1}</p>
                         )}
-                        <span className="text-[10px] text-gray-400 font-medium flex items-center gap-0.5 shrink-0">
+                        <span className="text-[10px] text-text-muted font-medium flex items-center gap-0.5 shrink-0">
                           <Clock className="h-2.5 w-2.5" />{s.waitDays || 0}d
                         </span>
                       </div>
@@ -718,27 +716,27 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
                           <div className={cn(
                             "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border",
                             stepFires
-                              ? "bg-green-50 text-green-700 border-green-200"
-                              : "bg-gray-100 text-gray-400 border-gray-200"
+                              ? "bg-brand/10 text-brand border-brand/20"
+                              : "bg-[#F8F9FA] text-text-muted border-border-light"
                           )}>
                             <CondIcon className="h-2.5 w-2.5" />{label}
-                            {stepFires && <span className="text-green-600 ml-0.5">✓</span>}
+                            {stepFires && <span className="text-brand ml-0.5">✓</span>}
                           </div>
                         )}
                         {infos[i].noCondition && stepFires && (
-                          <span className="text-[10px] text-gray-400">Always sends</span>
+                          <span className="text-[10px] text-text-muted">Always sends</span>
                         )}
 
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px]">
                           {infos[i].matchTgt !== null && (
                             <span className={cn(
                               "inline-flex items-center gap-1 font-medium",
-                              stepFires ? "text-emerald-600" : "text-gray-400"
+                              stepFires ? "text-brand" : "text-text-muted"
                             )}>
                               <ArrowRight className="h-2.5 w-2.5" />
                               Match → Step {infos[i].matchTgt + 1}
                               {steps[infos[i].matchTgt]?.subject && (
-                                <span className="text-gray-400 font-normal truncate max-w-[100px]">
+                                <span className="text-text-muted font-normal truncate max-w-[100px]">
                                   {steps[infos[i].matchTgt].subject}
                                 </span>
                               )}
@@ -747,12 +745,12 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
                           {infos[i].fallbackTgt !== null && (
                             <span className={cn(
                               "inline-flex items-center gap-1 font-medium",
-                              stepFires ? "text-gray-400" : "text-amber-600"
+                              stepFires ? "text-text-muted" : "text-text-muted"
                             )}>
                               <ArrowRight className="h-2.5 w-2.5" />
                               Fallback → Step {infos[i].fallbackTgt + 1}
                               {steps[infos[i].fallbackTgt]?.subject && (
-                                <span className="text-gray-400 font-normal truncate max-w-[100px]">
+                                <span className="text-text-muted font-normal truncate max-w-[100px]">
                                   {steps[infos[i].fallbackTgt].subject}
                                 </span>
                               )}
@@ -761,7 +759,7 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
                           {infos[i].matchTgt === null && !infos[i].noCondition && (
                             <span className={cn(
                               "inline-flex items-center gap-1 font-medium",
-                              stepFires ? "text-emerald-600" : "text-gray-400"
+                              stepFires ? "text-brand" : "text-text-muted"
                             )}>
                               <ArrowRight className="h-2.5 w-2.5" />
                               Match → Next step
@@ -770,7 +768,7 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
                           {infos[i].fallbackTgt === null && !infos[i].noCondition && (
                             <span className={cn(
                               "inline-flex items-center gap-1 font-medium",
-                              stepFires ? "text-gray-400" : "text-amber-600"
+                              stepFires ? "text-text-muted" : "text-text-muted"
                             )}>
                               <Ban className="h-2.5 w-2.5" />
                               Fallback → End
@@ -779,7 +777,7 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
                         </div>
 
                         {!stepFires && (
-                          <p className="text-[10px] text-gray-400 italic mt-0.5">
+                          <p className="text-[10px] text-text-muted italic mt-0.5">
                             Skipped — not reached in this scenario
                             {reachedVia[i].length > 0 && (
                               <span> (reachable via {reachedVia[i].map(r => r.label).join(", ")})</span>
@@ -787,7 +785,7 @@ function PathChart({ steps }: { steps: SequenceStepInput[] }) {
                           </p>
                         )}
                         {stepFires && stepEnds && (
-                          <p className="text-[10px] text-gray-400 italic mt-0.5 flex items-center gap-1">
+                          <p className="text-[10px] text-text-muted italic mt-0.5 flex items-center gap-1">
                             <Ban className="h-2.5 w-2.5" />
                             Sequence ends here for this scenario
                           </p>
@@ -944,47 +942,47 @@ export default function SequenceBuilder({
   return (
     <div className="mt-8 space-y-4">
       {editingTemplate && (
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-light border border-brand/20 text-sm text-brand">
           <FileText className="h-4 w-4 shrink-0" />
           <span className="flex-1">Editing template: <strong>{editingTemplate.name}</strong></span>
-          <span className="text-xs text-blue-600">Click "Update template" to save changes</span>
+          <span className="text-xs text-brand">Click "Update template" to save changes</span>
         </div>
       )}
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-base font-semibold text-gray-900">Follow-up Sequence</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h2 className="text-base font-semibold text-text-primary">Follow-up Sequence</h2>
+          <p className="text-sm text-text-muted mt-0.5">
             {mode === "simple"
               ? "Add timed follow-ups that send based on recipient behavior."
               : "Configure branching rules, behavior triggers, and advanced routing."}
           </p>
         </div>
-        <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
+        <div className="flex items-center gap-0.5 bg-[#F8F9FA] rounded-lg p-0.5">
           <button onClick={() => mode === "advanced" ? revertToSimple() : setMode("simple")}
-            className={cn("px-3 h-7 rounded-md text-xs font-medium transition-all", mode === "simple" ? "bg-white text-gray-900 border border-gray-200 shadow-sm" : "text-gray-500 hover:text-gray-700")}>
+            className={cn("px-3 h-7 rounded-md text-xs font-medium transition-all", mode === "simple" ? "bg-white text-text-primary border border-border-light shadow-sm" : "text-text-muted hover:text-text-secondary")}>
             Simple
           </button>
           <button onClick={convertToAdvanced}
-            className={cn("px-3 h-7 rounded-md text-xs font-medium transition-all", mode === "advanced" ? "bg-white text-gray-900 border border-gray-200 shadow-sm" : "text-gray-500 hover:text-gray-700")}>
+            className={cn("px-3 h-7 rounded-md text-xs font-medium transition-all", mode === "advanced" ? "bg-white text-text-primary border border-border-light shadow-sm" : "text-text-muted hover:text-text-secondary")}>
             Advanced
           </button>
         </div>
       </div>
 
       {mode === "simple" && steps.length > 0 && (
-        <div className="border border-gray-200 rounded-lg bg-gray-50 px-4 py-2.5 flex items-center gap-3">
-          <p className="text-xs text-gray-600 flex-1">
+        <div className="border border-border-light rounded-lg bg-[#F8F9FA] px-4 py-2.5 flex items-center gap-3">
+          <p className="text-xs text-text-muted flex-1">
             Each step sends in order. Set a condition to skip based on whether recipients opened, clicked, or replied.
           </p>
-          <button onClick={autoFillCopy} className="inline-flex items-center gap-1.5 px-3 h-7 rounded bg-white border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 shrink-0">
+          <button onClick={autoFillCopy} className="inline-flex items-center gap-1.5 px-3 h-7 rounded bg-white border border-border-light text-xs font-medium text-text-secondary hover:bg-[#F0F1F3] shrink-0">
             Auto-fill copy
           </button>
         </div>
       )}
 
       {mode === "advanced" && steps.length > 0 && (
-        <div className="border border-gray-200 rounded-lg bg-gray-50 px-4 py-2.5 flex items-center gap-3">
-          <p className="text-xs text-gray-600 flex-1">
+        <div className="border border-border-light rounded-lg bg-[#F8F9FA] px-4 py-2.5 flex items-center gap-3">
+          <p className="text-xs text-text-muted flex-1">
             Combine behavior triggers with AND/OR logic. Route recipients to different steps based on their actions.
           </p>
         </div>
@@ -992,9 +990,9 @@ export default function SequenceBuilder({
 
       <div className="flex items-center gap-2 flex-wrap">
         <PresetSelector templates={savedTemplates} onSelect={applyPreset} />
-        <span className="text-gray-200 text-xs">|</span>
+        <span className="text-text-muted text-xs">|</span>
         <button onClick={saveCurrentAsTemplate} disabled={steps.length === 0}
-          className={cn("inline-flex items-center gap-2 px-3 h-8 rounded-lg border text-xs font-medium", steps.length === 0 ? "bg-gray-100 border-gray-100 text-gray-400 cursor-not-allowed" : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50")}
+          className={cn("inline-flex items-center gap-2 px-3 h-8 rounded-lg border text-xs font-medium", steps.length === 0 ? "bg-[#F8F9FA] border-border-light text-text-muted cursor-not-allowed" : "bg-white border-border-light text-text-secondary hover:bg-[#F0F1F3]")}
         >
           <Route className="h-3.5 w-3.5" />{editingTemplate ? "Update template" : "Save as template"}
         </button>
@@ -1002,7 +1000,7 @@ export default function SequenceBuilder({
         {onFrequencyCapsChange && <FrequencyCapsPanel caps={frequencyCaps} onChange={onFrequencyCapsChange} />}
         <div className="ml-auto">
           <button onClick={addStep} disabled={steps.length >= MAX_FOLLOW_UPS}
-            className={cn("inline-flex items-center gap-2 px-4 h-8 rounded-lg text-xs font-medium transition-all", steps.length >= MAX_FOLLOW_UPS ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800")}>
+            className={cn("inline-flex items-center gap-2 px-4 h-8 rounded-lg text-xs font-medium transition-all", steps.length >= MAX_FOLLOW_UPS ? "bg-[#F8F9FA] text-text-muted cursor-not-allowed" : "bg-brand text-white hover:bg-brand/90")}>
             <Plus className="h-3.5 w-3.5" />Add Step
           </button>
         </div>
@@ -1036,7 +1034,7 @@ export default function SequenceBuilder({
       </div>
 
       {steps.length > 0 && (
-        <div className="flex items-center gap-4 text-xs text-gray-400 pt-2 border-t border-gray-100">
+        <div className="flex items-center gap-4 text-xs text-text-muted pt-2 border-t border-border-light">
           {mode === "advanced" && steps.length > 1 && (
             <span className="flex items-center gap-1"><ArrowUpDown className="h-3.5 w-3.5" />Drag to reorder</span>
           )}

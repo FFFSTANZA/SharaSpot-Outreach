@@ -30,7 +30,7 @@ export const createNote = async (req: Request, res: Response) => {
 
     res.status(201).json(note);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred" });
   }
 };
 
@@ -60,7 +60,7 @@ export const updateNote = async (req: Request, res: Response) => {
 
     res.json(updatedNote);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred" });
   }
 };
 
@@ -88,6 +88,6 @@ export const deleteNote = async (req: Request, res: Response) => {
 
     res.json({ message: "Note deleted successfully" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred" });
   }
 };

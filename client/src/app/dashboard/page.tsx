@@ -1,7 +1,5 @@
 "use client";
 
-import { Sidebar } from "./Sidebar";
-import { TopBar } from "./Topbar";
 import { CampaignList } from "./CampaignList";
 import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -9,25 +7,25 @@ import { useAuth } from "@/hooks/useAuth";
 import { getSenders, getDashboardStats, DashboardStats } from "@/lib/apis";
 import { useSearchFilters, SearchFilters } from "@/hooks/useSearchFilters";
 import type { Campaign, SenderResponse } from "@/types";
-import { SidebarProvider } from "@/context/SidebarContext";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InlineLoader } from "@/components/PageLoader";
 import FilterPanel from "@/components/FilterPanel";
 import FilterSummaryBar from "@/components/FilterSummaryBar";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import {
-  Megaphone,
   Send,
-  Clock,
   TrendingUp,
   AlertCircle,
   BarChart3,
-  CheckCircle,
-  Pause,
   Mail,
   ArrowRight,
+  Plus,
+  Search,
+  Menu,
 } from "lucide-react";
+import { useSidebar } from "@/hooks/useSidebar";
 
 const CAMPAIGN_STATUS_OPTIONS = ["SCHEDULED", "SENDING", "PAUSED", "CANCELLED", "COMPLETED"];
 
@@ -36,25 +34,23 @@ function AnalyticsCard({
   label,
   value,
   subValue,
-  color = "brand",
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | number;
   subValue?: string;
-  color?: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-border-light p-5 shadow-premium-sm hover:border-brand/20 transition-all hover:shadow-premium-md">
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2 rounded-lg bg-background group">
-          <Icon className={`h-5 w-5 text-${color}`} />
+    <div className="rounded-lg border border-border-light bg-white p-4 shadow-card transition-all hover:shadow-premium-sm">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-light">
+          <Icon className="h-[18px] w-[18px] text-brand" />
         </div>
-        <span className="text-[11px] font-bold text-text-muted uppercase tracking-[0.1em]">{label}</span>
+        <span className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted">{label}</span>
       </div>
-      <div className="text-3xl font-bold text-text-primary tracking-tighter">{value}</div>
+      <div className="text-2xl font-bold tracking-tight text-text-primary">{value}</div>
       {subValue && (
-        <div className="text-xs font-semibold text-text-muted mt-2 border-t border-border-light pt-2">
+        <div className="mt-2 border-t border-border-light pt-2 text-xs font-medium text-text-muted">
           {subValue}
         </div>
       )}
@@ -62,11 +58,13 @@ function AnalyticsCard({
   );
 }
 
-const DashboardComponent = () => {
-  const { user } = useAuth();
+function DashboardPage() {
+  const { toggle } = useSidebar();
   const [senders, setSenders] = useState<SenderResponse[]>([]);
+  const [isSendersLoading, setIsSendersLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [globalStats, setGlobalStats] = useState<DashboardStats | null>(null);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
   const {
     filters, results, total, isLoading, error,
@@ -86,13 +84,10 @@ const DashboardComponent = () => {
   }, [isSubscriptionSuccess, refreshUser]);
 
   useEffect(() => {
-    getSenders().then(setSenders).catch((err) => {
+    getSenders().then((s) => { setSenders(s); setIsSendersLoading(false); }).catch((err) => {
       console.error("[Dashboard] Failed to load senders:", err);
+      setIsSendersLoading(false);
     });
-  }, []);
-
-  const setCurrentLabel = useCallback<React.Dispatch<React.SetStateAction<string>>>(() => {
-    // currentLabel is derived from filters.status
   }, []);
 
   const currentLabel = useMemo(() => {
@@ -105,23 +100,12 @@ const DashboardComponent = () => {
                 : "Custom";
   }, [filters.status]);
 
-  const handleSidebarItemClick = useCallback((itemLabel: string) => {
-    const statusMap: Record<string, string> = {
-      "All Campaigns": "",
-      Scheduled: "SCHEDULED",
-      Sending: "SENDING",
-      Paused: "PAUSED",
-      Completed: "COMPLETED",
-      Cancelled: "CANCELLED",
-    };
-    setFilters({ status: statusMap[itemLabel] ?? "" });
-  }, [setFilters]);
-
   useEffect(() => {
     const fetchGlobalStats = () => {
+      setStatsError(null);
       getDashboardStats()
         .then(setGlobalStats)
-        .catch(err => console.error("[Dashboard] Stats error:", err));
+        .catch(err => { console.error("[Dashboard] Stats error:", err); setStatsError("Failed to load stats"); });
     };
 
     fetchGlobalStats();
@@ -156,48 +140,61 @@ const DashboardComponent = () => {
   return (
     <AuthGuard requirePremium={true}>
       <ErrorBoundary>
-        <SidebarProvider>
-          <div className="flex h-screen bg-background font-sans">
-            <Sidebar
-              currentLabel={currentLabel}
-              setLabel={setCurrentLabel}
-              onItemClick={handleSidebarItemClick}
-              profile={{
-                name: user?.name ?? "Outreach Pro",
-                email: user?.email ?? "",
-                avatarUrl: user?.avatarUrl ?? "",
-              }}
-              items={[
-                { label: "All Campaigns", count: total, icon: <Megaphone size={18} /> },
-                { label: "Scheduled", icon: <Clock size={18} /> },
-                { label: "Sending", icon: <Send size={18} /> },
-                { label: "Paused", icon: <Pause size={18} /> },
-                { label: "Completed", icon: <CheckCircle size={18} /> },
-              ]}
-            />
+          <div className="mx-auto w-full max-w-[1600px] flex flex-1 flex-col overflow-hidden rounded-lg border border-border-light bg-white">
 
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-interactive-hover/40 p-4 lg:p-6">
-              <div className="bg-white rounded-2xl border border-border-light shadow-premium-lg flex flex-col grow overflow-hidden">
-                <TopBar
-                  initialValue={filters.q}
-                  onSearch={setQuery}
-                  onRefresh={refresh}
-                  isRefreshing={isLoading}
-                  filterSlot={
-                    <FilterPanel
-                      isOpen={isFilterOpen}
-                      onToggle={() => setIsFilterOpen(!isFilterOpen)}
-                      onClose={() => setIsFilterOpen(false)}
-                      filters={filters}
-                      onFilterChange={(key, value) => setFilter(key as keyof SearchFilters, value)}
-                      onClearAll={clearAllFilters}
-                      activeFilterCount={activeFilterCount}
-                      senders={senders}
-                      statusOptions={CAMPAIGN_STATUS_OPTIONS}
-                      showDateField
-                    />
-                  }
-                />
+                {/* Header */}
+                <div className="sticky top-0 z-10 bg-white border-b border-border-light px-4 py-3 sm:px-6">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={toggle}
+                          aria-label="Open sidebar"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[#F0F1F3] lg:hidden"
+                        >
+                          <Menu size={14} />
+                        </button>
+                        <h1 className="text-base font-semibold text-text-primary">Campaigns</h1>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Link
+                          href="/dashboard/compose"
+                          className="flex h-7 items-center gap-1.5 rounded-md bg-brand px-2.5 text-xs font-medium text-white transition-all hover:bg-brand/90"
+                        >
+                          <Plus size={12} />
+                          New Campaign
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Search + filter toggle */}
+                    <div className="flex items-center gap-2">
+                      <div className="relative min-w-0 flex-1">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" size={14} />
+                        <input
+                          type="text"
+                          placeholder="Search campaigns..."
+                          value={filters.q || ""}
+                          onChange={(e) => setQuery(e.target.value)}
+                          aria-label="Search campaigns"
+                          className="w-full rounded-md border border-border-light bg-white py-1.5 pl-8 pr-2.5 text-sm text-text-primary outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 placeholder:text-text-muted"
+                        />
+                      </div>
+                      <FilterPanel
+                        isOpen={isFilterOpen}
+                        onToggle={() => setIsFilterOpen(!isFilterOpen)}
+                        onClose={() => setIsFilterOpen(false)}
+                        filters={filters}
+                        onFilterChange={(key, value) => setFilter(key as keyof SearchFilters, value)}
+                        onClearAll={clearAllFilters}
+                        activeFilterCount={activeFilterCount}
+                        senders={senders}
+                        statusOptions={CAMPAIGN_STATUS_OPTIONS}
+                        showDateField
+                      />
+                    </div>
+                  </div>
+                </div>
 
                 <FilterSummaryBar
                   filters={filters}
@@ -206,122 +203,129 @@ const DashboardComponent = () => {
                   senders={senders}
                 />
 
-                {/* Setup banner — shown when no sender is connected */}
-                {senders.length === 0 ? (
-                  <div className="mx-5 mt-4 mb-1 p-4 rounded-xl bg-brand-light border border-brand/20 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-10 w-10 rounded-lg bg-brand/10 flex items-center justify-center shrink-0">
+                {/* Setup banners */}
+                {!isSendersLoading && senders.length === 0 ? (
+                  <div className="mx-4 mt-4 flex items-center justify-between gap-4 rounded-lg border border-brand/20 bg-brand-light p-4 sm:mx-6">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/10">
                         <Mail className="h-5 w-5 text-brand" />
                       </div>
-                      <p className="text-sm font-semibold text-brand leading-relaxed">
+                      <p className="text-sm font-semibold leading-relaxed text-brand">
                         No email accounts connected. Set up your first sender to start sending campaigns.
                       </p>
                     </div>
-                    <a
+                    <Link
                       href="/dashboard/senders"
-                      className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-white bg-brand px-4 py-2.5 rounded-lg hover:bg-brand-dark transition-colors"
+                      className="flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-brand/90"
                     >
                       Add Sender
                       <ArrowRight size={14} />
-                    </a>
+                    </Link>
                   </div>
                 ) : !senders.some((s) => s.isVerified) ? (
-                  <div className="mx-5 mt-4 mb-1 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                        <AlertCircle className="h-5 w-5 text-amber-600" />
+                  <div className="mx-4 mt-4 flex items-center justify-between gap-4 rounded-lg border border-border-light bg-[#F8F9FA] p-4 sm:mx-6">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-light">
+                        <AlertCircle className="h-5 w-5 text-brand" />
                       </div>
-                      <p className="text-sm font-semibold text-amber-800 leading-relaxed">
+                      <p className="text-sm font-semibold leading-relaxed text-text-secondary">
                         Complete your email setup to start sending campaigns.
                       </p>
                     </div>
-                    <a
+                    <Link
                       href="/dashboard/senders"
-                      className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-white bg-amber-600 px-4 py-2.5 rounded-lg hover:bg-amber-700 transition-colors"
+                      className="flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-brand/90"
                     >
                       Complete Setup
                       <ArrowRight size={14} />
-                    </a>
+                    </Link>
                   </div>
                 ) : null}
 
-                <div className="flex-1 flex flex-col min-h-0">
+                {/* Content */}
+                <div>
                   {isLoading && results.length === 0 ? (
                     <InlineLoader message="Synchronizing your campaigns..." />
                   ) : error ? (
-                    <div className="flex-1 flex flex-col items-center justify-center gap-4">
-                      <div className="p-4 bg-error-bg rounded-full">
+                    <div className="flex flex-1 flex-col items-center justify-center gap-4">
+                      <div className="rounded-full bg-error-bg p-4">
                         <AlertCircle className="h-8 w-8 text-error-text" />
                       </div>
                       <div className="text-center">
                         <p className="font-semibold text-text-primary">{error}</p>
-                        <button onClick={refresh} className="text-sm text-brand hover:underline mt-1 font-semibold">Try Protocol Refresh</button>
+                        <button onClick={refresh} className="mt-1 text-sm font-semibold text-brand hover:underline">Refresh</button>
                       </div>
                     </div>
                   ) : (
                     <>
-                      <div className="px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-4 bg-background/30 border-b border-border-light">
-                        <AnalyticsCard
-                          icon={Megaphone}
-                          label="Total Campaigns"
-                          value={stats.totalCampaigns}
-                          subValue={`${globalStats?.pending ?? stats.pending} emails in queue`}
-                        />
-                        <AnalyticsCard
-                          icon={Send}
-                          label="Emails Sent"
-                          value={globalStats?.sent ?? stats.sent}
-                          subValue={`${globalStats?.failed ?? stats.failed} failed`}
-                          color="brand"
-                        />
-                        <AnalyticsCard
-                          icon={TrendingUp}
-                          label="Efficiency Index"
-                          value={`${globalStats?.efficiency ?? stats.efficiency}%`}
-                          subValue="Delivery reputation"
-                        />
-                        <AnalyticsCard
-                          icon={BarChart3}
-                          label="Engagement"
-                          value={`${globalStats?.replyRate ?? stats.replyRate}%`}
-                          subValue={`${globalStats?.replied ?? 0} detected replies`}
-                        />
-                      </div>
-
-                      <div className="flex-1 flex flex-col min-h-0 bg-white">
-                        <div className="px-6 py-4 flex items-center justify-between border-b border-border-light">
-                          <div className="flex items-center gap-3">
-                            <h2 className="text-lg font-bold tracking-tight text-text-primary">{currentLabel}</h2>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-light text-brand uppercase">{total} Campaigns</span>
-                            {globalStats?.worker && (
-                              <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-border-light">
-                                <div className={cn(
-                                  "h-1.5 w-1.5 rounded-full",
-                                  globalStats.worker.status === "up" ? "bg-[#00A63E] animate-pulse" :
-                                    globalStats.worker.status === "stale" ? "bg-amber-500" : "bg-red-500"
-                                )} />
-                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
-                                  Worker {globalStats.worker.status}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          {total > 0 && <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Active Campaigns</div>}
+                      {/* Analytics */}
+                      <div className="border-b border-border-light px-4 py-5 sm:px-6">
+                        <div className="mb-4 flex items-center justify-between">
+                          <h2 className="text-base font-semibold text-text-primary">Outcomes</h2>
+                          {globalStats?.worker && (
+                            <div className="flex items-center gap-2 rounded-lg border border-border-light bg-[#F8F9FA] px-3 py-1.5">
+                              <div className={cn(
+                                "h-2 w-2 rounded-full",
+                                globalStats.worker.status === "up" ? "bg-brand" :
+                                  globalStats.worker.status === "stale" ? "bg-brand-muted" : "bg-error-bg"
+                              )} />
+                              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-text-secondary">
+                                {globalStats.worker.status}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
-                        <div className="flex-1 overflow-y-auto">
-                          <CampaignList
-                            campaigns={campaignItems}
+                        {statsError && (
+                          <div className="mb-3 flex items-center gap-2 rounded-lg bg-error-bg border border-error-bg px-3 py-2">
+                            <AlertCircle className="h-3.5 w-3.5 text-error-text shrink-0" />
+                            <span className="text-xs text-error-text">{statsError}</span>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                          <AnalyticsCard
+                            icon={Send}
+                            label="Sent"
+                            value={globalStats?.sent ?? stats.sent}
+                            subValue={`${globalStats?.failed ?? stats.failed} failed`}
+                          />
+                          <AnalyticsCard
+                            icon={BarChart3}
+                            label="Replies"
+                            value={`${globalStats?.replyRate ?? stats.replyRate}%`}
+                            subValue={`${globalStats?.replied ?? 0} total`}
+                          />
+                          <AnalyticsCard
+                            icon={TrendingUp}
+                            label="Efficiency"
+                            value={`${globalStats?.efficiency ?? stats.efficiency}%`}
+                            subValue="Delivery rate"
+                          />
+                          <AnalyticsCard
+                            icon={Mail}
+                            label="In Queue"
+                            value={globalStats?.pending ?? stats.pending}
+                            subValue={`${stats.totalCampaigns} active campaigns`}
                           />
                         </div>
+                      </div>
+
+                      {/* Campaign list */}
+                      <div>
+                        <div className="flex items-center justify-between border-b border-border-light px-4 py-3 sm:px-6">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <h2 className="truncate text-sm font-semibold text-text-primary">{currentLabel}</h2>
+                            <span className="shrink-0 rounded-md bg-brand-light px-2 py-0.5 text-[11px] font-bold text-brand">{total}</span>
+                          </div>
+                        </div>
+
+                        <CampaignList campaigns={campaignItems} hasActiveFilters={activeFilterCount > 0} onClearFilters={clearAllFilters} />
                       </div>
                     </>
                   )}
                 </div>
               </div>
-            </main>
-          </div>
-        </SidebarProvider>
       </ErrorBoundary>
     </AuthGuard>
   );
@@ -330,7 +334,7 @@ const DashboardComponent = () => {
 export default function Dashboard() {
   return (
     <Suspense fallback={<InlineLoader message="Synchronizing dashboard..." />}>
-      <DashboardComponent />
+      <DashboardPage />
     </Suspense>
   );
 }

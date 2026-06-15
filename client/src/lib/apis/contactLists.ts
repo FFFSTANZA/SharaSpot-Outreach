@@ -19,18 +19,21 @@ export const createContactList = async (name: string): Promise<ContactList> => {
   return res.data;
 };
 
-export const updateContactList = async (id: string, name: string): Promise<void> => {
-  await api.put(`/api/contact-lists/${id}`, { name });
+export const updateContactList = async (id: string, name: string): Promise<ContactList> => {
+  const res = await api.put(`/api/contact-lists/${id}`, { name });
+  return res.data;
 };
 
 export const deleteContactList = async (id: string): Promise<void> => {
   await api.delete(`/api/contact-lists/${id}`);
 };
 
-export const addContactsToList = async (listId: string, contactIds: string[]): Promise<void> => {
-  await api.post(`/api/contact-lists/${listId}/contacts`, { contactIds });
+export const addContactsToList = async (listId: string, contactIds: string[]): Promise<ContactList> => {
+  const res = await api.post(`/api/contact-lists/${listId}/contacts`, { contactIds });
+  return res.data;
 };
 
-export const removeContactsFromList = async (listId: string, contactIds: string[]): Promise<void> => {
-  await api.delete(`/api/contact-lists/${listId}/contacts`, { data: { contactIds } });
+export const removeContactsFromList = async (listId: string, contactIds: string[]): Promise<ContactList> => {
+  const res = await api.delete(`/api/contact-lists/${listId}/contacts`, { data: { contactIds } });
+  return res.data;
 };

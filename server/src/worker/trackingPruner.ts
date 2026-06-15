@@ -1,15 +1,5 @@
-/**
- * TrackingEvent Data Pruning
- *
- * Moves tracking events older than PRUNE_AFTER_DAYS (default 30) from Postgres
- * to a CSV archive in Supabase Storage, then deletes them from the main database.
- * This keeps the Postgres table lean and fast, reducing storage costs and query latency.
- *
- * Runs daily via a setInterval in the worker index.
- */
-
 import { prisma } from "../config/prisma";
-import { supabase, SUPABASE_BUCKET } from "../config/supabase";
+import { logger } from "../utils/logger";
 
 const PRUNE_AFTER_DAYS = parseInt(process.env.TRACKING_PRUNE_AFTER_DAYS || "30", 10);
 const PRUNE_BATCH_SIZE = parseInt(process.env.TRACKING_PRUNE_BATCH_SIZE || "5000", 10);
@@ -22,11 +12,11 @@ export async function pruneOldTrackingEvents(): Promise<void> {
   });
 
   if (totalCount === 0) {
-    console.log("[Pruning] No tracking events older than", PRUNE_AFTER_DAYS, "days");
+    logger.info({ extra: [PRUNE_AFTER_DAYS, "days"] }, "[Pruning] No tracking events older than");
     return;
   }
 
-  console.log(`[Pruning] Found ${totalCount} tracking events older than ${PRUNE_AFTER_DAYS} days — archiving...`);
+  logger.info(`[Pruning] Found ${totalCount} tracking events older than ${PRUNE_AFTER_DAYS} days — deleting...`);
 
   let processed = 0;
 
@@ -35,42 +25,10 @@ export async function pruneOldTrackingEvents(): Promise<void> {
       where: { createdAt: { lt: cutoff } },
       orderBy: { createdAt: "asc" },
       take: PRUNE_BATCH_SIZE,
-      select: {
-        id: true,
-        emailJobId: true,
-        eventType: true,
-        url: true,
-        ipAddress: true,
-        userAgent: true,
-        createdAt: true,
-      },
+      select: { id: true },
     });
 
     if (batch.length === 0) break;
-
-    const csvRows = [
-      "id,emailJobId,eventType,url,ipAddress,userAgent,createdAt",
-      ...batch.map((e) =>
-        [
-          e.id,
-          e.emailJobId,
-          e.eventType,
-          `"${(e.url ?? "").replace(/"/g, '""')}"`,
-          `"${(e.ipAddress ?? "").replace(/"/g, '""')}"`,
-          `"${(e.userAgent ?? "").replace(/"/g, '""')}"`,
-          e.createdAt.toISOString(),
-        ].join(","),
-      ),
-    ].join("\n");
-
-    const archivePath = `archives/tracking-events/${new Date().toISOString().split("T")[0]}-batch-${processed}.csv`;
-
-    const { error } = await supabase
-      .storage
-      .from(SUPABASE_BUCKET)
-      .upload(archivePath, csvRows, { contentType: "text/csv" });
-
-    if (error) throw error;
 
     const ids = batch.map((e) => e.id);
     await prisma.trackingEvent.deleteMany({
@@ -78,8 +36,8 @@ export async function pruneOldTrackingEvents(): Promise<void> {
     });
 
     processed += batch.length;
-    console.log(`[Pruning] Archived and deleted ${processed}/${totalCount} events`);
+    logger.info(`[Pruning] Deleted ${processed}/${totalCount} events`);
   }
 
-  console.log(`[Pruning] Complete — ${processed} events archived to Supabase and removed from Postgres`);
+  logger.info(`[Pruning] Complete — ${processed} events removed from Postgres`);
 }

@@ -1,5 +1,6 @@
 import IORedis from "ioredis";
 import { RedisOptions } from "ioredis";
+import { logger } from "../utils/logger";
 
 /**
  * Redis Configuration — Single Source of Truth
@@ -34,7 +35,7 @@ function parseRedisUrl(): { host: string; port: number; password?: string } {
   } catch {
     // If REDIS_URL is malformed, fall back to safe defaults rather than crashing.
     // Log a warning so operators can diagnose misconfiguration.
-    console.warn(
+    logger.warn(
       `[redis] Failed to parse REDIS_URL ("${redisUrl}"), falling back to localhost:6379`
     );
     return { host: "localhost", port: 6379 };
@@ -64,8 +65,8 @@ export const redisConnection: RedisOptions = {
  */
 export const redis = new IORedis(redisConnection);
 redis.on("error", (err) => {
-  console.error("[redis] Connection error:", err.message);
+  logger.error({ err: err.message }, "[redis] Connection error:");
 });
 redis.on("connect", () => {
-  console.log("[redis] Connected successfully");
+  logger.info("[redis] Connected successfully");
 });

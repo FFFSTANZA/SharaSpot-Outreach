@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma";
 import { redis } from "../config/redis";
 import { getOrgScope } from "../utils/orgScope";
 import os from "os";
+import { logger } from "../utils/logger";
 
 interface PlatformBreakdown {
   platform: string;
@@ -265,7 +266,7 @@ export const getAnalyticsOverview = async (req: Request, res: Response): Promise
       timeSeries,
     });
   } catch (error) {
-    console.error("Analytics overview error:", error);
+    logger.error({ error }, "Analytics overview error");
     res.status(500).json({ message: "Error fetching analytics overview" });
   }
 };
@@ -318,7 +319,7 @@ export const getAnalyticsLinks = async (req: Request, res: Response): Promise<vo
 
     res.status(200).json({ links });
   } catch (error) {
-    console.error("Analytics links error:", error);
+    logger.error({ error }, "Analytics links error");
     res.status(500).json({ message: "Error fetching analytics links" });
   }
 };
@@ -458,7 +459,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
         }
       }
     } catch (err) {
-      console.error("[Stats] Redis health check failed:", err);
+      logger.error({ err }, "[Stats] Redis health check failed");
     }
 
     res.status(200).json({
@@ -475,7 +476,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
       }
     });
   } catch (error) {
-    console.error("Dashboard stats error:", error);
+    logger.error({ error }, "Dashboard stats error");
     res.status(500).json({ message: "Error fetching dashboard stats" });
   }
 };

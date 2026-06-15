@@ -41,7 +41,7 @@ export default function UseCases() {
     const router = useRouter();
 
     return (
-        <section className="py-20 lg:py-28 bg-text-primary relative overflow-hidden">
+        <section className="py-14 sm:py-20 lg:py-28 bg-text-primary relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-40 right-0 w-[500px] h-[500px] rounded-full bg-gradient-to-bl from-[#1A56DB]/10 to-transparent blur-3xl" />
                 <div className="absolute bottom-20 left-1/4 w-[300px] h-[300px] rounded-full bg-gradient-to-tr from-[#B45309]/8 to-transparent blur-3xl" />
@@ -49,20 +49,20 @@ export default function UseCases() {
                 <div className="absolute bottom-40 right-1/4 w-[350px] h-[350px] rounded-full bg-gradient-to-tr from-[#7C3AED]/8 to-transparent blur-3xl" />
             </div>
 
-            <div className="max-w-6xl mx-auto px-6 relative">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
 
-                <div className="max-w-2xl mb-20">
-                    <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-5">
+                <div className="max-w-2xl mb-12 sm:mb-20">
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-4 sm:mb-5">
                         Four outreach problems. One fix.
                     </h2>
-                    <p className="text-white/70 text-lg leading-relaxed">
+                    <p className="text-white/70 text-base sm:text-lg leading-relaxed">
                         SharaSpot is not a general-purpose email tool. It is built specifically around the four types of outreach where delivery actually changes outcomes.
                     </p>
                 </div>
 
-                <div className="space-y-20">
+                <div className="space-y-12 sm:space-y-16 lg:space-y-20">
                     {personas.map((p, i) => (
-                        <div key={p.id} id={p.id} className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20 items-start">
+                        <div key={p.id} id={p.id} className="grid lg:grid-cols-[280px_1fr] gap-8 sm:gap-12 lg:gap-20 items-start">
 
                             {/* Left label col */}
                             <div className="lg:pt-1">

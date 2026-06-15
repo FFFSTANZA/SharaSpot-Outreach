@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { BRAND_CONFIG } from "@/lib/config";
 import { Logo } from "@/components/Logo";
@@ -10,6 +10,14 @@ import { useRouter } from "next/navigation";
 export default function MailAppContainer({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [showNav, setShowNav] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setShowNav(window.scrollY > 80);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
 
     const navLinks = [
         { label: "Priority", href: "/priority" },
@@ -23,8 +31,14 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
     return (
         <div className="min-h-screen bg-white text-text-primary font-sans">
             {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/60 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)]">
-                <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+            <nav
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                    showNav
+                        ? "bg-white/95 backdrop-blur-md border-b border-slate-200/60 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)]"
+                        : "bg-transparent border-b border-transparent shadow-none"
+                }`}
+            >
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
                         <Logo size="md" />
                     </Link>
@@ -58,7 +72,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                     </div>
 
                     <button
-                        className="md:hidden p-2 text-text-primary"
+                        className="md:hidden p-2.5 text-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
                         {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -66,14 +80,14 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                 </div>
 
                 {mobileMenuOpen && (
-                    <div className="md:hidden bg-white border-t border-border-light px-6 py-6">
-                        <div className="flex flex-col gap-5">
+                    <div className="md:hidden bg-white border-t border-border-light px-4 sm:px-6 py-6">
+                        <div className="flex flex-col gap-4">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.label}
                                     href={link.href}
                                     target={link.external ? "_blank" : undefined}
-                                    className="text-base font-medium text-text-primary"
+                                    className="text-base font-medium text-text-primary min-h-[44px] flex items-center"
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     {link.label}
@@ -81,7 +95,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                             ))}
                             <button
                                 onClick={() => router.push("/login")}
-                                className="w-full bg-brand text-white font-semibold py-3 rounded-lg text-sm mt-2"
+                                className="w-full bg-brand text-white font-semibold py-3.5 rounded-lg text-sm mt-1"
                             >
                                 Get Started
                             </button>
@@ -90,13 +104,13 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                 )}
             </nav>
 
-            <main className="pt-14">
+            <main>
                 {children}
             </main>
 
             {/* Footer */}
             <footer className="border-t border-border-light">
-                <div className="max-w-6xl mx-auto px-6 py-16">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
                     <div className="grid lg:grid-cols-[280px_1fr] gap-12 lg:gap-20">
                         <div>
                             <Logo size="md" />
@@ -129,7 +143,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
 
                     <div className="mt-14 pt-8 border-t border-border-light flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <p className="text-xs text-text-muted">2026 Folonite. All rights reserved.</p>
-                        <p className="text-xs text-text-muted">Built for people doing real outreach.</p>
+                        <p className="text-xs text-text-muted">Hire me as GTM engineer for your company — <a href="mailto:fffstanza@gmail.com" className="text-brand hover:text-brand/80 transition-colors">fffstanza@gmail.com</a></p>
                     </div>
                 </div>
             </footer>

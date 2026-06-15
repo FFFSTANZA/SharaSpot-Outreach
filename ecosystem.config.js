@@ -1,6 +1,6 @@
 const path = require('path');
 const homeDir = process.env.HOME || '/home/fffstanza';
-const baseDir = path.join(homeDir, 'Folonite/SharaSpot-Outreach');
+const baseDir = path.join(homeDir, 'SharaSpot/SharaSpot-Outreach');
 
 module.exports = {
   apps: [

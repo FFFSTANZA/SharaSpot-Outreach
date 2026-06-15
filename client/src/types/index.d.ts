@@ -14,6 +14,24 @@ export interface User {
   createdAt: string;
 }
 
+export type TrackingDomainStatus = "PENDING" | "VERIFIED" | "MISSING" | "MISMATCH" | "ERROR";
+
+export interface TrackingDomainSettingResponse {
+  id: string;
+  userId: string;
+  organizationId: string | null;
+  rootDomain: string;
+  subdomain: string;
+  fullDomain: string;
+  cnameTarget: string;
+  status: TrackingDomainStatus;
+  lastCheckedAt: string | null;
+  lastCheckedValue: string | null;
+  verifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // GET /senders response — sender account (appPassword excluded by backend)
 export interface SenderResponse {
   id: string;
@@ -22,7 +40,9 @@ export interface SenderResponse {
   name: string | null;
   isVerified: boolean;
   dailyLimit: number;
+  hourlyLimit?: number;
   currentDailyCount?: number;
+  skipWarmup?: boolean;
   smtpHost: string;
   smtpPort: number;
   providerKey?: "gmail" | "outlook" | "zoho" | "yahoo" | "custom";
@@ -249,7 +269,6 @@ export interface ComposeFormProps {
   scheduledAt: Date | null;
   uploadedAttachments: UploadedAttachment[];
   onSubmit: (data: CreateCampaignPayload) => Promise<void>;
-  submitTrigger?: number;
 }
 
 // ComposeHeader component props — lifted state + callbacks
@@ -282,32 +301,8 @@ export interface AuthGuardProps {
 }
 
 // Sidebar component props
-export interface SidebarProps {
-  currentLabel?: string;
-  setLabel: React.Dispatch<React.SetStateAction<string>>;
-  onItemClick?: (label: string) => void;
-  profile: {
-    name: string;
-    email: string;
-    avatarUrl: string;
-  };
-  items?: {
-    label: string;
-    count?: number;
-    icon?: React.ReactNode;
-  }[];
-  groups?: {
-    title: string;
-    links: {
-      label: string;
-      href?: string;
-      count?: number;
-      icon?: React.ReactNode;
-      isActive?: boolean;
-      onClick?: () => void;
-    }[];
-  }[];
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SidebarProps {}
 
 
 // ─── Email Template Types ───
@@ -723,7 +718,7 @@ export interface SenderHealthRecord {
   successCount: number;
   errorCount: number;
   bounceCount: number;
-  errorDetails: any;
+  errorDetails: unknown;
   sender: {
     email: string;
     name: string | null;
@@ -778,24 +773,37 @@ export interface ContactActivity {
   id: string;
   contactId: string;
   type: string;
-  metadata: any;
+  metadata: Record<string, unknown> | null;
   createdAt: string;
 }
 
 export interface Contact {
   id: string;
   userId: string;
+  assignedToId?: string | null;
   email: string;
+  website?: string | null;
+  companyDomain?: string | null;
   firstName: string | null;
   lastName: string | null;
   company: string | null;
   phone?: string | null;
   jobTitle: string | null;
+  techStack?: string[];
   stage: string;
+  nextAction?: string | null;
+  nextActionDueAt?: string | null;
+  lastEnrichedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   engagementScore?: number;
   lastContactedAt?: string | null;
+  assignedTo?: {
+    id: string;
+    name: string | null;
+    email: string;
+    avatarUrl?: string | null;
+  } | null;
   notes?: Note[];
   activities?: ContactActivity[];
   tags?: Tag[];
@@ -816,6 +824,29 @@ export interface PaginatedContacts {
   totalPages: number;
 }
 
+export interface CompanyProfile {
+  id: string;
+  userId: string;
+  organizationId?: string | null;
+  name: string;
+  website?: string | null;
+  domain: string;
+  primaryEmail?: string | null;
+  phone?: string | null;
+  linkedinUrl?: string | null;
+  twitterUrl?: string | null;
+  githubUrl?: string | null;
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
+  techStack: string[];
+  lastEnrichedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  relatedContactCount?: number;
+  relatedContacts?: Contact[];
+  fallbackWebsite?: string | null;
+}
+
 export type CallTaskStatus = "PENDING" | "COMPLETED" | "SKIPPED";
 
 export interface CallTask {
@@ -825,6 +856,13 @@ export interface CallTask {
   status: CallTaskStatus;
   priority: number;
   dueAt: string;
+  assignedToId?: string | null;
+  assignedTo?: {
+    id: string;
+    name?: string | null;
+    email: string;
+    avatarUrl?: string | null;
+  } | null;
   lastOutcome: string | null;
   lastDisposition?: string | null;
   lastNote: string | null;
@@ -863,7 +901,7 @@ export interface CallProviderConnection {
   sipDomain: string;
   websocketUrl: string;
   displayName: string | null;
-  vendorMetadata: any;
+  vendorMetadata: unknown;
   status: CallProviderStatus;
   lastCheckedAt: string | null;
   lastError: string | null;
@@ -912,6 +950,11 @@ export interface InboxThread {
   lastSenderEmail: string | null;
   unreadCount: number;
   hasAttachments: boolean;
+  isStarred: boolean;
+  fromName: string | null;
+  fromEmail: string;
+  snippet: string;
+  status: string;
 }
 
 export interface InboxEmail {

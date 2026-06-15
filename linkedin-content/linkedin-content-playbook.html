@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SharaSpot LinkedIn Content Playbook</title>
+  <style>
+    :root {
+      --bg: #08111d;
+      --hero: #0d1d31;
+      --card: #ffffff;
+      --ink: #122235;
+      --muted: #607287;
+      --line: #d8e2ec;
+      --brand: #00a63e;
+      --brand-soft: #e9fff1;
+      --soft: #f4f8fb;
+      --warn: #fff5df;
+      --warn-line: #f0d796;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, var(--bg), var(--hero) 220px, var(--soft) 220px);
+      line-height: 1.55;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 20px 72px;
+    }
+
+    .hero {
+      color: #fff;
+      padding-bottom: 34px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 14px;
+      color: #8cf2b1;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.03;
+      max-width: 900px;
+    }
+
+    .hero p {
+      max-width: 840px;
+      margin: 0;
+      font-size: 18px;
+      color: #d1dceb;
+    }
+
+    .section {
+      margin-top: 22px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 18px 54px rgba(10, 18, 31, 0.08);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 26px;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    p { margin: 0; }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.two { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .grid.three { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .pill {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: #086c2f;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .callout {
+      background: var(--warn);
+      border: 1px solid var(--warn-line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: #6d5310;
+      font-weight: 600;
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
+    li + li { margin-top: 6px; }
+
+    .calendar {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .week {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .week-head {
+      padding: 16px 18px;
+      color: #fff;
+      background: linear-gradient(90deg, #0d1b2c, #123454);
+    }
+
+    .week-head strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 20px;
+    }
+
+    .week-body {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .post {
+      padding: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .post:nth-child(2n) {
+      background: #fbfdff;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: #eef4f9;
+      color: #3a516d;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .hook {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .line {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .rule-list li {
+      margin-top: 8px;
+    }
+
+    @media (max-width: 720px) {
+      .section { padding: 22px; }
+      .week-body { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">SharaSpot LinkedIn Playbook</div>
+      <h1>Retuned for competitor-grade content marketing, not product promotion.</h1>
+      <p>This version is rebuilt using the patterns visible in players like Instantly and Smartlead: category education, operator voice, diagnostics, proof assets, and infrastructure authority. The goal is to make SharaSpot feel sharper, more technical, and more trusted without sounding like a brochure.</p>
+    </section>
+
+    <section class="section">
+      <h2>Competitive Read</h2>
+      <div class="grid three">
+        <div class="card">
+          <span class="pill">Pattern 1</span>
+          <p>They do not market a feature. They market a system.</p>
+          <p class="small">Instantly packages benchmarks, infrastructure, deliverability, AI, and outbound workflows into a larger operating model.</p>
+        </div>
+        <div class="card">
+          <span class="pill">Pattern 2</span>
+          <p>They publish operator content, not just brand content.</p>
+          <p class="small">Smartlead uses engineer voice, support voice, founder voice, and customer voice to make the company feel deeper than a UI.</p>
+        </div>
+        <div class="card">
+          <span class="pill">Pattern 3</span>
+          <p>They turn education into product gravity.</p>
+          <p class="small">Bench reports, guides, university content, tools, and case studies all pull attention back into the product ecosystem.</p>
+        </div>
+      </div>
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>What is working for them</h3>
+          <ul>
+            <li>Hard takes on why campaigns fail before they launch.</li>
+            <li>Diagnostic content that names hidden failure points.</li>
+            <li>Operator-led posts that sound like real internal knowledge.</li>
+            <li>Customer proof with scale, reply rate, or booked-meeting outcomes.</li>
+            <li>Resource ecosystems: reports, courses, tools, and case studies.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What SharaSpot should not copy</h3>
+          <ul>
+            <li>Empty AI hype without an operational angle.</li>
+            <li>Feature-drop posts with no thesis behind them.</li>
+            <li>Generic cold email advice that any creator can post.</li>
+            <li>High-volume bragging as the main proof of quality.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>SharaSpot Positioning Shift</h2>
+      <div class="callout">The company page should feel like it is run by people who understand why outbound breaks underneath the surface, not by people trying to collect likes with generic sales tips.</div>
+      <div class="grid three" style="margin-top:16px;">
+        <div class="card">
+          <h3>Old Risk</h3>
+          <p class="small">Pain-led launch content alone can make the brand sound early-stage and emotional, but not yet authoritative.</p>
+        </div>
+        <div class="card">
+          <h3>New Stance</h3>
+          <p class="small">SharaSpot should own the idea that outbound is an infrastructure discipline before it is a copywriting discipline.</p>
+        </div>
+        <div class="card">
+          <h3>Brand Role</h3>
+          <p class="small">Be the calm systems operator in a market full of send-more noise.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Content Doctrine</h2>
+      <div class="grid two">
+        <div class="card">
+          <span class="pill">What Every Post Must Do</span>
+          <ul class="rule-list">
+            <li>Teach something specific about why outbound succeeds or fails.</li>
+            <li>Carry one clean thesis, not five weak points.</li>
+            <li>Sound like an operator with pattern recognition.</li>
+            <li>Make the reader rethink their current workflow.</li>
+            <li>Leave room for product, but do not start with product.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="pill">Ideal Mix</span>
+          <ul class="rule-list">
+            <li>50% category and operator POV</li>
+            <li>25% diagnostics and teardown content</li>
+            <li>15% case-study or workflow proof</li>
+            <li>10% direct product or launch content</li>
+          </ul>
+        </div>
+      </div>
+      <div class="grid three" style="margin-top:16px;">
+        <div class="card">
+          <h3>Best Formats</h3>
+          <p class="small">Founder post, engineer post, teardown post, checklist carousel, customer proof slide, and system diagram screenshot.</p>
+        </div>
+        <div class="card">
+          <h3>Best Hooks</h3>
+          <p class="small">Use contrarian openings, hidden-failure openings, or "the problem started earlier" openings.</p>
+        </div>
+        <div class="card">
+          <h3>Worst Hooks</h3>
+          <p class="small">"We are excited to announce", "Here is a feature update", and generic motivational sales copy.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>12-Week Competitor-Aware Calendar</h2>
+      <div class="calendar">
+        <div class="week">
+          <div class="week-head"><strong>Week 1</strong><span>Open with category authority, not introduction.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Category POV</span><span class="tag">Founder Text</span></div>
+              <p class="hook">Most teams think they have a messaging problem when they really have a deliverability problem.</p>
+              <p class="line">Format: text post.</p>
+              <p class="line">Why it works: same kind of hard market framing bigger players use, but sharper and more focused.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Teardown</span><span class="tag">Carousel</span></div>
+              <p class="hook">No replies? Diagnose these 4 layers before you touch your copy.</p>
+              <p class="line">Layers: list quality, sender health, sending pattern, reply handling.</p>
+              <p class="line">Why it works: practical, saveable, and clearly non-promotional.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 2</strong><span>Teach hidden failure points.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Operator POV</span><span class="tag">Engineer Voice</span></div>
+              <p class="hook">By the time most campaigns launch, the result is already decided.</p>
+              <p class="line">Angle: infrastructure, reputation, volume spikes, and mailbox pressure were already setting the outcome.</p>
+              <p class="line">Why it works: Smartlead-style operator authority, but mapped to SharaSpot’s actual strengths.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Checklist</span><span class="tag">Carousel</span></div>
+              <p class="hook">5 signs your outbound engine is fragile even if campaigns are still sending.</p>
+              <p class="line">Include signs like one-mailbox dependence, no warmup logic, poor bounce suppression, no reply stop, no segmentation discipline.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 3</strong><span>Own warmup without sounding repetitive.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Education</span><span class="tag">Text</span></div>
+              <p class="hook">Warmup is not there to help you scale fast. It is there to stop you from breaking trust fast.</p>
+              <p class="line">Why it works: stronger than generic warmup advice and aligned with your inbox-first position.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Behind The System</span><span class="tag">Workflow</span></div>
+              <p class="hook">What a healthy sender ramp actually looks like over the first 28 days.</p>
+              <p class="line">Show gradual increase, signal-based pauses, bounce sensitivity, and why randomness matters.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 4</strong><span>Make sending patterns a visible category topic.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Contrarian</span><span class="tag">Text</span></div>
+              <p class="hook">The easiest way to look like a bot is not bad copy. It is predictable timing.</p>
+              <p class="line">Why it works: simple, strong, and not usually explained well by generic creators.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Comparison</span><span class="tag">Visual</span></div>
+              <p class="hook">Batch sending vs human-like sending: what the mailbox sees.</p>
+              <p class="line">Use a clean visual showing timing variance, pauses, business hours, and sender distribution.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 5</strong><span>Turn reply-aware workflows into a category argument.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Problem Post</span><span class="tag">Text</span></div>
+              <p class="hook">Nothing exposes bad automation faster than following up after someone already replied.</p>
+              <p class="line">Why it works: emotional truth plus operational point. Very shareable.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">System Walkthrough</span><span class="tag">Screenshot</span></div>
+              <p class="hook">Reply detection is not a feature. It is a respect layer.</p>
+              <p class="line">Bridge campaigns, inbox, and sequence stop logic into one workflow narrative.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 6</strong><span>Talk diagnostics the way competitors do, but clearer.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Diagnostics</span><span class="tag">Carousel</span></div>
+              <p class="hook">If your campaign is underperforming, which layer is failing?</p>
+              <p class="line">Turn it into a decision tree: inboxing problem, targeting problem, copy problem, or workflow problem.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Operator POV</span><span class="tag">Text</span></div>
+              <p class="hook">Open rate is a weak metric when you still do not know what broke first.</p>
+              <p class="line">Why it works: attacks vanity metrics and moves the conversation upward.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 7</strong><span>Expand the narrative from send engine to revenue workflow.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Ops POV</span><span class="tag">PRM</span></div>
+              <p class="hook">Great outbound still collapses when contact operations are messy.</p>
+              <p class="line">Talk stages, list hygiene, dedupe, segmentation, and why ops quality affects deliverability quality.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Workflow</span><span class="tag">Calls</span></div>
+              <p class="hook">The job of email is not the reply. It is the next qualified action.</p>
+              <p class="line">Use calls workspace and follow-up ops to show SharaSpot is about pipeline control, not just sends.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 8</strong><span>Publish audience-specific intelligence.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Founders</span><span class="tag">Text</span></div>
+              <p class="hook">Founder outreach breaks differently because the volume is lower but the cost of missing is higher.</p>
+              <p class="line">Talk investor intros, key partnerships, and senior hiring outreach.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Sales / Recruiting</span><span class="tag">Comparison</span></div>
+              <p class="hook">SDRs and recruiters have the same hidden problem: fragile sending infrastructure.</p>
+              <p class="line">Why it works: broadens your market while keeping one unifying thesis.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 9</strong><span>Make priority sending feel strategic, not premium fluff.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">High-Stakes POV</span><span class="tag">Text</span></div>
+              <p class="hook">Not every outbound email deserves the same operational treatment.</p>
+              <p class="line">Angle: enterprise deals, fundraising, strategic intros, and executive outreach should not run on standard assumptions.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Product Proof</span><span class="tag">Visual</span></div>
+              <p class="hook">When an email must land, the sending logic should change.</p>
+              <p class="line">Use your priority system positioning to make the case for risk-aware routing and controlled volume.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 10</strong><span>Show that there is real infrastructure under the brand.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Engineering Voice</span><span class="tag">Text</span></div>
+              <p class="hook">Deliverability is an infrastructure problem wearing a sales costume.</p>
+              <p class="line">Talk queues, recovery, retries, health checks, and worker resilience without turning it into a devlog.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Workflow Layer</span><span class="tag">MCP/API</span></div>
+              <p class="hook">The best outbound platforms will stop being just dashboards and start becoming workflow layers.</p>
+              <p class="line">Use MCP/API access to show SharaSpot is thinking ahead, not just shipping screens.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 11</strong><span>Borrow the benchmark / buyer-guide play.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Buyer Guide</span><span class="tag">Carousel</span></div>
+              <p class="hook">How to evaluate a cold outreach platform if you care about inbox placement, not vanity output.</p>
+              <p class="line">Checklist: sender controls, warmup logic, diagnostics, reply awareness, inbox visibility, and workflow depth.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Resource-Led</span><span class="tag">Lead Magnet</span></div>
+              <p class="hook">We should stop calling every outbound problem a copy problem.</p>
+              <p class="line">Use this post to point people toward the guide, FAQ, or a future benchmark-style asset.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="week">
+          <div class="week-head"><strong>Week 12</strong><span>Finish with authority and controlled conversion.</span></div>
+          <div class="week-body">
+            <article class="post">
+              <div class="meta"><span class="tag">Post A</span><span class="tag">Recap</span><span class="tag">Save Post</span></div>
+              <p class="hook">If your outbound is not working, diagnose these 3 things before rewriting your sequence.</p>
+              <p class="line">Summarize the whole quarter into one reusable framework.</p>
+            </article>
+            <article class="post">
+              <div class="meta"><span class="tag">Post B</span><span class="tag">Soft CTA</span><span class="tag">Founder Note</span></div>
+              <p class="hook">We built SharaSpot for teams that care where the message lands before they care how many they can send.</p>
+              <p class="line">This is the only week where a more direct CTA is fine. Keep it restrained and founder-led.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Execution Rules</h2>
+      <div class="grid two">
+        <div class="card">
+          <span class="pill">Do This</span>
+          <ul>
+            <li>Write like an operator who has seen the failure pattern before.</li>
+            <li>Use screenshots, diagrams, and mini-frameworks more than glossy brand graphics.</li>
+            <li>Let founder, engineering, and product voices rotate.</li>
+            <li>Reference hidden systems, not just visible features.</li>
+            <li>Build recurring series, for example: SharaSpot Signals, System Breakdown, or Inbox Reality.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="pill">Avoid This</span>
+          <ul>
+            <li>"We are excited" openings.</li>
+            <li>Feature-first copy with no lesson behind it.</li>
+            <li>Generic cold-email tips that could belong to any LinkedIn creator.</li>
+            <li>Overusing emojis, hype, or exaggerated metrics.</li>
+            <li>Turning every post into a trial CTA.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

@@ -10,6 +10,8 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const authBaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+
 // Request interceptor — injects Bearer token from localStorage
 api.interceptors.request.use((config) => {
   if (isBrowser) {
@@ -60,7 +62,7 @@ api.interceptors.response.use(
 
       try {
         const res = await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`,
+          `${authBaseUrl}/auth/refresh`,
           {},
           { withCredentials: true },
         );

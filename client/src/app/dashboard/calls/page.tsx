@@ -1,19 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Sidebar } from "../Sidebar";
-import { SidebarProvider } from "@/context/SidebarContext";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InlineLoader } from "@/components/PageLoader";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/context/ToastContext";
-import { createCallTask, getCallQueue, getContactLists, submitCallDisposition } from "@/lib/apis";
-import type { CallQueueItem } from "@/types";
+import { createCallTask, getCallQueue, getContactLists, submitCallDisposition, updateCallTask } from "@/lib/apis";
+import { getCurrentOrganization } from "@/lib/apis/organizations";
+import type { CallQueueItem, OrgMember } from "@/types";
 import type { ContactList } from "@/lib/apis/contactLists";
-import { CalendarClock, CheckCircle2, ClipboardList, ExternalLink, PhoneCall, Plus, Search, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarClock, CheckCircle2, ClipboardList, ExternalLink, PhoneCall, Plus, Search, SkipForward, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown, Menu, PhoneIncoming, PhoneOutgoing, ArrowDownUp, Building2 } from "lucide-react";
 import AddContactModal from "./AddContactModal";
 import Link from "next/link";
+import { useSidebar } from "@/hooks/useSidebar";
+import { cn } from "@/lib/utils";
 
 const OUTCOMES = ["NO_ANSWER", "CONNECTED", "INTERESTED", "BOOKED_MEETING", "NOT_A_FIT", "DO_NOT_CALL"] as const;
 const NEXT_ACTIONS = ["CALL_BACK", "EMAIL_FOLLOW_UP", "SEND_PROPOSAL", "BOOK_MEETING"] as const;
@@ -63,15 +63,6 @@ const stageLabel: Record<PipelineStage, string> = {
   CLOSED: "Closed",
 };
 
-const DueBadge = ({ dueAt }: { dueAt: string }) => {
-  const due = formatDueDate(dueAt);
-  return (
-    <span className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm border ${due.isOverdue ? "border-red-200 text-red-600 bg-red-50" : "border-border-light text-text-secondary"}`}>
-      <CalendarClock size={14} /> Due {due.label}, {due.time}
-    </span>
-  );
-};
-
 const getApiErrorMessage = (error: unknown, fallback: string): string => {
   if (
     typeof error === "object" &&
@@ -86,9 +77,23 @@ const getApiErrorMessage = (error: unknown, fallback: string): string => {
   return fallback;
 };
 
-export default function CallsPage() {
-  const { user } = useAuth();
+const getInitials = (task: CallQueueItem) => {
+  const f = task.contact.firstName?.[0];
+  const l = task.contact.lastName?.[0];
+  if (f && l) return `${f}${l}`.toUpperCase();
+  if (f) return f.toUpperCase();
+  return (task.contact.email?.[0] || "?").toUpperCase();
+};
+
+const getDisplayName = (task: CallQueueItem) => {
+  return (task.contact.firstName || task.contact.lastName)
+    ? `${task.contact.firstName || ""} ${task.contact.lastName || ""}`.trim()
+    : task.contact.email;
+};
+
+function CallsPageContent() {
   const { addToast } = useToast();
+  const { toggle } = useSidebar();
 
   const [isLoading, setIsLoading] = useState(true);
   const [allTasks, setAllTasks] = useState<CallQueueItem[]>([]);
@@ -100,6 +105,8 @@ export default function CallsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [listFilterId, setListFilterId] = useState<string | null>(null);
   const [lists, setLists] = useState<ContactList[]>([]);
+  const [members, setMembers] = useState<OrgMember[]>([]);
+  const [assigneeFilterId, setAssigneeFilterId] = useState<string | null>(null);
   const [dueFilter, setDueFilter] = useState<"all" | "today" | "overdue">("all");
   const [stageFilter, setStageFilter] = useState<PipelineStage>("ALL");
 
@@ -115,6 +122,8 @@ export default function CallsPage() {
   const [nextCallTime, setNextCallTime] = useState(nowTime());
   const [isSaving, setIsSaving] = useState(false);
 
+  const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(true);
+
   const fetchData = useCallback(async (page = 1) => {
     setIsLoading(true);
     try {
@@ -123,6 +132,7 @@ export default function CallsPage() {
         due: dueFilter,
         search: searchQuery || undefined,
         listId: listFilterId || undefined,
+        assignedToId: assigneeFilterId || undefined,
         page,
         limit: 50,
       });
@@ -133,18 +143,11 @@ export default function CallsPage() {
     } catch (error: unknown) {
       addToast("error", getApiErrorMessage(error, "Failed to load call workspace"));
     } finally { setIsLoading(false); }
-  }, [addToast, searchQuery, listFilterId, dueFilter]);
+  }, [addToast, searchQuery, listFilterId, assigneeFilterId, dueFilter]);
 
   useEffect(() => {
     fetchData(currentPage);
   }, [currentPage, fetchData]);
-
-  const isFirstRender = useRef(true);
-  useEffect(() => {
-    if (isFirstRender.current) { isFirstRender.current = false; return; }
-    setCurrentPage(1);
-    fetchData(1);
-  }, [searchQuery, listFilterId, dueFilter, fetchData]);
 
   useEffect(() => {
     (async () => {
@@ -153,6 +156,17 @@ export default function CallsPage() {
         setLists(data);
       } catch {
         setLists([]);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const org = await getCurrentOrganization();
+        setMembers(org?.members ?? []);
+      } catch {
+        setMembers([]);
       }
     })();
   }, []);
@@ -189,7 +203,7 @@ export default function CallsPage() {
         nextAction: isTerminal ? undefined : nextAction,
         nextCallAt: isTerminal ? undefined : `${nextCallDate}T${nextCallTime}`,
       });
-      const name = (selectedTask.contact.firstName || selectedTask.contact.lastName) ? `${selectedTask.contact.firstName || ""} ${selectedTask.contact.lastName || ""}`.trim() : selectedTask.contact.email;
+      const name = getDisplayName(selectedTask);
       setOutcome("NO_ANSWER"); setNextAction("CALL_BACK"); setNote("");
       setNextCallDate(todayDate()); setNextCallTime(nowTime());
       addToast("success", `${outcome} logged for ${name}${isTerminal ? " — no further call tasks" : ""}`);
@@ -200,7 +214,23 @@ export default function CallsPage() {
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentPage(1);
     setSearchQuery(e.target.value);
+  };
+
+  const handleListFilterChange = (value: string) => {
+    setCurrentPage(1);
+    setListFilterId(value || null);
+  };
+
+  const handleAssigneeFilterChange = (value: string) => {
+    setCurrentPage(1);
+    setAssigneeFilterId(value || null);
+  };
+
+  const handleDueFilterChange = (value: "all" | "today" | "overdue") => {
+    setCurrentPage(1);
+    setDueFilter(value);
   };
 
   const handleQuickSchedule = async (task: CallQueueItem) => {
@@ -211,7 +241,7 @@ export default function CallsPage() {
         dueAt: `${quickSchedDate}T${quickSchedTime}`,
         contactListId: effectiveListId,
       });
-      const name = (task.contact.firstName || task.contact.lastName) ? `${task.contact.firstName || ""} ${task.contact.lastName || ""}`.trim() : task.contact.email;
+      const name = getDisplayName(task);
       const dueLabel = formatDueDate(`${quickSchedDate}T${quickSchedTime}`);
       addToast("success", `Follow-up for ${name} scheduled for ${dueLabel.label} at ${dueLabel.time}`);
       setQuickSchedId(null);
@@ -222,210 +252,500 @@ export default function CallsPage() {
     }
   };
 
+  const handleAssigneeChange = async (task: CallQueueItem, assignedToId: string) => {
+    try {
+      const updated = await updateCallTask(task.id, { assignedToId: assignedToId || null });
+      setAllTasks((current) => current.map((item) => item.id === task.id ? { ...item, ...updated } : item));
+      addToast("success", assignedToId ? "Call owner updated" : "Call owner cleared");
+    } catch (error: unknown) {
+      addToast("error", getApiErrorMessage(error, "Failed to update call owner"));
+    }
+  };
+
   const isTerminal = outcome === "NOT_A_FIT" || outcome === "DO_NOT_CALL";
 
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
   return (
-    <AuthGuard>
+                    <AuthGuard requirePremium={true}>
       <ErrorBoundary>
-        <SidebarProvider>
-          <div className="flex h-screen bg-[#F8FAFC] font-sans">
-            <Sidebar currentLabel="Calls" setLabel={() => {}} profile={{ name: user?.name ?? "Outreach Pro", email: user?.email ?? "", avatarUrl: user?.avatarUrl ?? "" }} />
-
-            <main className="flex-1 min-w-0 overflow-hidden pt-4 px-4">
-              <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col h-full overflow-hidden">
-                <div className="px-6 py-4 border-b border-border-light bg-white flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-semibold text-text-primary tracking-tight">Calls</h1>
-                    <p className="text-sm text-text-muted font-medium">Track call progress with a structured pipeline and clear follow-ups.</p>
+        <div className="flex-1 flex min-w-0 overflow-hidden">
+          <div className="mx-auto w-full max-w-[1600px] flex grow flex-col overflow-hidden rounded-lg border border-border-light bg-white">
+              {/* Header */}
+              <div className="shrink-0 border-b border-border-light px-4 py-3 sm:px-6">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={toggle}
+                        aria-label="Open sidebar"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[#F0F1F3] lg:hidden"
+                      >
+                        <Menu size={14} />
+                      </button>
+                      <h1 className="text-base font-semibold text-text-primary">Calls</h1>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setShowAddModal(true)}
+                        className="flex h-7 items-center gap-1.5 rounded-md bg-brand px-2.5 text-xs font-medium text-white transition-all hover:bg-brand/90"
+                      >
+                        <Plus size={12} />
+                        Add
+                      </button>
+                    </div>
                   </div>
-                  <button onClick={() => setShowAddModal(true)} className="h-9 px-4 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90 inline-flex items-center gap-2 shrink-0"><Plus size={15} /> Add Contact</button>
-                </div>
 
-                <div className="px-6 py-3 border-b border-border-light bg-background/50 flex flex-wrap items-center gap-2">
-                  {PIPELINE_STAGES.map((stage) => (
-                    <button key={stage} onClick={() => setStageFilter(stage)}
-                      className={`h-8 px-3 rounded-lg border text-xs font-semibold ${stageFilter === stage ? "bg-brand text-white border-brand" : "bg-white border-border-light text-text-secondary"}`}>
-                      {stageLabel[stage]} ({stageCounts[stage]})
+                  {/* Search + filter toggle */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative min-w-0 flex-1">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" size={14} />
+                      <input
+                        type="text"
+                        placeholder="Search contacts in queue..."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        aria-label="Search contacts"
+                        className="w-full rounded-lg border border-border-light bg-[#F8F9FA] py-1.5 pl-8 pr-2.5 text-sm outline-none transition-all focus:border-brand/30 focus:bg-white focus:ring-2 focus:ring-brand/10"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setIsFiltersCollapsed(!isFiltersCollapsed)}
+                      className={cn("flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-all", isFiltersCollapsed ? "text-text-muted hover:bg-[#F0F1F3] hover:text-text-secondary" : "bg-brand-light text-brand")}
+                    >
+                      <ChevronDown size={12} className={cn("transition-transform", !isFiltersCollapsed && "rotate-180")} />
+                      Filters
                     </button>
-                  ))}
-                </div>
-
-                <div className="px-6 py-3 border-b border-border-light bg-background/40 flex items-center gap-3">
-                  <div className="relative flex-1 max-w-md">
-                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="Search contacts in queue..." value={searchQuery} onChange={handleSearchChange} aria-label="Search contacts" className="w-full pl-9 pr-3 h-9 bg-white border border-border-light rounded-lg text-sm outline-none focus:border-brand-muted transition-all" />
                   </div>
-                  <select value={listFilterId || ""} onChange={(e) => setListFilterId(e.target.value || null)} className="h-9 rounded-lg border border-border-light px-3 text-sm">
-                    <option value="">All Lists</option>
-                    <option value="__none">No List</option>
-                    {lists.map((list) => (
-                      <option key={list.id} value={list.id}>{list.name}</option>
-                    ))}
-                  </select>
-                  <select value={dueFilter} onChange={(e) => setDueFilter(e.target.value as "all" | "today" | "overdue")} className="h-9 rounded-lg border border-border-light px-3 text-sm">
-                    <option value="today">Due Today</option>
-                    <option value="overdue">Overdue</option>
-                    <option value="all">All Due Dates</option>
-                  </select>
-                </div>
 
-                {isLoading ? (
-                  <div className="flex-1 flex items-center justify-center"><InlineLoader /></div>
-                ) : (
-                  <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3">
-                    <div className="border-r border-border-light overflow-y-auto">
-                      {tasks.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                          <ClipboardList className="text-text-muted mb-3" />
-                          <p className="text-sm font-semibold text-text-secondary">
-                            {stageFilter === "ALL" && dueFilter === "all" && "No call tasks yet. Add a contact to get started."}
-                            {stageFilter === "ALL" && dueFilter === "today" && "No calls due today. Try 'All Due Dates'."}
-                            {stageFilter === "ALL" && dueFilter === "overdue" && "No overdue calls. Great job!"}
-                            {stageFilter !== "ALL" && `No tasks in ${stageLabel[stageFilter].toLowerCase()} stage.`}
-                          </p>
+                  {/* Pipeline stages + expanded filters */}
+                  {!isFiltersCollapsed && (
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className="rounded bg-[#F8F9FA] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-muted">Stage</span>
+                        <div className="flex items-center gap-0.5">
+                          {PIPELINE_STAGES.map((stage) => (
+                            <button
+                              key={stage}
+                              onClick={() => setStageFilter(stage)}
+                              className={cn("h-7 rounded-md px-2 font-medium transition-all", stageFilter === stage ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F0F1F3] hover:text-text-secondary")}
+                            >
+                              {stageLabel[stage]}
+                              {stageCounts[stage] > 0 && (
+                                <span className={cn("ml-1", stageFilter === stage ? "text-brand" : "text-text-muted")}>{stageCounts[stage]}</span>
+                              )}
+                            </button>
+                          ))}
                         </div>
-                      ) : (
-                        <>
+                      </div>
+
+                      <div className="h-4 w-px bg-border-light" />
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="rounded bg-[#F8F9FA] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-muted">List</span>
+                        <select
+                          value={listFilterId || ""}
+                          onChange={(e) => handleListFilterChange(e.target.value)}
+                          className="h-7 rounded-md bg-[#F8F9FA] px-2 text-xs text-text-secondary outline-none"
+                        >
+                          <option value="">All Lists</option>
+                          <option value="__none">No List</option>
+                          {lists.map((list) => (
+                            <option key={list.id} value={list.id}>{list.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="rounded bg-[#F8F9FA] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-muted">Owner</span>
+                        <select
+                          value={assigneeFilterId || ""}
+                          onChange={(e) => handleAssigneeFilterChange(e.target.value)}
+                          className="h-7 rounded-md bg-[#F8F9FA] px-2 text-xs text-text-secondary outline-none"
+                        >
+                          <option value="">All Owners</option>
+                          <option value="__unassigned">Unassigned</option>
+                          {members.map((member) => (
+                            <option key={member.userId} value={member.userId}>{member.name || member.email}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="rounded bg-[#F8F9FA] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-muted">Due</span>
+                        <div className="flex items-center gap-0.5">
+                          {(["today", "overdue", "all"] as const).map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() => handleDueFilterChange(opt)}
+                              className={cn("h-7 rounded-md px-2 font-medium transition-all", dueFilter === opt ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F0F1F3] hover:text-text-secondary")}
+                            >
+                              {opt === "today" ? "Today" : opt === "overdue" ? "Overdue" : "All"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Body: list + detail */}
+              {isLoading ? (
+                <div className="flex-1 flex items-center justify-center"><InlineLoader /></div>
+              ) : (
+                <div className="flex-1 flex min-w-0 overflow-hidden">
+                  {/* Task List */}
+                  <div className={cn(
+                    "overflow-y-auto border-r border-border-light bg-white",
+                    selectedTask ? "hidden min-[1180px]:block min-[1180px]:w-[420px]" : "flex-1"
+                  )}>
+                    {tasks.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                        <ClipboardList className="text-text-muted mb-3" size={24} />
+                        <p className="text-sm font-semibold text-text-secondary">
+                          {stageFilter === "ALL" && dueFilter === "all" && "No call tasks yet. Add a contact to get started."}
+                          {stageFilter === "ALL" && dueFilter === "today" && "No calls due today. Try 'All Due Dates'."}
+                          {stageFilter === "ALL" && dueFilter === "overdue" && "No overdue calls. Great job!"}
+                          {stageFilter !== "ALL" && `No tasks in ${stageLabel[stageFilter].toLowerCase()} stage.`}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-light bg-white px-4 py-2.5 sm:px-6">
+                          <span className="text-xs font-medium text-text-secondary">{tasks.length} task{tasks.length === 1 ? "" : "s"}</span>
+                          <span className="text-xs text-text-muted">{totalTasks} total</span>
+                        </div>
+                        <div className="divide-y divide-border-light">
                           {tasks.map((task) => {
-                            const name = (task.contact.firstName || task.contact.lastName) ? `${task.contact.firstName || ""} ${task.contact.lastName || ""}`.trim() : task.contact.email;
+                            const name = getDisplayName(task);
                             const due = formatDueDate(task.dueAt);
                             return (
-                              <div key={task.id} onClick={() => setSelectedTaskId(task.id)} role="button" tabIndex={0}
+                              <div
+                                key={task.id}
+                                onClick={() => setSelectedTaskId(task.id)}
+                                role="button"
+                                tabIndex={0}
                                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setSelectedTaskId(task.id); }}
-                                className={`w-full text-left px-5 py-4 border-b border-border-light hover:bg-interactive-hover/40 ${selectedTaskId === task.id ? "bg-brand/5" : ""}`}>
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="min-w-0">
-                                    <div className="text-sm font-bold text-text-primary truncate">{name}</div>
-                                    <div className="text-xs text-text-muted truncate">{task.contact.company || "No company"}</div>
-                                    <div className={`mt-1 flex items-center gap-2 text-[11px] ${due.isOverdue ? "text-red-500 font-semibold" : "text-text-secondary"}`}>
-                                      <CalendarClock size={11} /> {due.isOverdue ? "Overdue — " : ""}Due {due.label}, {due.time}
-                                    </div>
-                                  </div>
-                                  {task.status === "PENDING" && (
-                                    <div className="relative shrink-0">
-                                      <button onClick={(e) => { e.stopPropagation(); setQuickSchedId(quickSchedId === task.id ? null : task.id); setQuickSchedDate(todayDate()); setQuickSchedTime(nowTime()); }}
-                                        className="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-border-light text-xs font-semibold text-text-secondary hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all">
-                                        <CalendarClock size={13} /> Follow-up
-                                      </button>
-                                      {quickSchedId === task.id && (
-                                        <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-border-light rounded-xl shadow-lg p-3 w-64" onClick={(e) => e.stopPropagation()}>
-                                          <div className="text-xs font-bold text-text-primary mb-2">Schedule Follow-up</div>
-                                          <div className="flex gap-2 mb-2">
-                                            <input type="date" value={quickSchedDate} onChange={(e) => setQuickSchedDate(e.target.value)}
-                                              className="flex-1 h-8 rounded-lg border border-border-light px-2 text-xs" />
-                                            <input type="time" value={quickSchedTime} onChange={(e) => setQuickSchedTime(e.target.value)}
-                                              className="flex-1 h-8 rounded-lg border border-border-light px-2 text-xs" />
-                                          </div>
-                                          <div className="flex gap-2">
-                                            <button onClick={() => setQuickSchedId(null)}
-                                              className="flex-1 h-8 rounded-lg border border-border-light text-xs font-semibold text-text-secondary hover:bg-gray-50">Cancel</button>
-                                            <button onClick={() => handleQuickSchedule(task)}
-                                              className="flex-1 h-8 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">Schedule</button>
-                                          </div>
-                                        </div>
+                                className={cn(
+                                  "group flex items-center gap-2 border-l-2 bg-white px-4 py-2.5 transition-all sm:px-6",
+                                  selectedTaskId === task.id
+                                    ? "border-l-brand bg-brand-light/40"
+                                    : "border-l-transparent hover:bg-[#F8F9FA]"
+                                )}
+                              >
+                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-brand-muted/40 text-[11px] font-semibold text-brand">
+                                  {getInitials(task)}
+                                </div>
+                                <div className="flex min-w-0 flex-1 items-center gap-2">
+                                  <div className="min-w-0 flex-[3]">
+                                    <div className="flex items-center gap-2">
+                                      <span className="truncate text-sm font-medium text-text-primary">{name}</span>
+                                      {task.status === "PENDING" && (
+                                        <span className="shrink-0 rounded bg-[#F8F9FA] px-1.5 py-0.5 text-[10px] font-medium text-text-secondary">
+                                          {due.isOverdue ? "Overdue" : "Pending"}
+                                        </span>
+                                      )}
+                                      {task.status !== "PENDING" && (
+                                        <span className="shrink-0 rounded bg-brand-light px-1.5 py-0.5 text-[10px] font-medium text-brand">
+                                          Done
+                                        </span>
                                       )}
                                     </div>
-                                  )}
+                                    <div className="flex items-center gap-x-2 gap-y-0.5 text-xs text-text-muted">
+                                      <span className="truncate">{task.contact.company || "No company"}</span>
+                                      <span className="shrink-0">·</span>
+                                      <span className={cn("truncate", due.isOverdue ? "text-error-text font-medium" : "")}>
+                                        Due {due.label}, {due.time}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {task.status === "PENDING" && (
+                                      <div className="relative">
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); setQuickSchedId(quickSchedId === task.id ? null : task.id); setQuickSchedDate(todayDate()); setQuickSchedTime(nowTime()); }}
+                                          className="flex h-6 w-6 items-center justify-center rounded-md text-text-muted transition-all hover:bg-[#F0F1F3] hover:text-brand"
+                                          title="Schedule follow-up"
+                                        >
+                                          <CalendarClock size={11} />
+                                        </button>
+                                        {quickSchedId === task.id && (
+                                          <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-border-light rounded-lg shadow-premium-md p-3 w-56" onClick={(e) => e.stopPropagation()}>
+                                            <div className="text-xs font-semibold text-text-primary mb-2">Schedule Follow-up</div>
+                                            <div className="flex flex-col gap-1.5 mb-2">
+                                              <input type="date" value={quickSchedDate} onChange={(e) => setQuickSchedDate(e.target.value)}
+                                                className="h-7 rounded-md border border-border-light px-2 text-xs" />
+                                              <input type="time" value={quickSchedTime} onChange={(e) => setQuickSchedTime(e.target.value)}
+                                                className="h-7 rounded-md border border-border-light px-2 text-xs" />
+                                            </div>
+                                            <div className="flex gap-1.5">
+                                              <button onClick={() => setQuickSchedId(null)}
+                                                className="flex-1 h-7 rounded-md border border-border-light text-xs font-medium text-text-secondary hover:bg-[#F0F1F3]">Cancel</button>
+                                              <button onClick={() => handleQuickSchedule(task)}
+                                                className="flex-1 h-7 rounded-md bg-brand text-white text-xs font-medium hover:bg-brand/90">Schedule</button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                    {task.assignedTo && (
+                                      <span className="flex h-6 items-center px-1.5 text-[10px] text-text-muted">{task.assignedTo.name || task.assignedTo.email}</span>
+                                    )}
+                                  </div>
+
+                                  <ChevronRight size={14} className="shrink-0 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                               </div>
                             );
                           })}
-                          <div className="px-4 py-3 flex items-center justify-between border-t border-border-light bg-gray-50/50">
+                        </div>
+                        {totalPages > 1 && (
+                          <div className="flex items-center justify-between border-t border-border-light bg-white px-4 py-2 sm:px-6 shrink-0">
                             <span className="text-xs text-text-muted">{tasks.length} of {totalTasks} tasks</span>
-                            {totalPages > 1 && (
-                              <div className="flex items-center gap-1">
-                                <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage <= 1} className="p-1 rounded hover:bg-gray-200 disabled:opacity-30"><ChevronLeft size={16} /></button>
-                                <span className="px-2 text-xs font-semibold text-text-secondary">{currentPage} / {totalPages}</span>
-                                <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages} className="p-1 rounded hover:bg-gray-200 disabled:opacity-30"><ChevronRight size={16} /></button>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="lg:col-span-2 overflow-y-auto p-6">
-                      {!selectedTask ? (
-                        <div className="h-full flex flex-col items-center justify-center text-text-muted text-sm">
-                          <ClipboardList size={32} className="text-gray-200 mb-3" />
-                          Select a task to log its outcome
-                        </div>
-                      ) : (
-                        <div className="space-y-5 max-w-2xl">
-                          <div className="rounded-xl border border-border-light p-4 bg-background/40">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="text-lg font-bold text-text-primary">{(selectedTask.contact.firstName || selectedTask.contact.lastName) ? `${selectedTask.contact.firstName || ""} ${selectedTask.contact.lastName || ""}`.trim() : selectedTask.contact.email}</div>
-                                <div className="text-sm text-text-secondary">{selectedTask.contact.company || "No company"}</div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <Link href={`/dashboard/prm?search=${encodeURIComponent(selectedTask.contact.email)}`}
-                                  className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase text-brand hover:bg-brand/5 border border-brand/20 transition-all">
-                                  <ExternalLink size={12} /> Profile
-                                </Link>
-                                <span className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${selectedTask.status === "PENDING" ? "bg-yellow-50 text-yellow-700" : "bg-green-50 text-green-700"}`}>{selectedTask.status}</span>
-                              </div>
-                            </div>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <a href={selectedTask.contact.phone ? `tel:${selectedTask.contact.phone}` : "#"} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border ${selectedTask.contact.phone ? "border-brand/30 text-brand hover:bg-brand/5" : "border-border-light text-text-muted pointer-events-none"}`}>
-                                <PhoneCall size={14} /> {selectedTask.contact.phone || "No phone"}
-                              </a>
-                              <DueBadge dueAt={selectedTask.dueAt} />
-                              {selectedTask.lastOutcome && (
-                                <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm border border-border-light text-text-secondary">Last: {selectedTask.lastOutcome}</span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="rounded-xl border border-border-light p-4 space-y-4">
-                            <h2 className="font-bold text-text-primary">Log Call Outcome</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div>
-                                <label className="text-xs font-semibold text-text-muted uppercase">Outcome</label>
-                                <select value={outcome} onChange={(e) => setOutcome(e.target.value)} className="mt-1 w-full h-10 rounded-lg border border-border-light px-3 text-sm">
-                                  {OUTCOMES.map((o) => <option key={o} value={o}>{o}</option>)}
-                                </select>
-                              </div>
-                              <div>
-                                <label className="text-xs font-semibold text-text-muted uppercase">Next Action</label>
-                                <select value={nextAction} onChange={(e) => setNextAction(e.target.value)} disabled={isTerminal} className="mt-1 w-full h-10 rounded-lg border border-border-light px-3 text-sm disabled:bg-gray-100">
-                                  {NEXT_ACTIONS.map((a) => <option key={a} value={a}>{a}</option>)}
-                                </select>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div>
-                                <label className="text-xs font-semibold text-text-muted uppercase">Next Call Date</label>
-                                <input type="date" value={nextCallDate} onChange={(e) => setNextCallDate(e.target.value)} disabled={isTerminal} className="mt-1 w-full h-10 rounded-lg border border-border-light px-3 text-sm disabled:bg-gray-100" />
-                              </div>
-                              <div>
-                                <label className="text-xs font-semibold text-text-muted uppercase">Next Call Time</label>
-                                <input type="time" value={nextCallTime} onChange={(e) => setNextCallTime(e.target.value)} disabled={isTerminal} className="mt-1 w-full h-10 rounded-lg border border-border-light px-3 text-sm disabled:bg-gray-100" />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-xs font-semibold text-text-muted uppercase">Call Note</label>
-                              <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} className="mt-1 w-full rounded-lg border border-border-light px-3 py-2 text-sm" placeholder="What happened on the call? objections, context, next commitment..." />
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <button onClick={handleLogCall} disabled={isSaving} className="h-10 px-4 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90 disabled:opacity-60 inline-flex items-center gap-2"><CheckCircle2 size={14} /> Save Outcome</button>
-                              {isTerminal && <span className="text-xs text-text-muted inline-flex items-center gap-1"><SkipForward size={12} /> This will close future call tasking for this contact.</span>}
+                            <div className="flex items-center gap-0.5">
+                              <button
+                                onClick={() => goToPage(1)}
+                                disabled={currentPage <= 1}
+                                className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-all hover:bg-[#F0F1F3] disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <ChevronsLeft size={13} />
+                              </button>
+                              <button
+                                onClick={() => goToPage(currentPage - 1)}
+                                disabled={currentPage <= 1}
+                                className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-all hover:bg-[#F0F1F3] disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <ChevronLeft size={13} />
+                              </button>
+                              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+                                const p = start + i;
+                                if (p > totalPages) return null;
+                                return (
+                                  <button
+                                    key={p}
+                                    onClick={() => goToPage(p)}
+                                    className={cn(
+                                      "flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium",
+                                      p === currentPage
+                                        ? "bg-brand-light text-brand"
+                                        : "text-text-muted hover:bg-[#F0F1F3] hover:text-text-secondary"
+                                    )}
+                                  >
+                                    {p}
+                                  </button>
+                                );
+                              })}
+                              <button
+                                onClick={() => goToPage(currentPage + 1)}
+                                disabled={currentPage >= totalPages}
+                                className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-all hover:bg-[#F0F1F3] disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <ChevronRight size={13} />
+                              </button>
+                              <button
+                                onClick={() => goToPage(totalPages)}
+                                disabled={currentPage >= totalPages}
+                                className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-all hover:bg-[#F0F1F3] disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <ChevronsRight size={13} />
+                              </button>
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </>
+                    )}
                   </div>
-                )}
-              </div>
-            </main>
 
-            {showAddModal && (
-              <AddContactModal listFilterId={listFilterId} onClose={() => setShowAddModal(false)} onSuccess={() => fetchData()} />
-            )}
+                  {/* Detail Panel */}
+                  <div className={cn(
+                    "flex-1 min-w-0 overflow-y-auto custom-scrollbar",
+                    selectedTask ? "flex" : "hidden min-[1180px]:flex"
+                  )}>
+                    {!selectedTask ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-text-muted text-sm">
+                        <PhoneCall size={32} className="text-text-muted mb-3" />
+                        Select a task to log its outcome
+                      </div>
+                    ) : (
+                      <div className="flex flex-col w-full">
+                        {/* Detail Header */}
+                        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border-light bg-white px-4 py-2.5 shrink-0">
+                          <h2 className="text-sm font-semibold text-text-primary">Call</h2>
+                          <div className="flex items-center gap-1">
+                            <Link
+                              href={`/dashboard/prm?search=${encodeURIComponent(selectedTask.contact.email)}`}
+                              className="flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-text-muted transition-colors hover:bg-[#F0F1F3] hover:text-text-secondary"
+                            >
+                              <ExternalLink size={12} />
+                              Profile
+                            </Link>
+                            <button
+                              onClick={() => setSelectedTaskId(null)}
+                              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[#F0F1F3] min-[1180px]:hidden"
+                              aria-label="Back to tasks"
+                            >
+                              <ChevronLeft size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Contact Card */}
+                        <div className="border-b border-border-light p-4 sm:p-5">
+                          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-muted/40 text-sm font-semibold text-brand">
+                              {getInitials(selectedTask)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className={cn(
+                                  "rounded px-2 py-0.5 text-[11px] font-medium",
+                                  selectedTask.status === "PENDING" ? "bg-[#F0F1F3] text-text-secondary" : selectedTask.status === "SKIPPED" ? "bg-error-bg text-error-text" : "bg-brand-light text-brand"
+                                )}>
+                                  {selectedTask.status === "PENDING" ? "Pending" : selectedTask.status === "SKIPPED" ? "Skipped" : "Completed"}
+                                </span>
+                              </div>
+                              <div className="mt-2 flex items-start justify-between gap-3">
+                                <h1 className="min-w-0 truncate text-xl font-semibold tracking-tight text-text-primary">
+                                  {getDisplayName(selectedTask)}
+                                </h1>
+                              </div>
+                              <div className="mt-1 flex items-center gap-2 text-text-muted">
+                                <Building2 size={14} />
+                                <span className="text-sm">{selectedTask.contact.company || "No company"}</span>
+                              </div>
+                              {selectedTask.contact.phone && (
+                                <div className="mt-1 flex items-center gap-2 text-text-muted">
+                                  <PhoneCall size={14} />
+                                  <a href={`tel:${selectedTask.contact.phone}`} className="text-sm text-brand hover:underline">{selectedTask.contact.phone}</a>
+                                </div>
+                              )}
+                              <div className="mt-3 grid gap-x-3 gap-y-2 sm:grid-cols-2">
+                                <div>
+                                  <div className="text-[11px] font-medium text-text-muted">Call owner</div>
+                                  <select
+                                    value={selectedTask.assignedToId || ""}
+                                    onChange={(e) => handleAssigneeChange(selectedTask, e.target.value)}
+                                    className="mt-0.5 h-7 w-full rounded-md bg-[#F8F9FA] px-2 text-sm font-medium text-text-primary outline-none"
+                                  >
+                                    <option value="">Unassigned</option>
+                                    {members.map((member) => (
+                                      <option key={member.userId} value={member.userId}>{member.name || member.email}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div>
+                                  <div className="text-[11px] font-medium text-text-muted">Due</div>
+                                  <div className={cn("mt-0.5 text-sm font-medium", selectedTask.dueAt && formatDueDate(selectedTask.dueAt).isOverdue ? "text-error-text" : "text-text-primary")}>
+                                    {selectedTask.dueAt ? (() => {
+                                      const due = formatDueDate(selectedTask.dueAt);
+                                      return `${due.label}, ${due.time}`;
+                                    })() : "No due date"}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Stats Strip */}
+                        <div className="flex border-b border-border-light">
+                          {[
+                            { label: "Outcome", value: selectedTask.lastOutcome || "—", icon: PhoneIncoming },
+                            { label: "Disposition", value: selectedTask.lastDisposition || "—", icon: ArrowDownUp },
+                            { label: "Status", value: selectedTask.status === "PENDING" ? "Active" : "Done", icon: PhoneOutgoing },
+                          ].map((stat) => (
+                            <div key={stat.label} className="flex-1 border-r border-border-light last:border-r-0 py-3 text-center transition-colors hover:bg-[#F8F9FA]">
+                              <div className="flex items-center justify-center gap-1 text-lg font-semibold text-text-primary">
+                                <stat.icon size={13} className="text-text-muted" />
+                                <span className="truncate max-w-[80px]">{String(stat.value)}</span>
+                              </div>
+                              <div className="text-[10px] font-medium text-text-muted mt-0.5">{stat.label}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Log Call Outcome */}
+                        <div className="p-4 sm:p-5">
+                          <div className="rounded-lg border border-border-light bg-white">
+                            <div className="px-4 py-3 border-b border-border-light">
+                              <h3 className="text-sm font-semibold text-text-primary">Log Call Outcome</h3>
+                            </div>
+                            <div className="p-4 space-y-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-[11px] font-medium text-text-muted">Outcome</label>
+                                  <select value={outcome} onChange={(e) => setOutcome(e.target.value)}
+                                    className="mt-1 h-7 w-full rounded-md border border-border-light bg-[#F8F9FA] px-2 text-xs text-text-primary outline-none focus:border-brand/30 focus:bg-white">
+                                    {OUTCOMES.map((o) => <option key={o} value={o}>{o.replace(/_/g, " ")}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="text-[11px] font-medium text-text-muted">Next action</label>
+                                  <select value={nextAction} onChange={(e) => setNextAction(e.target.value)} disabled={isTerminal}
+                                    className="mt-1 h-7 w-full rounded-md border border-border-light bg-[#F8F9FA] px-2 text-xs text-text-primary outline-none focus:border-brand/30 focus:bg-white disabled:opacity-50">
+                                    {NEXT_ACTIONS.map((a) => <option key={a} value={a}>{a.replace(/_/g, " ")}</option>)}
+                                  </select>
+                                </div>
+                              </div>
+                              {!isTerminal && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-[11px] font-medium text-text-muted">Next call date</label>
+                                    <input type="date" value={nextCallDate} onChange={(e) => setNextCallDate(e.target.value)}
+                                      className="mt-1 h-7 w-full rounded-md border border-border-light bg-[#F8F9FA] px-2 text-xs outline-none focus:border-brand/30 focus:bg-white" />
+                                  </div>
+                                  <div>
+                                    <label className="text-[11px] font-medium text-text-muted">Next call time</label>
+                                    <input type="time" value={nextCallTime} onChange={(e) => setNextCallTime(e.target.value)}
+                                      className="mt-1 h-7 w-full rounded-md border border-border-light bg-[#F8F9FA] px-2 text-xs outline-none focus:border-brand/30 focus:bg-white" />
+                                  </div>
+                                </div>
+                              )}
+                              <div>
+                                <label className="text-[11px] font-medium text-text-muted">Call note</label>
+                                <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3}
+                                  className="mt-1 w-full rounded-md border border-border-light bg-[#F8F9FA] px-3 py-2 text-xs outline-none focus:border-brand/30 focus:bg-white focus:ring-2 focus:ring-brand/10"
+                                  placeholder="What happened? objections, context, next commitment..."
+                                />
+                              </div>
+                              <div className="flex items-center gap-2 pt-1">
+                                <button onClick={handleLogCall} disabled={isSaving}
+                                  className="h-7 px-3 rounded-md bg-brand text-white text-xs font-semibold hover:bg-brand/90 disabled:opacity-60 inline-flex items-center gap-1.5">
+                                  <CheckCircle2 size={12} />
+                                  Save Outcome
+                                </button>
+                                {isTerminal && (
+                                  <span className="text-[11px] text-text-muted inline-flex items-center gap-1">
+                                    <SkipForward size={11} />
+                                    This will close future call tasking.
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
           </div>
-        </SidebarProvider>
+        </div>
+
+          {showAddModal && (
+            <AddContactModal listFilterId={listFilterId} onClose={() => setShowAddModal(false)} onSuccess={() => fetchData(currentPage)} />
+          )}
       </ErrorBoundary>
     </AuthGuard>
   );
+}
+
+export default function CallsPage() {
+  return <CallsPageContent />;
 }

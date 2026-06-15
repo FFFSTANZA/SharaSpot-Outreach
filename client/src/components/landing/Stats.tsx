@@ -1,25 +1,25 @@
 "use client";
 
-import { CheckCircle2, TrendingUp, BarChart3, Fingerprint, Activity, ShieldCheck, Globe, Shield, Zap, Target } from "lucide-react";
+import { CheckCircle2, ShieldCheck } from "lucide-react";
 
 const reliabilityPoints = [
     {
         label: "Continuous Growth",
-        accent: "#00A63E",
+        accent: "#3B82F6",
         body: "Outreach shouldn't be a gamble. We provide the stability your pipeline needs, ensuring that your messages arrive with the same reliability as a direct meeting invite. When your growth is consistent, your business is unstoppable.",
-        outcome: "Verified 96% placement rate across all client portfolios. Zero downtime for your outreach sequences."
+        outcome: "Adaptive limits, warmup, and bounce suppression protect every sender before volume increases."
     },
     {
         label: "Brand Authority",
         accent: "#1A56DB",
-        body: "Your brand is your most valuable asset. We ensure your reputation remains spotless by making your outreach look exactly like what it is: a human-led inquiry from a professional peer. No bot-like footprints, no automated noise.",
+        body: "Your brand is your most valuable asset. SharaSpot protects reputation by keeping outreach closer to what it should be: a human-led inquiry from a professional peer. Less bot-like footprint, less automated noise.",
         outcome: "Clean-slate reputation protection for every sender account. Indistinguishable from manual, one-to-one business sends."
     },
     {
         label: "Operational Speed",
         accent: "#7C3AED",
-        body: "Business moves fast, and so should your outreach. We ensure your messages are dispatched exactly when they need to be seen, without delays or processing bottlenecks. Scale your effort without losing the 'first-mover' advantage.",
-        outcome: "Instant delivery to the primary inbox. Adaptive timing that hits recipient windows with mathematical precision."
+        body: "Business moves fast, and so should your outreach. SharaSpot dispatches messages with timing controls designed for the windows when they are most likely to be seen, without risky bursts.",
+        outcome: "Inbox-first scheduling, sender rotation, and business-hour timing improve placement without extra user setup."
     }
 ];
 
@@ -64,7 +64,7 @@ export default function Stats() {
                                 <p className="text-base text-text-primary leading-[1.75] mb-6 font-semibold">
                                     {p.body}
                                 </p>
-                                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="flex items-center gap-3 p-4 bg-[#F8F9FA] rounded-2xl border border-border-light">
                                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0">
                                         <CheckCircle2 size={16} className="text-brand" />
                                     </div>

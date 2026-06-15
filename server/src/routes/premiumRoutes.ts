@@ -4,7 +4,7 @@ import { generateCalendlyUrl, verifyCalendlyLink } from "../utils/calendlyIntegr
 import { prisma } from "../config/prisma";
 import { requirePremium } from "../utils/premiumCheck";
 import { getPriorityQuotaStatus } from "../utils/prioritySafetyLimits";
-import { extractDomain } from "../utils/emailThreading";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -38,7 +38,7 @@ router.post(
 
       res.json(result);
     } catch (error) {
-      console.error("[SPAM ANALYZE ERROR]", error);
+      logger.error({ error }, "[SPAM ANALYZE ERROR]");
       res.status(500).json({ error: "Failed to analyze spam score" });
     }
   }
@@ -76,14 +76,14 @@ router.post(
 
       const button = prefill
         ? {
-          html: `<a href="${url}" style="display:inline-block;padding:12px 24px;background-color:#00A63E;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Book a Time</a>`,
+          html: `<a href="${url}" style="display:inline-block;padding:12px 24px;background-color:#3B82F6;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Book a Time</a>`,
           text: `Book a time: ${url}`,
         }
         : { html: "", text: "" };
 
       res.json({ url, button });
     } catch (error) {
-      console.error("[CALENDLY GEN ERROR]", error);
+      logger.error({ error }, "[CALENDLY GEN ERROR]");
       res.status(500).json({ error: "Failed to generate Calendly URL" });
     }
   }
@@ -113,7 +113,7 @@ router.post(
 
       res.json(result);
     } catch (error) {
-      console.error("[CALENDLY VERIFY ERROR]", error);
+      logger.error({ error }, "[CALENDLY VERIFY ERROR]");
       res.status(500).json({ error: "Failed to verify Calendly link" });
     }
   }
@@ -148,28 +148,21 @@ router.post(
       const signature = req.headers["calendly-signature"] as string;
 
       if (webhookToken && signature !== webhookToken) {
-        console.warn("[CALENDLY WEBHOOK] Invalid signature");
+        logger.warn("[CALENDLY WEBHOOK] Invalid signature");
         return res.status(401).json({ error: "Invalid signature" });
       }
 
       if (event === "invitee.created") {
         // Meeting was booked
-        console.log("[CALENDLY] Meeting booked:", {
-          email: payload.invitee.email,
-          name: payload.invitee.name,
-          event: payload.scheduling_link?.name,
-        });
+        logger.info({ email: payload.invitee.email, name: payload.invitee.name, event: payload.scheduling_link?.name }, "[CALENDLY] Meeting booked:");
       } else if (event === "invitee.canceled") {
         // Meeting was cancelled
-        console.log("[CALENDLY] Meeting cancelled:", {
-          email: payload.invitee.email,
-          name: payload.invitee.name,
-        });
+        logger.info({ email: payload.invitee.email, name: payload.invitee.name }, "[CALENDLY] Meeting cancelled:");
       }
 
       res.json({ received: true });
     } catch (error) {
-      console.error("[CALENDLY WEBHOOK ERROR]", error);
+      logger.error({ error }, "[CALENDLY WEBHOOK ERROR]");
       res.status(500).json({ error: "Webhook processing failed" });
     }
   }
@@ -196,7 +189,7 @@ router.get(
 
       res.json(quota);
     } catch (error) {
-      console.error("[PRIORITY QUOTA ERROR]", error);
+      logger.error({ error }, "[PRIORITY QUOTA ERROR]");
       res.status(500).json({ error: "Failed to get priority quota" });
     }
   }
@@ -276,7 +269,7 @@ router.get(
         statusCounts,
       });
     } catch (error) {
-      console.error("[PRIORITY STATUS ERROR]", error);
+      logger.error({ error }, "[PRIORITY STATUS ERROR]");
       res.status(500).json({ error: "Failed to get priority status" });
     }
   }

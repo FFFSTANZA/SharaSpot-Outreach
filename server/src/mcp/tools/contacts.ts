@@ -2,6 +2,7 @@ import { prisma } from "../../config/prisma";
 import { MCPContext } from "../types";
 import { toolRegistry, createToolHandler } from "../toolRegistry";
 import { mcpCreateData, mcpScopeWhere } from "../scope";
+import { enrichContactInput, normalizeDomain, normalizeEmailAddress, normalizeWebsite } from "../../utils/contactEnrichment";
 
 function sanitizeString(value: unknown, maxLength = 500): string {
   if (typeof value !== "string") return "";
@@ -27,12 +28,13 @@ const contactInputSchema = {
   type: "object" as const,
   properties: {
     email: { type: "string", description: "Contact email address" },
+    website: { type: "string", description: "Company website URL used for enrichment" },
+    companyDomain: { type: "string", description: "Company domain used for enrichment" },
     firstName: { type: "string", description: "Contact first name" },
     lastName: { type: "string", description: "Contact last name" },
     company: { type: "string", description: "Contact company name" },
     tags: { type: "array", items: { type: "string" }, description: "Tags to apply" },
   },
-  required: ["email"],
 };
 
 const contactListInputSchema = {
@@ -48,9 +50,16 @@ async function createContact(
   context: MCPContext,
   args: Record<string, unknown>
 ): Promise<unknown> {
-  const email = sanitizeEmail(args.email);
+  const enrichment = await enrichContactInput({
+    email: normalizeEmailAddress(args.email),
+    website: normalizeWebsite(args.website),
+    companyDomain: normalizeDomain(args.companyDomain),
+    firstName: sanitizeString(args.firstName, 100),
+    lastName: sanitizeString(args.lastName, 100),
+  });
+  const email = enrichment.email;
   if (!email) {
-    return { success: false, message: "Invalid email address" };
+    return { success: false, message: "Email is required or must be discoverable from website/domain" };
   }
 
   const contact = await prisma.$transaction(async (tx) => {
@@ -64,13 +73,17 @@ async function createContact(
     }
 
     const created = await tx.contact.create({
-      data: mcpCreateData(context, {
-        email,
-        firstName: sanitizeString(args.firstName, 100),
-        lastName: sanitizeString(args.lastName, 100),
-        company: sanitizeString(args.company, 200),
-      }),
-    });
+        data: mcpCreateData(context, {
+          email,
+          website: enrichment.website,
+          companyDomain: enrichment.companyDomain,
+          firstName: sanitizeString(args.firstName, 100),
+          lastName: sanitizeString(args.lastName, 100),
+          company: sanitizeString(args.company, 200),
+          techStack: enrichment.techStack,
+          lastEnrichedAt: enrichment.lastEnrichedAt,
+        }),
+      });
 
     const tags = args.tags;
     if (Array.isArray(tags)) {
@@ -136,9 +149,12 @@ async function listContacts(
     contacts: contacts.map((c) => ({
       id: c.id,
       email: c.email,
+      website: c.website,
+      companyDomain: c.companyDomain,
       firstName: c.firstName,
       lastName: c.lastName,
       company: c.company,
+      techStack: c.techStack,
     })),
     total,
     limit,
@@ -166,9 +182,12 @@ async function getContact(
   return {
     id: contact.id,
     email: contact.email,
+    website: contact.website,
+    companyDomain: contact.companyDomain,
     firstName: contact.firstName,
     lastName: contact.lastName,
     company: contact.company,
+    techStack: contact.techStack,
   };
 }
 

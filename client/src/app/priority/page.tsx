@@ -4,11 +4,11 @@ import React, { useState, useEffect } from "react";
 import MailAppContainer from "@/components/landing/MailAppContainer";
 import {
     Zap, Shield, CheckCircle2, ArrowRight,
-    TrendingUp, Activity, Star, Lock,
-    BarChart3, Users, Award, Clock,
+    TrendingUp, Activity,
     ChevronRight
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { SITE_NAME, absoluteUrl, buildBreadcrumbJsonLd } from "@/lib/seo";
 
 interface BenchmarkResult {
     scenario: string;
@@ -17,6 +17,35 @@ interface BenchmarkResult {
     improvement: string;
     metrics: { label: string; normal: string; priority: string }[];
 }
+
+const priorityStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+        buildBreadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Priority", path: "/priority" },
+        ]),
+        {
+            "@type": "TechArticle",
+            "headline": `${SITE_NAME} priority delivery research`,
+            "url": absoluteUrl("/priority"),
+            "description": "Positioning and benchmark-oriented research for inbox-first cold outreach routing.",
+            "about": [
+                "Email deliverability",
+                "Inbox placement",
+                "Priority routing",
+                "Cold outreach infrastructure"
+            ],
+            "citation": {
+                "@type": "Dataset",
+                "name": "SharaSpot Priority benchmark results",
+                "description": "Test results comparing standard sending infrastructure against SharaSpot Priority Protocol across 80 unique recipient domains.",
+                "url": absoluteUrl("/data/benchmark-results.json"),
+                "measurementTechnique": "Controlled A/B send testing with equal volume, content, and cadence across 80 recipient domains."
+            }
+        }
+    ]
+};
 
 export default function PriorityPage() {
     const router = useRouter();
@@ -29,13 +58,13 @@ export default function PriorityPage() {
             .catch(() => {
                 setBenchmarks([
                     {
-                        scenario: "Primary Inbox Placement",
+                        scenario: "Inbox Placement Controls",
                         normalScore: 52,
-                        priorityScore: 96,
-                        improvement: "+85% inbox rate",
+                        priorityScore: 88,
+                        improvement: "+69% control score",
                         metrics: [
-                            { label: "Inbox Placement", normal: "52%", priority: "96%" },
-                            { label: "Spam / Promo Tab", normal: "48%", priority: "4%" },
+                            { label: "Inbox Controls", normal: "Basic", priority: "Adaptive" },
+                            { label: "Spam / Promo Risk", normal: "High", priority: "Guarded" },
                             { label: "Delivery Confidence", normal: "Low", priority: "High" },
                         ],
                     },
@@ -68,9 +97,15 @@ export default function PriorityPage() {
     return (
         <MailAppContainer>
             <main>
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(priorityStructuredData).replace(/</g, "\\u003c"),
+                    }}
+                />
 
                 {/* ── 01: HERO ── */}
-                <section className="relative pt-24 pb-32 overflow-hidden bg-white border-b border-slate-200">
+                <section className="relative pt-16 pb-16 md:pt-24 md:pb-32 overflow-hidden bg-white border-b border-slate-200">
                     <div className="absolute top-8 left-8 hidden lg:block">
                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] font-sans">01 / System Entry</span>
                     </div>
@@ -96,7 +131,7 @@ export default function PriorityPage() {
                                     <span className="text-brand">must</span> land.
                                 </h1>
                                 <p className="text-lg text-text-secondary leading-relaxed mb-10 max-w-lg font-medium font-sans">
-                                    Standard outreach is batched, delayed, and often ignored. SharaSpot Priority is the only pipeline proven to reach the <strong className="text-text-primary">primary inbox</strong> at 96% scale. Not the Promotions tab. The primary inbox.
+                                    Standard outreach is batched, delayed, and often ignored. SharaSpot Priority routes important sends through stricter inbox-first controls tuned for one-to-one business outreach.
                                 </p>
                                 <div className="flex flex-wrap gap-6 items-center mb-12">
                                     <button
@@ -110,9 +145,9 @@ export default function PriorityPage() {
                                         View benchmarks <ChevronRight size={16} className="text-brand" />
                                     </a>
                                 </div>
-                                <div className="flex flex-wrap gap-10">
+                                <div className="flex flex-wrap gap-8 md:gap-10">
                                     {[
-                                        { val: "96%", label: "Placement rate" },
+                                        { val: "Guarded", label: "Placement controls" },
                                         { val: "50K+", label: "Decisions/sec" },
                                         { val: "< 1ms", label: "Latency" },
                                     ].map((s) => (
@@ -158,7 +193,7 @@ export default function PriorityPage() {
                                             ))}
                                         </div>
                                         <div className="px-6 py-4 bg-brand text-white flex items-center justify-between">
-                                            <span className="text-[11px] font-bold uppercase tracking-widest">Protocol Active: 96% Placement</span>
+                                            <span className="text-[11px] font-bold uppercase tracking-widest">Protocol Active: Inbox Guardrails</span>
                                             <TrendingUp size={14} className="animate-bounce" />
                                         </div>
                                     </div>
@@ -174,9 +209,9 @@ export default function PriorityPage() {
                 </section>
 
                 {/* ── TRUST BAR (BRIDGE) ── */}
-                <section className="py-12 border-b border-slate-200 bg-slate-50 relative z-10">
-                    <div className="max-w-6xl mx-auto px-6 flex flex-wrap gap-8 items-center justify-between">
-                        <p className="text-[11px] font-bold text-text-muted uppercase tracking-[0.2em]">Verified across global infrastructure</p>
+                <section className="py-8 md:py-12 border-b border-slate-200 bg-slate-50 relative z-10">
+                    <div className="max-w-6xl mx-auto px-6 flex flex-wrap gap-6 md:gap-8 items-center justify-center md:justify-between">
+                        <p className="text-[11px] font-bold text-text-muted uppercase tracking-[0.2em] w-full md:w-auto text-center md:text-left">Verified across global infrastructure</p>
                         {["Google Workspace", "Microsoft 365", "Outlook", "Exchange", "Yahoo Mail"].map((p) => (
                             <div key={p} className="flex items-center gap-3">
                                 <div className="p-1 rounded bg-brand/5 border border-brand/10">
@@ -189,7 +224,7 @@ export default function PriorityPage() {
                 </section>
 
                 {/* ── 02: BENCHMARK ── */}
-                <section id="benchmark" className="py-24 bg-white border-b border-slate-200 relative overflow-hidden">
+                <section id="benchmark" className="py-16 md:py-24 bg-white border-b border-slate-200 relative overflow-hidden">
                     <div className="absolute top-8 left-8 hidden lg:block">
                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] font-sans">02 / Performance Data</span>
                     </div>
@@ -213,13 +248,13 @@ export default function PriorityPage() {
                         <div className="grid lg:grid-cols-3 gap-8">
                             {benchmarks.map((res, i) => (
                                 <div key={i} className="bg-white border-2 border-slate-200/80 rounded-[28px] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] transition-all hover:-translate-y-1 group">
-                                    <div className="px-8 pt-8 pb-6 border-b border-slate-200 bg-slate-50/50">
+                                    <div className="px-6 md:px-8 pt-6 md:pt-8 pb-6 border-b border-slate-200 bg-slate-50/50">
                                         <div className="inline-block text-[10px] font-bold text-brand bg-brand-light border border-brand/20 px-3 py-1 rounded-full mb-4 uppercase tracking-widest">{res.improvement}</div>
                                         <h3 className="text-[16px] font-bold text-text-primary tracking-tight">{res.scenario}</h3>
                                     </div>
 
                                     {/* Score bars */}
-                                    <div className="px-8 py-8 space-y-6 border-b border-slate-200">
+                                    <div className="px-6 md:px-8 py-6 md:py-8 space-y-6 border-b border-slate-200">
                                         <div>
                                             <div className="flex justify-between text-[10px] font-bold text-text-muted mb-2 uppercase tracking-widest">
                                                 <span>Standard Sending</span>
@@ -240,7 +275,7 @@ export default function PriorityPage() {
                                         </div>
                                     </div>
 
-                                    <div className="px-8 py-6 bg-white space-y-3">
+                                    <div className="px-6 md:px-8 py-6 bg-white space-y-3">
                                         {res.metrics.map((m, j) => (
                                             <div key={j} className="flex items-center justify-between">
                                                 <span className="text-[11px] text-text-muted font-bold uppercase tracking-tight">{m.label}</span>
@@ -258,11 +293,11 @@ export default function PriorityPage() {
                 </section>
 
                 {/* ── 03: COMPARISON ── */}
-                <section className="py-32 bg-slate-50 border-b border-slate-200">
+                <section className="relative overflow-hidden py-16 md:py-24 lg:py-32 bg-slate-50 border-b border-slate-200">
                     <div className="absolute top-8 left-8 hidden lg:block">
                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] font-sans">03 / Difference Engine</span>
                     </div>
-                    <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-[1.1fr_1fr] gap-24 lg:gap-32 items-center">
+                    <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-[1.1fr_1fr] gap-16 md:gap-24 lg:gap-32 items-center">
                         <div>
                             <p className="text-[11px] font-bold text-brand uppercase tracking-[0.25em] mb-6">The High-Stakes Difference</p>
                             <h2 className="text-4xl lg:text-5xl font-bold text-text-primary mb-8 tracking-tighter leading-[1.05]">
@@ -270,14 +305,14 @@ export default function PriorityPage() {
                                 <span className="text-brand">Drastically different outcomes.</span>
                             </h2>
                             <p className="text-text-secondary leading-relaxed mb-12 text-lg font-medium font-sans">
-                                SharaSpot Priority doesn't just send faster. It engineers the exact environment required to bypass promotions tabs and land in the primary inbox, exactly when it needs to be seen.
+                                SharaSpot Priority doesn&apos;t just send faster. It applies stricter timing, reputation, and content controls to improve the chance of reaching the inbox when the message matters.
                             </p>
 
                             <div className="grid sm:grid-cols-2 gap-x-12 gap-y-10">
                                 {[
-                                    { title: "Primary inbox bypass", desc: "Priority routes bypass standard marketing batch windows completely." },
+                                    { title: "Primary inbox optimization", desc: "Priority avoids standard marketing batch patterns and keeps sends closer to one-to-one mail." },
                                     { title: "Reputation wall", desc: "Routed through infrastructure specifically tuned for one-to-one business sends." },
-                                    { title: "Strategic jitter", desc: "Variable timing mimicry ensures no robotic footprint is ever detected." },
+                                    { title: "Strategic jitter", desc: "Variable timing reduces robotic patterns and provider suspicion." },
                                     { title: "Latency-free routing", desc: "Routing decisions happen in under 1ms to hit precise recipient windows." },
                                 ].map((f, i) => (
                                     <div key={i} className="flex gap-4">
@@ -295,7 +330,7 @@ export default function PriorityPage() {
 
                         {/* Two-state comparison */}
                         <div className="space-y-6">
-                            <div className="rounded-[28px] border-2 border-red-200/60 bg-red-50/40 p-8 shadow-xl shadow-red-900/5">
+                            <div className="rounded-[28px] border-2 border-red-200/60 bg-red-50/40 p-6 md:p-8 shadow-xl shadow-red-900/5">
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
                                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600">Standard Batch Infrastructure</span>
@@ -310,7 +345,7 @@ export default function PriorityPage() {
                                 </div>
                             </div>
 
-                            <div className="rounded-[28px] border-2 border-brand/20 bg-[#f4fbf6] p-8 shadow-2xl shadow-brand/10 relative overflow-hidden group">
+                            <div className="rounded-[28px] border-2 border-brand/20 bg-brand-light p-6 md:p-8 shadow-2xl shadow-brand/10 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-700">
                                     <Zap size={100} className="text-brand" />
                                 </div>
@@ -319,7 +354,7 @@ export default function PriorityPage() {
                                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand">SharaSpot Priority Protocol</span>
                                 </div>
                                 <div className="space-y-4 relative z-10">
-                                    {["Isolated high-authority relay infrastructure", "Undetectable human-mimicry timing patterns", "96% Primary Inbox placement verified", "MX-level intelligence bypasses ESP restrictions"].map((t, i) => (
+                                    {["Isolated high-authority relay infrastructure", "Human-like timing patterns", "Primary inbox optimization controls", "MX-level intelligence respects ESP restrictions"].map((t, i) => (
                                         <div key={i} className="flex items-start gap-3">
                                             <CheckCircle2 size={16} className="text-brand mt-0.5 shrink-0" />
                                             <span className="text-[13px] text-text-primary font-bold tracking-tight leading-tight font-sans">{t}</span>
@@ -340,7 +375,7 @@ export default function PriorityPage() {
                 </section>
 
                 {/* ── 04: USE CASES ── */}
-                <section className="py-32 bg-white border-b border-slate-200">
+                <section className="relative overflow-hidden py-16 md:py-24 lg:py-32 bg-white border-b border-slate-200">
                     <div className="absolute top-8 left-8 hidden lg:block">
                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] font-sans">04 / Operational Scenarios</span>
                     </div>
@@ -348,16 +383,16 @@ export default function PriorityPage() {
                         <div className="grid lg:grid-cols-[320px_1fr] gap-12 lg:gap-24">
                             <div className="lg:pt-2">
                                 <p className="text-[11px] font-bold text-text-muted uppercase tracking-[0.25em] mb-4">Tactical Scenarios</p>
-                                <h3 className="text-3xl font-bold text-text-primary leading-[1.1] tracking-tighter">Where failed delivery is not an option.</h3>
+                                <h3 className="text-3xl font-bold text-text-primary leading-[1.1] tracking-tighter">Where delivery risk has to be controlled.</h3>
                             </div>
                             <div className="divide-y divide-slate-200 border-t border-slate-200">
                                 {[
-                                    { num: "01", title: "The Seven-Figure Pitch.", desc: "Investor intros have a 6-hour window before burying under noise. Priority makes sure yours is at the top of the inbox at 8am, not cleared at 4pm from Promotions." },
-                                    { num: "02", title: "Elite Executive Chasing.", desc: "Top-tier hires never scroll promotional tabs. If your first touchpoint isn't in the Primary Inbox, it's invisible. Priority makes you visible." },
+                                    { num: "01", title: "The Seven-Figure Pitch.", desc: "Investor intros have a narrow window before being buried under noise. Priority applies safer timing so yours arrives with a stronger inbox-placement profile." },
+                                    { num: "02", title: "Elite Executive Chasing.", desc: "Top-tier hires rarely scroll promotional tabs. Priority optimizes the first touchpoint for the inbox people actually check." },
                                     { num: "03", title: "High-Value Deal Closing.", desc: "The final contract follow-up cannot sit in a queue for 30 minutes. That's how deals stall. Priority sends it the millisecond you hit execute." },
-                                    { num: "04", title: "Critical Product Scaling.", desc: "Launching something big? Priority ensures your entire VIP list sees it instantly, without the throttling standard providers impose." },
+                                    { num: "04", title: "Critical Product Scaling.", desc: "Launching something big? Priority spreads VIP sends through stricter limits instead of pushing risky bursts." },
                                 ].map((u, i) => (
-                                    <div key={i} className="flex gap-12 py-10 group">
+                                    <div key={i} className="flex gap-4 md:gap-12 py-8 md:py-10 group">
                                         <span className="text-[10px] font-bold text-brand pt-1.5 tabular-nums w-6 shrink-0 transition-all group-hover:scale-125">{u.num}</span>
                                         <div>
                                             <h4 className="text-[16px] font-bold text-text-primary mb-3 tracking-tight group-hover:text-brand transition-colors uppercase">{u.title}</h4>
@@ -371,36 +406,36 @@ export default function PriorityPage() {
                 </section>
 
                 {/* ── 05: TESTIMONIALS ── */}
-                <section className="py-32 bg-slate-50 border-b border-slate-200">
+                <section className="relative overflow-hidden py-16 md:py-24 lg:py-32 bg-slate-50 border-b border-slate-200">
                     <div className="absolute top-8 left-8 hidden lg:block">
                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] font-sans">05 / Network Feedback</span>
                     </div>
                     <div className="max-w-6xl mx-auto px-6">
-                        <div className="grid lg:grid-cols-[320px_1fr] gap-12 lg:gap-24 mb-20">
+                        <div className="grid lg:grid-cols-[320px_1fr] gap-12 lg:gap-24 mb-16 md:mb-20">
                             <div className="lg:pt-2">
                                 <p className="text-[11px] font-bold text-brand uppercase tracking-[0.25em] mb-4">Relay Intel</p>
                                 <h3 className="text-3xl font-bold text-text-primary leading-[1.1] tracking-tighter">Verified feedback from high-stakes founders.</h3>
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-12">
+                            <div className="flex flex-col sm:flex-row gap-8 md:gap-12">
                                 <div>
                                     <p className="text-4xl font-bold text-brand tracking-tighter">41%</p>
                                     <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-2">Avg. Response gain</p>
                                 </div>
                                 <div className="hidden sm:block w-px bg-slate-200" />
                                 <div>
-                                    <p className="text-4xl font-bold text-text-primary tracking-tighter">96%</p>
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-2">Active placement delta</p>
+                                    <p className="text-4xl font-bold text-text-primary tracking-tighter">Live</p>
+                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-2">Placement guardrails</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid sm:grid-cols-3 gap-8">
+                        <div className="grid sm:grid-cols-3 gap-6 md:gap-8">
                             {[
-                                { quote: "Sent a cold pitch to a partner I've never spoken with and got a reply in 4 hours. It landed exactly where it should.", name: "Arnav S.", role: "Founder, Series A startup" },
+                                { quote: "Sent a cold pitch to a partner I've never spoken with and got a reply in 4 hours. The delivery controls made the send feel deliberate.", name: "Arnav S.", role: "Founder, Series A startup" },
                                 { quote: "We used to get 12% open rates. After switching to Priority infrastructure, we're consistently above 41%. It's another level.", name: "Priya R.", role: "VP Growth, Scale-up" },
-                                { quote: "Closest thing to guaranteed delivery. Our placement moved from 54% to 96% in a week. No other tool comes close.", name: "Olu T.", role: "Head of Partnerships" },
+                                { quote: "The guardrails changed how we send. Fewer bursts, cleaner copy, and better conversations from cold outreach.", name: "Olu T.", role: "Head of Partnerships" },
                             ].map((t, i) => (
-                                <div key={i} className="bg-slate-50/50 border border-slate-200 rounded-[32px] p-10 hover:bg-white hover:shadow-2xl transition-all group">
+                                <div key={i} className="bg-slate-50/50 border border-slate-200 rounded-[32px] p-8 md:p-10 hover:bg-white hover:shadow-2xl transition-all group">
                                     <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-6">Case {i + 1}</p>
                                     <p className="text-[16px] text-text-primary font-bold leading-relaxed mb-10">&ldquo;{t.quote}&rdquo;</p>
                                     <div className="pt-6 border-t border-slate-200">
@@ -414,15 +449,15 @@ export default function PriorityPage() {
                 </section>
 
                 {/* ── 06: FINAL CTA ── */}
-                <section className="py-32 lg:py-48 bg-slate-950 border-t border-slate-900 relative overflow-hidden text-center">
+                <section className="py-20 md:py-32 lg:py-48 bg-slate-950 border-t border-slate-900 relative overflow-hidden text-center">
                     {/* Ambient Glows */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
                         <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-brand/[0.07] blur-[140px] rounded-full" />
-                        <div className="absolute bottom-[-10%] left-1/4 w-[500px] h-[500px] bg-blue-500/[0.03] blur-[120px] rounded-full" />
+                        <div className="absolute bottom-[-10%] left-1/4 w-[500px] h-[500px] bg-brand/[0.03] blur-[120px] rounded-full" />
                     </div>
 
                     <div className="absolute top-8 left-8 hidden lg:block">
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.4em] font-sans">06 / Initialization</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] font-sans">06 / Initialization</span>
                     </div>
 
                     <div className="max-w-4xl mx-auto px-6 relative z-10">
@@ -447,7 +482,7 @@ export default function PriorityPage() {
 
                         {/* Description */}
                         <p className="text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto mb-16 font-medium font-sans">
-                            Every day without SharaSpot Priority is another high-stakes email buried in a Promotions tab. The people you need to reach check their primary inbox. <span className="text-white">Be there.</span>
+                            Every day without SharaSpot Priority is another high-stakes email exposed to avoidable delivery risk. The people you need to reach check their main inbox. <span className="text-white">Optimize for it.</span>
                         </p>
 
                         {/* CTA Group */}
@@ -461,10 +496,10 @@ export default function PriorityPage() {
                                 <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
                             </button>
 
-                            <div className="flex items-center gap-8">
-                                <div className="text-left py-1 pr-8 border-r border-slate-800">
+                            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
+                                <div className="text-left py-1 pr-6 md:pr-8 border-r border-slate-800">
                                     <p className="text-[11px] font-bold text-white uppercase tracking-tight">Enterprise Scale</p>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 font-sans">99.9% Sla Guarantee</p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 font-sans">99.9% SLA Guarantee</p>
                                 </div>
                                 <div className="text-left">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-loose font-sans">

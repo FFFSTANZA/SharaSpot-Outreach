@@ -8,6 +8,7 @@ export interface SpamAnalysisResult {
     capsRatio: number;
     punctuationDensity: number;
     linkRatio: number;
+    linkCount: number;
   };
 }
 
@@ -49,11 +50,19 @@ export function analyzeSpamScore(subject: string, body: string): SpamAnalysisRes
   const bodyText = body.replace(/<[^>]+>/g, "");
   const linkTextMatches = body.match(/<a[^>]*>(.*?)<\/a>/gi) || [];
   const linkText = linkTextMatches.map(a => a.replace(/<[^>]+>/g, "")).join("");
-  const linkRatio = bodyText.length > 0 ? linkText.length / bodyText.length : 0;
+  const urlMatches = body.match(/\bhttps?:\/\/[^\s<>"']+/gi) || [];
+  const linkCount = linkTextMatches.length + urlMatches.length;
+  const linkedTextLength = linkText.length + urlMatches.join("").length;
+  const linkRatio = bodyText.length > 0 ? linkedTextLength / bodyText.length : 0;
   
   if (linkRatio > 0.4) {
     score += 20;
     triggers.push("high-link-ratio");
+  }
+
+  if (linkCount > 2) {
+    score += 10 + ((linkCount - 3) * 5);
+    triggers.push("too-many-links");
   }
   
   // Image-only check
@@ -80,6 +89,7 @@ export function analyzeSpamScore(subject: string, body: string): SpamAnalysisRes
       capsRatio,
       punctuationDensity,
       linkRatio,
+      linkCount,
     },
   };
 }

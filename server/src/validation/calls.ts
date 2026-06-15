@@ -8,6 +8,11 @@ export const createCallTaskSchema = z.object({
   }),
   priority: z.number().int().min(0).max(100).optional().default(0),
   contactListId: z.string().optional(),
+  assignedToId: z.string().nullable().optional(),
+});
+
+export const updateCallTaskSchema = z.object({
+  assignedToId: z.string().nullable().optional(),
 });
 
 export const logCallSchema = z.object({
@@ -38,6 +43,7 @@ export const getCallQueueSchema = z.object({
   due: z.enum(["all", "today", "overdue"]).optional().default("all"),
   search: z.string().optional(),
   listId: z.string().optional(),
+  assignedToId: z.string().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(50),
 });

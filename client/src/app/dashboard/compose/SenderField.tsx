@@ -29,12 +29,12 @@ export function SenderField({
   const selectedSender = senders.find(s => selectedSenderIds.includes(s.id)) || null;
 
   return (
-    <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3">
-      <span className="text-xs font-medium text-gray-500 w-16 shrink-0">From</span>
+    <div className="px-4 py-3.5 border-b border-border-light flex items-center gap-3">
+      <span className="text-xs font-medium text-text-muted w-16 shrink-0">From</span>
       <div className="relative flex-1 min-w-0" ref={dropdownRef}>
         <button
           type="button"
-          className="w-full text-left flex items-center justify-between py-1 text-sm text-gray-900"
+          className="w-full text-left flex items-center justify-between py-1 text-sm text-text-primary"
           onClick={() => !isSenderLoading && onToggleDropdown()}
           disabled={isSenderLoading}
         >
@@ -47,26 +47,26 @@ export function SenderField({
                   ? selectedSender?.email || ""
                   : `${selectedSenderIds.length} senders`}
           </span>
-          <ChevronDown className={cn("h-4 w-4 text-gray-400 shrink-0 transition-transform", isSenderDropdownOpen && "rotate-180")} />
+          <ChevronDown className={cn("h-4 w-4 text-text-muted shrink-0 transition-transform", isSenderDropdownOpen && "rotate-180")} />
         </button>
 
         {isSenderDropdownOpen && (
-          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg border border-gray-200 overflow-hidden">
+          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-border-light rounded-lg shadow-sm overflow-hidden">
             <div className="py-1 max-h-64 overflow-y-auto">
               {senders.map(s => (
                 <label key={s.id} className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-gray-50",
-                  selectedSenderIds.includes(s.id) && "bg-green-50/50"
+                  "flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-[#F0F1F3]",
+                  selectedSenderIds.includes(s.id) && "bg-brand/[0.06]"
                 )}>
                   <input
                     type="checkbox"
                     checked={selectedSenderIds.includes(s.id)}
                     onChange={() => onToggleSender(s.id)}
-                    className="h-4 w-4 rounded border-gray-300"
+                    className="h-4 w-4 rounded border-border-light"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900 truncate">{s.email}</p>
-                    {s.name && <p className="text-xs text-gray-400 truncate">{s.name}</p>}
+                    <p className="text-sm text-text-primary truncate">{s.email}</p>
+                    {s.name && <p className="text-xs text-text-muted truncate">{s.name}</p>}
                   </div>
                   {s.isVerified ? (
                     <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
@@ -81,7 +81,7 @@ export function SenderField({
       </div>
       <button
         onClick={onOpenModal}
-        className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-colors shrink-0"
+        className="h-8 w-8 flex items-center justify-center rounded-lg border border-border-light text-text-muted hover:text-text-secondary hover:border-border-light transition-colors shrink-0"
       >
         <Plus className="h-4 w-4" />
       </button>

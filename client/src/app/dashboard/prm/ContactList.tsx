@@ -3,24 +3,21 @@
 import { Contact } from "@/types";
 import { cn } from "@/lib/utils";
 import {
+  Building2,
+  ChevronLeft,
   Mail,
   Edit2,
-  Trash2,
-  MousePointer2,
-  MessageSquare,
-  Eye,
   Send,
-  Clock
+  ChevronRight,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { getStageLabel } from "./prmFields";
 
-type ContactWithExtras = Contact & {
-  _count?: {
-    emailsSent?: number;
-    emailsOpened?: number;
-    emailsClicked?: number;
-    emailsReplied?: number;
-  };
+type CompanyRow = {
+  name: string;
+  count: number;
+  profileId?: string;
 };
 
 interface ContactListProps {
@@ -28,36 +25,89 @@ interface ContactListProps {
   selectedId: string | null;
   onSelect: (id: string) => void;
   onEdit: (contact: Contact) => void;
-  onDelete: (id: string) => void;
   selectedIds: Set<string>;
   setSelectedIds: (ids: Set<string>) => void;
+  groupByCompany?: boolean;
+  companyMode?: boolean;
+  companies?: CompanyRow[];
+  selectedCompany?: string | null;
+  onSelectCompany?: (company: string) => void;
+  onBackToCompanies?: () => void;
+  onOpenCompanyProfile?: (company: CompanyRow) => void;
 }
 
-function timeAgo(dateStr: string | null | undefined): string {
-  if (!dateStr) return "—";
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 30) return `${diffDays}d ago`;
-  return new Date(dateStr).toLocaleDateString();
-}
+const getCompanyName = (company?: string | null) => company?.trim() || "No company";
+
+const getDisplayName = (contact: Contact) =>
+  (contact.firstName || contact.lastName)
+    ? `${contact.firstName || ""} ${contact.lastName || ""}`.trim()
+    : contact.email.split("@")[0];
 
 export function ContactList({
   contacts,
   selectedId,
   onSelect,
   onEdit,
-  onDelete,
   selectedIds,
   setSelectedIds,
+  groupByCompany = false,
+  companyMode = false,
+  companies = [],
+  selectedCompany = null,
+  onSelectCompany,
+  onBackToCompanies,
+  onOpenCompanyProfile,
 }: ContactListProps) {
   if (!contacts) return null;
+
+  if (companyMode && !selectedCompany) {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border-light bg-white px-4 py-2.5 sm:px-6">
+          <div>
+            <p className="text-xs font-medium text-text-primary">Companies</p>
+            <p className="text-[11px] text-text-muted">Open one company to see its people.</p>
+          </div>
+          <span className="text-xs text-text-muted">{companies.length} compan{companies.length === 1 ? "y" : "ies"}</span>
+        </div>
+
+        <div className="divide-y divide-border-light">
+          {companies.map((company) => (
+            <div key={company.name} className="flex items-center justify-between bg-white px-4 py-3 transition-colors hover:bg-[#F8F9FA] sm:px-6">
+              <button
+                type="button"
+                onClick={() => onSelectCompany?.(company.name)}
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-light text-brand">
+                  <Building2 size={14} />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-text-primary">{company.name}</p>
+                  <p className="text-xs text-text-muted">Open people or create a profile.</p>
+                </div>
+              </button>
+              <div className="ml-3 flex shrink-0 items-center gap-2">
+                <span className="rounded bg-[#F8F9FA] px-2 py-0.5 text-xs font-medium text-text-secondary">
+                  {company.count} contact{company.count === 1 ? "" : "s"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onOpenCompanyProfile?.(company)}
+                  className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-text-secondary transition-colors hover:bg-[#F0F1F3] hover:text-brand"
+                >
+                  <ExternalLink size={12} />
+                  {company.profileId ? "Open" : "Profile"}
+                </button>
+                <ChevronRight size={14} className="text-text-muted" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const toggleSelectAll = () => {
     if (selectedIds.size === contacts.length) {
       setSelectedIds(new Set());
@@ -80,171 +130,134 @@ export function ContactList({
     );
   }
 
-  return (
-    <div className="flex-1 overflow-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b border-border-light bg-background/50 sticky top-0 z-10">
-            <th className="px-6 py-4 text-left w-12">
-              <input
-                type="checkbox"
-                className="rounded border-border-light text-brand focus:ring-brand"
-                checked={selectedIds.size === contacts.length && contacts.length > 0}
-                onChange={toggleSelectAll}
-              />
-            </th>
-            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-left">Contact</th>
-            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-left">Company</th>
-            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-center">Engagement</th>
-            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-center">Stats</th>
-            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-center">Last Contacted</th>
-            <th className="px-6 py-4 text-[10px] font-semibold text-text-muted uppercase tracking-widest text-right"></th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border-light">
-          {contacts.map((contact) => {
-            const counts = (contact as ContactWithExtras)._count;
+  const rows = groupByCompany
+    ? contacts.flatMap((contact, index) => {
+        const currentCompany = getCompanyName(contact.company);
+        const previousCompany = getCompanyName(contacts[index - 1]?.company);
+        return [
+          ...(index === 0 || currentCompany !== previousCompany ? [{ type: "group" as const, company: currentCompany }] : []),
+          { type: "contact" as const, contact },
+        ];
+      })
+    : contacts.map((contact) => ({ type: "contact" as const, contact }));
 
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border-light bg-white px-4 py-2.5 sm:px-6">
+        <div className="flex items-center gap-3">
+          {companyMode && selectedCompany ? (
+            <button
+              type="button"
+              onClick={onBackToCompanies}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-text-secondary transition-colors hover:bg-[#F0F1F3]"
+            >
+              <ChevronLeft size={12} />
+              All companies
+            </button>
+          ) : null}
+          <label className="flex items-center gap-2 text-xs font-medium text-text-secondary">
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 rounded border-border-light text-brand focus:ring-brand"
+              checked={selectedIds.size === contacts.length && contacts.length > 0}
+              onChange={toggleSelectAll}
+            />
+            <span>Select visible</span>
+          </label>
+        </div>
+        <span className="text-xs text-text-muted">{contacts.length} result{contacts.length === 1 ? "" : "s"}</span>
+      </div>
+
+      <div className="divide-y divide-border-light">
+        {rows.map((row) => {
+          if (row.type === "group") {
             return (
-            <tr
+              <div
+                key={`group-${row.company}`}
+                className="sticky top-[49px] z-[5] border-b border-border-light bg-white px-4 py-1.5 sm:px-6"
+              >
+                <span className="text-[11px] font-semibold text-text-muted">{row.company}</span>
+              </div>
+            );
+          }
+
+          const contact = row.contact;
+          const isSelected = selectedId === contact.id;
+          return (
+            <div
               key={contact.id}
               onClick={() => onSelect(contact.id)}
               className={cn(
-                "hover:bg-interactive-hover cursor-pointer transition-colors group",
-                selectedId === contact.id ? "bg-brand/5" : ""
+                "group flex items-center gap-2 border-l-2 bg-white px-4 py-2.5 transition-all sm:px-6",
+                isSelected
+                  ? "border-l-brand bg-brand-light/40"
+                  : "border-l-transparent hover:bg-[#F8F9FA]"
               )}
             >
-              <td className="px-6 py-4">
-                <input
-                  type="checkbox"
-                  className="rounded-md border-border-light text-brand focus:ring-brand w-4 h-4"
-                  checked={selectedIds.has(contact.id)}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => {
-                    const newSelected = new Set(selectedIds);
-                    if (e.target.checked) newSelected.add(contact.id);
-                    else newSelected.delete(contact.id);
-                    setSelectedIds(newSelected);
-                  }}
-                />
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center text-brand font-semibold shrink-0 border border-brand/5">
-                    {(contact.firstName?.[0] || contact.email?.[0] || "?").toUpperCase()}
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5 shrink-0 rounded border-border-light text-brand focus:ring-brand"
+                checked={selectedIds.has(contact.id)}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => {
+                  const nextSelected = new Set(selectedIds);
+                  if (e.target.checked) nextSelected.add(contact.id);
+                  else nextSelected.delete(contact.id);
+                  setSelectedIds(nextSelected);
+                }}
+              />
+
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-brand-muted/40 text-[11px] font-semibold text-brand">
+                {(contact.firstName?.[0] || contact.email?.[0] || "?").toUpperCase()}
+              </div>
+
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <div className="min-w-0 flex-[3]">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-sm font-medium text-text-primary">
+                      {getDisplayName(contact)}
+                    </span>
+                            <span className="shrink-0 rounded bg-[#F8F9FA] px-1.5 py-0.5 text-[10px] font-medium text-text-secondary">
+                      {getStageLabel(contact.stage)}
+                    </span>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-text-primary truncate">
-                      {(contact.firstName || contact.lastName) ? `${contact.firstName || ""} ${contact.lastName || ""}`.trim() : contact.email.split('@')[0]}
-                    </div>
-                    <div className="text-xs text-text-muted font-medium truncate flex items-center gap-1">
-                      {contact.email}
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex flex-col">
-                  <div className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
-                    {contact.company || "—"}
-                  </div>
-                  {contact.jobTitle && (
-                    <div className="text-xs text-text-muted font-medium flex items-center gap-1.5 mt-0.5">
-                      {contact.jobTitle}
-                    </div>
-                  )}
-                </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-24 bg-gray-100 rounded-full overflow-hidden border border-gray-100 shadow-inner">
-                      <div
-                        className={cn(
-                          "h-full transition-all duration-700 ease-out",
-                          (contact.engagementScore || 0) > 80 ? "bg-green-500" :
-                            (contact.engagementScore || 0) > 40 ? "bg-orange-500" :
-                              "bg-brand"
-                        )}
-                        style={{ width: `${Math.min(100, (contact.engagementScore || 0))}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-bold text-text-primary tabular-nums">{(contact.engagementScore || 0)}</span>
-                  </div>
-                  <span className={cn(
-                    "text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md",
-                    contact.stage === "COLD" ? "bg-gray-100 text-gray-500" :
-                      contact.stage === "WARM" ? "bg-blue-100 text-blue-600" :
-                        contact.stage === "HOT" ? "bg-orange-100 text-orange-600" :
-                          contact.stage === "REPLIED" ? "bg-green-100 text-green-600" :
-                            "bg-brand/10 text-brand"
-                  )}>
-                    {contact.stage}
-                  </span>
-                </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex items-center justify-center gap-3">
-                  <div className="flex flex-col items-center" title="Sent">
-                    <span className="text-[10px] font-bold text-text-primary">{counts?.emailsSent || 0}</span>
-                    <Mail size={12} className="text-text-muted" />
-                  </div>
-                  <div className="flex flex-col items-center" title="Opened">
-                    <span className="text-[10px] font-bold text-text-primary">{counts?.emailsOpened || 0}</span>
-                    <Eye size={12} className="text-text-muted" />
-                  </div>
-                  <div className="flex flex-col items-center" title="Clicked">
-                    <span className="text-[10px] font-bold text-text-primary">{counts?.emailsClicked || 0}</span>
-                    <MousePointer2 size={12} className="text-text-muted" />
-                  </div>
-                  <div className="flex flex-col items-center" title="Replied">
-                    <span className="text-[10px] font-bold text-text-primary">{counts?.emailsReplied || 0}</span>
-                    <MessageSquare size={12} className="text-text-muted" />
+                  <div className="flex items-center gap-x-2 gap-y-0.5 text-xs text-text-muted">
+                    <span className="truncate">{contact.company || "No company"}</span>
+                    <span className="shrink-0">·</span>
+                    <span className="truncate">{contact.email}</span>
+                    {contact.assignedTo && (
+                      <>
+                        <span className="hidden shrink-0 sm:inline">·</span>
+                        <span className="truncate text-text-secondary">{contact.assignedTo.name || contact.assignedTo.email}</span>
+                      </>
+                    )}
                   </div>
                 </div>
-              </td>
-              <td className="px-6 py-4 text-center">
-                <div className="flex flex-col items-center gap-0.5" title={contact.lastContactedAt || undefined}>
-                  <Clock size={12} className={cn(
-                    contact.lastContactedAt ? "text-text-secondary" : "text-text-muted"
-                  )} />
-                  <span className={cn(
-                    "text-[10px] font-medium",
-                    contact.lastContactedAt ? "text-text-primary" : "text-text-muted"
-                  )}>
-                    {timeAgo(contact.lastContactedAt)}
-                  </span>
-                </div>
-              </td>
-              <td className="px-6 py-4 text-right">
-                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link
                     href={`/dashboard/compose?emails=${encodeURIComponent(contact.email)}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="p-1.5 text-text-muted hover:text-brand hover:bg-brand/10 rounded-md transition-all"
+                    className="flex h-6 w-6 items-center justify-center rounded-md text-text-muted transition-all hover:bg-[#F0F1F3] hover:text-brand"
                     title="Compose Email"
                   >
-                    <Send size={16} />
+                    <Send size={11} />
                   </Link>
                   <button
                     onClick={(e) => { e.stopPropagation(); onEdit(contact); }}
-                    className="p-1.5 text-text-muted hover:text-brand hover:bg-brand/10 rounded-md transition-all"
+                    className="flex h-6 w-6 items-center justify-center rounded-md text-text-muted transition-all hover:bg-[#F0F1F3] hover:text-text-primary"
+                    title="Edit contact"
                   >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onDelete(contact.id); }}
-                    className="p-1.5 text-text-muted hover:text-error-text hover:bg-error-bg rounded-md transition-all"
-                  >
-                    <Trash2 size={16} />
+                    <Edit2 size={11} />
                   </button>
                 </div>
-              </td>
-            </tr>
-            );
-          })}
-        </tbody>
-      </table>
+
+                <ChevronRight size={14} className="shrink-0 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

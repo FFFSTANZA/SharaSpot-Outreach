@@ -7,6 +7,7 @@ import {
   MCPKeyScope,
   revokeMcpApiKey,
 } from "../mcp/services/apiKeyService";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
@@ -81,7 +82,7 @@ router.post("/", async (req: Request, res: Response) => {
 
     res.status(201).json(result);
   } catch (error) {
-    console.error("Error creating MCP API key:", error);
+    logger.error({ error }, "Error creating MCP API key:");
     if (error instanceof Error && error.message === "Key name is required") {
       res.status(400).json({ message: error.message });
       return;
@@ -114,7 +115,7 @@ router.get("/", async (req: Request, res: Response) => {
     });
     res.json(keys);
   } catch (error) {
-    console.error("Error listing MCP API keys:", error);
+    logger.error({ error }, "Error listing MCP API keys:");
     res.status(500).json({ message: "Failed to list API keys" });
   }
 });
@@ -140,7 +141,7 @@ router.patch("/:id/revoke", async (req: Request, res: Response) => {
       res.status(404).json({ message: "API key not found" });
     }
   } catch (error) {
-    console.error("Error revoking MCP API key:", error);
+    logger.error({ error }, "Error revoking MCP API key:");
     res.status(500).json({ message: "Failed to revoke API key" });
   }
 });
@@ -166,7 +167,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
       res.status(404).json({ message: "API key not found" });
     }
   } catch (error) {
-    console.error("Error deleting MCP API key:", error);
+    logger.error({ error }, "Error deleting MCP API key:");
     res.status(500).json({ message: "Failed to delete API key" });
   }
 });

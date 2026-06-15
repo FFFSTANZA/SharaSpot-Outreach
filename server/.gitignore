@@ -30,5 +30,8 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# uploaded files (attachments, etc.)
+uploads/
+
 # typescript
 *.tsbuildinfo

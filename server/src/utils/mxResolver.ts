@@ -1,6 +1,7 @@
 import dns from "dns";
 import { promisify } from "util";
 import { redis } from "../config/redis";
+import { logger } from "./logger";
 
 const dnsResolveMx = promisify(dns.resolveMx);
 const dnsResolve4 = promisify(dns.resolve4);
@@ -83,7 +84,7 @@ export async function resolveMxWithTiming(
 
     return results;
   } catch (error) {
-    console.warn(`[MX] Failed to resolve MX for ${domain}:`, error);
+    logger.warn({ error }, `[MX] Failed to resolve MX for ${domain}:`);
     // Return empty on failure - will use fallback
     return [];
   }

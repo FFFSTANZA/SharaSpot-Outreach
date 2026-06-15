@@ -68,39 +68,39 @@ export default function AddToListModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[80vh]">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-text-primary/10 backdrop-blur-sm p-4">
+            <div className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-lg bg-white shadow-premium-lg">
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-light bg-white px-6 py-5">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900">Add to List</h2>
-                        <p className="text-sm text-gray-500">{selectedContactIds.length} contacts selected</p>
+                        <h2 className="text-xl font-semibold text-text-primary">Add to list</h2>
+                        <p className="text-sm text-text-muted">{selectedContactIds.length} contacts selected</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="flex h-10 w-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-[#F0F1F3] hover:text-text-secondary"
                     >
                         <X className="h-5 w-5" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Select Folder or List</h3>
+                <div className="flex-1 space-y-4 overflow-y-auto p-6">
+                    <h3 className="text-xs font-medium uppercase tracking-widest text-text-muted">Select a list</h3>
 
                     <div className="space-y-2">
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center py-12">
-                                <Loader2 className="h-8 w-8 text-amber-500 animate-spin mb-4" />
-                                <p className="text-sm text-gray-400 font-medium">Loading lists...</p>
+                                <Loader2 className="mb-4 h-8 w-8 animate-spin text-brand" />
+                                <p className="text-sm text-text-muted font-medium">Loading lists...</p>
                             </div>
                         ) : lists.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                                <Folder className="h-8 w-8 text-gray-200 mx-auto mb-3" />
-                                <p className="text-sm text-gray-500 font-medium mb-3">No lists found</p>
+                            <div className="rounded-lg border border-dashed border-border-light bg-white py-12 text-center">
+                                <Folder className="h-8 w-8 text-text-muted mx-auto mb-3" />
+                                <p className="text-sm text-text-muted font-medium mb-3">No lists found</p>
                                 <button
                                     onClick={onClose}
-                                    className="text-xs font-bold text-amber-600 hover:text-amber-700 uppercase"
+                                    className="text-xs font-medium uppercase text-brand hover:text-brand/80"
                                 >
                                     Create one first in the sidebar
                                 </button>
@@ -111,28 +111,28 @@ export default function AddToListModal({
                                     key={list.id}
                                     onClick={() => setSelectedListId(list.id)}
                                     className={cn(
-                                        "w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all group text-left",
+                                        "group flex w-full items-center justify-between rounded-lg border p-4 text-left transition-all",
                                         selectedListId === list.id
-                                            ? "bg-amber-50 border-amber-400 shadow-sm"
-                                            : "bg-white border-gray-50 hover:border-gray-100 hover:bg-gray-50"
+                                            ? "border-brand/20 bg-brand/5 shadow-premium-sm"
+                                            : "border-border-light bg-white hover:bg-[#F0F1F3]"
                                     )}
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={cn(
-                                            "h-10 w-10 rounded-xl flex items-center justify-center transition-colors",
-                                            selectedListId === list.id ? "bg-amber-500 text-white" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"
+                                            "h-10 w-10 rounded-lg flex items-center justify-center transition-colors",
+                                            selectedListId === list.id ? "bg-brand text-white" : "bg-[#F8F9FA] text-text-muted"
                                         )}>
                                             <Folder size={20} />
                                         </div>
                                         <div>
-                                            <div className={cn("text-sm font-bold", selectedListId === list.id ? "text-amber-900" : "text-gray-700")}>
+                                            <div className={cn("text-sm font-medium", selectedListId === list.id ? "text-text-primary" : "text-text-secondary")}>
                                                 {list.name}
                                             </div>
-                                            <div className="text-[10px] font-bold text-gray-400 uppercase">{list._count?.contacts || 0} contacts</div>
+                                            <div className="text-[10px] font-medium uppercase text-text-muted">{list._count?.contacts || 0} contacts</div>
                                         </div>
                                     </div>
                                     {selectedListId === list.id && (
-                                        <div className="h-6 w-6 bg-amber-500 rounded-full flex items-center justify-center text-white animate-in zoom-in duration-300">
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-white animate-in zoom-in duration-300">
                                             <Check size={14} />
                                         </div>
                                     )}
@@ -143,11 +143,11 @@ export default function AddToListModal({
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-gray-50 sticky bottom-0 bg-white">
+                <div className="sticky bottom-0 border-t border-border-light bg-white p-6">
                     <button
                         onClick={handleAdd}
                         disabled={isSubmitting || !selectedListId || isLoading}
-                        className="w-full h-12 bg-gray-900 text-white rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand text-white transition-all hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isSubmitting ? (
                             <Loader2 className="h-5 w-5 animate-spin" />

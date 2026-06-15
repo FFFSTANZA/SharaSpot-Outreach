@@ -12,10 +12,29 @@ import {
     User,
     Building2,
     Briefcase,
+    Globe,
     Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { importContacts } from "@/lib/apis";
+
+type ImportRowError = { error: string };
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+    if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as { response?: unknown }).response === "object" &&
+        (error as { response?: { data?: { message?: unknown } } }).response?.data &&
+        typeof (error as { response?: { data?: { message?: unknown } } }).response?.data?.message === "string"
+    ) {
+        return (error as { response?: { data?: { message: string } } }).response!.data!.message;
+    }
+
+    if (error instanceof Error && error.message) return error.message;
+    return fallback;
+};
 
 interface ImportModalProps {
     isOpen: boolean;
@@ -24,7 +43,9 @@ interface ImportModalProps {
 }
 
 const SYSTEM_FIELDS = [
-    { key: "email", label: "Email", icon: Mail, required: true },
+    { key: "email", label: "Email", icon: Mail, required: false },
+    { key: "website", label: "Website", icon: Globe, required: false },
+    { key: "companyDomain", label: "Company Domain", icon: Globe, required: false },
     { key: "firstName", label: "First Name", icon: User, required: false },
     { key: "lastName", label: "Last Name", icon: User, required: false },
     { key: "company", label: "Company", icon: Building2, required: false },
@@ -38,7 +59,15 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
     const [mapping, setMapping] = useState<Record<string, string>>({});
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [result, setResult] = useState<{ count: number; errors?: any[] } | null>(null);
+    const [result, setResult] = useState<{
+        count: number;
+        errors?: ImportRowError[];
+        qualitySummary?: {
+            duplicateContacts: number;
+            invalidEmails: number;
+            missingRequiredFields: number;
+        };
+    } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (!isOpen) return null;
@@ -59,14 +88,17 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
         try {
             // Send file to server to get headers
             const res = await importContacts(selectedFile, {});
-            if ((res as any).headers) {
-                setHeaders((res as any).headers);
+            const importedHeaders = Array.isArray(res.headers) ? res.headers : [];
+            if (importedHeaders.length > 0) {
+                setHeaders(importedHeaders);
 
                 // Auto-match headers
                 const initialMapping: Record<string, string> = {};
-                (res as any).headers.forEach((header: string) => {
+                importedHeaders.forEach((header) => {
                     const lowerHeader = header.toLowerCase();
                     if (lowerHeader.includes("email")) initialMapping.email = header;
+                    else if (lowerHeader.includes("website") || lowerHeader === "url") initialMapping.website = header;
+                    else if (lowerHeader.includes("domain")) initialMapping.companyDomain = header;
                     else if (lowerHeader.includes("first") && lowerHeader.includes("name")) initialMapping.firstName = header;
                     else if (lowerHeader.includes("last") && lowerHeader.includes("name")) initialMapping.lastName = header;
                     else if (lowerHeader.includes("company") || lowerHeader.includes("organization")) initialMapping.company = header;
@@ -75,8 +107,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                 setMapping(initialMapping);
                 setStep("mapping");
             }
-        } catch (err: any) {
-            setError(err.response?.data?.message || err.message || "Failed to parse file.");
+        } catch (err: unknown) {
+            setError(getErrorMessage(err, "Failed to parse file."));
         } finally {
             setIsUploading(false);
         }
@@ -84,8 +116,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
 
     const handleImport = async () => {
         if (!file) return;
-        if (!mapping.email) {
-            setError("Email mapping is required.");
+        if (!mapping.email && !mapping.website && !mapping.companyDomain) {
+            setError("Map at least Email, Website, or Company Domain.");
             return;
         }
 
@@ -95,9 +127,16 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
 
         try {
             const res = await importContacts(file, mapping);
-            setResult(res);
-        } catch (err: any) {
-            setError(err.response?.data?.message || err.message || "Import failed.");
+            if (typeof res.count !== "number") {
+                throw new Error("Import response did not include a processed contact count.");
+            }
+            setResult({
+                count: res.count,
+                errors: Array.isArray(res.errors) ? (res.errors as ImportRowError[]) : undefined,
+                qualitySummary: res.qualitySummary,
+            });
+        } catch (err: unknown) {
+            setError(getErrorMessage(err, "Import failed."));
             setStep("mapping");
         } finally {
             setIsUploading(false);
@@ -115,17 +154,17 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-text-primary/10 backdrop-blur-sm p-4">
+            <div className="flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-lg bg-white shadow-premium-lg">
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-light bg-white px-6 py-5">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900">Import Contacts</h2>
-                        <p className="text-sm text-gray-500">Add contacts from CSV or Excel</p>
+                        <h2 className="text-xl font-semibold text-text-primary">Import contacts</h2>
+                        <p className="text-sm text-text-muted">Bring in records from CSV or Excel and clean them up in your PRM.</p>
                     </div>
                     <button
                         onClick={() => { reset(); onClose(); }}
-                        className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="flex h-10 w-10 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-[#F0F1F3] hover:text-text-secondary"
                     >
                         <X className="h-5 w-5" />
                     </button>
@@ -138,8 +177,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                             <div
                                 onClick={() => fileInputRef.current?.click()}
                                 className={cn(
-                                    "border-2 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center transition-all cursor-pointer",
-                                    isUploading ? "border-amber-400 bg-amber-50/30" : "border-gray-200 hover:border-amber-400 hover:bg-amber-50/30"
+                                    "border-2 border-dashed rounded-lg p-12 flex flex-col items-center justify-center transition-all cursor-pointer",
+                                     isUploading ? "border-brand/30 bg-brand/5" : "border-border-light hover:border-brand/30 hover:bg-brand/5"
                                 )}
                             >
                                 <input
@@ -151,42 +190,42 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                 />
 
                                 {isUploading ? (
-                                    <Loader2 className="h-12 w-12 text-amber-500 animate-spin mb-4" />
+                                    <Loader2 className="mb-4 h-12 w-12 animate-spin text-brand" />
                                 ) : (
-                                    <div className="h-16 w-16 bg-amber-100 rounded-2xl flex items-center justify-center mb-4">
-                                        <Upload className="h-8 w-8 text-amber-600" />
+                                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-brand/10">
+                                        <Upload className="h-8 w-8 text-brand" />
                                     </div>
                                 )}
 
-                                <p className="text-lg font-semibold text-gray-900 mb-1">
+                                <p className="text-lg font-semibold text-text-primary mb-1">
                                     {isUploading ? "Processing file..." : "Choose a file to import"}
                                 </p>
-                                <p className="text-sm text-gray-500 text-center">
+                                <p className="text-sm text-text-muted text-center">
                                     Drag and drop your file here, or click to browse.<br />
                                     Supports CSV and Excel format.
                                 </p>
                             </div>
 
                             {error && (
-                                <div className="p-4 bg-red-50 rounded-2xl flex items-start gap-3 text-red-700">
+                                <div className="p-4 bg-error-bg rounded-lg flex items-start gap-3 text-error-text">
                                     <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
                                     <p className="text-sm font-medium">{error}</p>
                                 </div>
                             )}
 
-                            <div className="bg-gray-50 rounded-2xl p-4">
-                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Guidelines</h4>
-                                <div className="space-y-2 text-sm text-gray-600">
+                            <div className="rounded-lg bg-white p-4 ring-1 ring-border-light">
+                                <h4 className="mb-3 text-xs font-medium uppercase tracking-widest text-text-muted">Guidelines</h4>
+                                <div className="space-y-2 text-sm text-text-secondary">
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                        <CheckCircle2 className="h-4 w-4 text-brand" />
                                         <span>First row must contain headers</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                        <span>Email address is required for each contact</span>
+                                        <CheckCircle2 className="h-4 w-4 text-brand" />
+                                        <span>Email is preferred, but Website or Company Domain can be used to discover it</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                        <CheckCircle2 className="h-4 w-4 text-brand" />
                                         <span>Duplicates will be updated based on email</span>
                                     </div>
                                 </div>
@@ -195,43 +234,43 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                     )}
 
                     {step === "mapping" && (
-                        <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                            <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                                <FileText className="h-6 w-6 text-amber-600" />
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3 rounded-lg border border-brand/10 bg-brand/5 p-4">
+                                <FileText className="h-6 w-6 text-brand" />
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-amber-900 truncate">{file?.name}</p>
-                                    <p className="text-xs text-amber-700">{headers.length} columns found</p>
+                                    <p className="truncate text-sm font-medium text-text-primary">{file?.name}</p>
+                                    <p className="text-xs text-text-muted">{headers.length} columns found</p>
                                 </div>
                                 <button
                                     onClick={reset}
-                                    className="text-xs font-bold text-amber-600 hover:text-amber-700 uppercase p-2"
+                                    className="p-2 text-xs font-medium uppercase text-brand hover:text-brand/80"
                                 >
                                     Change
                                 </button>
                             </div>
 
                             <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Map Columns</h3>
-                                <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden divide-y divide-gray-50">
+                                <h3 className="text-sm font-medium uppercase tracking-widest text-text-muted">Map columns</h3>
+                                <div className="overflow-hidden rounded-lg border border-border-light bg-white divide-y divide-border-light">
                                     {SYSTEM_FIELDS.map((field) => {
                                         const Icon = field.icon;
                                         return (
                                             <div key={field.key} className="p-4 flex items-center gap-4">
-                                                <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center">
-                                                    <Icon className="h-5 w-5 text-gray-400" />
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#F8F9FA]">
+                                                    <Icon className="h-5 w-5 text-text-muted" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <label className="block text-sm font-semibold text-gray-900">
+                                                    <label className="block text-sm font-medium text-text-primary">
                                                         {field.label}
-                                                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                                                        {field.required && <span className="text-error-text ml-1">*</span>}
                                                     </label>
-                                                    <p className="text-xs text-gray-500">System field</p>
+                                                    <p className="text-xs text-text-muted">PRM field</p>
                                                 </div>
-                                                <ChevronRight className="h-4 w-4 text-gray-300" />
+                                                <ChevronRight className="h-4 w-4 text-text-muted" />
                                                 <select
                                                     className={cn(
-                                                        "flex-1 min-w-[140px] h-10 px-3 text-sm bg-gray-50 rounded-xl border border-transparent outline-none focus:border-amber-400 transition-all appearance-none cursor-pointer",
-                                                        mapping[field.key] ? "text-gray-900 font-medium" : "text-gray-400"
+                                                        "flex-1 min-w-[140px] h-10 appearance-none rounded-lg border border-border-light bg-[#F8F9FA] px-3 text-sm outline-none transition-all cursor-pointer focus:border-brand/30",
+                                                        mapping[field.key] ? "text-text-primary font-medium" : "text-text-muted"
                                                     )}
                                                     value={mapping[field.key] || ""}
                                                     onChange={(e) => setMapping(prev => ({ ...prev, [field.key]: e.target.value }))}
@@ -248,7 +287,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                             </div>
 
                             {error && (
-                                <div className="p-4 bg-red-50 rounded-2xl flex items-start gap-3 text-red-700">
+                                <div className="p-4 bg-error-bg rounded-lg flex items-start gap-3 text-error-text">
                                     <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
                                     <p className="text-sm font-medium">{error}</p>
                                 </div>
@@ -257,20 +296,36 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                     )}
 
                     {step === "processing" && (
-                        <div className="flex flex-col items-center justify-center py-12 animate-in fade-in duration-500">
+                        <div className="flex flex-col items-center justify-center py-12">
                             {result ? (
                                 <div className="text-center space-y-4">
-                                    <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <CheckCircle2 className="h-10 w-10 text-green-600" />
+                                    <div className="mx-auto mb-2 flex h-20 w-20 items-center justify-center rounded-full bg-brand/10">
+                                        <CheckCircle2 className="h-10 w-10 text-brand" />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-gray-900">Import Complete!</h3>
-                                    <p className="text-gray-500">
-                                        <span className="font-bold text-gray-900">{result.count}</span> contacts have been successfully imported/updated.
+                                    <h3 className="text-2xl font-semibold text-text-primary">Import complete</h3>
+                                    <p className="text-text-muted">
+                                        <span className="font-bold text-text-primary">{result.count}</span> contacts have been successfully imported/updated.
                                     </p>
-                                    {result.errors && result.errors.length > 0 && (
-                                        <div className="mt-4 p-4 bg-amber-50 rounded-2xl text-left max-h-40 overflow-y-auto">
-                                            <p className="text-xs font-bold text-amber-700 uppercase mb-2">{result.errors.length} rows skipped</p>
-                                            <ul className="text-xs text-amber-600 space-y-1">
+                                     {result.qualitySummary && (
+                                         <div className="grid gap-3 text-left sm:grid-cols-3">
+                                              <div className="rounded-lg bg-white p-4 ring-1 ring-border-light">
+                                                  <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Duplicates</p>
+                                                  <p className="mt-1 text-2xl font-bold text-text-primary">{result.qualitySummary.duplicateContacts}</p>
+                                              </div>
+                                              <div className="rounded-lg bg-white p-4 ring-1 ring-border-light">
+                                                  <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Invalid Emails</p>
+                                                  <p className="mt-1 text-2xl font-bold text-text-primary">{result.qualitySummary.invalidEmails}</p>
+                                              </div>
+                                              <div className="rounded-lg bg-white p-4 ring-1 ring-border-light">
+                                                  <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Missing Names</p>
+                                                  <p className="mt-1 text-2xl font-bold text-text-primary">{result.qualitySummary.missingRequiredFields}</p>
+                                              </div>
+                                         </div>
+                                     )}
+                                      {result.errors && result.errors.length > 0 && (
+                                          <div className="mt-4 p-4 bg-brand/5 rounded-lg text-left max-h-40 overflow-y-auto">
+                                              <p className="text-xs font-bold text-brand uppercase mb-2">{result.errors.length} rows skipped</p>
+                                              <ul className="text-xs text-text-secondary space-y-1">
                                                 {result.errors.slice(0, 10).map((err, i) => (
                                                     <li key={i}>• Row {i + 2}: {err.error}</li>
                                                 ))}
@@ -280,7 +335,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                     )}
                                     <button
                                         onClick={() => { onSuccess(); onClose(); reset(); }}
-                                        className="mt-6 w-full h-12 bg-gray-900 text-white rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
+                                        className="mt-6 h-12 w-full rounded-lg bg-brand text-white transition-all hover:bg-brand/90"
                                     >
                                         View Contacts
                                     </button>
@@ -288,15 +343,15 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                             ) : (
                                 <div className="text-center space-y-4">
                                     <div className="relative">
-                                        <div className="h-20 w-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
-                                            <Loader2 className="h-10 w-10 text-amber-600 animate-spin" />
+                                        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-brand/10">
+                                            <Loader2 className="h-10 w-10 animate-spin text-brand" />
                                         </div>
-                                        <div className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-xl shadow-md border border-gray-100">
-                                            <FileText className="h-5 w-5 text-gray-400" />
+                                        <div className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-lg shadow-md border border-border-light">
+                                            <FileText className="h-5 w-5 text-text-muted" />
                                         </div>
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900">Importing Contacts...</h3>
-                                    <p className="text-gray-500 animate-pulse">This may take a moment depending on the file size.</p>
+                                    <h3 className="text-xl font-semibold text-text-primary">Importing contacts</h3>
+                                    <p className="text-text-muted">This may take a moment depending on the file size.</p>
                                 </div>
                             )}
                         </div>
@@ -305,17 +360,17 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
 
                 {/* Footer */}
                 {step === "mapping" && (
-                    <div className="px-6 py-6 border-t border-gray-50 bg-white sticky bottom-0 flex gap-3">
+                    <div className="sticky bottom-0 flex gap-3 border-t border-border-light bg-white px-6 py-6">
                         <button
                             onClick={() => setStep("upload")}
-                            className="flex-1 h-12 border border-gray-100 rounded-2xl font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                            className="h-12 flex-1 rounded-lg border border-border-light text-text-secondary transition-all hover:bg-[#F0F1F3]"
                         >
                             Back
                         </button>
                         <button
                             onClick={handleImport}
-                            disabled={isUploading || !mapping.email}
-                            className="flex-[2] h-12 bg-amber-500 text-white rounded-2xl font-bold hover:bg-amber-600 transition-all shadow-lg hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            disabled={isUploading || (!mapping.email && !mapping.website && !mapping.companyDomain)}
+                            className="flex flex-[2] h-12 items-center justify-center gap-2 rounded-lg bg-brand text-white transition-all hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start Import"}
                         </button>

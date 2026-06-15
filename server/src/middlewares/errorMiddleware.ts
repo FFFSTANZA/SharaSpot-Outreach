@@ -1,11 +1,6 @@
 import { Request, Response, NextFunction } from "express";
+import { logger } from "../utils/logger";
 
-/**
- * Global Error Handling Middleware
- * 
- * Catches all unhandled errors and returns a sanitized JSON response.
- * Prevents stack traces from leaking to the client in production.
- */
 interface ErrorWithStatusCode extends Error {
     statusCode?: number;
 }
@@ -19,8 +14,7 @@ export const errorMiddleware = (
     const statusCode = err.statusCode || 500;
     const isProduction = process.env.NODE_ENV === "production";
 
-    // Log error for internal monitoring
-    console.error(`[ERROR] ${req.method} ${req.path}:`, err);
+    logger.error({ err, method: req.method, path: req.path, statusCode }, "[ERROR]");
 
     const message = (isProduction && statusCode === 500)
         ? "An internal server error occurred"
@@ -29,7 +23,6 @@ export const errorMiddleware = (
     res.status(statusCode).json({
         status: "error",
         message,
-        // Only include stack trace in development
         ...(isProduction ? {} : { stack: err.stack }),
     });
 };

@@ -3,13 +3,12 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
     Folder,
-    FolderPlus,
     Edit3,
     Trash2,
     Check,
-    X,
     Search,
-    Hash
+    Hash,
+    Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -35,7 +34,6 @@ export default function ContactListsSidebar({
     const { addToast } = useToast();
     const [lists, setLists] = useState<ContactList[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isCreating, setIsCreating] = useState(false);
     const [newListName, setNewListName] = useState("");
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState("");
@@ -64,13 +62,12 @@ export default function ContactListsSidebar({
         }
     }, [fetchLists, refreshKey]);
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newListName.trim()) return;
+    const handleCreate = async () => {
+        const name = newListName.trim();
+        if (!name) return;
         try {
-            await createContactList(newListName.trim());
+            await createContactList(name);
             setNewListName("");
-            setIsCreating(false);
             fetchLists();
             addToast("success", "List created");
         } catch (error: unknown) {
@@ -102,7 +99,7 @@ export default function ContactListsSidebar({
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Are you sure you want to delete the list "${name}"? Contacts will not be deleted.`)) return;
+        if (!confirm(`Delete the list "${name}"? Contacts won't be deleted.`)) return;
         try {
             await deleteContactList(id);
             if (selectedListId === id) onSelectList(null);
@@ -117,151 +114,125 @@ export default function ContactListsSidebar({
         l.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    return (
-        <div className="w-full flex flex-col h-full bg-white animate-in fade-in duration-500">
-            <div className="p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <Folder className="h-3 w-3" /> Folders & Lists
-                    </h3>
-                    <button
-                        onClick={() => setIsCreating(true)}
-                        className="p-1 hover:bg-gray-100 rounded-md text-gray-400 hover:text-brand transition-all"
-                        title="Create New List"
-                    >
-                        <FolderPlus className="h-4 w-4" />
-                    </button>
-                </div>
+    const createForm = searchQuery.trim() === "" && (
+        <div className="flex items-center gap-0.5 border-t border-border-light px-1 py-1">
+            <Plus size={12} className="shrink-0 text-text-muted" />
+            <input
+                type="text"
+                value={newListName}
+                onChange={(e) => setNewListName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                placeholder="New list..."
+                className="min-w-0 flex-1 border-none bg-transparent px-1 py-1 text-[11px] font-medium text-text-primary outline-none placeholder:text-text-muted"
+            />
+            {newListName.trim() && (
+                <button
+                    onClick={handleCreate}
+                    className="rounded-md p-1 text-brand hover:bg-brand/5"
+                >
+                    <Check size={12} />
+                </button>
+            )}
+        </div>
+    );
 
-                {/* Search */}
+    return (
+        <div className="flex h-full w-full flex-col bg-white animate-in fade-in duration-500">
+            <div className="border-b border-border-light px-2 py-2">
                 <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" size={14} />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" size={12} />
                     <input
                         type="text"
-                        placeholder="Search lists..."
+                        placeholder="Filter lists..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         aria-label="Search lists"
-                        className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-transparent rounded-lg text-xs font-medium focus:bg-white focus:border-brand-muted outline-none transition-all"
+                        className="w-full rounded-lg border border-border-light bg-white py-1.5 pl-7 pr-2.5 text-[11px] outline-none transition-all focus:border-brand/30 focus:ring-1 focus:ring-brand/10"
                     />
                 </div>
-
-                {/* Create Input */}
-                {isCreating && (
-                    <form onSubmit={handleCreate} className="animate-in slide-in-from-top-2 duration-200">
-                        <div className="flex items-center gap-1 bg-brand-light p-1.5 rounded-xl border border-brand-muted">
-                            <input
-                                autoFocus
-                                type="text"
-                                value={newListName}
-                                onChange={(e) => setNewListName(e.target.value)}
-                                placeholder="List name..."
-                                className="flex-1 bg-transparent border-none outline-none text-xs font-semibold text-gray-800 placeholder:text-brand-muted"
-                            />
-                            <button
-                                type="submit"
-                                className="p-1 text-brand hover:bg-brand-muted rounded-lg"
-                                disabled={!newListName.trim()}
-                            >
-                                <Check className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setIsCreating(false)}
-                                className="p-1 text-gray-400 hover:bg-brand-muted rounded-lg"
-                            >
-                                <X className="h-3.5 w-3.5" />
-                            </button>
-                        </div>
-                    </form>
-                )}
             </div>
 
-            {/* List Items */}
-            <div className="flex-1 overflow-y-auto px-2 space-y-1 pb-4">
+            <div className="flex-1 overflow-y-auto px-1 py-1 space-y-px">
                 <button
                     onClick={() => onSelectList(null)}
                     className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all group",
+                        "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-all",
                         selectedListId === null
-                            ? "bg-gray-100 text-gray-900"
-                            : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                            ? "bg-brand/5 text-brand"
+                            : "text-text-secondary hover:bg-[#F8F9FA] hover:text-text-primary"
                     )}
                 >
-                    <div className="flex items-center gap-2.5">
-                        <Hash className={cn("h-4 w-4", selectedListId === null ? "text-gray-900" : "text-gray-300")} />
-                        <span>All Contacts</span>
-                    </div>
+                    <Hash size={12} className={cn(selectedListId === null ? "text-brand" : "text-text-muted")} />
+                    <span>All Contacts</span>
                 </button>
 
-                <div className="pt-2">
-                    {!isLoading && filteredLists.length === 0 ? (
-                        <div className="px-3 py-8 text-center bg-gray-50 rounded-2xl mx-1 border border-dashed border-gray-100">
-                            <Folder className="h-6 w-6 text-gray-200 mx-auto mb-2" />
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No lists found</p>
+                {isLoading ? null : filteredLists.length === 0 && searchQuery ? (
+                    <div className="px-2.5 py-6 text-center">
+                        <p className="text-[10px] text-text-muted">No matching lists</p>
+                    </div>
+                ) : (
+                    filteredLists.map((list) => (
+                        <div key={list.id} className="group">
+                            {editingId === list.id ? (
+                                <div className="flex items-center gap-1 rounded-md border border-border-light bg-white px-2 py-1">
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                        onKeyDown={(e) => e.key === "Enter" && handleRename(list.id)}
+                                        className="min-w-0 flex-1 border-none bg-transparent text-[11px] font-medium text-text-primary outline-none"
+                                    />
+                                    <button onClick={() => handleRename(list.id)} className="rounded p-0.5 text-brand hover:bg-brand/5">
+                                        <Check size={12} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => onSelectList(list.id)}
+                                    className={cn(
+                                        "flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-all",
+                                        selectedListId === list.id
+                                            ? "bg-brand/5 text-brand"
+                                            : "text-text-secondary hover:bg-[#F8F9FA] hover:text-text-primary"
+                                    )}
+                                >
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <Folder size={12} className={cn("shrink-0", selectedListId === list.id ? "text-brand" : "text-text-muted")} />
+                                        <span className="truncate">{list.name}</span>
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
+                                        <span className={cn(
+                                            "rounded px-1.5 py-px text-[9px] font-medium",
+                                            selectedListId === list.id ? "bg-brand/10 text-brand" : "bg-[#F8F9FA] text-text-muted group-hover:bg-[#F0F1F3]"
+                                        )}>
+                                            {list._count?.contacts || 0}
+                                        </span>
+
+                                        <div className="flex items-center gap-px opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setEditingId(list.id); setEditName(list.name); }}
+                                                className="rounded p-0.5 text-text-muted transition-colors hover:text-brand"
+                                            >
+                                                <Edit3 size={11} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(list.id, list.name); }}
+                                                className="rounded p-0.5 text-text-muted transition-colors hover:text-error-text"
+                                            >
+                                                <Trash2 size={11} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </button>
+                            )}
                         </div>
-                    ) : (
-                        filteredLists.map((list) => (
-                            <div key={list.id} className="group relative">
-                                {editingId === list.id ? (
-                                    <div className="flex items-center gap-1 bg-brand-light p-1 rounded-xl border border-brand-muted mx-1">
-                                        <input
-                                            autoFocus
-                                            type="text"
-                                            value={editName}
-                                            onChange={(e) => setEditName(e.target.value)}
-                                            onKeyDown={(e) => e.key === "Enter" && handleRename(list.id)}
-                                            className="flex-1 bg-transparent border-none outline-none text-xs font-semibold text-gray-800"
-                                        />
-                                        <button onClick={() => handleRename(list.id)} className="p-1 text-brand hover:bg-brand-muted rounded-lg">
-                                            <Check className="h-3.5 w-3.5" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div
-                                        onClick={() => onSelectList(list.id)}
-                                        className={cn(
-                                            "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all",
-                                            selectedListId === list.id
-                                                ? "bg-brand-light text-brand shadow-sm border border-brand-muted"
-                                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Folder className={cn("h-4 w-4", selectedListId === list.id ? "text-brand" : "text-gray-300")} />
-                                            <span className="truncate max-w-[120px]">{list.name}</span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <span className={cn(
-                                                "text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-colors",
-                                                selectedListId === list.id ? "bg-brand-muted text-brand" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-500"
-                                            )}>
-                                                {list._count?.contacts || 0}
-                                            </span>
-
-                                            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setEditingId(list.id); setEditName(list.name); }}
-                                                    className="p-1 hover:bg-brand-muted rounded-md text-brand hover:text-brand transition-colors"
-                                                >
-                                                    <Edit3 className="h-3.5 w-3.5" />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleDelete(list.id, list.name); }}
-                                                    className="p-1 hover:bg-red-50 rounded-md text-gray-300 hover:text-red-500 transition-colors"
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))
-                    )}
-                </div>
+                    ))
+                )}
             </div>
+
+            {createForm}
         </div>
     );
 }

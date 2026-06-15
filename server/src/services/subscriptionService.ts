@@ -13,7 +13,7 @@ import { isIndia, getCountryFromIp } from "../utils/geoUtils";
 import { redis } from "../config/redis";
 import { PREMIUM_CACHE_PREFIX } from "../config/subscription";
 
-async function invalidatePremiumCacheForUserAndInheritedMembers(userId: string): Promise<void> {
+export async function invalidatePremiumCacheForUserAndInheritedMembers(userId: string): Promise<void> {
   const cacheKeys = new Set<string>([`${PREMIUM_CACHE_PREFIX}${userId}`]);
 
   const ownedOrganizations = await prisma.organization.findMany({
@@ -142,17 +142,22 @@ export async function createCheckoutSession(
   userName: string | null,
   ipAddress?: string
 ): Promise<CreateCheckoutSessionResult> {
-  const { isPremium, subscription } = await getSubscriptionStatus(userId);
-  if (isPremium) {
-    throw new Error("User already has an active premium subscription or trial.");
-  }
+  const { subscription } = await getSubscriptionStatus(userId);
 
-  const countryCode = ipAddress ? await getCountryFromIp(ipAddress) : null;
-  const productId = isIndia(countryCode) ? DODO_PRODUCT_ID_INDIA : DODO_PRODUCT_ID_GLOBAL;
+  // Use stored region preference first, fall back to geo-IP detection
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { region: true } });
+  let region: string | null = null;
+  if (user?.region) {
+    region = user.region;
+  } else {
+    const countryCode = ipAddress ? await getCountryFromIp(ipAddress) : null;
+    region = isIndia(countryCode) ? "india" : "global";
+  }
+  const productId = region === "india" ? DODO_PRODUCT_ID_INDIA : DODO_PRODUCT_ID_GLOBAL;
   const trialDays = subscription ? 0 : SUBSCRIPTION_TRIAL_DAYS;
   const subscriptionData = subscription ? { trial_period_days: 0 } : undefined;
 
-  logger.info({ userId, productId, countryCode, trialDays }, "[CHECKOUT] Creating session");
+  logger.info({ userId, productId, region, trialDays }, "[CHECKOUT] Creating session");
 
   // Local development fallback with placeholder API keys
   const apiKey = process.env.DODO_PAYMENTS_API_KEY;
@@ -173,7 +178,7 @@ export async function createCheckoutSession(
     }, 1000);
 
     return {
-      checkoutUrl: `${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard?subscription=success&userId=${userId}`,
+      checkoutUrl: `${process.env.FRONTEND_URL || "https://sharaspot.in"}/dashboard?subscription=success&userId=${userId}`,
       sessionId: mockSessionId,
     };
   }
@@ -224,12 +229,12 @@ export async function createCustomerPortalSession(userId: string): Promise<Creat
 
   if (subscription.dodoCustomerId === "cust_mock_123") {
     return {
-      portalUrl: `${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard/settings/billing`,
+      portalUrl: `${process.env.FRONTEND_URL || "https://sharaspot.in"}/dashboard/settings/billing`,
     };
   }
 
   const session = await dodo.customers.customerPortal.create(subscription.dodoCustomerId, {
-    return_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard/settings/billing`,
+    return_url: `${process.env.FRONTEND_URL || "https://sharaspot.in"}/dashboard/settings/billing`,
     send_email: false,
   });
 
@@ -340,7 +345,6 @@ export async function updateSubscriptionFromWebhook(
 
   const statusMap: Record<string, SubscriptionStatus> = {
     active: SubscriptionStatus.ACTIVE,
-    pending: SubscriptionStatus.ACTIVE,
     past_due: SubscriptionStatus.PAST_DUE,
     cancelled: SubscriptionStatus.CANCELLED,
     expired: SubscriptionStatus.EXPIRED,
@@ -352,18 +356,22 @@ export async function updateSubscriptionFromWebhook(
   const newStatus = data.status ? statusMap[data.status] : undefined;
 
   if (data.status && !newStatus) {
-    logger.error({ dodoSubscriptionId, status: data.status }, "[WEBHOOK] Unknown subscription status from provider");
-    await logPaymentAuditEvent("subscription.update.failed", dodoSubscriptionId, {
-      reason: "unknown_status",
-      status: data.status,
-    });
-    return;
+    if (data.status === "pending") {
+      logger.info({ dodoSubscriptionId }, "[WEBHOOK] Status is 'pending', preserving current status");
+    } else {
+      logger.error({ dodoSubscriptionId, status: data.status }, "[WEBHOOK] Unknown subscription status from provider");
+      await logPaymentAuditEvent("subscription.update.failed", dodoSubscriptionId, {
+        reason: "unknown_status",
+        status: data.status,
+      });
+      return;
+    }
   }
 
   await prisma.subscription.update({
     where: { id: subscription.id },
     data: {
-      status: newStatus,
+      ...(newStatus ? { status: newStatus } : {}),
       currentPeriodStart: data.currentPeriodStart || undefined,
       currentPeriodEnd: data.currentPeriodEnd || undefined,
       cancelAtPeriodEnd: data.cancelAtPeriodEnd,
@@ -612,7 +620,6 @@ export async function syncSubscriptionFromDodo(userId: string): Promise<{ synced
 
     const statusMap: Record<string, SubscriptionStatus> = {
       active: SubscriptionStatus.ACTIVE,
-      pending: SubscriptionStatus.ACTIVE,
       past_due: SubscriptionStatus.PAST_DUE,
       cancelled: SubscriptionStatus.CANCELLED,
       expired: SubscriptionStatus.EXPIRED,
@@ -633,7 +640,7 @@ export async function syncSubscriptionFromDodo(userId: string): Promise<{ synced
       },
     });
 
-  await invalidatePremiumCacheForUserAndInheritedMembers(userId);
+    await invalidatePremiumCacheForUserAndInheritedMembers(userId);
 
     await logPaymentAuditEvent("subscription.synced", userId, {
       dodoSubscriptionId: subscription.dodoSubscriptionId,

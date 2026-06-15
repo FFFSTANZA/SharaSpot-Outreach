@@ -401,7 +401,7 @@ describe("Workspace × Premium Cross-Cutting Edge Cases", () => {
         prmSegment: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
         webhook: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
         mcpApiKey: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
-        bounceList: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
+        bounceList: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
         inboxEmail: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
         inboxThread: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
         organizationMember: {

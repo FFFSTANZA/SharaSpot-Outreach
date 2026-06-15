@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { logger } from "../utils/logger";
 
 const WEBHOOK_TIMEOUT_MS = 10000;
 
@@ -73,7 +74,7 @@ export async function triggerWebhook(
       });
     }
   } catch (error) {
-    console.error("[Webhook] Trigger error:", error);
+    logger.error({ error }, "[Webhook] Trigger error:");
   }
 }
 
@@ -108,7 +109,7 @@ export async function retryFailedWebhooks(): Promise<void> {
       });
     }
   } catch (error) {
-    console.error("[Webhook] Retry error:", error);
+    logger.error({ error }, "[Webhook] Retry error:");
   }
 }
 

@@ -10,7 +10,7 @@ type SegmentExpression = {
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_STAGES = new Set(["COLD", "WARM", "HOT", "REPLIED", "CONVERTED", "BOUNCED"]);
+const ALLOWED_STAGES = new Set(["NEW", "CONTACTED", "REPLIED", "INTERESTED", "MEETING_BOOKED", "CONVERTED", "NOT_A_FIT", "BOUNCED", "COLD", "WARM", "HOT"]);
 
 async function qualitySummary(context: MCPContext) {
   const contacts = await prisma.contact.findMany({ where: mcpScopeWhere(context), select: { email: true, firstName: true, lastName: true } });

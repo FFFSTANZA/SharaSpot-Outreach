@@ -1,8 +1,7 @@
 import { MetadataRoute } from 'next';
+import { SITE_URL } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sharaspot.in";
-
     return {
         rules: [
             {
@@ -18,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
                     '/attachments',
                     '/templates',
                     '/track',
+                    '/test-login',
                 ],
             },
             {
@@ -25,6 +25,7 @@ export default function robots(): MetadataRoute.Robots {
                 allow: '/',
             },
         ],
-        sitemap: `${baseUrl}/sitemap.xml`,
+        sitemap: `${SITE_URL}/sitemap.xml`,
+        host: SITE_URL,
     };
 }

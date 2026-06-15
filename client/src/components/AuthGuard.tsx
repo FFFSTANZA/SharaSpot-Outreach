@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { PageLoader } from "@/components/PageLoader";
@@ -11,10 +11,14 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
   const { user, isLoading, refreshUser, logout } = useAuth();
   const router = useRouter();
   const checkoutAttemptedRef = useRef(false);
+  const [isSuccessRedirect, setIsSuccessRedirect] = useState(false);
+  const [isCancelledRedirect, setIsCancelledRedirect] = useState(false);
 
-  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-  const isSuccessRedirect = searchParams?.get("subscription") === "success";
-  const isCancelledRedirect = searchParams?.get("subscription") === "cancelled";
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setIsSuccessRedirect(params.get("subscription") === "success");
+    setIsCancelledRedirect(params.get("subscription") === "cancelled");
+  }, []);
 
   useEffect(() => {
     if (isCancelledRedirect) {
@@ -70,7 +74,8 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
     }
   }, [user, isLoading, router, requirePremium, isSuccessRedirect, refreshUser]);
 
-  if (isLoading || (!user && typeof window !== "undefined" && localStorage.getItem("accessToken"))) {
+  const hasToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+  if (isLoading || (!user && hasToken)) {
     return <PageLoader message="Verifying session..." />;
   }
 

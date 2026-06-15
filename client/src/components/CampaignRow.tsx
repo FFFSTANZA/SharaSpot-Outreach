@@ -16,27 +16,29 @@ export function CampaignRow({ campaign, searchQuery = "" }: CampaignRowProps) {
   const bodyPreview = campaign?.body ? stripHtml(campaign.body).slice(0, 100) : "";
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => {
         if (campaign?.id) {
           router.push(`/dashboard/campaigns/${campaign.id}`);
         }
       }}
-      className="group flex items-center gap-4 px-6 py-4 cursor-pointer transition-all duration-200 border-b border-gray-50 hover:bg-gray-50/50"
+      className="group grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-border-light px-4 py-4 text-left transition-colors hover:bg-[#F8FAFC] sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(220px,auto)_112px_96px]"
     >
-      <div className="w-10 h-10 rounded-lg bg-brand-light flex items-center justify-center shrink-0">
-        <Megaphone className="h-5 w-5 text-brand" />
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-light">
+          <Megaphone className="h-5 w-5 text-brand" />
+        </div>
+
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-text-primary">
+            <MatchHighlighter text={campaign?.subject ?? "(No Subject)"} query={searchQuery} />
+          </p>
+          <p className="mt-0.5 truncate text-xs font-medium text-text-muted">{bodyPreview || "No preview available"}</p>
+        </div>
       </div>
 
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-gray-900 truncate">
-          <MatchHighlighter text={campaign?.subject ?? "(No Subject)"} query={searchQuery} />
-        </p>
-        <p className="text-xs text-gray-400 truncate font-medium mt-0.5">{bodyPreview}</p>
-      </div>
-
-      <div className="flex items-center gap-4 shrink-0">
-        <div className="flex items-center gap-3 text-xs font-semibold text-gray-500">
+      <div className="hidden shrink-0 items-center justify-end gap-3 text-xs font-semibold text-text-secondary lg:flex">
           <span className="flex items-center gap-1">
             <Users className="h-3.5 w-3.5" />
             <span>{campaign?.totalRecipients ?? 0}</span>
@@ -45,7 +47,7 @@ export function CampaignRow({ campaign, searchQuery = "" }: CampaignRowProps) {
             <Send className="h-3.5 w-3.5" />
             <span>{totalSent}</span>
           </span>
-          <span className="flex items-center gap-1 text-red-500">
+          <span className="flex items-center gap-1 text-error-text">
             <XCircle className="h-3.5 w-3.5" />
             <span>{totalFailed}</span>
           </span>
@@ -55,16 +57,20 @@ export function CampaignRow({ campaign, searchQuery = "" }: CampaignRowProps) {
               <span>{totalPending}</span>
             </span>
           )}
-        </div>
       </div>
 
-      <div className="w-28 shrink-0">
+      <div className="hidden shrink-0 justify-self-start lg:block">
         <StatusBadge status={campaign?.status ?? "SCHEDULED"} size="sm" pauseReason={campaign?.pauseReason} />
       </div>
 
-      <div className="shrink-0 text-[11px] text-gray-400 font-medium whitespace-nowrap w-20 text-right">
+      <div className="hidden shrink-0 justify-self-end whitespace-nowrap text-right text-[11px] font-medium text-text-muted lg:block">
         {campaign?.createdAt ? formatTime(campaign.createdAt) : "-"}
       </div>
-    </div>
+
+      <div className="flex shrink-0 flex-col items-end gap-2 lg:hidden">
+        <StatusBadge status={campaign?.status ?? "SCHEDULED"} size="sm" pauseReason={campaign?.pauseReason} />
+        <span className="text-[11px] font-semibold text-text-muted">{totalSent} sent</span>
+      </div>
+    </button>
   );
 }

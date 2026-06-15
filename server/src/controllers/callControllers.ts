@@ -1,12 +1,31 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
 import { logContactActivity } from "../utils/contactService";
-import { getOrgScope, OrgScope } from "../utils/orgScope";
+import { getOrgId, getOrgScope, OrgScope } from "../utils/orgScope";
 import { CALL_NEXT_ACTIONS, normalizeCallDisposition, STAGE_BY_DISPOSITION, TERMINAL_DISPOSITIONS } from "../utils/callDispositions";
 
 const isValidDate = (val: string): boolean => {
   const d = new Date(val);
   return !isNaN(d.getTime());
+};
+
+const ASSIGNEE_SELECT = { id: true, name: true, email: true, avatarUrl: true } as const;
+
+const resolveAssigneeId = async (req: Request, assignedToId: unknown): Promise<string | null | undefined> => {
+  if (assignedToId === undefined) return undefined;
+  if (assignedToId === null || assignedToId === "") return null;
+
+  const userId = String(assignedToId);
+  const orgId = getOrgId(req);
+  if (!orgId) {
+    return userId === req.user!.id ? userId : undefined;
+  }
+
+  const member = await prisma.organizationMember.findUnique({
+    where: { organizationId_userId: { organizationId: orgId, userId } },
+    select: { userId: true },
+  });
+  return member ? userId : undefined;
 };
 
 type DispositionInput = {
@@ -30,6 +49,7 @@ const createOrUpdatePendingTask = async (
     lastOutcome?: string | null;
     lastDisposition?: string | null;
     lastNote?: string | null;
+    assignedToId?: string | null;
     contactListId?: string | null;
     campaignId?: string | null;
     prmSegmentId?: string | null;
@@ -39,7 +59,7 @@ const createOrUpdatePendingTask = async (
   const existingPending = await tx.callTask.findFirst({
     where: { userId: input.userId, contactId: input.contactId, status: "PENDING", ...scope },
     orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
-    select: { id: true, dueAt: true, priority: true, contactListId: true, campaignId: true, prmSegmentId: true },
+    select: { id: true, dueAt: true, priority: true, assignedToId: true, contactListId: true, campaignId: true, prmSegmentId: true },
   });
 
   if (existingPending) {
@@ -54,6 +74,7 @@ const createOrUpdatePendingTask = async (
         lastOutcome: input.lastOutcome ?? undefined,
         lastDisposition: input.lastDisposition ?? undefined,
         lastNote: input.lastNote ?? undefined,
+        assignedToId: input.assignedToId !== undefined ? input.assignedToId : existingPending.assignedToId,
         contactListId: existingPending.contactListId ?? input.contactListId ?? undefined,
         campaignId: existingPending.campaignId ?? input.campaignId ?? undefined,
         prmSegmentId: existingPending.prmSegmentId ?? input.prmSegmentId ?? undefined,
@@ -72,6 +93,7 @@ const createOrUpdatePendingTask = async (
       lastOutcome: input.lastOutcome ?? null,
       lastDisposition: input.lastDisposition ?? null,
       lastNote: input.lastNote ?? null,
+      assignedToId: input.assignedToId ?? null,
       contactListId: input.contactListId ?? null,
       campaignId: input.campaignId ?? null,
       prmSegmentId: input.prmSegmentId ?? null,
@@ -120,6 +142,7 @@ const applyDisposition = async (input: DispositionInput, scope?: OrgScope) => {
       contactListId: string | null;
       campaignId: string | null;
       prmSegmentId: string | null;
+      assignedToId: string | null;
       priority: number;
     } | null = null;
     let newTask: { id: string } | null = null;
@@ -127,7 +150,7 @@ const applyDisposition = async (input: DispositionInput, scope?: OrgScope) => {
     if (taskId) {
       existingTask = await tx.callTask.findFirst({
         where: { id: taskId, contactId, ...scope },
-        select: { id: true, status: true, contactListId: true, campaignId: true, prmSegmentId: true, priority: true },
+        select: { id: true, status: true, contactListId: true, campaignId: true, prmSegmentId: true, assignedToId: true, priority: true },
       });
       if (!existingTask) {
         const err = new Error("Call task not found for contact");
@@ -171,6 +194,7 @@ const applyDisposition = async (input: DispositionInput, scope?: OrgScope) => {
         lastOutcome: normalizedOutcome,
         lastDisposition: normalizedOutcome,
         lastNote: note?.trim() || null,
+        assignedToId: existingTask?.assignedToId ?? contact.assignedToId ?? null,
         contactListId: existingTask?.contactListId || null,
         campaignId: existingTask?.campaignId || null,
         prmSegmentId: existingTask?.prmSegmentId || null,
@@ -275,6 +299,7 @@ export const getCallQueue = async (req: Request, res: Response) => {
     const due = (req.query.due as string | undefined) || "all";
     const search = (req.query.search as string | undefined) || "";
     const listId = (req.query.listId as string | undefined) || "";
+    const assignedToId = (req.query.assignedToId as string | undefined) || "";
     const page = parseInt(req.query.page as string, 10) || 1;
     const limit = parseInt(req.query.limit as string, 10) || 50;
     const skip = (page - 1) * limit;
@@ -311,10 +336,21 @@ export const getCallQueue = async (req: Request, res: Response) => {
       where.contactListId = listId;
     }
 
+    if (assignedToId === "__unassigned") {
+      where.assignedToId = null;
+    } else if (assignedToId) {
+      const resolvedAssigneeId = await resolveAssigneeId(req, assignedToId);
+      if (resolvedAssigneeId === undefined) {
+        return res.status(400).json({ message: "Invalid assignee" });
+      }
+      where.assignedToId = resolvedAssigneeId;
+    }
+
     const [tasks, total] = await Promise.all([
       prisma.callTask.findMany({
         where,
         include: {
+          assignedTo: { select: ASSIGNEE_SELECT },
           contact: {
             select: {
               id: true,
@@ -337,18 +373,19 @@ export const getCallQueue = async (req: Request, res: Response) => {
 
     res.json({ tasks, total, page, limit, totalPages: Math.ceil(total / limit) });
   } catch (error: unknown) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };
 
 export const createCallTask = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id as string;
-    const { contactId, dueAt, priority = 0, contactListId } = req.body as {
+    const { contactId, dueAt, priority = 0, contactListId, assignedToId } = req.body as {
       contactId?: string;
       dueAt?: string;
       priority?: number;
       contactListId?: string;
+      assignedToId?: string | null;
     };
 
     if (!contactId || !dueAt) {
@@ -361,8 +398,13 @@ export const createCallTask = async (req: Request, res: Response) => {
     }
 
     const scope = getOrgScope(req);
-    const contact = await prisma.contact.findFirst({ where: { id: contactId, ...scope }, select: { id: true } });
+    const contact = await prisma.contact.findFirst({ where: { id: contactId, ...scope }, select: { id: true, assignedToId: true } });
     if (!contact) return res.status(404).json({ message: "Contact not found" });
+
+    const resolvedAssigneeId = assignedToId === undefined ? contact.assignedToId : await resolveAssigneeId(req, assignedToId);
+    if (resolvedAssigneeId === undefined) {
+      return res.status(400).json({ message: "Invalid assignee" });
+    }
 
     const task = await prisma.$transaction(async (tx) =>
       createOrUpdatePendingTask(tx, {
@@ -370,11 +412,15 @@ export const createCallTask = async (req: Request, res: Response) => {
         contactId,
         dueAt: dueDate,
         priority,
+        assignedToId: resolvedAssigneeId,
         contactListId: contactListId || null,
       }, scope),
     );
 
-    const hydratedTask = await prisma.callTask.findUnique({ where: { id: task.id } });
+    const hydratedTask = await prisma.callTask.findUnique({
+      where: { id: task.id },
+      include: { assignedTo: { select: ASSIGNEE_SELECT } },
+    });
     if (!hydratedTask) {
       return res.status(500).json({ message: "Failed to load saved task" });
     }
@@ -383,7 +429,33 @@ export const createCallTask = async (req: Request, res: Response) => {
 
     res.status(201).json(hydratedTask);
   } catch (error: unknown) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({ message: "An internal server error occurred" });
+  }
+};
+
+export const updateCallTask = async (req: Request, res: Response) => {
+  try {
+    const scope = getOrgScope(req);
+    const id = String(req.params.id || "");
+    const { assignedToId } = req.body as { assignedToId?: string | null };
+
+    const task = await prisma.callTask.findFirst({ where: { id, ...scope }, select: { id: true } });
+    if (!task) return res.status(404).json({ message: "Call task not found" });
+
+    const resolvedAssigneeId = await resolveAssigneeId(req, assignedToId);
+    if (resolvedAssigneeId === undefined) {
+      return res.status(400).json({ message: "Invalid assignee" });
+    }
+
+    const updated = await prisma.callTask.update({
+      where: { id },
+      data: { assignedToId: resolvedAssigneeId },
+      include: { assignedTo: { select: ASSIGNEE_SELECT } },
+    });
+
+    res.json(updated);
+  } catch (error: unknown) {
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };
 
@@ -418,7 +490,7 @@ export const logCall = async (req: Request, res: Response) => {
     if (error?.statusCode) {
       return res.status(error.statusCode).json({ message: error.message || "Request failed" });
     }
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };
 
@@ -446,6 +518,6 @@ export const submitCallDisposition = async (req: Request, res: Response) => {
     if (error?.statusCode) {
       return res.status(error.statusCode).json({ message: error.message || "Request failed" });
     }
-    res.status(500).json({ message: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({ message: "An internal server error occurred" });
   }
 };

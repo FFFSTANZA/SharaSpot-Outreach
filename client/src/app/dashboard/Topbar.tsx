@@ -19,7 +19,7 @@ interface TopBarProps {
 }
 
 export function TopBar({
-  placeholder = "Search emails, campaigns...",
+  placeholder = "Search workspace",
   initialValue = "",
   rightActions,
   onSearch,
@@ -55,28 +55,31 @@ export function TopBar({
   }, [searchValue, onSearch]);
 
   return (
-    <header className="flex items-center gap-4 px-6 py-4 bg-white border-b border-border-light relative z-10">
+    <header className="relative z-20 flex min-h-[68px] flex-wrap items-center gap-3 border-b border-border-light bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-6 md:flex-nowrap">
       <button
         onClick={toggle}
-        className="lg:hidden p-2 rounded-lg text-text-secondary hover:bg-interactive-hover transition-colors"
+        aria-label="Open sidebar"
+        className="flex h-10 w-10 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-[#F0F1F3] lg:hidden"
       >
         <Menu size={20} />
       </button>
 
-      <div className="flex-1 max-w-2xl relative">
-        <div className="flex items-center bg-background rounded-full border border-border-light focus-within:border-brand focus-within:bg-white focus-within:shadow-sm transition-all px-4 group">
+      <div className="order-3 relative min-w-0 w-full flex-1 md:order-none md:w-auto lg:max-w-2xl">
+        <div className="group flex h-10 items-center rounded-lg border border-border-light bg-[#F8FAFC] px-3 transition-all focus-within:border-brand/50 focus-within:bg-white focus-within:shadow-premium-sm sm:px-4">
           <Search size={16} className="text-text-muted group-focus-within:text-brand transition-colors" />
           <input
             type="text"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder={placeholder}
-            className="flex-1 h-10 bg-transparent py-2.5 px-3 text-sm text-text-primary outline-none placeholder:text-text-muted font-medium"
+            aria-label={placeholder}
+            className="h-10 min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm font-medium text-text-primary outline-none placeholder:text-text-muted"
           />
           {searchValue && (
             <button
               onClick={() => { setSearchValue(""); onSearch?.(""); }}
-              className="p-1 text-text-muted hover:text-text-primary transition-colors"
+              aria-label="Clear search"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[#F0F1F3] hover:text-text-primary"
             >
               <X size={16} />
             </button>
@@ -84,13 +87,14 @@ export function TopBar({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="order-2 ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 md:order-none md:ml-0">
         {filterSlot}
 
         <button
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="p-2.5 rounded-full text-text-secondary hover:bg-interactive-hover disabled:opacity-50 transition-colors"
+          aria-label="Refresh dashboard"
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-[#F0F1F3] disabled:opacity-50"
         >
           <RefreshCw size={18} className={cn(isRefreshing && "animate-spin text-brand")} />
         </button>
@@ -98,23 +102,30 @@ export function TopBar({
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2.5 rounded-full text-text-secondary hover:bg-interactive-hover transition-colors relative"
+            aria-label="Open system events"
+            className="relative flex h-10 w-10 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-[#F0F1F3]"
           >
             <Bell size={18} />
-            <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-brand ring-2 ring-white" />
+            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-brand ring-2 ring-white" />
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-2xl bg-white border border-border-light shadow-elevated animate-up">
-              <div className="px-5 py-4 border-b border-border-light">
-                <p className="text-xs font-bold uppercase tracking-widest text-text-muted">System Events</p>
+            <div className="absolute right-0 top-full z-50 mt-2 w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-border-light bg-white shadow-premium-lg">
+              <div className="flex items-center justify-between border-b border-border-light px-4 py-3">
+                <span className="text-xs font-medium text-text-secondary">Notifications</span>
+                <button
+                  onClick={() => setShowNotifications(false)}
+                  className="flex h-6 w-6 items-center justify-center rounded text-text-muted hover:bg-[#F0F1F3]"
+                >
+                  <X size={12} />
+                </button>
               </div>
-              <div className="px-5 py-10 text-center">
-                <div className="h-10 w-10 bg-background rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Bell size={20} className="text-text-muted" />
+              <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+                <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F1F3]">
+                  <Bell size={14} className="text-text-muted" />
                 </div>
-                <p className="text-sm font-bold text-text-primary">All clear</p>
-                <p className="text-xs text-text-muted mt-1">No pending infrastucture alerts.</p>
+                <p className="text-sm font-medium text-text-primary">All clear</p>
+                <p className="mt-1 text-xs text-text-muted">No pending infrastructure alerts.</p>
               </div>
             </div>
           )}

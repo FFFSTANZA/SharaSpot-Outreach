@@ -38,6 +38,8 @@ export const createCampaign = async (
       businessEndHour,
       isPriority,
       replyTo,
+      ccEmails,
+      bccEmails,
     } = parsed.data;
 
     let senderIds: string[];
@@ -70,6 +72,9 @@ export const createCampaign = async (
       businessEndHour,
       isPriority,
       replyTo,
+      ccEmails,
+      bccEmails,
+      organizationId: req.user?.activeOrganizationId ?? null,
     });
 
     const queue = isPriority === true ? priorityQueue : emailQueue;

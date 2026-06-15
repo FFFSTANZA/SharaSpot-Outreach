@@ -1,7 +1,7 @@
 import { getSubscriptionStatus } from "../../services/subscriptionService";
 import { prisma } from "../../config/prisma";
 import { SubscriptionStatus } from "@prisma/client";
-import { requirePremium } from "../../utils/premiumCheck";
+import { checkPremiumStatus, requirePremium } from "../../utils/premiumCheck";
 
 // Mock Prisma
 jest.mock("../../config/prisma", () => ({
@@ -15,12 +15,25 @@ jest.mock("../../config/prisma", () => ({
     },
 }));
 
+jest.mock("../../config/redis", () => ({
+    redis: {
+        get: jest.fn(),
+        set: jest.fn(),
+        del: jest.fn(),
+    },
+}));
+
+import { redis } from "../../config/redis";
+
 describe("Subscription Service & Premium Checks", () => {
     const userId = "test-user-123";
 
     beforeEach(() => {
         jest.clearAllMocks();
         (prisma.user.findUnique as jest.Mock).mockResolvedValue({ activeOrganizationId: null });
+        (redis.get as jest.Mock).mockResolvedValue(null);
+        (redis.set as jest.Mock).mockResolvedValue("OK");
+        (redis.del as jest.Mock).mockResolvedValue(1);
     });
 
     describe("getSubscriptionStatus", () => {
@@ -102,6 +115,30 @@ describe("Subscription Service & Premium Checks", () => {
             const result = await requirePremium(userId, "Priority Sending");
             expect(result.allowed).toBe(false);
             expect(result.message).toContain("Priority Sending is a premium feature. Please subscribe to access.");
+        });
+
+        it("should invalidate an expired premium cache entry and re-check the database", async () => {
+            const expiredDate = new Date(Date.now() - 60_000).toISOString();
+
+            (redis.get as jest.Mock).mockResolvedValue(JSON.stringify({
+                isPremium: true,
+                subscription: {
+                    currentPeriodEnd: expiredDate,
+                    trialEnd: expiredDate,
+                },
+            }));
+            (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
+                userId,
+                trialEnd: new Date(expiredDate),
+                status: SubscriptionStatus.EXPIRED,
+                currentPeriodEnd: new Date(expiredDate),
+            });
+
+            const result = await checkPremiumStatus(userId);
+
+            expect(redis.del).toHaveBeenCalledWith(`user:premium:${userId}`);
+            expect(prisma.subscription.findUnique).toHaveBeenCalledWith({ where: { userId } });
+            expect(result.isPremium).toBe(false);
         });
     });
 });

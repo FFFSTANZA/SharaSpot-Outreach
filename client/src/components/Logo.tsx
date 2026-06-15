@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
@@ -9,9 +10,11 @@ interface LogoProps {
 
 function LogoMark({ className }: { className?: string }) {
   return (
-    <img
-      src="/SharaSpot%20Icon.png"
+    <Image
+      src="/sharaspot-icon.png"
       alt="SharaSpot"
+      width={128}
+      height={128}
       className={className}
     />
   );
@@ -19,10 +22,10 @@ function LogoMark({ className }: { className?: string }) {
 
 export function Logo({ size = "md", variant = "dark", showText = true, className }: LogoProps) {
   const sizes = {
-    sm: { box: "h-8 w-8 rounded-xl", text: "text-xl", svg: "h-6 w-6" },
-    md: { box: "h-10 w-10 rounded-xl", text: "text-[22px]", svg: "h-7 w-7" },
-    lg: { box: "h-12 w-12 rounded-2xl", text: "text-3xl", svg: "h-9 w-9" },
-    icon: { box: "h-9 w-9 rounded-xl", text: "text-xl", svg: "h-6.5 w-6.5" },
+    sm: { box: "h-8 w-8 rounded-xl", text: "text-xl", svg: "h-6.5 w-6.5" },
+    md: { box: "h-10 w-10 rounded-xl", text: "text-[22px]", svg: "h-8 w-8" },
+    lg: { box: "h-12 w-12 rounded-2xl", text: "text-3xl", svg: "h-9.5 w-9.5" },
+    icon: { box: "h-9 w-9 rounded-xl", text: "text-xl", svg: "h-7 w-7" },
   };
 
   const s = sizes[size];
@@ -64,7 +67,7 @@ export function LogoIcon({ className, size = "md" }: { className?: string; size?
       "flex items-center justify-center",
       className,
     )}>
-      <LogoMark className={size === "sm" ? "h-6 w-6 object-contain" : size === "md" ? "h-7 w-7 object-contain" : "h-9 w-9 object-contain"} />
+      <LogoMark className={size === "sm" ? "h-6.5 w-6.5 object-contain" : size === "md" ? "h-8 w-8 object-contain" : "h-9.5 w-9.5 object-contain"} />
     </div>
   );
 }

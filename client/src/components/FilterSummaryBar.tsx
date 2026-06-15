@@ -39,18 +39,18 @@ export default function FilterSummaryBar({
   };
 
   return (
-    <div className="flex items-center gap-2 flex-wrap px-4 md:px-6 py-3 bg-gray-50/30 border-b border-gray-100">
-      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 mr-1">Active Filters:</span>
+    <div className="flex items-center gap-2 flex-wrap px-4 md:px-6 py-3 bg-[#F8FAFC] border-b border-border-light">
+      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-text-muted mr-1">Active Filters:</span>
       {activeFilters.map(([key, value]) => (
         <span
           key={key}
-          className="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-100 px-3 py-1.5 text-[10px] font-bold uppercase tracking-tight text-gray-700 shadow-sm transition-all hover:border-brand/20"
+          className="inline-flex items-center gap-2 rounded-lg bg-white border border-border-light px-3 py-1.5 text-[10px] font-bold uppercase tracking-tight text-text-secondary transition-all hover:border-brand/20"
         >
           <span className="text-brand opacity-60">{FILTER_LABELS[key] || key}</span>
-          <span className="max-w-[150px] truncate text-gray-900">{resolveValue(key, value)}</span>
+          <span className="max-w-[150px] truncate text-text-primary">{resolveValue(key, value)}</span>
           <button
             onClick={() => onRemoveFilter(key)}
-            className="ml-1 text-gray-300 hover:text-red-500 transition-colors"
+            className="ml-1 text-text-muted hover:text-error-text transition-colors"
           >
             <X className="h-3 w-3" />
           </button>
@@ -58,7 +58,7 @@ export default function FilterSummaryBar({
       ))}
       <button
         onClick={onClearAll}
-        className="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-700 transition-all px-3 py-1.5 hover:bg-red-50 rounded-lg ml-1"
+        className="text-[10px] font-bold uppercase tracking-widest text-error-text hover:text-error-text/80 transition-all px-3 py-1.5 hover:bg-error-bg rounded-lg ml-1"
       >
         Clear All
       </button>

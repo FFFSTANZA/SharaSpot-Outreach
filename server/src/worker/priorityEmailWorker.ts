@@ -1,4 +1,5 @@
 import { Worker, Job } from "bullmq";
+import crypto from "crypto";
 import { prisma } from "../config/prisma";
 import { redisConnection, redis } from "../config/redis";
 import { priorityQueue, PRIORITY_QUEUE_NAME } from "../queues/priorityQueue";
@@ -122,7 +123,7 @@ export async function processPriorityJob(job: Job): Promise<void> {
         await priorityQueue.add(
           "send-priority-email",
           { emailJobId, userId },
-          { jobId: `priority-${emailJobId}`, delay: delayMs }
+          { jobId: `priority-${emailJobId}-${crypto.randomUUID()}`, delay: delayMs }
         );
         
         logger.info(`[PRIORITY] Delaying ${emailJobId} by ${delayMs}ms (retry ${retryCount})`);
@@ -149,7 +150,11 @@ export async function processPriorityJob(job: Job): Promise<void> {
     }
 
     // Send the email (call existing email worker logic)
-    await processEmailJob({ data: { emailJobId } } as any);
+    // Pass attemptsMade so the retry claim logic works correctly
+    await processEmailJob({
+      data: { emailJobId },
+      attemptsMade: priorityRecord.retryCount,
+    } as any);
 
     // Fetch the email job to verify final status
     const finalEmailJob = await prisma.emailJob.findUnique({
@@ -203,7 +208,7 @@ export async function processPriorityJob(job: Job): Promise<void> {
       await priorityQueue.add(
         "send-priority-email",
         { emailJobId, userId },
-        { jobId: `priority-${emailJobId}-retry`, delay: delayMs }
+        { jobId: `priority-${emailJobId}-retry-${crypto.randomUUID()}`, delay: delayMs }
       );
     } else {
       await prisma.priorityQueueJob.update({

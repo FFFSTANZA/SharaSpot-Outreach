@@ -51,14 +51,14 @@ export default function FilterPanel({
       <button
         onClick={onToggle}
         className={cn(
-          "relative flex items-center gap-2 px-4 h-10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm",
-          isOpen ? "bg-brand text-white" : "bg-white text-gray-500 border border-gray-100 hover:bg-gray-50"
+          "relative flex items-center gap-2 px-4 h-10 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all shadow-card",
+          isOpen ? "bg-brand text-white" : "bg-white text-text-muted border border-border-light hover:bg-[#F0F1F3]"
         )}
       >
         <Filter className="h-3.5 w-3.5" />
         <span className="hidden md:inline">Filters</span>
         {activeFilterCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-brand text-white text-[9px] font-bold flex items-center justify-center border-2 border-white shadow-sm">
+            <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-brand text-white text-[9px] font-bold flex items-center justify-center border-2 border-white shadow-card">
             {activeFilterCount}
           </span>
         )}
@@ -67,14 +67,14 @@ export default function FilterPanel({
       {/* Dropdown panel */}
       <div
         className={cn(
-          "absolute right-0 top-12 z-50 w-[340px] md:w-[380px] rounded-2xl bg-white border border-gray-100 shadow-xl p-6 overflow-hidden",
+          "absolute right-0 top-12 z-50 w-[340px] md:w-[380px] rounded-lg bg-white border border-border-light shadow-xl p-6 overflow-hidden",
           "origin-top-right transition-all duration-300 ease-out",
           isOpen ? "scale-100 opacity-100 translate-y-0" : "pointer-events-none scale-95 opacity-0 -translate-y-2"
         )}
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Filters</h3>
-          <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all">
+          <h3 className="text-sm font-bold text-text-primary uppercase tracking-widest">Filters</h3>
+          <button onClick={onClose} className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-[#F0F1F3] transition-all">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -82,7 +82,7 @@ export default function FilterPanel({
         <div className="space-y-6">
           {/* Status */}
           <div className="space-y-1.5">
-            <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-1">Status</label>
+            <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-1">Status</label>
             <Dropdown
               options={statusOpts}
               value={filters.status || ""}
@@ -93,7 +93,7 @@ export default function FilterPanel({
 
           {/* Sender */}
           <div className="space-y-1.5">
-            <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-1">Sender Account</label>
+            <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-1">Sender Account</label>
             <Dropdown
               options={senderOpts}
               value={filters.senderId || ""}
@@ -104,19 +104,19 @@ export default function FilterPanel({
 
           {/* Date range */}
           <div className="space-y-2">
-            <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-1">Date Range</label>
+            <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-1">Date Range</label>
             <div className="flex gap-3">
               <input
                 type="date"
                 value={filters.dateFrom || ""}
                 onChange={(e) => onFilterChange("dateFrom", e.target.value)}
-                className="flex-1 h-11 rounded-xl bg-gray-50 border border-gray-100 px-3 text-xs text-gray-900 outline-none focus:bg-white focus:ring-4 focus:ring-brand/10 focus:border-brand font-bold transition-all"
+                className="flex-1 h-11 rounded-lg bg-[#F8F9FA] border border-border-light px-3 text-xs text-text-primary outline-none focus:bg-white focus:ring-4 focus:ring-brand/10 focus:border-brand font-bold transition-all"
               />
               <input
                 type="date"
                 value={filters.dateTo || ""}
                 onChange={(e) => onFilterChange("dateTo", e.target.value)}
-                className="flex-1 h-11 rounded-xl bg-gray-50 border border-gray-100 px-3 text-xs text-gray-900 outline-none focus:bg-white focus:ring-4 focus:ring-brand/10 focus:border-brand font-bold transition-all"
+                className="flex-1 h-11 rounded-lg bg-[#F8F9FA] border border-border-light px-3 text-xs text-text-primary outline-none focus:bg-white focus:ring-4 focus:ring-brand/10 focus:border-brand font-bold transition-all"
               />
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function FilterPanel({
           {/* Date field selector */}
           {showDateField && (
             <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-1">Filter By</label>
+              <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-1">Filter By</label>
               <Dropdown
                 options={DATE_FIELD_OPTIONS}
                 value={filters.dateField || "createdAt"}
@@ -137,7 +137,7 @@ export default function FilterPanel({
           {/* Clear all */}
           {activeFilterCount > 0 && (
             <button
-              className="w-full h-11 flex items-center justify-center rounded-xl text-[10px] font-bold uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all border border-transparent hover:border-red-100"
+              className="w-full h-11 flex items-center justify-center rounded-lg text-[10px] font-bold uppercase tracking-widest text-error-text hover:bg-error-bg transition-all border border-transparent hover:border-error-bg"
               onClick={onClearAll}
             >
               Clear All Filters

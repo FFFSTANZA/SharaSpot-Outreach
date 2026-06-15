@@ -5,6 +5,8 @@ process.env.NODE_ENV = "test";
 import { 
   createCheckoutSession, 
   createCustomerPortalSession,
+  cancelSubscription,
+  reactivateSubscription,
   handleCheckoutCompleted, 
   updateSubscriptionFromWebhook,
   getSubscriptionStatus,
@@ -145,7 +147,7 @@ describe("Subscription Flow - Complete Payment System", () => {
             );
         });
 
-        it("should throw error if user already has premium subscription", async () => {
+        it("should allow checkout even if user has premium (controller-level guard handles rejection)", async () => {
             const future = new Date();
             future.setDate(future.getDate() + 5);
 
@@ -153,9 +155,15 @@ describe("Subscription Flow - Complete Payment System", () => {
                 trialEnd: future,
                 status: SubscriptionStatus.ACTIVE,
             });
+            (dodo.checkoutSessions.create as jest.Mock).mockResolvedValue({
+                checkout_url: "https://dodopayments.com/checkout/sess_premium",
+                session_id: "sess_premium",
+            });
 
-            await expect(createCheckoutSession(userId, userEmail, userName))
-                .rejects.toThrow("User already has an active premium subscription or trial.");
+            const result = await createCheckoutSession(userId, userEmail, userName);
+
+            expect(result.sessionId).toBe("sess_premium");
+            expect(dodo.checkoutSessions.create).toHaveBeenCalled();
         });
 
         it("should throw error if no session_id returned from Dodo", async () => {
@@ -195,10 +203,8 @@ describe("Subscription Flow - Complete Payment System", () => {
 
             await handleWebhook(mockReq, mockRes);
 
-            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
-                where: { eventId: "evt_checkout_1" },
-                create: { eventId: "evt_checkout_1", eventType: "checkout.session.completed" },
-                update: {},
+            expect(prisma.processedWebhook.create).toHaveBeenCalledWith({
+                data: { eventId: "evt_checkout_1", eventType: "checkout.session.completed" },
             });
             expect(mockRes.json).toHaveBeenCalledWith({ success: true });
         });
@@ -259,10 +265,8 @@ describe("Subscription Flow - Complete Payment System", () => {
 
             await handleWebhook(mockReq, mockRes);
 
-            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
-                where: { eventId: "evt_checkout_3" },
-                create: { eventId: "evt_checkout_3", eventType: "checkout.session.completed" },
-                update: {},
+            expect(prisma.processedWebhook.create).toHaveBeenCalledWith({
+                data: { eventId: "evt_checkout_3", eventType: "checkout.session.completed" },
             });
             expect(mockRes.json).toHaveBeenCalledWith({ success: true });
         });
@@ -278,11 +282,9 @@ describe("Subscription Flow - Complete Payment System", () => {
                 status: jest.fn().mockReturnThis(),
             } as any;
 
-            (prisma.$transaction as jest.Mock).mockImplementationOnce((cb) => cb({
-                processedWebhook: {
-                    findUnique: jest.fn().mockResolvedValue({ id: "marker_1" }),
-                },
-            }));
+            (prisma.processedWebhook.create as jest.Mock).mockRejectedValueOnce(
+                Object.assign(new Error("Unique constraint"), { code: "P2002" })
+            );
 
             await handleWebhook(mockReq, mockRes);
 
@@ -326,7 +328,13 @@ describe("Subscription Flow - Complete Payment System", () => {
 
             const processedCreate = prisma.processedWebhook.create as jest.Mock;
             processedCreate
+                // payment.succeeded: eventId dedup → success
+                .mockResolvedValueOnce({ id: "dedup_evt_payment" })
+                // payment.succeeded: activation marker → success (first claim)
                 .mockResolvedValueOnce({ id: "activation_marker_created" })
+                // checkout.session.completed: eventId dedup → success
+                .mockResolvedValueOnce({ id: "dedup_evt_checkout" })
+                // checkout.session.completed: activation marker → P2002 (duplicate claim)
                 .mockRejectedValueOnce(Object.assign(new Error("Unique constraint"), { code: "P2002" }));
 
             await handleWebhook(paymentReq, mockRes);
@@ -338,18 +346,14 @@ describe("Subscription Flow - Complete Payment System", () => {
                 }),
             }));
 
-            expect(prisma.processedWebhook.create).toHaveBeenCalledTimes(2);
+            expect(prisma.processedWebhook.create).toHaveBeenCalledTimes(4);
+            expect(prisma.processedWebhook.create).toHaveBeenCalledWith({
+                data: { eventId: "evt_payment_cross_1", eventType: "payment.succeeded" },
+            });
+            expect(prisma.processedWebhook.create).toHaveBeenCalledWith({
+                data: { eventId: "evt_checkout_cross_1", eventType: "checkout.session.completed" },
+            });
             expect(prisma.systemAuditLog.create).toHaveBeenCalled();
-            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
-                where: { eventId: "evt_payment_cross_1" },
-                create: { eventId: "evt_payment_cross_1", eventType: "payment.succeeded" },
-                update: {},
-            });
-            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
-                where: { eventId: "evt_checkout_cross_1" },
-                create: { eventId: "evt_checkout_cross_1", eventType: "checkout.session.completed" },
-                update: {},
-            });
         });
     });
 
@@ -434,10 +438,8 @@ describe("Subscription Flow - Complete Payment System", () => {
                     eventType: "activation:subscription.active",
                 }),
             }));
-            expect(prisma.processedWebhook.upsert).toHaveBeenCalledWith({
-                where: { eventId: "evt_sub_active_first" },
-                create: { eventId: "evt_sub_active_first", eventType: "subscription.active" },
-                update: {},
+            expect(prisma.processedWebhook.create).toHaveBeenCalledWith({
+                data: { eventId: "evt_sub_active_first", eventType: "subscription.active" },
             });
             expect(mockRes.json).toHaveBeenCalledWith({ success: true });
         });
@@ -638,6 +640,54 @@ describe("Subscription Flow - Complete Payment System", () => {
                 "cust_123",
                 expect.objectContaining({ send_email: false })
             );
+        });
+    });
+
+    describe("subscription lifecycle controls", () => {
+        it("should cancel an active subscription at period end", async () => {
+            const currentPeriodEnd = new Date("2026-07-01T00:00:00.000Z");
+
+            (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
+                userId,
+                dodoSubscriptionId: "sub_live_123",
+                currentPeriodEnd,
+            });
+
+            await cancelSubscription(userId);
+
+            expect(dodo.subscriptions.update).toHaveBeenCalledWith("sub_live_123", {
+                cancel_at_next_billing_date: true,
+            });
+            expect(prisma.subscription.update).toHaveBeenCalledWith({
+                where: { userId },
+                data: {
+                    cancelAtPeriodEnd: true,
+                    cancelAt: currentPeriodEnd,
+                },
+            });
+            expect(redis.del).toHaveBeenCalledWith("user:premium:user_123");
+        });
+
+        it("should reactivate a subscription that was set to cancel", async () => {
+            (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
+                userId,
+                dodoSubscriptionId: "sub_live_123",
+                currentPeriodEnd: new Date("2026-07-01T00:00:00.000Z"),
+            });
+
+            await reactivateSubscription(userId);
+
+            expect(dodo.subscriptions.update).toHaveBeenCalledWith("sub_live_123", {
+                cancel_at_next_billing_date: false,
+            });
+            expect(prisma.subscription.update).toHaveBeenCalledWith({
+                where: { userId },
+                data: {
+                    cancelAtPeriodEnd: false,
+                    cancelAt: null,
+                },
+            });
+            expect(redis.del).toHaveBeenCalledWith("user:premium:user_123");
         });
     });
 

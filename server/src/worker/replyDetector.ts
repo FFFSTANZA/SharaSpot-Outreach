@@ -29,6 +29,8 @@ import { prisma } from "../config/prisma";
 import { TrackingEventType } from "@prisma/client";
 import { decrypt } from "../utils/encryption";
 import { logContactActivityByEmail, updateContactStageByEmail } from "../utils/contactService";
+import { upsertBounceSuppression } from "../utils/bounceSuppression";
+import { logger } from "../utils/logger";
 import Imap from "imap";
 import { simpleParser, ParsedMail } from "mailparser";
 
@@ -325,7 +327,7 @@ async function processHeadersAndFetchBodies(
         }
       }
     } catch (parseErr) {
-      console.error("[ReplyDetector] Failed to parse header:", parseErr);
+      logger.error({ err: parseErr }, "[ReplyDetector] Failed to parse header");
     }
   }
 
@@ -425,7 +427,7 @@ async function buildMessagesFromCache(
         bodyPreview,
       });
     } catch (parseErr) {
-      console.error("[ReplyDetector] Failed to parse candidate header:", parseErr);
+      logger.error({ err: parseErr }, "[ReplyDetector] Failed to parse candidate header");
     }
   }
 }
@@ -450,7 +452,7 @@ interface IdleSession {
 const idleSessions = new Map<string, IdleSession>();
 
 export function startIdleSessions(): void {
-  console.log("[ReplyDetector] IMAP IDLE: Starting push-based detection");
+  logger.info("[ReplyDetector] IMAP IDLE: Starting push-based detection");
   refreshIdleSessions();
   setInterval(refreshIdleSessions, 60000);
 }
@@ -463,7 +465,7 @@ export function startIdleSessions(): void {
  * during the downtime across all verified senders.
  */
 export async function performInitialCatchupScan(): Promise<void> {
-  console.log("📬 [ReplyDetector] Starting initial catch-up scan for missed replies...");
+  logger.info("📬 [ReplyDetector] Starting initial catch-up scan for missed replies...");
 
   const senders = await prisma.sender.findMany({
     where: { isVerified: true, appPassword: { not: "" } },
@@ -488,7 +490,7 @@ export async function performInitialCatchupScan(): Promise<void> {
           try {
             const count = await processSenderRepliesWithImap(imap, sender);
             if (count > 0) {
-              console.log(`📬 [ReplyDetector] Catch-up: Found ${count} missed replies for ${sender.email}`);
+              logger.info(`📬 [ReplyDetector] Catch-up: Found ${count} missed replies for ${sender.email}`);
             }
             resolve();
           } catch (e) {
@@ -499,11 +501,11 @@ export async function performInitialCatchupScan(): Promise<void> {
 
       releaseConnection(sender.email);
     } catch (err) {
-      console.error(`❌ [ReplyDetector] Catch-up failed for ${sender.email}:`, err);
+      logger.error({ err }, `❌ [ReplyDetector] Catch-up failed for ${sender.email}`);
     }
   }
 
-  console.log("✅ [ReplyDetector] Initial catch-up scan complete.");
+  logger.info("✅ [ReplyDetector] Initial catch-up scan complete.");
 }
 
 
@@ -552,13 +554,13 @@ async function refreshIdleSessions(): Promise<void> {
       };
       idleSessions.set(emailKey, session);
       runIdleSession(sender, session).catch((err) => {
-        console.error(`[ReplyDetector] IDLE session error for ${sender.email}:`, err.message);
+        logger.error({ err: err.message }, `[ReplyDetector] IDLE session error for ${sender.email}`);
         idleSessions.delete(emailKey);
       });
     }
   }
 
-  console.log(`[ReplyDetector] IMAP IDLE: ${idleSessions.size} active sessions`);
+  logger.info(`[ReplyDetector] IMAP IDLE: ${idleSessions.size} active sessions`);
 }
 
 async function runIdleSession(
@@ -569,7 +571,7 @@ async function runIdleSession(
   try {
     decryptedPassword = decrypt(sender.appPassword);
   } catch {
-    console.warn(`[ReplyDetector] Failed to decrypt credentials for sender ${sender.email}`);
+    logger.warn(`[ReplyDetector] Failed to decrypt credentials for sender ${sender.email}`);
     return;
   }
 
@@ -616,11 +618,11 @@ async function runIdleSession(
         try {
           const count = await processSenderRepliesWithImap(imap, sender);
           if (count > 0) {
-            console.log(`[ReplyDetector] IDLE: Found ${count} reply(ies) for ${sender.email}`);
+            logger.info(`[ReplyDetector] IDLE: Found ${count} reply(ies) for ${sender.email}`);
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);
-          console.error(`[ReplyDetector] IDLE reply check error for ${sender.email}:`, msg);
+          logger.error({ err: msg }, `[ReplyDetector] IDLE reply check error for ${sender.email}`);
         }
       });
 
@@ -800,6 +802,10 @@ async function matchHeadersAndResolve(
           where: { id: match.id },
           data: { status: "FAILED", error: "Asynchronous Bounce detected via IMAP" },
         });
+        const matchedJob = sentJobs.find((j) => j.id === match.id);
+        if (matchedJob) {
+          await recordMatchedBounce(match.campaignId, match.id, matchedJob.toEmail);
+        }
       } else {
         await prisma.emailJob.update({
           where: { id: match.id },
@@ -811,40 +817,66 @@ async function matchHeadersAndResolve(
             eventType: TrackingEventType.REPLY,
           },
         });
-      }
 
-      const matchedJob = sentJobs.find((j) => j.id === match.id);
-      if (matchedJob) {
-        // Log contact activity for reply
-        const campaign = await prisma.emailCampaign.findUnique({
-          where: { id: match.campaignId },
-          select: { userId: true },
-        });
-        if (campaign) {
-          await logContactActivityByEmail(campaign.userId, matchedJob.toEmail, "EMAIL_REPLIED", {
-            emailJobId: match.id,
-            campaignId: match.campaignId,
+        const matchedJob = sentJobs.find((j) => j.id === match.id);
+        if (matchedJob) {
+          const campaign = await prisma.emailCampaign.findUnique({
+            where: { id: match.campaignId },
+            select: { userId: true },
           });
-          await updateContactStageByEmail(campaign.userId, matchedJob.toEmail, "REPLIED");
-        }
+          if (campaign) {
+            await logContactActivityByEmail(campaign.userId, matchedJob.toEmail, "EMAIL_REPLIED", {
+              emailJobId: match.id,
+              campaignId: match.campaignId,
+            });
+            await updateContactStageByEmail(campaign.userId, matchedJob.toEmail, "REPLIED");
+          }
 
-        await prisma.recipientSequenceState.updateMany({
-          where: {
-            campaignId: match.campaignId,
-            recipientEmail: matchedJob.toEmail,
-            replied: false,
-          },
-          data: { replied: true },
-        });
+          await prisma.recipientSequenceState.updateMany({
+            where: {
+              campaignId: match.campaignId,
+              recipientEmail: matchedJob.toEmail,
+              replied: false,
+            },
+            data: { replied: true },
+          });
+        }
       }
 
       replyCount++;
     } catch (err) {
-      console.error("[ReplyDetector] IDLE: Failed to process message:", err);
+      logger.error({ err }, "[ReplyDetector] IDLE: Failed to process message");
     }
   }
 
   resolve(replyCount);
+}
+
+async function recordMatchedBounce(
+  campaignId: string,
+  emailJobId: string,
+  recipientEmail: string,
+): Promise<void> {
+  const campaign = await prisma.emailCampaign.findUnique({
+    where: { id: campaignId },
+    select: { userId: true, organizationId: true },
+  });
+
+  if (!campaign) {
+    return;
+  }
+
+  await logContactActivityByEmail(campaign.userId, recipientEmail, "EMAIL_BOUNCED", {
+    emailJobId,
+    campaignId,
+    source: "reply-detector",
+  });
+  await updateContactStageByEmail(campaign.userId, recipientEmail, "BOUNCED");
+  await upsertBounceSuppression(
+    { userId: campaign.userId, organizationId: campaign.organizationId },
+    recipientEmail,
+    "Asynchronous bounce detected via IMAP",
+  );
 }
 
 function stopIdleSessions(): void {
@@ -926,7 +958,7 @@ async function processSenderReplies(sender: {
   try {
     decryptedPassword = decrypt(sender.appPassword);
   } catch {
-    console.warn(`[ReplyDetector] Failed to decrypt credentials for sender ${sender.email}`);
+    logger.warn(`[ReplyDetector] Failed to decrypt credentials for sender ${sender.email}`);
     return 0;
   }
 
@@ -965,7 +997,7 @@ async function processSenderReplies(sender: {
     messages = await fetchRecentMessages(imapConfig, sender.email, decryptedPassword, since, flatJobs);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[ReplyDetector] IMAP connection error for ${sender.email}:`, msg);
+    logger.error({ err: msg }, `[ReplyDetector] IMAP connection error for ${sender.email}`);
     return 0;
   }
 
@@ -977,21 +1009,40 @@ async function processSenderReplies(sender: {
     const match = await matchMessageToJob(message, flatJobs);
     if (!match) continue;
 
-    await prisma.emailJob.update({
-      where: { id: match.id },
-      data: { isReplied: true },
-    });
-
-    await prisma.trackingEvent.create({
-      data: {
-        emailJobId: match.id,
-        eventType: "REPLY",
-      },
-    });
-
     const matchedJob = sentJobs.find((j) => j.id === match.id);
-    if (matchedJob) {
-      // Log contact activity for reply
+    if (!matchedJob) {
+      continue;
+    }
+
+    const isBounce = message.from.toLowerCase().includes("mailer-daemon") ||
+      message.from.toLowerCase().includes("postmaster") ||
+      /undelivered|delivery status notification|returned mail|failure notice/i.test(message.subject);
+
+    if (isBounce) {
+      await prisma.trackingEvent.create({
+        data: {
+          emailJobId: match.id,
+          eventType: "BOUNCE",
+        },
+      });
+      await prisma.emailJob.update({
+        where: { id: match.id },
+        data: { status: "FAILED", error: "Asynchronous Bounce detected via IMAP" },
+      });
+      await recordMatchedBounce(match.campaignId, match.id, matchedJob.toEmail);
+    } else {
+      await prisma.emailJob.update({
+        where: { id: match.id },
+        data: { isReplied: true },
+      });
+
+      await prisma.trackingEvent.create({
+        data: {
+          emailJobId: match.id,
+          eventType: "REPLY",
+        },
+      });
+
       const campaign = await prisma.emailCampaign.findUnique({
         where: { id: match.campaignId },
         select: { userId: true },
@@ -1018,7 +1069,7 @@ async function processSenderReplies(sender: {
   }
 
   if (replyCount > 0) {
-    console.log(`[ReplyDetector] Found ${replyCount} new reply(ies) for sender ${sender.email}`);
+    logger.info(`[ReplyDetector] Found ${replyCount} new reply(ies) for sender ${sender.email}`);
   }
 
   return replyCount;
@@ -1029,7 +1080,7 @@ async function processSenderReplies(sender: {
 // ---------------------------------------------------------------------------
 
 export async function processReplyDetectionJob(): Promise<void> {
-  console.log("[ReplyDetector] Running reply detection scan (fallback)...");
+  logger.info("[ReplyDetector] Running reply detection scan (fallback)...");
 
   const activeSince = new Date(Date.now() - ADAPTIVE_POLL_WINDOW_HOURS * 60 * 60 * 1000);
 
@@ -1066,11 +1117,11 @@ export async function processReplyDetectionJob(): Promise<void> {
   });
 
   if (senders.length === 0) {
-    console.log("[ReplyDetector] No active senders to scan (all senders idle)");
+    logger.info("[ReplyDetector] No active senders to scan (all senders idle)");
     return;
   }
 
-  console.log(`[ReplyDetector] Polling ${senders.length} of ${totalSenders} active senders`);
+  logger.info(`[ReplyDetector] Polling ${senders.length} of ${totalSenders} active senders`);
 
   let totalReplies = 0;
 
@@ -1080,11 +1131,11 @@ export async function processReplyDetectionJob(): Promise<void> {
       totalReplies += count;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[ReplyDetector] Error processing sender ${sender.email}:`, msg);
+      logger.error({ err: msg }, `[ReplyDetector] Error processing sender ${sender.email}`);
     }
   }
 
-  console.log(`[ReplyDetector] Scan complete. Found ${totalReplies} new reply(ies) across ${senders.length} sender(s)`);
+  logger.info(`[ReplyDetector] Scan complete. Found ${totalReplies} new reply(ies) across ${senders.length} sender(s)`);
 }
 
 export { stopIdleSessions };

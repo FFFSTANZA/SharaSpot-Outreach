@@ -33,14 +33,14 @@ const STATUS_CONFIG: Record<CampaignStatus, {
   },
   PAUSED: { 
     label: "Paused", 
-    bg: "bg-gray-100", 
-    text: "text-gray-600", 
+    bg: "bg-[#F8F9FA]", 
+    text: "text-text-secondary", 
     icon: Pause,
   },
   CANCELLED: { 
     label: "Cancelled", 
-    bg: "bg-red-50", 
-    text: "text-red-700", 
+    bg: "bg-error-bg", 
+    text: "text-error-text", 
     icon: XCircle,
   },
   COMPLETED: { 

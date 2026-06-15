@@ -1,6 +1,7 @@
 import api from "../axios";
 import type { Contact, Note, Tag, PaginatedContacts } from "@/types";
-import type { ContactList } from "./contactLists";
+
+export type ContactPayload = Partial<Omit<Contact, "tags">> & { tags?: string[] };
 
 export const getContacts = async (params: {
   search?: string;
@@ -26,12 +27,12 @@ export const getContactById = async (id: string): Promise<Contact> => {
   return res.data;
 };
 
-export const createContact = async (data: Partial<Contact>): Promise<Contact> => {
+export const createContact = async (data: ContactPayload): Promise<Contact> => {
   const res = await api.post("/api/contacts", data);
   return res.data;
 };
 
-export const updateContact = async (id: string, data: Partial<Contact>): Promise<Contact> => {
+export const updateContact = async (id: string, data: ContactPayload): Promise<Contact> => {
   const res = await api.put(`/api/contacts/${id}`, data);
   return res.data;
 };
@@ -69,10 +70,28 @@ export const exportContacts = async (params: {
   window.URL.revokeObjectURL(url);
 };
 
-export const importContacts = async (file: File, mapping: Record<string, string>): Promise<{ message: string; count: number; errors?: any[] }> => {
+export const importContacts = async (
+  file: File,
+  mapping?: Record<string, string>
+): Promise<{
+  message?: string;
+  count?: number;
+  errors?: unknown[];
+  headers?: string[];
+  qualitySummary?: {
+    duplicateContacts: number;
+    invalidEmails: number;
+    missingRequiredFields: number;
+  };
+  fixNowLinks?: {
+    qualityCenter?: string;
+  };
+}> => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("mapping", JSON.stringify(mapping));
+  if (mapping && Object.keys(mapping).length > 0) {
+    formData.append("mapping", JSON.stringify(mapping));
+  }
   const res = await api.post("/api/contacts/import", formData);
   return res.data;
 };

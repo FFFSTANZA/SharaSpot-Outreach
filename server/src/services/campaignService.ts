@@ -15,6 +15,12 @@ import {
 } from "../utils/sequenceValidation";
 import { assignSendersRoundRobin, createCampaignSenderData } from "../utils/senderRotation";
 import { requirePremium } from "../utils/premiumCheck";
+import {
+  assessDeliverability,
+  normalizeInboxFirstSettings,
+} from "../utils/deliverabilityGuard";
+import { htmlToPlainText } from "../utils/emailPreprocessor";
+import { buildBounceSuppressionListWhere } from "../utils/bounceSuppression";
 
 export interface CreateCampaignInput {
   senderIds: string[];
@@ -36,6 +42,9 @@ export interface CreateCampaignInput {
   businessEndHour?: number | null;
   isPriority?: boolean;
   replyTo?: string;
+  ccEmails?: string[];
+  bccEmails?: string[];
+  organizationId?: string | null;
 }
 
 export interface CampaignCreationResult {
@@ -77,10 +86,17 @@ export class CampaignService {
       businessEndHour,
       isPriority,
       replyTo,
+      organizationId,
     } = input;
 
-    const trackOpens = rawTrackOpens !== false;
-    const trackClicks = rawTrackClicks === true;
+    const deliverySettings = normalizeInboxFirstSettings({
+      delaySeconds,
+      hourlyLimit,
+      trackOpens: rawTrackOpens,
+      trackClicks: rawTrackClicks,
+    });
+    const trackOpens = deliverySettings.trackOpens;
+    const trackClicks = deliverySettings.trackClicks;
     const tz = timezone ?? "UTC";
     // Default to 8 AM–6 PM if the user doesn't configure business hours.
     // Outreach emails sent during working hours get significantly higher engagement,
@@ -113,6 +129,15 @@ export class CampaignService {
       if (!premiumCheck.allowed) {
         throw new CampaignError(premiumCheck.message || "Priority Mail requires a premium subscription", "PREMIUM_REQUIRED", 403, true);
       }
+    }
+
+    const initialDeliverability = assessDeliverability(subject, htmlToPlainText(body));
+    if (initialDeliverability.blocked) {
+      throw new CampaignError(
+        `Message is too likely to hurt inbox placement. Reduce spam-like wording, punctuation, images, and links before sending. Signals: ${initialDeliverability.warnings.join("; ")}`,
+        "DELIVERABILITY_BLOCKED",
+        400,
+      );
     }
 
     const MAX_TOTAL_ATTACHMENT_SIZE = 25 * 1024 * 1024;
@@ -149,7 +174,7 @@ export class CampaignService {
     const allEmails = emails.map(e => (typeof e === "string" ? e : e.email).toLowerCase().trim());
     
     const bounces = await prisma.bounceList.findMany({
-      where: { userId, email: { in: allEmails } },
+      where: buildBounceSuppressionListWhere({ userId, organizationId }, allEmails),
       select: { email: true }
     });
     const bounceSet = new Set(bounces.map(b => b.email));
@@ -203,12 +228,13 @@ export class CampaignService {
       const campaign = await tx.emailCampaign.create({
         data: {
           userId,
+          organizationId: organizationId ?? null,
           senderId: senderIds[0],
           subject,
           body,
           startTime: scheduledAt,
-          delaySeconds,
-          hourlyLimit,
+          delaySeconds: deliverySettings.delaySeconds,
+          hourlyLimit: deliverySettings.hourlyLimit,
           totalRecipients: recipients.length,
           trackOpens,
           trackClicks,
@@ -242,9 +268,9 @@ export class CampaignService {
 
       const emailJobs = [];
       const senderCount = senderIds.length;
-      const combinedHourlyCapacity = hourlyLimit * senderCount;
+      const combinedHourlyCapacity = deliverySettings.hourlyLimit * senderCount;
       const avgGapSeconds = 3600 / combinedHourlyCapacity;
-      const delayIsBottleneck = delaySeconds > avgGapSeconds;
+      const delayIsBottleneck = deliverySettings.delaySeconds > avgGapSeconds;
       let cumulativeOffsetMs = 0;
 
       for (let i = 0; i < recipients.length; i++) {
@@ -253,10 +279,10 @@ export class CampaignService {
         if (i > 0) {
           let gap: number;
           if (delayIsBottleneck) {
-            gap = delaySeconds * (0.8 + Math.random() * 0.4);
+            gap = deliverySettings.delaySeconds * (0.8 + Math.random() * 0.4);
           } else {
             gap = avgGapSeconds * (0.6 + Math.random() * 0.8);
-            gap = Math.max(gap, delaySeconds);
+            gap = Math.max(gap, deliverySettings.delaySeconds);
           }
           cumulativeOffsetMs += gap * 1000;
         }
@@ -299,6 +325,7 @@ export class CampaignService {
           lastName,
           company: recipient.columnData?.Company || recipient.columnData?.company || recipient.columnData?.Organization || recipient.columnData?.organization || recipient.columnData?.["Company Name"],
           jobTitle: recipient.columnData?.JobTitle || recipient.columnData?.jobTitle || recipient.columnData?.Role || recipient.columnData?.role || recipient.columnData?.["Job Title"],
+          organizationId: organizationId ?? null,
         }, tx);
         await logContactActivity(contact.id, "CAMPAIGN_ENROLLED", {
           campaignId: campaign.id,

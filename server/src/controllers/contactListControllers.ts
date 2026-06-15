@@ -16,12 +16,17 @@ export const createList = async (req: Request, res: Response) => {
             data: orgCreateData(req, { userId: req.user!.id, name }),
         });
 
-        res.status(201).json(list);
+        const withCount = await (prisma as any).contactList.findUnique({
+            where: { id: list.id },
+            include: { _count: { select: { contacts: true } } },
+        });
+
+        res.status(201).json(withCount);
     } catch (error: any) {
         if (error.code === "P2002") {
             return res.status(400).json({ message: "A list with this name already exists" });
         }
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred while creating the list" });
     }
 };
 
@@ -41,7 +46,7 @@ export const getLists = async (req: Request, res: Response) => {
 
         res.json(lists);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred while fetching lists" });
     }
 };
 
@@ -60,9 +65,14 @@ export const updateList = async (req: Request, res: Response) => {
             return res.status(404).json({ message: "List not found" });
         }
 
-        res.json({ message: "List updated successfully" });
+        const updated = await (prisma as any).contactList.findUnique({
+            where: { id },
+            include: { _count: { select: { contacts: true } } },
+        });
+
+        res.json(updated);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred while updating the list" });
     }
 };
 
@@ -81,76 +91,58 @@ export const deleteList = async (req: Request, res: Response) => {
 
         res.json({ message: "List deleted successfully" });
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred while deleting the list" });
     }
 };
 
 export const addContactsToList = async (req: Request, res: Response) => {
     try {
         const scope = getOrgScope(req);
-        const { id } = req.params; // List ID
+        const { id } = req.params;
         const { contactIds } = req.body;
-
-        if (!Array.isArray(contactIds) || contactIds.length === 0) {
+        if (!Array.isArray(contactIds) || contactIds.length === 0)
             return res.status(400).json({ message: "No contacts selected" });
-        }
-
-        // Verify list belongs to user's scope
-        const list = await (prisma as any).contactList.findFirst({
-            where: { id, ...scope },
-        });
-
-        if (!list) {
-            return res.status(404).json({ message: "List not found" });
-        }
-
-        // Add contacts to list
+        // Verify list ownership
+        const list = await (prisma as any).contactList.findFirst({ where: { id, ...scope } });
+        if (!list) return res.status(404).json({ message: "List not found" });
+        // Connect contacts via many-to-many
         await (prisma as any).contactList.update({
             where: { id },
-            data: {
-                contacts: {
-                    connect: contactIds.map((id: string) => ({ id })),
-                },
-            },
+            data: { contacts: { connect: contactIds.map((id: string) => ({ id })) } },
         });
-
-        res.json({ message: `${contactIds.length} contacts added to list` });
+        // Return updated list with count
+        const updated = await (prisma as any).contactList.findUnique({
+            where: { id },
+            include: { _count: { select: { contacts: true } } },
+        });
+        res.json(updated);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred while adding contacts to the list" });
     }
 };
 
 export const removeContactsFromList = async (req: Request, res: Response) => {
     try {
         const scope = getOrgScope(req);
-        const { id } = req.params; // List ID
+        const { id } = req.params;
         const { contactIds } = req.body;
-
-        if (!Array.isArray(contactIds) || contactIds.length === 0) {
+        if (!Array.isArray(contactIds) || contactIds.length === 0)
             return res.status(400).json({ message: "No contacts selected" });
-        }
-
-        // Verify list belongs to user's scope
-        const list = await (prisma as any).contactList.findFirst({
-            where: { id, ...scope },
-        });
-
-        if (!list) {
-            return res.status(404).json({ message: "List not found" });
-        }
-
-        // Remove contacts from list
+        // Verify list ownership
+        const list = await (prisma as any).contactList.findFirst({ where: { id, ...scope } });
+        if (!list) return res.status(404).json({ message: "List not found" });
+        // Disconnect contacts from list
         await (prisma as any).contactList.update({
             where: { id },
-            data: {
-                contacts: {
-                    disconnect: contactIds.map((id: string) => ({ id })),
-                },
-            },
+            data: { contacts: { disconnect: contactIds.map((id: string) => ({ id })) } },
         });
-
-        res.json({ message: `${contactIds.length} contacts removed from list` });
+        // Return updated list with count
+        const updated = await (prisma as any).contactList.findUnique({
+            where: { id },
+            include: { _count: { select: { contacts: true } } },
+        });
+        res.json(updated);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "An error occurred while removing contacts from the list" });
     }
 };

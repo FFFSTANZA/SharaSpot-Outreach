@@ -78,4 +78,6 @@ export const campaignBodySchema = z.object({
   businessEndHour: z.number().optional(),
   isPriority: z.boolean().optional(),
   replyTo: z.string().optional(),
+  ccEmails: z.array(z.string()).optional(),
+  bccEmails: z.array(z.string()).optional(),
 });

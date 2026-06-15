@@ -65,7 +65,7 @@ export const getAllCampaigns = async (
         if (completed) c.status = "COMPLETED";
       }
 
-      const { _count, sequenceSteps, ...campaignData } = c;
+      const { sequenceSteps, ...campaignData } = c;
       return campaignData;
     }));
 

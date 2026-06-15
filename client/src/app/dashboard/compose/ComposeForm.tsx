@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import { ComposeFormProps, SenderResponse } from "@/types";
 import { getSenders } from "@/lib/apis";
 import { SenderModal } from "./SenderModal";
@@ -8,8 +8,6 @@ import { Editor } from "./Editor";
 import { X, AlertCircle, FileText, Trash2 } from "lucide-react";
 import TemplateSelector from "./TemplateSelector";
 import type { EmailTemplate } from "@/types";
-import Modal from "@/components/Modal";
-import Button from "@/components/Button";
 import VariablePreview from "./VariablePreview";
 import SequenceBuilder from "./SequenceBuilder";
 import { getFollowUpTemplateById } from "@/lib/followUpTemplates";
@@ -18,7 +16,6 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { EmailValidator } from "./EmailValidator";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
-import { ComposeHeader } from "./ComposeHeader";
 import { SenderField } from "./SenderField";
 import { BulkActionsDropdown } from "./BulkActionsDropdown";
 import { ComposeSettings } from "./ComposeSettings";
@@ -27,16 +24,12 @@ import { SignatureModal } from "./SignatureModal";
 import Papa from "papaparse";
 import { useComposeStore } from "@/stores/composeStore";
 
-export function ComposeForm({
-  scheduledAt,
-  setScheduledAt,
-  uploadedAttachments,
-  onSubmit,
-  submitTrigger,
-  isSubmitting,
-  initialEmails,
-  followUpTemplateId,
-}: ComposeFormProps & {
+export interface ComposeFormHandle {
+  openSchedule: () => void;
+  submit: () => void;
+}
+
+export const ComposeForm = forwardRef<ComposeFormHandle, ComposeFormProps & {
   setScheduledAt: (date: Date | null) => void;
   onFilesSelected: (files: File[]) => void;
   onRemoveAttachment: (url: string) => void;
@@ -44,7 +37,15 @@ export function ComposeForm({
   isSubmitting?: boolean;
   initialEmails?: string[];
   followUpTemplateId?: string | null;
-}) {
+}>(({
+  scheduledAt,
+  setScheduledAt,
+  uploadedAttachments,
+  onSubmit,
+  isSubmitting,
+  initialEmails,
+  followUpTemplateId,
+}, ref) => {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const { addToast } = useToast();
 
@@ -183,12 +184,6 @@ export function ComposeForm({
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (!submitTrigger) return;
-    handleFormSubmit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [submitTrigger]);
 
   const toggleSender = (senderId: string) => {
     updateData(prev => {
@@ -394,6 +389,8 @@ export function ComposeForm({
     if (hasUnverified) e.from = "Sender not verified";
     if (!data.to.length) e.to = "Add at least one recipient";
     if (!data.subject.trim()) e.subject = "Add a subject";
+    const bodyContent = data.body + (selectedSignature?.content || "");
+    if (!bodyContent.replace(/<[^>]+>/g, "").trim()) e.body = "Add email content or select a signature";
     setErrors(e);
     if (Object.keys(e).length) {
       addToast("warning", "Please fill required fields");
@@ -404,7 +401,7 @@ export function ComposeForm({
       await onSubmit({
         senderIds: data.selectedSenderIds,
         subject: data.subject,
-        body: data.body + (selectedSignature?.content ? `<p>${selectedSignature.content}</p>` : ""),
+        body: data.body + (selectedSignature?.content || ""),
         startTime: scheduledAt?.toISOString() || new Date().toISOString(),
         delaySeconds: data.delayBetweenEmails,
         hourlyLimit: data.hourlyLimit,
@@ -455,6 +452,11 @@ export function ComposeForm({
     }
   };
 
+  useImperativeHandle(ref, () => ({
+    openSchedule,
+    submit: handleFormSubmit,
+  }));
+
   const handleSenderUpdated = (s: SenderResponse) => {
     setSenders(prev => prev.find(x => x.id === s.id) ? prev.map(x => x.id === s.id ? s : x) : [...prev, s]);
     if (s.isVerified) {
@@ -468,29 +470,20 @@ export function ComposeForm({
 
   return (
     <>
-      <div className="h-full bg-gray-50/50 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 min-h-full">
-          <div className="flex flex-col gap-6">
-            <ComposeHeader
-              scheduledAt={scheduledAt}
-              onClearSchedule={() => setScheduledAt(null)}
-              onOpenSchedule={openSchedule}
-              isSubmitting={isSubmitting}
-              onSend={handleFormSubmit}
-            />
+      <div>
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-6">
+          {submitError && (
+            <div className="mb-4 p-3.5 rounded-lg bg-error-bg border border-error-bg text-sm text-error-text flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <p className="font-medium">{submitError}</p>
+            </div>
+          )}
 
-            {submitError && (
-              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                <AlertCircle className="h-5 w-5 shrink-0" />
-                <p className="font-medium">{submitError}</p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
               {/* Main Compose Area */}
               <div className="lg:col-span-8 space-y-4">
                 {/* Email Card */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-lg border border-border-light shadow-sm overflow-hidden">
                   <SenderField
                     senders={senders}
                     selectedSenderIds={data.selectedSenderIds}
@@ -503,8 +496,8 @@ export function ComposeForm({
                   />
 
                   {/* To */}
-                  <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3">
-                    <span className="text-xs font-medium text-gray-500 w-16 shrink-0">To</span>
+                  <div className="px-4 py-3.5 border-b border-border-light flex items-center gap-3">
+                    <span className="text-xs font-medium text-text-muted w-16 shrink-0">To</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap gap-1.5 min-h-[28px] cursor-text" onClick={() => inputRef.current?.focus()}>
                         {data.to.map(email => (
@@ -520,14 +513,14 @@ export function ComposeForm({
                             className={cn(
                               "inline-flex items-center gap-1 rounded-md text-xs font-medium px-2 py-1 cursor-pointer transition-colors",
                               data.selectedRecipients.has(email)
-                                ? "bg-green-600 text-white shadow-sm"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                ? "bg-brand text-white shadow-sm"
+                                : "bg-[#F0F1F3] text-text-secondary hover:bg-[#E2E4E9]"
                             )}
                           >
                             <span className="truncate max-w-[150px]">{email}</span>
                             <button
                               type="button"
-                              className={cn("ml-0.5 hover:scale-110 transition-transform", data.selectedRecipients.has(email) ? "text-green-100" : "text-gray-400")}
+                              className={cn("ml-0.5 hover:scale-110 transition-transform", data.selectedRecipients.has(email) ? "text-white/80" : "text-text-muted")}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 updateData(prev => ({ ...prev, to: prev.to.filter(e => e !== email) }));
@@ -540,7 +533,7 @@ export function ComposeForm({
                         <input
                           ref={inputRef}
                           placeholder={data.to.length === 0 ? "recipient@example.com" : ""}
-                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-text-primary placeholder:text-text-muted"
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === ",") {
                               const v = (e.target as HTMLInputElement).value.trim().replace(/,/g, "");
@@ -554,9 +547,9 @@ export function ComposeForm({
                           }}
                         />
                       </div>
-                      {errors.to && <p className="text-xs text-red-500 mt-1">{errors.to}</p>}
-                      {csvMessage && <p className="text-xs text-green-600 mt-1">{csvMessage}</p>}
-                      {csvError && <p className="text-xs text-red-500 mt-1">{csvError}</p>}
+                      {errors.to && <p className="text-xs text-error-text mt-1">{errors.to}</p>}
+                      {csvMessage && <p className="text-xs text-brand mt-1">{csvMessage}</p>}
+                      {csvError && <p className="text-xs text-error-text mt-1">{csvError}</p>}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {data.to.length > 0 && (
@@ -568,19 +561,19 @@ export function ComposeForm({
                       )}
                       <button
                         onClick={() => setShowCc(!showCc)}
-                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showCc ? "bg-green-50 text-green-600" : "text-gray-400 hover:bg-gray-50")}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showCc ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F8F9FA]")}
                       >
                         CC
                       </button>
                       <button
                         onClick={() => setShowBcc(!showBcc)}
-                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showBcc ? "bg-green-50 text-green-600" : "text-gray-400 hover:bg-gray-50")}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showBcc ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F8F9FA]")}
                       >
                         BCC
                       </button>
                       <button
                         onClick={() => setShowReplyTo(!showReplyTo)}
-                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showReplyTo ? "bg-green-50 text-green-600" : "text-gray-400 hover:bg-gray-50")}
+                        className={cn("text-xs font-bold h-8 px-2 rounded-lg transition-colors", showReplyTo ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F8F9FA]")}
                       >
                         Reply-To
                       </button>
@@ -589,13 +582,13 @@ export function ComposeForm({
 
                   {/* CC */}
                   {showCc && (
-                    <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-                      <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Cc</span>
+                    <div className="px-4 py-3 border-b border-border-light flex items-center gap-3">
+                      <span className="text-xs font-medium text-text-muted w-16 shrink-0">Cc</span>
                       <div className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                         {data.cc.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 px-2 py-1">
+                          <span key={email} className="inline-flex items-center gap-1 rounded-md text-xs font-medium bg-[#F0F1F3] text-text-secondary px-2 py-1">
                             <span className="truncate max-w-[150px]">{email}</span>
-                            <button type="button" className="text-gray-400 hover:text-gray-600" onClick={() => updateData(prev => ({ ...prev, cc: prev.cc.filter(e => e !== email) }))}>
+                            <button type="button" className="text-text-muted hover:text-text-secondary" onClick={() => updateData(prev => ({ ...prev, cc: prev.cc.filter(e => e !== email) }))}>
                               <X className="h-3 w-3" />
                             </button>
                           </span>
@@ -604,7 +597,7 @@ export function ComposeForm({
                           value={ccInput}
                           onChange={(e) => setCcInput(e.target.value)}
                           placeholder={data.cc.length ? "" : "cc@example.com"}
-                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-text-primary placeholder:text-text-muted"
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === ",") {
                               e.preventDefault();
@@ -628,13 +621,13 @@ export function ComposeForm({
 
                   {/* BCC */}
                   {showBcc && (
-                    <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-                      <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Bcc</span>
+                    <div className="px-4 py-3 border-b border-border-light flex items-center gap-3">
+                      <span className="text-xs font-medium text-text-muted w-16 shrink-0">Bcc</span>
                       <div className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                         {data.bcc.map(email => (
-                          <span key={email} className="inline-flex items-center gap-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 px-2 py-1">
+                          <span key={email} className="inline-flex items-center gap-1 rounded-md text-xs font-medium bg-[#F0F1F3] text-text-secondary px-2 py-1">
                             <span className="truncate max-w-[150px]">{email}</span>
-                            <button type="button" className="text-gray-400 hover:text-gray-600" onClick={() => updateData(prev => ({ ...prev, bcc: prev.bcc.filter(e => e !== email) }))}>
+                            <button type="button" className="text-text-muted hover:text-text-secondary" onClick={() => updateData(prev => ({ ...prev, bcc: prev.bcc.filter(e => e !== email) }))}>
                               <X className="h-3 w-3" />
                             </button>
                           </span>
@@ -643,7 +636,7 @@ export function ComposeForm({
                           value={bccInput}
                           onChange={(e) => setBccInput(e.target.value)}
                           placeholder={data.bcc.length ? "" : "bcc@example.com"}
-                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-text-primary placeholder:text-text-muted"
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === ",") {
                               e.preventDefault();
@@ -667,32 +660,32 @@ export function ComposeForm({
 
                   {/* Reply-To */}
                   {showReplyTo && (
-                    <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
-                      <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Reply-To</span>
+                    <div className="px-4 py-3 border-b border-border-light flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
+                      <span className="text-xs font-medium text-text-muted w-16 shrink-0">Reply-To</span>
                       <div className="flex-1 min-w-0">
                         <input
                           type="email"
                           value={data.replyTo || ""}
                           onChange={(e) => patchData({ replyTo: e.target.value })}
                           placeholder="Routing replies to... (e.g. primary@company.com)"
-                          className="w-full text-sm bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                          className="w-full text-sm bg-transparent outline-none text-text-primary placeholder:text-text-muted"
                         />
                       </div>
-                      <button type="button" className="text-gray-400 hover:text-gray-600 transition-colors" onClick={() => { setShowReplyTo(false); patchData({ replyTo: "" }); }}>
+                      <button type="button" className="text-text-muted hover:text-text-secondary transition-colors" onClick={() => { setShowReplyTo(false); patchData({ replyTo: "" }); }}>
                         <X className="h-4 w-4" />
                       </button>
                     </div>
                   )}
 
                   {/* Subject */}
-                  <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3">
-                    <span className="text-xs font-medium text-gray-500 w-16 shrink-0">Subject</span>
+                  <div className="px-4 py-3.5 border-b border-border-light flex items-center gap-3">
+                    <span className="text-xs font-medium text-text-muted w-16 shrink-0">Subject</span>
                     <input
                       type="text"
                       placeholder="Add a subject"
                       value={data.subject}
                       onChange={(e) => { patchData({ subject: e.target.value }); updateErrors(p => ({ ...p, subject: "" })); }}
-                      className="flex-1 text-sm text-gray-900 outline-none placeholder:text-gray-400"
+                      className="flex-1 text-sm text-text-primary outline-none placeholder:text-text-muted"
                     />
                   </div>
 
@@ -706,14 +699,14 @@ export function ComposeForm({
                   </div>
 
                   {/* Footer */}
-                  <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                  <div className="px-4 py-3 border-t border-border-light bg-[#F8F9FA] flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
                       <button
                         onClick={() => csvInputRef.current?.click()}
-                        className="h-10 px-4 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        className="h-10 px-4 rounded-lg border border-border-light text-text-secondary text-sm font-semibold hover:bg-[#F8F9FA] flex items-center gap-2 transition-colors"
                       >
-                        <FileText className="h-4 w-4 text-gray-400" />
+                        <FileText className="h-4 w-4 text-text-muted" />
                         Import CSV
                       </button>
 
@@ -738,7 +731,7 @@ export function ComposeForm({
                     </div>
                     <button
                       onClick={() => { resetStore(); window.history.back(); }}
-                      className="h-10 w-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      className="h-10 w-10 flex items-center justify-center text-text-muted hover:text-error-text hover:bg-error-bg rounded-lg transition-all"
                       title="Discard draft"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -766,9 +759,9 @@ export function ComposeForm({
                   isOpen={isSettingsOpen}
                   onToggle={() => setIsSettingsOpen(!isSettingsOpen)}
                   delayBetweenEmails={data.delayBetweenEmails}
-                  onDelayChange={(v) => patchData({ delayBetweenEmails: v })}
+                  onDelayChange={(v) => patchData({ delayBetweenEmails: Math.min(300, Math.max(30, v || 30)) })}
                   hourlyLimit={data.hourlyLimit}
-                  onHourlyLimitChange={(v) => patchData({ hourlyLimit: v })}
+                  onHourlyLimitChange={(v) => patchData({ hourlyLimit: Math.min(40, Math.max(1, v || 1)) })}
                   trackOpens={trackOpens}
                   onTrackOpensChange={setTrackOpens}
                   trackClicks={trackClicks}
@@ -782,10 +775,10 @@ export function ComposeForm({
                 />
 
                 {/* Templates */}
-                <div className="bg-white rounded-xl border border-gray-200 relative z-30">
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Templates</p>
-                    <span className="text-[10px] text-gray-300 font-bold">Select to Apply</span>
+                <div className="bg-white rounded-lg border border-border-light relative z-30">
+                  <div className="px-4 py-3 border-b border-border-light flex items-center justify-between">
+                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">Templates</p>
+                    <span className="text-[10px] text-text-muted font-bold">Select to Apply</span>
                   </div>
                   <div className="p-4">
                     <TemplateSelector onSelect={handleTemplateSelect} />
@@ -800,7 +793,6 @@ export function ComposeForm({
                 />
               </div>
             </div>
-          </div>
         </div>
       </div>
 
@@ -816,18 +808,18 @@ export function ComposeForm({
 
       {/* Template confirmation */}
       {pendingTemplate && (
-        <Modal isOpen onClose={() => setPendingTemplate(null)}>
-          <div className="p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-2">Use this template?</h3>
-            <p className="text-sm text-gray-500 mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-primary/10 backdrop-blur-sm" onClick={() => setPendingTemplate(null)}>
+          <div className="w-full max-w-sm mx-4 rounded-lg bg-white p-6 shadow-premium-lg" onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-text-primary mb-2">Use this template?</h3>
+            <p className="text-sm text-text-muted mb-5">
               This will replace your current subject and body.
             </p>
             <div className="flex gap-3">
-              <Button variant="secondary" className="flex-1" onClick={() => setPendingTemplate(null)}>Cancel</Button>
-              <Button className="flex-1" onClick={() => applyTemplate(pendingTemplate!)}>Apply</Button>
+              <button onClick={() => setPendingTemplate(null)} className="flex flex-1 h-8 items-center justify-center rounded-md border border-border-light bg-white px-4 text-xs font-medium text-text-secondary transition-colors hover:bg-[#F0F1F3]">Cancel</button>
+              <button onClick={() => applyTemplate(pendingTemplate!)} className="flex flex-1 h-8 items-center justify-center rounded-md bg-brand px-4 text-xs font-medium text-white transition-all hover:bg-brand/90">Apply</button>
             </div>
           </div>
-        </Modal>
+        </div>
       )}
 
       <SignatureModal
@@ -862,4 +854,4 @@ export function ComposeForm({
       />
     </>
   );
-}
+});

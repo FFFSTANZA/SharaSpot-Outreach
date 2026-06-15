@@ -1,129 +1,119 @@
-"use client";
-
-import React from "react";
-
-import MailAppContainer from "@/components/landing/MailAppContainer";
-import Hero from "@/components/landing/Hero";
-import PriorityFeature from "@/components/landing/PriorityFeature";
-import Features from "@/components/landing/Features";
-import AILab from "@/components/landing/AILab";
-import UseCases from "@/components/landing/UseCases";
-import HowItWorks from "@/components/landing/HowItWorks";
-import Stats from "@/components/landing/Stats";
-import FAQ from "@/components/landing/FAQ";
-import Support from "@/components/landing/Support";
 import { BRAND_CONFIG } from "@/lib/config";
-import { useRouter } from "next/navigation";
-import { ArrowRight, Zap } from "lucide-react";
+import { SITE_NAME, SITE_URL, absoluteUrl, buildPageMetadata } from "@/lib/seo";
+import LandingPageClient from "@/components/landing/LandingPageClient";
 
-export default function LandingPage() {
-  const router = useRouter();
+export const metadata = buildPageMetadata({
+  title: "Cold Outreach Platform for Founders, Sales Teams, Recruiters, and Partner Teams",
+  description:
+    "SharaSpot is a cold outreach platform that helps teams protect deliverability, rotate senders, warm up accounts, track engagement, and stop follow-ups when replies arrive.",
+  path: "/",
+  keywords: [
+    "cold outreach platform",
+    "cold email software",
+    "cold email deliverability tool",
+    "sales outreach software",
+    "founder investor outreach software",
+    "recruiting outreach tool",
+    "partner relationship management software",
+    "sender rotation software",
+    "email warmup software",
+  ],
+});
 
-  return (
-    <MailAppContainer>
-      <main>
-        <Hero />
-        <UseCases />
-        <Features />
-        <AILab />
-        <PriorityFeature />
-        <HowItWorks />
-        <Stats />
-
-        {/* Final CTA / Pricing */}
-        <section id="pricing" className="py-24 lg:py-32 bg-white relative overflow-hidden border-t border-border-light">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-brand/[0.04] blur-[120px]" />
-          </div>
-
-          <div className="max-w-6xl mx-auto px-6 relative">
-            <div className="grid lg:grid-cols-[1fr_400px] gap-12 lg:gap-32 items-center">
-              <div>
-                <p className="text-[11px] font-bold text-brand uppercase tracking-[0.2em] mb-4">
-                  Everything included
-                </p>
-                <h2 className="text-3xl lg:text-5xl font-bold text-text-primary tracking-tighter leading-[1.05] mb-8">
-                  The person you need to reach is <br />
-                  <span className="text-brand">checking their inbox</span> right now.
-                </h2>
-                <p className="text-lg text-text-secondary leading-relaxed mb-10 max-w-xl">
-                  Every day without this is another investor who never saw your pitch, another candidate who joined someone else, or another deal lost to a competitor. Start today.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <button
-                    onClick={() => router.push("/login")}
-                    className="w-full sm:w-auto bg-brand text-white text-sm font-semibold px-8 py-3.5 rounded-lg hover:bg-brand/90 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group shadow-xl shadow-brand/10"
-                  >
-                    Get Started Now
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                  <p className="text-xs text-text-muted">Instant setup • 100% secure payment via Dodo</p>
-                </div>
-              </div>
-
-              <PricingCard />
-            </div>
-          </div>
-        </section>
-
-        <FAQ />
-        <Support />
-      </main>
-    </MailAppContainer>
-  );
-}
-
-function PricingCard() {
-  const [region, setRegion] = React.useState<"india" | "global">("global");
-
-  React.useEffect(() => {
-    // Simple client-side region detection
-    fetch("https://ipapi.co/json/")
-      .then(res => {
-        if (!res.ok) return null;
-        const contentType = res.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          return res.json();
+const homeJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/#home`,
+      "url": SITE_URL,
+      "name": `${SITE_NAME} homepage`,
+      "description": "Cold outreach software for deliverability, reply rates, and safer sender operations.",
+      "about": {
+        "@type": "SoftwareApplication",
+        "name": SITE_NAME,
+      },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": absoluteUrl("/og-image.jpg"),
+      },
+      "speakable": {
+        "@type": "SpeakableSpecification",
+        "cssSelector": ["h1", "h2", "h3"]
+      }
+    },
+    {
+      "@type": "ItemList",
+      "name": "SharaSpot resource hub",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Cold Outreach Guide",
+          "url": absoluteUrl("/guide"),
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Deliverability FAQ",
+          "url": absoluteUrl("/faq"),
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Priority Delivery Research",
+          "url": absoluteUrl("/priority"),
+        },
+      ],
+    },
+    {
+      "@type": "ItemList",
+      "name": "Who SharaSpot is for",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Founders doing investor outreach",
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Sales teams running outbound prospecting",
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Recruiters sourcing candidates",
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Partner teams managing relationship pipelines",
         }
-        return null;
-      })
-      .then(data => {
-        if (data && data.country_code === "IN") {
-          setRegion("india");
-        }
-      })
-      .catch(() => {
-        // Silently fail to global
-      });
-  }, []);
+      ]
+    },
+    {
+      "@type": "Offer",
+      "name": `${SITE_NAME} free trial`,
+      "url": absoluteUrl("/login"),
+      "price": "0",
+      "priceCurrency": BRAND_CONFIG.pricing.global.currency,
+      "description": `Start with a ${BRAND_CONFIG.pricing.trialDays}-day free trial, then ${BRAND_CONFIG.pricing.global.symbol}${BRAND_CONFIG.pricing.global.amount}/month.`,
+      "eligibleDuration": `P${BRAND_CONFIG.pricing.trialDays}D`
+    },
+  ],
+};
 
-  const pricing = BRAND_CONFIG.pricing[region];
-
+export default function HomePage() {
   return (
-    <div className="bg-slate-50 border border-border-light rounded-2xl p-8">
-      <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-6">Transparent Pricing</p>
-      <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-4xl font-bold text-text-primary">{pricing.symbol}{pricing.amount}</span>
-        <span className="text-sm font-medium text-text-muted">/month</span>
-      </div>
-      <p className="text-[13px] text-text-secondary mb-8 font-medium">Start with {BRAND_CONFIG.pricing.trialDays} days free. Then one flat price with zero hidden fees.</p>
-
-      <ul className="space-y-3">
-        {[
-          "Unlimited Sender Rotation",
-          "Unlimited Campaigns",
-          "Adaptive Priority Delivery",
-          "AI Follow-up Generator",
-          "PRM Infrastructure",
-          "Automated Account Warmup",
-          "Real-time Signal Analytics"
-        ].map(item => (
-          <li key={item} className="flex items-center gap-2.5 text-[12px] font-bold text-text-primary uppercase tracking-tight">
-            <Zap size={10} className="text-brand fill-brand" />
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(homeJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+      <LandingPageClient />
+    </>
   );
 }

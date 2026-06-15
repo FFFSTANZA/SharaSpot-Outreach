@@ -292,6 +292,7 @@ export const getSenders = async (
         smtpPort: true,
         isVerified: true,
         dailyLimit: true,
+        hourlyLimit: true,
         replyTo: true,
         createdAt: true,
         updatedAt: true,
@@ -427,6 +428,111 @@ export const getSenderById = async (
   } catch (error: any) {
     res.status(500).json({
       message: "An error occurred while fetching sender",
+    });
+  }
+};
+
+/**
+ * PUT /senders/:id — Update sender configuration (name, replyTo, dailyLimit, hourlyLimit, warmup).
+ */
+export const updateSender = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    const id = req.params.id as string;
+
+    const scope = getOrgScope(req);
+    const existing = await prisma.sender.findFirst({
+      where: { id, ...scope },
+    });
+
+    if (!existing) {
+      res.status(404).json({ message: "Sender not found" });
+      return;
+    }
+
+    const { name, replyTo, dailyLimit, hourlyLimit, skipWarmup } = req.body;
+
+    const data: Record<string, unknown> = {};
+
+    if (name !== undefined) {
+      if (typeof name !== "string" || name.trim() === "") {
+        res.status(400).json({ message: "Name cannot be empty" });
+        return;
+      }
+      data.name = name.trim();
+    }
+
+    if (replyTo !== undefined) {
+      data.replyTo = typeof replyTo === "string" && replyTo.trim() ? replyTo.trim() : null;
+    }
+
+    if (dailyLimit !== undefined) {
+      const limit = Number(dailyLimit);
+      if (isNaN(limit) || limit < 0 || limit > 10000) {
+        res.status(400).json({ message: "Daily limit must be between 0 and 10000" });
+        return;
+      }
+      data.dailyLimit = limit;
+    }
+
+    if (hourlyLimit !== undefined) {
+      const limit = Number(hourlyLimit);
+      if (isNaN(limit) || limit < 0 || limit > 1000) {
+        res.status(400).json({ message: "Hourly limit must be between 0 and 1000" });
+        return;
+      }
+      data.hourlyLimit = limit;
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const sender = await tx.sender.update({
+        where: { id },
+        data,
+        select: {
+          id: true,
+          userId: true,
+          email: true,
+          name: true,
+          smtpHost: true,
+          smtpPort: true,
+          isVerified: true,
+          dailyLimit: true,
+          hourlyLimit: true,
+          replyTo: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (skipWarmup !== undefined) {
+        const existingWarmup = await tx.warmupSchedule.findUnique({
+          where: { senderId: id },
+        });
+        if (existingWarmup) {
+          await tx.warmupSchedule.update({
+            where: { senderId: id },
+            data: { optedOut: skipWarmup === true },
+          });
+        }
+      }
+
+      return sender;
+    });
+
+    res.status(200).json({
+      ...updated,
+      providerKey: inferProviderKeyFromHost(updated.smtpHost),
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      message: "An error occurred while updating the sender",
     });
   }
 };

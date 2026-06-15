@@ -25,7 +25,7 @@ const CONTACT_FIELDS = {
   listIds: { type: "array", items: { type: "string" }, description: "Contact list IDs" },
 };
 
-const ALLOWED_STAGES = new Set(["COLD", "WARM", "HOT", "REPLIED", "CONVERTED", "BOUNCED"]);
+const ALLOWED_STAGES = new Set(["NEW", "CONTACTED", "REPLIED", "INTERESTED", "MEETING_BOOKED", "CONVERTED", "NOT_A_FIT", "BOUNCED", "COLD", "WARM", "HOT"]);
 
 async function upsertTags(context: MCPContext, names: string[]) {
   const tags = [];

@@ -17,9 +17,11 @@ import { prisma } from "./config/prisma";
 import { redis } from "./config/redis";
 import { logger } from "./utils/logger";
 import { loadConfig } from "./config/env";
+import { initSentry } from "./config/sentry";
 import { trackingBuffer } from "./services/trackingBufferService";
 
 const config = loadConfig();
+initSentry(config.SENTRY_DSN, config.NODE_ENV);
 logger.info({ env: config.NODE_ENV, port: config.PORT }, "Starting Gateway");
 
 // Ensure uploads directory exists
@@ -65,6 +67,7 @@ import adminRoutes from "./routes/adminRoutes";
 import prmRoutes from "./routes/prmRoutes";
 import callRoutes from "./routes/callRoutes";
 import organizationRoutes, { publicOrganizationInviteRouter } from "./routes/organizationRoutes";
+import companyRoutes from "./routes/companyRoutes";
 
 
 const app = express();
@@ -75,7 +78,21 @@ app.set("trust proxy", 1);
 
 /* CORE MIDDLEWARE */
 if (config.NODE_ENV !== "development") {
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: ["'self'", "https://www.google-analytics.com", "https://api.aicredits.in"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  }));
   app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 }
 app.use(morgan("common"));
@@ -86,7 +103,7 @@ app.use("/uploads", express.static(path.join(process.cwd(), config.UPLOAD_DIR)))
 // Rate Limiting - Global & Auth specific
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: config.NODE_ENV === "development" ? 99999 : 10000,
+  max: config.NODE_ENV === "development" ? 99999 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
@@ -94,11 +111,19 @@ const globalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: config.NODE_ENV === "development" ? 99999 : 5000,
+  max: config.NODE_ENV === "development" ? 99999 : 20,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   message: { message: "Too many login attempts, please try again later" },
+  validate: { xForwardedForHeader: false },
+});
+
+const healthLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: config.NODE_ENV === "development" ? 99999 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
   validate: { xForwardedForHeader: false },
 });
 
@@ -120,7 +145,7 @@ interface HealthStatus {
   services: { api: string; database: string; redis: string; worker: string };
 }
 
-app.get("/health", async (req, res) => {
+app.get("/health", healthLimiter, async (req, res) => {
   const health: HealthStatus = {
     status: "optimal",
     env: config.NODE_ENV,
@@ -200,11 +225,16 @@ api.use("/mcp-keys", mcpApiKeyRoutes);
 api.use("/prm", prmRoutes);
 api.use("/calls", callRoutes);
 api.use("/organizations", organizationRoutes);
+api.use("/companies", companyRoutes);
 
 
 app.use("/api", api);
 
 /* GLOBAL ERROR HANDLER */
+if (config.SENTRY_DSN) {
+  const Sentry = require("@sentry/node");
+  app.use(Sentry.Handlers.errorHandler());
+}
 app.use(errorMiddleware);
 
 /* SERVER INITIALIZATION */

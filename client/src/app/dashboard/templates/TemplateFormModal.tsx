@@ -71,13 +71,13 @@ export default function TemplateFormModal({
   return (
     <Modal isOpen onClose={onClose} className="max-w-[640px] w-[90vw] sm:w-full">
       <div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 pr-8">
+        <h2 className="text-base sm:text-lg font-semibold text-text-primary pr-8">
           {isEditing ? "Edit Template" : "New Template"}
         </h2>
 
         {/* Name */}
         <div>
-          <label className="mb-1.5 block text-xs sm:text-sm font-medium text-gray-700">
+          <label className="mb-1.5 block text-xs sm:text-sm font-medium text-text-secondary">
             Template Name
           </label>
           <Input
@@ -87,16 +87,16 @@ export default function TemplateFormModal({
               if (nameError) setNameError("");
             }}
             placeholder="e.g. Cold Outreach v1"
-            className={nameError ? "ring-2 ring-red-300" : ""}
+            className={nameError ? "ring-2 ring-error-bg" : ""}
           />
           {nameError && (
-            <p className="mt-1 text-xs text-red-500">{nameError}</p>
+            <p className="mt-1 text-xs text-error-text">{nameError}</p>
           )}
         </div>
 
         {/* Subject */}
         <div>
-          <label className="mb-1.5 block text-xs sm:text-sm font-medium text-gray-700">
+          <label className="mb-1.5 block text-xs sm:text-sm font-medium text-text-secondary">
             Subject Line
           </label>
           <Input
@@ -104,23 +104,23 @@ export default function TemplateFormModal({
             onChange={(e) => setSubject(e.target.value)}
             placeholder="e.g. Quick question about {{company}}"
           />
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-[11px] text-text-muted">
             Use {"{{variable}}"} for personalization
           </p>
         </div>
 
         {/* Body */}
         <div>
-          <label className="mb-1.5 block text-xs sm:text-sm font-medium text-gray-700">
+          <label className="mb-1.5 block text-xs sm:text-sm font-medium text-text-secondary">
             Email Body
           </label>
-          <div className="rounded-xl border border-gray-200 overflow-hidden min-h-[300px] bg-white">
+          <div className="rounded-lg border border-border-light overflow-hidden min-h-[300px] bg-white">
             <Editor value={body} onChange={setBody} />
           </div>
         </div>
 
         {submitError && (
-          <p className="text-sm text-red-500 text-center">{submitError}</p>
+          <p className="text-sm text-error-text text-center">{submitError}</p>
         )}
 
         {/* Actions */}

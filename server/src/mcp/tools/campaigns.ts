@@ -6,6 +6,7 @@ import { mcpCreateData, mcpScopeWhere } from "../scope";
 import { campaignService, CampaignError } from "../../services/campaignService";
 import { emailQueue } from "../../queues/emailQueue";
 import { priorityQueue } from "../../queues/priorityQueue";
+import { logger } from "../../utils/logger";
 
 function sanitizeString(value: unknown, maxLength = 500): string {
   if (typeof value !== "string") return "";
@@ -317,7 +318,7 @@ async function launchCampaign(
     : await prisma.contact.count({ where: mcpScopeWhere(context) });
 
   if (totalMatching > maxRecipients) {
-    console.warn(`[MCP] Campaign ${campaignId}: ${totalMatching} total contacts found, but only sending to ${maxRecipients}. Use maxRecipients to increase the limit.`);
+    logger.warn(`[MCP] Campaign ${campaignId}: ${totalMatching} total contacts found, but only sending to ${maxRecipients}. Use maxRecipients to increase the limit.`);
   }
 
   const existingJobs = await prisma.emailJob.count({

@@ -325,6 +325,10 @@ describe("Campaign Controller — Property-Based Tests", () => {
                     email: args.where.userId_email.email,
                   })),
                   findUnique: jest.fn().mockResolvedValue({ id: "contact-1" }),
+                  update: jest.fn().mockImplementation(async (args: any) => ({
+                    id: "contact-1",
+                    ...args.data,
+                  })),
                 },
                 contactActivity: {
                   create: jest.fn().mockResolvedValue({ id: "activity-1" }),
@@ -460,6 +464,10 @@ describe("Campaign Controller — Property-Based Tests", () => {
                     email: args.where.userId_email.email,
                   })),
                   findUnique: jest.fn().mockResolvedValue({ id: "contact-1" }),
+                  update: jest.fn().mockImplementation(async (args: any) => ({
+                    id: "contact-1",
+                    ...args.data,
+                  })),
                 },
                 contactActivity: {
                   create: jest.fn().mockResolvedValue({ id: "activity-1" }),

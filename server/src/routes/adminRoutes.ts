@@ -2,11 +2,12 @@ import { Router } from "express";
 import { prisma } from "../config/prisma";
 import { redis } from "../config/redis";
 import { SubscriptionStatus, CampaignStatus, EmailStatus, TrackingEventType } from "@prisma/client";
+import { logger } from "../utils/logger";
 
 const router = Router();
 
 if (!process.env.ADMIN_SECRET_KEY) {
-  console.error("[ADMIN] CRITICAL: ADMIN_SECRET_KEY environment variable is not set. Admin endpoints are disabled.");
+  logger.error("[ADMIN] CRITICAL: ADMIN_SECRET_KEY environment variable is not set. Admin endpoints are disabled.");
 }
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET_KEY;
@@ -158,7 +159,7 @@ router.get("/metrics", verifyAdminSecret, async (req, res) => {
 
     res.json(metrics);
   } catch (error) {
-    console.error("[ADMIN-METRICS] Error:", error);
+    logger.error({ error }, "[ADMIN-METRICS] Error:");
     res.status(500).json({ error: "Failed to fetch metrics" });
   }
 });

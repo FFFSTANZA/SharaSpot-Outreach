@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "@/components/Modal";
-import { Contact, Tag } from "@/types";
+import { Contact, OrgMember, Tag } from "@/types";
 import { createContact, updateContact } from "@/lib/apis";
 import { useToast } from "@/context/ToastContext";
 import Button from "@/components/Button";
@@ -10,21 +10,41 @@ import {
   User,
   Mail,
   Phone,
+  Globe,
   Building2,
   Briefcase,
+  CalendarDays,
+  UserCheck,
   ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NEXT_ACTIONS, RELATIONSHIP_STAGES } from "./prmFields";
+
+type ContactPayload = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  company: string;
+  website: string;
+  jobTitle: string;
+  phone: string;
+  stage: string;
+  tags: string[];
+  nextAction: string | null;
+  nextActionDueAt: string | null;
+  assignedToId: string | null;
+};
 
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   contact?: Contact;
   tags: Tag[];
+  members?: OrgMember[];
   onSuccess: () => void;
 }
 
-export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: ContactModalProps) {
+export function ContactModal({ isOpen, onClose, contact, tags, members = [], onSuccess }: ContactModalProps) {
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,9 +52,13 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
     firstName: "",
     lastName: "",
     company: "",
+    website: "",
     jobTitle: "",
     phone: "",
-    stage: "COLD",
+    stage: "NEW",
+    nextAction: "",
+    nextActionDueAt: "",
+    assignedToId: "",
     selectedTags: [] as string[],
   });
 
@@ -45,9 +69,13 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
         firstName: contact.firstName || "",
         lastName: contact.lastName || "",
         company: contact.company || "",
+        website: contact.website || "",
         jobTitle: contact.jobTitle || "",
         phone: contact.phone || "",
-        stage: contact.stage,
+        stage: contact.stage || "NEW",
+        nextAction: contact.nextAction || "",
+        nextActionDueAt: contact.nextActionDueAt ? contact.nextActionDueAt.slice(0, 10) : "",
+        assignedToId: contact.assignedToId || "",
         selectedTags: contact.tags?.map(t => t.id) || [],
       });
     } else {
@@ -56,9 +84,13 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
         firstName: "",
         lastName: "",
         company: "",
+        website: "",
         jobTitle: "",
         phone: "",
-        stage: "COLD",
+        stage: "NEW",
+        nextAction: "",
+        nextActionDueAt: "",
+        assignedToId: "",
         selectedTags: [],
       });
     }
@@ -68,21 +100,30 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const payload: ContactPayload = {
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        company: formData.company,
+        website: formData.website,
+        jobTitle: formData.jobTitle,
+        phone: formData.phone,
+        stage: formData.stage,
+        tags: formData.selectedTags,
+        nextAction: formData.nextAction || null,
+        nextActionDueAt: formData.nextActionDueAt || null,
+        assignedToId: formData.assignedToId || null,
+      };
+
       if (contact) {
-        await updateContact(contact.id, {
-          ...formData,
-          tags: formData.selectedTags,
-        } as any);
+        await updateContact(contact.id, payload);
         addToast("success", "Contact updated successfully");
       } else {
-        await createContact({
-          ...formData,
-          tags: formData.selectedTags,
-        } as any);
+        await createContact(payload);
         addToast("success", "Contact created successfully");
       }
       onSuccess();
-    } catch (error) {
+    } catch {
       addToast("error", "An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -100,157 +141,212 @@ export function ContactModal({ isOpen, onClose, contact, tags, onSuccess }: Cont
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="p-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold tracking-tight text-text-primary uppercase">
-            {contact ? "Edit Contact" : "Add New Contact"}
+      <div className="bg-white">
+        <div className="border-b border-border-light px-6 py-4">
+          <h2 className="text-sm font-semibold text-text-primary">
+            {contact ? "Edit contact" : "New contact"}
           </h2>
-          <p className="text-sm text-text-muted mt-1 font-semibold">
+          <p className="mt-0.5 text-xs text-text-muted">
             {contact ? "Update the details for this relationship." : "Create a new contact in your pipeline."}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">First Name</label>
-                <div className="relative group">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-text-muted">First name</label>
+                <div className="relative">
+                  <User size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full bg-background border border-border-light rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none transition-all"
+                    className="w-full rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
                     placeholder="e.g. John"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Last Name</label>
-                <div className="relative group">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-text-muted">Last name</label>
+                <div className="relative">
+                  <User size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full bg-background border border-border-light rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none transition-all"
+                    className="w-full rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
                     placeholder="e.g. Doe"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Email Address</label>
-              <div className="relative group">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-medium text-text-muted">Email</label>
+              <div className="relative">
+                <Mail size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input
                   type="email"
-                  required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-background border border-border-light rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none transition-all"
+                  className="w-full rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
                   placeholder="john.doe@company.com"
                   disabled={!!contact}
+                  required
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Company</label>
-                <div className="relative group">
-                  <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-text-muted">Company</label>
+                <div className="relative">
+                  <Building2 size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input
                     type="text"
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full bg-background border border-border-light rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none transition-all"
+                    className="w-full rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
                     placeholder="e.g. Acme Inc"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Job Title</label>
-                <div className="relative group">
-                  <Briefcase size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-text-muted">Website</label>
+                <div className="relative">
+                  <Globe size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input
-                    type="text"
-                    value={formData.jobTitle}
-                    onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                    className="w-full bg-background border border-border-light rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none transition-all"
-                    placeholder="e.g. CTO"
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    className="w-full rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
+                    placeholder="https://company.com"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Phone Number</label>
-              <div className="relative group">
-                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-brand transition-colors" />
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-background border border-border-light rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none transition-all"
-                  placeholder="+1 555 123 4567"
-                />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-text-muted">Role</label>
+                <div className="relative">
+                  <Briefcase size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
+                  <input
+                    type="text"
+                    value={formData.jobTitle}
+                    onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                    className="w-full rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
+                    placeholder="e.g. CTO"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-text-muted">Phone</label>
+                <div className="relative">
+                  <Phone size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
+                    placeholder="+1 555 123 4567"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Pipeline Stage</label>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-medium text-text-muted">Stage</label>
               <div className="relative">
                 <select
                   value={formData.stage}
                   onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
-                  className="w-full bg-background border border-border-light rounded-xl py-2.5 px-4 text-sm font-bold appearance-none focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none transition-all"
+                  className="w-full appearance-none rounded-lg border border-border-light bg-white px-3 py-2 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
                 >
-                  <option value="COLD">COLD</option>
-                  <option value="WARM">WARM</option>
-                  <option value="HOT">HOT</option>
-                  <option value="REPLIED">REPLIED</option>
-                  <option value="CONVERTED">CONVERTED</option>
-                  <option value="BOUNCED">BOUNCED</option>
+                  {RELATIONSHIP_STAGES.map((stage) => (
+                    <option key={stage.value} value={stage.value}>{stage.label}</option>
+                  ))}
                 </select>
-                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-1">Tags</label>
-              <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-text-muted">Next action</label>
+                <div className="relative">
+                  <select
+                    value={formData.nextAction}
+                    onChange={(e) => setFormData({ ...formData, nextAction: e.target.value })}
+                    className="w-full appearance-none rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
+                  >
+                    <option value="">No action</option>
+                    {NEXT_ACTIONS.map((action) => (
+                      <option key={action.value} value={action.value}>{action.label}</option>
+                    ))}
+                  </select>
+                  <CalendarDays size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-text-muted">Due date</label>
+                <input
+                  type="date"
+                  value={formData.nextActionDueAt}
+                  onChange={(e) => setFormData({ ...formData, nextActionDueAt: e.target.value })}
+                  className="w-full rounded-lg border border-border-light bg-white px-3 py-2 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-medium text-text-muted">Owner</label>
+              <div className="relative">
+                <select
+                  value={formData.assignedToId}
+                  onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
+                  className="w-full appearance-none rounded-lg border border-border-light bg-white py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
+                >
+                  <option value="">Unassigned</option>
+                  {members.map((member) => (
+                    <option key={member.userId} value={member.userId}>
+                      {member.name || member.email}
+                    </option>
+                  ))}
+                </select>
+                <UserCheck size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" />
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-medium text-text-muted">Tags</label>
+              <div className="flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
                   <button
                     key={tag.id}
                     type="button"
                     onClick={() => toggleTag(tag.id)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border-2 uppercase tracking-wider",
+                      "rounded border px-2 py-0.5 text-[10px] font-medium tracking-wider transition-all",
                       formData.selectedTags.includes(tag.id)
-                        ? "bg-brand/10 border-brand text-brand"
-                        : "bg-white border-border-light text-text-muted hover:border-brand/30"
+                        ? "border-brand/20 bg-brand/10 text-brand"
+                        : "border-border-light bg-white text-text-muted hover:border-brand/20"
                     )}
                   >
                     {tag.name}
                   </button>
                 ))}
-                {tags.length === 0 && <span className="text-xs text-text-muted italic px-1">No tags available</span>}
+                {tags.length === 0 && <span className="text-xs text-text-muted italic">No tags available</span>}
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border-light">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2.5 rounded-xl text-sm font-bold text-text-muted hover:text-text-primary transition-colors"
-            >
-              Cancel
-            </button>
-            <Button type="submit" disabled={isSubmitting} className="font-bold min-w-[140px] h-11">
+          <div className="flex justify-end gap-2 border-t border-border-light pt-4">
+            <Button type="button" variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+            <Button type="submit" size="sm" disabled={isSubmitting}>
               {isSubmitting ? "Saving..." : contact ? "Update Contact" : "Add Contact"}
             </Button>
           </div>

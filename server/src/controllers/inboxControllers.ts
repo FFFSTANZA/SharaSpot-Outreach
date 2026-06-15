@@ -11,6 +11,7 @@ import {
   archiveInboxEmail as archiveService,
   deleteInboxEmail as deleteService,
 } from "../utils/inboxService";
+import { logger } from "../utils/logger";
 
 function extractString(val: any): string {
   if (!val) return "";
@@ -76,7 +77,7 @@ export const getInboxThreads = async (req: Request, res: Response): Promise<void
     });
     res.status(200).json(result);
   } catch (error) {
-    console.error("[Inbox] getInboxThreads error:", error);
+    logger.error({ error }, "[Inbox] getInboxThreads error");
     res.status(500).json({ message: "Error fetching inbox threads" });
   }
 };
@@ -131,7 +132,7 @@ export const getInboxEmails = async (req: Request, res: Response): Promise<void>
     });
     res.status(200).json(result);
   } catch (error) {
-    console.error("[Inbox] getInboxEmails error:", error);
+    logger.error({ error }, "[Inbox] getInboxEmails error");
     res.status(500).json({ message: "Error fetching inbox emails" });
   }
 };
@@ -161,7 +162,7 @@ export const syncInboxForSender = async (req: Request, res: Response): Promise<v
     const result = await syncService(senderId);
     res.status(200).json(result);
   } catch (error) {
-    console.error("[Inbox] syncInboxForSender error:", error);
+    logger.error({ error }, "[Inbox] syncInboxForSender error");
     res.status(500).json({ message: "Error syncing inbox" });
   }
 };
@@ -199,7 +200,7 @@ export const sendInboxReply = async (req: Request, res: Response): Promise<void>
     }
     res.status(200).json(result);
   } catch (error) {
-    console.error("[Inbox] sendInboxReply error:", error);
+    logger.error({ error }, "[Inbox] sendInboxReply error");
     res.status(500).json({ message: "Error sending reply" });
   }
 };
@@ -230,7 +231,7 @@ export const markInboxEmailRead = async (req: Request, res: Response): Promise<v
     await markReadService(emailId);
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error("[Inbox] markInboxEmailRead error:", error);
+    logger.error({ error }, "[Inbox] markInboxEmailRead error");
     res.status(500).json({ message: "Error marking email as read" });
   }
 };
@@ -261,7 +262,7 @@ export const toggleInboxEmailStar = async (req: Request, res: Response): Promise
     const isStarred = await toggleStarService(emailId);
     res.status(200).json({ isStarred });
   } catch (error) {
-    console.error("[Inbox] toggleInboxEmailStar error:", error);
+    logger.error({ error }, "[Inbox] toggleInboxEmailStar error");
     res.status(500).json({ message: "Error toggling star" });
   }
 };
@@ -292,7 +293,7 @@ export const archiveInboxEmail = async (req: Request, res: Response): Promise<vo
     await archiveService(emailId);
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error("[Inbox] archiveInboxEmail error:", error);
+    logger.error({ error }, "[Inbox] archiveInboxEmail error");
     res.status(500).json({ message: "Error archiving email" });
   }
 };
@@ -323,7 +324,7 @@ export const deleteInboxEmail = async (req: Request, res: Response): Promise<voi
     await deleteService(emailId);
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error("[Inbox] deleteInboxEmail error:", error);
+    logger.error({ error }, "[Inbox] deleteInboxEmail error");
     res.status(500).json({ message: "Error deleting email" });
   }
 };
@@ -364,7 +365,7 @@ export const getUnreadCount = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json({ unreadCount });
   } catch (error) {
-    console.error("[Inbox] getUnreadCount error:", error);
+    logger.error({ error }, "[Inbox] getUnreadCount error");
     res.status(500).json({ message: "Error fetching unread count" });
   }
 };

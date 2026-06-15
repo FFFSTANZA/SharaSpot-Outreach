@@ -65,7 +65,7 @@ export default function CampaignControls({
   };
 
   const btnClass = cn(
-    "inline-flex items-center gap-1.5 rounded-lg font-semibold transition-all border shadow-sm",
+    "inline-flex items-center gap-1.5 rounded-lg font-semibold transition-all border shadow-card",
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/10",
     "disabled:opacity-50 disabled:cursor-not-allowed",
     size === "sm" && "px-2.5 py-1.5 text-[10px]",
@@ -77,7 +77,7 @@ export default function CampaignControls({
       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         {showPause && (
           <button
-            className={cn(btnClass, "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900")}
+            className={cn(btnClass, "bg-white border-border-light text-text-secondary hover:bg-[#F0F1F3] hover:text-text-primary")}
             onClick={() => handleAction("pause")}
             disabled={!!loading}
           >
@@ -92,7 +92,7 @@ export default function CampaignControls({
 
         {showResume && (
           <button
-            className={cn(btnClass, "bg-brand border-brand text-white hover:bg-brand-hover")}
+            className={cn(btnClass, "bg-brand border-brand text-white hover:bg-brand/90")}
             onClick={() => handleAction("resume")}
             disabled={!!loading}
           >
@@ -107,7 +107,7 @@ export default function CampaignControls({
 
         {showCancel && (
           <button
-            className={cn(btnClass, "bg-white border-gray-200 text-red-500 hover:text-red-700 hover:bg-red-50 hover:border-red-100")}
+            className={cn(btnClass, "bg-white border-border-light text-error-text hover:text-error-text hover:bg-error-bg hover:border-error-bg")}
             onClick={() => setCancelOpen(true)}
             disabled={!!loading}
           >

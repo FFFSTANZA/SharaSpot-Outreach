@@ -5,9 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getCampaignById, toggleReplied } from "@/lib/apis";
 import type { CampaignDetail } from "@/types";
 import { AuthGuard } from "@/components/AuthGuard";
-import { Sidebar } from "../../Sidebar";
 import { TopBar } from "../../Topbar";
-import { SidebarProvider } from "@/context/SidebarContext";
 import StatusBadge from "@/components/StatusBadge";
 import CampaignControls from "@/components/CampaignControls";
 import SequenceView from "./SequenceView";
@@ -18,9 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   AlertCircle,
-  Inbox,
   Clock,
-  Send,
   Users,
   Calendar,
   Mail,
@@ -32,7 +28,6 @@ import {
   Layout,
   BarChart3,
   TrendingUp,
-  Star,
 } from "lucide-react";
 
 type CampaignStatus = "SCHEDULED" | "SENDING" | "PAUSED" | "CANCELLED" | "COMPLETED";
@@ -46,7 +41,6 @@ export default function CampaignDetailPage() {
   const id = params.id as string;
 
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
-  const setLabel = useCallback<React.Dispatch<React.SetStateAction<string>>>(() => {}, []);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"emails" | "sequence" | "analytics">("emails");
@@ -70,11 +64,19 @@ export default function CampaignDetailPage() {
 
   // Polling for live updates when campaign is active
   useEffect(() => {
+    const terminalStatuses: CampaignStatus[] = ["COMPLETED", "CANCELLED"];
+    if (campaign && terminalStatuses.includes(campaign.status as CampaignStatus)) return;
+
     pollRef.current = setInterval(async () => {
-      // Fetch latest data regardless of current status to detect status changes
       try {
         const data = await getCampaignById(id);
         setCampaign(data);
+        if (terminalStatuses.includes(data.status as CampaignStatus)) {
+          if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+        }
       } catch {
         // Silent fail on poll
       }
@@ -86,7 +88,7 @@ export default function CampaignDetailPage() {
         pollRef.current = null;
       }
     };
-  }, [id]); // Only depend on the ID
+  }, [id, campaign?.status]);
 
   const formatDate = (iso: string) =>
     new Intl.DateTimeFormat("en-US", {
@@ -136,48 +138,31 @@ export default function CampaignDetailPage() {
     { label: "Sent", count: campaign._count.sent, icon: CheckCircle2, color: "text-brand", bg: "bg-brand-light" },
     { label: "Replied", count: repliedCount, icon: MessageSquare, color: "text-brand", bg: "bg-brand-light" },
     { label: "Reply Rate", count: `${replyRate}%`, icon: TrendingUp, color: "text-brand", bg: "bg-brand-light" },
-    { label: "Failed", count: campaign._count.failed, icon: XCircle, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Pending", count: campaign._count.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-    { label: "Cancelled", count: campaign._count.cancelled, icon: Ban, color: "text-gray-500", bg: "bg-gray-100" },
+    { label: "Failed", count: campaign._count.failed, icon: XCircle, color: "text-error-text", bg: "bg-error-bg" },
+    { label: "Pending", count: campaign._count.pending, icon: Clock, color: "text-text-muted", bg: "bg-[#F8F9FA]" },
+    { label: "Cancelled", count: campaign._count.cancelled, icon: Ban, color: "text-text-muted", bg: "bg-[#F8F9FA]" },
   ] : [];
 
   return (
     <AuthGuard requirePremium={true}>
-      <SidebarProvider>
-        <div className="flex h-screen bg-background">
-          <Sidebar
-            setLabel={setLabel}
-            items={[
-              { label: "All", icon: <Inbox size={18} /> },
-              { label: "Starred", icon: <Star size={18} /> },
-              { label: "Scheduled", icon: <Clock size={18} /> },
-              { label: "Sent", icon: <Send size={18} /> },
-            ]}
-            profile={{
-              name: "User",
-              email: "user@example.com",
-              avatarUrl: ""
-            }}
-          />
-
-          <main className="flex flex-1 flex-col min-w-0 overflow-y-auto">
+        <div className="flex-1 flex flex-col min-w-0">
             <TopBar placeholder="Search..." />
 
             {isLoading ? (
               <div className="flex-1 px-4 md:px-6 py-6 space-y-6">
-                <div className="h-10 w-48 bg-gray-100 rounded-xl animate-pulse" />
-                <div className="rounded-xl bg-white border border-gray-100 p-8 animate-pulse space-y-6">
-                  <div className="h-8 w-1/2 bg-gray-100 rounded-lg" />
+                <div className="h-10 w-48 bg-[#F8F9FA] rounded-lg animate-pulse" />
+                <div className="rounded-lg bg-white border border-border-light p-8 animate-pulse space-y-6">
+                  <div className="h-8 w-1/2 bg-[#F8F9FA] rounded-lg" />
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {[...Array(6)].map((_, i) => (
-                      <div key={i} className="h-24 bg-gray-50 rounded-xl" />
+                      <div key={i} className="h-24 bg-[#F8F9FA] rounded-lg" />
                     ))}
                   </div>
                 </div>
               </div>
             ) : error ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <AlertCircle className="h-8 w-8 text-gray-300" />
+                <AlertCircle className="h-8 w-8 text-text-muted" />
                 <p className="text-sm text-text-secondary">{error}</p>
                 <button onClick={fetchCampaign} className="text-sm text-brand font-semibold hover:underline">Retry</button>
               </div>
@@ -186,24 +171,24 @@ export default function CampaignDetailPage() {
                 {/* Back button */}
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-text-muted hover:text-gray-900 transition-all"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-text-muted hover:text-text-primary transition-all"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to dashboard
                 </button>
 
                 {/* Campaign header card */}
-                <div className="rounded-xl bg-white border border-gray-100 shadow-sm p-6 md:p-8">
+                <div className="rounded-lg bg-white border border-border-light shadow-card p-6 md:p-8">
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-4 mb-2">
-                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                        <h1 className="text-2xl font-bold text-text-primary tracking-tight">
                           {campaign.subject}
                         </h1>
                         <StatusBadge status={campaign.status} size="md" pauseReason={campaign.pauseReason} />
                       </div>
                       <p className="text-sm text-text-secondary">
-                        Sender: <span className="text-gray-900 font-semibold">{campaign.sender?.email || "No sender assigned"}</span>
+                        Sender: <span className="text-text-primary font-semibold">{campaign.sender?.email || "No sender assigned"}</span>
                       </p>
                     </div>
                     <div className="shrink-0">
@@ -219,15 +204,15 @@ export default function CampaignDetailPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-text-muted">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F8F9FA] rounded-lg border border-border-light">
                       <Users className="h-3.5 w-3.5" />
                       {campaign.totalRecipients} <span className="font-normal">recipients</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F8F9FA] rounded-lg border border-border-light">
                       <Calendar className="h-3.5 w-3.5" />
                       <span className="font-normal">Created</span> {formatDate(campaign.startTime)}
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F8F9FA] rounded-lg border border-border-light">
                       <Clock className="h-3.5 w-3.5" />
                       {campaign.delaySeconds}s <span className="font-normal">interval</span>
                     </div>
@@ -239,13 +224,13 @@ export default function CampaignDetailPage() {
                   {statCards.map((card) => (
                     <div
                       key={card.label}
-                      className="group rounded-xl bg-white border border-gray-100 shadow-sm p-5 flex flex-col gap-4 transition-all hover:border-brand/20"
+                      className="group rounded-lg bg-white border border-border-light shadow-card p-5 flex flex-col gap-4 transition-all hover:border-brand/20"
                     >
                       <div className={`h-10 w-10 rounded-lg ${card.bg} flex items-center justify-center shrink-0`}>
                         <card.icon className={`h-5 w-5 ${card.color}`} />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-gray-900 tracking-tight">{card.count}</p>
+                        <p className="text-2xl font-bold text-text-primary tracking-tight">{card.count}</p>
                         <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mt-1">{card.label}</p>
                       </div>
                     </div>
@@ -264,8 +249,8 @@ export default function CampaignDetailPage() {
                 />
 
                 {/* Tabs */}
-                <div className="rounded-xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="flex border-b border-gray-100 bg-gray-50/50 p-1 gap-1">
+                <div className="rounded-lg bg-white border border-border-light shadow-card overflow-hidden">
+                  <div className="flex border-b border-border-light bg-[#F8F9FA] p-1 gap-1">
                     {[
                       { id: "emails", icon: Mail, label: `Emails (${campaign.emails.length})` },
                       { id: "sequence", icon: Layout, label: "Sequence" },
@@ -276,12 +261,12 @@ export default function CampaignDetailPage() {
                         className={cn(
                           "flex-1 px-4 py-2.5 text-xs font-bold transition-all rounded-lg flex items-center justify-center gap-2",
                           activeTab === tab.id
-                            ? "bg-white text-brand shadow-sm"
-                            : "text-gray-400 hover:text-gray-600"
+                            ? "bg-white text-brand shadow-premium-sm"
+                            : "text-text-muted hover:text-text-secondary"
                         )}
                         onClick={() => setActiveTab(tab.id as "emails" | "sequence" | "analytics")}
                       >
-                        <tab.icon className={cn("h-4 w-4", activeTab === tab.id ? "text-brand" : "text-gray-400")} />
+                        <tab.icon className={cn("h-4 w-4", activeTab === tab.id ? "text-brand" : "text-text-muted")} />
                         <span>{tab.label}</span>
                       </button>
                     ))}
@@ -291,13 +276,13 @@ export default function CampaignDetailPage() {
                     {activeTab === "emails" ? (
                       <div>
                         {showSenderFilter && (
-                          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3 bg-white">
-                            <Filter className="h-4 w-4 text-gray-400" />
-                            <select
-                              value={senderFilter}
-                              onChange={(e) => setSenderFilter(e.target.value)}
-                              className="text-xs font-bold text-gray-600 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand/10 transition-all"
-                            >
+                          <div className="px-6 py-4 border-b border-border-light flex items-center gap-3 bg-white">
+                             <Filter className="h-4 w-4 text-text-muted" />
+                             <select
+                               value={senderFilter}
+                               onChange={(e) => setSenderFilter(e.target.value)}
+                               className="text-xs font-bold text-text-secondary bg-[#F8F9FA] border border-border-light rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand/10 transition-all"
+                             >
                               <option value="all">All senders</option>
                               {campaign.senderPool.map((s) => (
                                 <option key={s.senderId} value={s.senderId}>
@@ -308,17 +293,17 @@ export default function CampaignDetailPage() {
                           </div>
                         )}
 
-                        <div className="divide-y divide-gray-50">
+                        <div className="divide-y divide-[#F0F1F3]">
                           {filteredEmails.map((email) => (
                             <div
                               key={email.id}
-                              className="px-6 py-5 flex items-center justify-between gap-6 hover:bg-gray-50/50 transition-all group/row"
+                              className="px-6 py-5 flex items-center justify-between gap-6 hover:bg-[#F0F1F3] transition-all group/row"
                             >
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-3 mb-1.5">
-                                  <p className="text-sm font-semibold text-gray-900 truncate">{email.toEmail}</p>
+                                  <p className="text-sm font-semibold text-text-primary truncate">{email.toEmail}</p>
                                   {email.sender && (
-                                    <span className="text-[10px] font-semibold text-text-muted bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5">
+                                    <span className="text-[10px] font-semibold text-text-muted bg-[#F8F9FA] border border-border-light rounded-md px-2 py-0.5">
                                       via {email.sender.email.split('@')[0]}
                                     </span>
                                   )}
@@ -336,12 +321,12 @@ export default function CampaignDetailPage() {
                                     </>
                                   ) : email.status === "FAILED" ? (
                                     <>
-                                      <XCircle className="h-3.5 w-3.5 text-red-500" />
+                                      <XCircle className="h-3.5 w-3.5 text-error-text" />
                                       Failed · {email.sentAt ? formatDate(email.sentAt) : formatDate(email.scheduledAt)}
                                     </>
                                   ) : (
                                     <>
-                                      <Clock className="h-3.5 w-3.5 text-amber-500" />
+                                      <Clock className="h-3.5 w-3.5 text-text-muted" />
                                       {email.status} · {formatDate(email.scheduledAt)}
                                     </>
                                   )}
@@ -352,10 +337,10 @@ export default function CampaignDetailPage() {
                                   <button
                                     onClick={() => handleToggleReplied(email.id)}
                                     className={cn(
-                                      "px-4 py-2 rounded-lg text-[10px] font-bold transition-all border shadow-sm",
+                                      "px-4 py-2 rounded-lg text-[10px] font-bold transition-all border shadow-premium-sm",
                                       email.isReplied
                                         ? "bg-brand text-white border-brand"
-                                        : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                                        : "bg-white text-text-muted border-border-light hover:border-border-light"
                                     )}
                                   >
                                     {email.isReplied ? "Replied" : "Mark Replied"}
@@ -367,14 +352,14 @@ export default function CampaignDetailPage() {
                                     email.status === "SENT" ? "bg-brand" :
                                       email.status === "FAILED" ? "bg-red-500" :
                                         email.status === "SENDING" ? "bg-brand animate-pulse" :
-                                          email.status === "PENDING" ? "bg-amber-500" : "bg-gray-400"
+                                          email.status === "PENDING" ? "bg-amber-500" : "bg-[#F0F1F3]"
                                   )} />
                                   <span className={cn(
                                     "text-[10px] font-bold uppercase tracking-wider",
                                     email.status === "SENT" ? "text-brand" :
-                                      email.status === "FAILED" ? "text-red-500" :
+                                      email.status === "FAILED" ? "text-error-text" :
                                         email.status === "SENDING" ? "text-brand" :
-                                          email.status === "PENDING" ? "text-amber-600" : "text-gray-500"
+                                          email.status === "PENDING" ? "text-text-muted" : "text-text-muted"
                                   )}>
                                     {email.status}
                                   </span>
@@ -397,9 +382,7 @@ export default function CampaignDetailPage() {
                 </div>
               </div>
             ) : null}
-          </main>
         </div>
-      </SidebarProvider>
     </AuthGuard>
   );
 }

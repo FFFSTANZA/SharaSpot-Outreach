@@ -1,25 +1,28 @@
 "use client";
 
-import { useState, useCallback, useEffect, Suspense } from "react";
+import { useState, useCallback, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import { AuthGuard } from "@/components/AuthGuard";
-import { ComposeForm } from "./ComposeForm";
-import { createCampaign, uploadAttachments, deleteAttachment } from "@/lib/apis";
-import { getContacts } from "@/lib/apis";
-import type { CreateCampaignPayload, UploadedAttachment } from "@/types";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ComposeForm, ComposeFormHandle } from "./ComposeForm";
+import { ComposeHeader } from "./ComposeHeader";
+import { createCampaign, uploadAttachments, deleteAttachment, getContacts } from "@/lib/apis";
+import type { CreateCampaignPayload, UploadedAttachment } from "@/types";
+import { useSidebar } from "@/hooks/useSidebar";
+import { Menu } from "lucide-react";
 
 function ComposeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToast } = useToast();
+  const { toggle } = useSidebar();
 
+  const formRef = useRef<ComposeFormHandle>(null);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
   const [uploadedAttachments, setUploadedAttachments] = useState<UploadedAttachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitTrigger] = useState(0);
   const [initialEmails, setInitialEmails] = useState<string[]>([]);
   const [followUpTemplateId, setFollowUpTemplateId] = useState<string | null>(null);
 
@@ -87,32 +90,63 @@ function ComposeContent() {
   );
 
   return (
-    <AuthGuard requirePremium={true}>
-      <div className="min-h-screen bg-gray-50">
-        <ErrorBoundary>
-          <ComposeForm
+    <div className="mx-auto w-full max-w-[1600px] flex flex-1 flex-col overflow-hidden rounded-lg border border-border-light bg-white">
+      <div className="sticky top-0 z-10 bg-white border-b border-border-light px-4 py-3 sm:px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggle}
+              aria-label="Open sidebar"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[#F0F1F3] lg:hidden"
+            >
+              <Menu size={14} />
+            </button>
+            <button
+              onClick={() => router.back()}
+              className="flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-text-muted transition-colors hover:bg-[#F0F1F3]"
+            >
+              <span className="text-base">&larr;</span>
+              Back
+            </button>
+            <div className="h-5 w-px bg-border-light" />
+            <h1 className="text-base font-semibold text-text-primary">Compose</h1>
+          </div>
+          <ComposeHeader
             scheduledAt={scheduledAt}
-            setScheduledAt={setScheduledAt}
-            uploadedAttachments={uploadedAttachments}
-            onFilesSelected={handleFilesSelected}
-            onRemoveAttachment={handleRemoveAttachment}
-            isUploading={isUploading}
-            onSubmit={handleSubmit}
-            submitTrigger={submitTrigger}
+            onClearSchedule={() => setScheduledAt(null)}
+            onOpenSchedule={() => formRef.current?.openSchedule()}
             isSubmitting={isSubmitting}
-            initialEmails={initialEmails}
-            followUpTemplateId={followUpTemplateId}
+            onSend={() => formRef.current?.submit()}
           />
-        </ErrorBoundary>
+        </div>
       </div>
-    </AuthGuard>
+      <ErrorBoundary>
+        <ComposeForm
+          ref={formRef}
+          scheduledAt={scheduledAt}
+          setScheduledAt={setScheduledAt}
+          uploadedAttachments={uploadedAttachments}
+          onFilesSelected={handleFilesSelected}
+          onRemoveAttachment={handleRemoveAttachment}
+          isUploading={isUploading}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          initialEmails={initialEmails}
+          followUpTemplateId={followUpTemplateId}
+        />
+      </ErrorBoundary>
+    </div>
   );
 }
 
 export default function ComposePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-500">Loading...</div></div>}>
-      <ComposeContent />
-    </Suspense>
+    <AuthGuard requirePremium={true}>
+      <ErrorBoundary>
+        <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><span className="text-sm text-text-muted">Loading...</span></div>}>
+          <ComposeContent />
+        </Suspense>
+      </ErrorBoundary>
+    </AuthGuard>
   );
 }

@@ -49,8 +49,9 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: deploy/Dockerfile.server
+      context: ./server
+      dockerfile: ../deploy/Dockerfile.server
+      network: host
     container_name: sharaspot-api-local
     restart: unless-stopped
     env_file:
@@ -59,6 +60,10 @@ services:
       DATABASE_URL: postgresql://sharaspot:${DB_PASSWORD:-changeme}@sharaspot-db-local:5432/sharaspot
       REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@sharaspot-redis-local:6379
       NODE_ENV: production
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost,http://127.0.0.1:3000,http://127.0.0.1}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-lax}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-local_access_secret_key_123456789}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-local_refresh_secret_key_123456789}
@@ -81,8 +86,9 @@ services:
 
   worker:
     build:
-      context: .
-      dockerfile: deploy/Dockerfile.server
+      context: ./server
+      dockerfile: ../deploy/Dockerfile.server
+      network: host
     container_name: sharaspot-worker-local
     restart: unless-stopped
     env_file:
@@ -91,6 +97,10 @@ services:
       DATABASE_URL: postgresql://sharaspot:${DB_PASSWORD:-changeme}@sharaspot-db-local:5432/sharaspot
       REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@sharaspot-redis-local:6379
       NODE_ENV: production
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost,http://127.0.0.1:3000,http://127.0.0.1}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-lax}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-local_access_secret_key_123456789}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-local_refresh_secret_key_123456789}
@@ -110,11 +120,12 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: deploy/Dockerfile.client
+      context: ./client
+      dockerfile: ../deploy/Dockerfile.client
+      network: host
       args:
-        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost}
-        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-354664818470-veljl4900p28hf0i81u0r959ra11ihjt.apps.googleusercontent.com}
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
         NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID}
     container_name: sharaspot-frontend-local
     restart: unless-stopped

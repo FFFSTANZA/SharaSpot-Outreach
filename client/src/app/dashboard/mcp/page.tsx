@@ -2,20 +2,22 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
-import { SidebarProvider } from "@/context/SidebarContext";
 import { Sidebar } from "../Sidebar";
-import { TopBar } from "../Topbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 import {
   Copy,
+  FileCode,
   KeyRound,
   Plus,
   RefreshCw,
-  ServerCog,
   Trash2,
   X,
+  Menu,
+  ExternalLink,
+  Check,
+  Terminal,
 } from "lucide-react";
 import {
   createMcpApiKey,
@@ -30,7 +32,6 @@ import {
   type McpToolCategory,
 } from "@/lib/apis";
 import type { Organization } from "@/types";
-
 const AREAS: Array<{ id: McpToolCategory; label: string }> = [
   { id: "contacts", label: "Contacts" },
   { id: "contactLists", label: "Contact lists" },
@@ -63,7 +64,11 @@ function getApiErrorMessage(err: unknown, fallback: string): string {
   return fallback;
 }
 
-export default function McpPage() {
+export default function McpPageWrapper() {
+  return <McpPage />;
+}
+
+function McpPage() {
   const { user } = useAuth();
   const { addToast } = useToast();
   const [scope, setScope] = useState<McpKeyScope>("personal");
@@ -71,7 +76,9 @@ export default function McpPage() {
   const [org, setOrg] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [createdKey, setCreatedKey] = useState<CreatedMcpApiKey | null>(null);
+  const [deleteConfirmKey, setDeleteConfirmKey] = useState<McpApiKey | null>(null);
   const loadRequestIdRef = useRef(0);
 
   const currentMember = org?.members.find((member) => member.userId === user?.id);
@@ -138,208 +145,268 @@ export default function McpPage() {
   };
 
   const handleDelete = async (key: McpApiKey) => {
-    if (!window.confirm(`Delete ${key.name}? This cannot be undone.`)) return;
     try {
       await deleteMcpApiKey(key.id, key.scope);
       setKeys((prev) => prev.filter((item) => item.id !== key.id));
+      setDeleteConfirmKey(null);
       addToast("success", "API key deleted");
     } catch (err) {
+      setDeleteConfirmKey(null);
       addToast("error", getApiErrorMessage(err, "Failed to delete API key"));
     }
+  };
+
+  const confirmDelete = (key: McpApiKey) => {
+    setDeleteConfirmKey(key);
   };
 
   const keyForSnippets = createdKey?.key || "<MCP_API_KEY>";
 
   return (
     <AuthGuard requirePremium={true}>
-      <SidebarProvider>
-        <div className="flex h-screen bg-background font-sans text-text-primary">
-          <Sidebar
-            currentLabel="MCP"
-            setLabel={() => {}}
-            items={[]}
-            profile={{
-              name: user?.name ?? "User",
-              email: user?.email ?? "",
-              avatarUrl: user?.avatarUrl ?? "",
-            }}
-          />
+      <>
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-40 bg-text-primary/10 backdrop-blur-sm lg:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+            <aside className="absolute inset-y-0 left-0 w-[min(320px,calc(100vw-1rem))] border-r border-border-light bg-white shadow-premium-lg" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between border-b border-border-light px-4 py-3">
+                <p className="text-sm font-bold text-text-primary">Menu</p>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[#F0F1F3]">
+                  <X size={14} />
+                </button>
+              </div>
+              <div className="h-[calc(100%-65px)] overflow-y-auto">
+                <Sidebar />
+              </div>
+            </aside>
+          </div>
+        )}
 
-          <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-interactive-hover/40 p-4 lg:p-6">
-            <div className="bg-white rounded-2xl border border-border-light shadow-card flex flex-col grow overflow-hidden">
-              <TopBar placeholder="Search MCP..." />
+        <div className="flex-1 flex min-w-0 overflow-hidden">
+          <div className="mx-auto flex w-full max-w-[1600px] flex-col rounded-lg border border-border-light bg-white">
+            <div className="shrink-0 border-b border-border-light px-4 py-3 sm:px-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    aria-label="Open sidebar"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-[#F0F1F3] lg:hidden"
+                  >
+                    <Menu size={14} />
+                  </button>
+                  <h1 className="text-base font-semibold text-text-primary">MCP</h1>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={loadData}
+                    className="flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-text-muted transition-colors hover:bg-[#F0F1F3] hover:text-text-secondary"
+                    title="Refresh"
+                  >
+                    <RefreshCw size={12} />
+                    Refresh
+                  </button>
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    disabled={scope === "organization" && (!org || !canManageOrgKeys)}
+                    className="flex h-7 items-center gap-1.5 rounded-md bg-brand px-2.5 text-xs font-medium text-white transition-all hover:bg-brand/90 disabled:opacity-50"
+                  >
+                    <Plus size={12} />
+                    New Key
+                  </button>
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-text-muted">
+                Create scoped API keys to connect SharaSpot to MCP-compatible clients like Claude, Cursor, and VS Code.
+              </p>
+            </div>
 
-              <div className="flex-1 overflow-y-auto p-6 lg:p-8 max-w-4xl mx-auto w-full custom-scrollbar">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-                      <ServerCog size={24} className="text-brand" />
-                      MCP
-                    </h1>
-                    <p className="text-sm font-medium text-text-secondary mt-1">
-                      Create scoped API keys to connect SharaSpot to MCP-compatible clients like Claude, Cursor, and VS Code.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
+            <div>
+              <div className="flex items-center gap-2 border-b border-border-light px-4 py-2.5 sm:px-6">
+                <span className="rounded bg-[#F8F9FA] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-muted">
+                  Scope
+                </span>
+                <div className="flex items-center gap-0.5">
+                  {(["personal", "organization"] as McpKeyScope[]).map((item) => (
                     <button
-                      onClick={loadData}
-                      className="h-10 w-10 rounded-lg border border-border-light text-text-muted hover:text-text-primary hover:bg-interactive-hover flex items-center justify-center"
-                      title="Refresh"
+                      key={item}
+                      onClick={() => setScope(item)}
+                      className={cn(
+                        "h-7 rounded-md px-2 text-xs font-medium transition-all",
+                        scope === item ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F0F1F3] hover:text-text-secondary"
+                      )}
                     >
-                      <RefreshCw size={17} />
+                      {item}
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              {scope === "organization" && !org ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background">
+                    <KeyRound size={20} className="text-text-muted" />
+                  </div>
+                  <p className="mt-3 text-sm font-medium text-text-primary">No active workspace</p>
+                  <p className="mt-1 text-xs text-text-muted">Switch to a workspace to view organization MCP keys.</p>
+                </div>
+              ) : loading ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                </div>
+              ) : keys.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background">
+                    <KeyRound size={20} className="text-text-muted" />
+                  </div>
+                  <p className="mt-3 text-sm font-medium text-text-primary">No keys yet</p>
+                  <p className="mt-1 text-xs text-text-muted">Click &ldquo;New Key&rdquo; to create a scoped MCP API key.</p>
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    disabled={scope === "organization" && (!org || !canManageOrgKeys)}
+                    className="mt-4 flex h-7 items-center gap-1.5 rounded-md bg-brand px-2.5 text-xs font-medium text-white transition-all hover:bg-brand/90 disabled:opacity-50"
+                  >
+                    <Plus size={12} />
+                    New Key
+                  </button>
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border-light">
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-muted sm:px-6">Name</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-muted">Permissions</th>
+                      <th className="hidden px-4 py-2.5 text-left text-[11px] font-semibold text-text-muted sm:table-cell">Last used</th>
+                      <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-muted">Status</th>
+                      <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-text-muted">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {keys.map((key) => (
+                      <tr key={key.id} className="border-b border-border-light transition-colors hover:bg-[#F8F9FA]">
+                        <td className="px-4 py-3 sm:px-6">
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#F8F9FA]">
+                              <KeyRound size={12} className="text-text-muted" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">{key.name}</p>
+                              <p className="text-xs text-text-muted">{formatDate(key.createdAt)}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="rounded bg-[#F0F1F3] px-1.5 py-0.5 text-[10px] font-medium capitalize text-text-secondary">
+                            {key.permissions.access}
+                          </span>
+                          <p className="mt-0.5 text-xs text-text-muted">
+                            {key.permissions.areas.length === ALL_AREAS.length
+                              ? "All areas"
+                              : `${key.permissions.areas.length} area${key.permissions.areas.length === 1 ? "" : "s"}`}
+                          </p>
+                        </td>
+                        <td className="hidden px-4 py-3 text-xs text-text-secondary sm:table-cell">
+                          {key.lastUsedAt ? formatDate(key.lastUsedAt) : <span className="text-text-muted">Never</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={cn(
+                            "rounded px-1.5 py-0.5 text-[10px] font-medium",
+                            key.isActive ? "bg-brand-light text-brand" : "bg-[#F0F1F3] text-text-muted"
+                          )}>
+                            {key.isActive ? "Active" : "Revoked"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              disabled={!key.isActive}
+                              onClick={() => handleRevoke(key)}
+                              className="flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-text-secondary transition-all hover:bg-[#F0F1F3] hover:text-text-primary disabled:opacity-30"
+                            >
+                              Revoke
+                            </button>
+                            <button
+                              onClick={() => confirmDelete(key)}
+                              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-all hover:bg-[#F0F1F3] hover:text-error-text"
+                              title="Delete"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+              {createdKey && (
+                <div className="mx-4 mb-4 mt-4 rounded-lg border border-brand/20 bg-brand-light px-4 py-3 sm:mx-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-2.5">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand/10">
+                        <Check size={12} className="text-brand" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-text-primary">API Key Created</p>
+                        <p className="text-[11px] text-text-muted">Store this value now. It will not be shown again.</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setCreatedKey(null)} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-brand/10">
+                      <X size={12} />
+                    </button>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <code className="min-w-0 flex-1 truncate rounded-md border border-border-light bg-white px-3 py-2 text-xs font-mono text-text-primary">
+                      {createdKey.key}
+                    </code>
                     <button
-                      onClick={() => setShowCreate(true)}
-                      disabled={scope === "organization" && (!org || !canManageOrgKeys)}
-                      className="h-10 px-4 rounded-lg bg-brand text-white text-sm font-semibold flex items-center gap-2 disabled:opacity-50"
+                      onClick={() => copyText(createdKey.key, "API key copied")}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-brand text-white transition-all hover:bg-brand/90"
+                      title="Copy key"
                     >
-                      <Plus size={16} />
-                      New Key
+                      <Copy size={11} />
                     </button>
                   </div>
                 </div>
+              )}
 
-                <section className="rounded-xl border border-border-light bg-white shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-border-light flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h2 className="text-sm font-bold">API Keys</h2>
-                      <p className="text-xs text-text-muted mt-1">Raw keys are only shown immediately after creation.</p>
-                    </div>
-                    <div className="inline-flex rounded-lg border border-border-light p-1 bg-interactive-hover/50 w-fit">
-                      {(["personal", "organization"] as McpKeyScope[]).map((item) => (
-                        <button
-                          key={item}
-                          onClick={() => setScope(item)}
-                          className={cn(
-                            "px-3 py-1.5 rounded-md text-xs font-bold capitalize",
-                            scope === item ? "bg-white text-brand shadow-sm" : "text-text-muted"
-                          )}
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              <div className="border-t border-border-light">
+                <div className="border-b border-border-light px-4 py-3 sm:px-6">
+                  <h2 className="text-sm font-semibold text-text-primary">Setup</h2>
+                  <p className="mt-0.5 text-xs text-text-muted">
+                    Add this configuration to your MCP client.
+                  </p>
+                </div>
+                <SetupPanel endpoint={endpoint} apiKey={keyForSnippets} onCopy={copyText} />
+            </div>
+          </div>
+        </div>
+        </div>
 
-                  {scope === "organization" && !org ? (
-                    <EmptyState title="No active workspace" message="Switch to a workspace to view organization MCP keys." />
-                  ) : loading ? (
-                    <div className="p-8 flex justify-center">
-                      <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full" />
-                    </div>
-                  ) : keys.length === 0 ? (
-                    <EmptyState title="No keys yet" message='Click "New Key" to create a scoped MCP API key.' />
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-interactive-hover/40 text-xs text-text-muted">
-                          <tr>
-                            <th className="text-left font-bold p-4">Name</th>
-                            <th className="text-left font-bold p-4">Permissions</th>
-                            <th className="text-left font-bold p-4">Last used</th>
-                            <th className="text-left font-bold p-4">Status</th>
-                            <th className="text-right font-bold p-4">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {keys.map((key) => (
-                            <tr key={key.id} className="border-t border-border-light">
-                              <td className="p-4">
-                                <p className="font-bold text-text-primary">{key.name}</p>
-                                <p className="text-xs text-text-muted">{formatDate(key.createdAt)}</p>
-                              </td>
-                              <td className="p-4">
-                                <p className="font-semibold capitalize">{key.permissions.access}</p>
-                                <p className="text-xs text-text-muted">{key.permissions.areas.length} areas</p>
-                              </td>
-                              <td className="p-4 text-text-secondary">{key.lastUsedAt ? formatDate(key.lastUsedAt) : "Never"}</td>
-                              <td className="p-4">
-                                <span className={cn(
-                                  "inline-flex px-2 py-1 rounded text-xs font-bold",
-                                  key.isActive ? "bg-brand-light text-brand" : "bg-error-bg text-error-text"
-                                )}>
-                                  {key.isActive ? "Active" : "Revoked"}
-                                </span>
-                              </td>
-                              <td className="p-4">
-                                <div className="flex justify-end gap-2">
-                                  <button
-                                    disabled={!key.isActive}
-                                    onClick={() => handleRevoke(key)}
-                                    className="h-8 px-3 rounded-lg border border-border-light text-xs font-bold text-text-secondary disabled:opacity-50"
-                                  >
-                                    Revoke
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(key)}
-                                    className="h-8 w-8 rounded-lg border border-border-light text-error-text flex items-center justify-center"
-                                    title="Delete"
-                                  >
-                                    <Trash2 size={15} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </section>
-
-                {createdKey && (
-                  <section className="mt-4 rounded-xl border border-brand/30 bg-brand/5 p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h2 className="text-sm font-bold flex items-center gap-2">
-                          <KeyRound size={16} className="text-brand" />
-                          API Key Created
-                        </h2>
-                        <p className="text-xs text-text-muted mt-1">Store this value now. It will not be shown again.</p>
-                      </div>
-                      <button onClick={() => setCreatedKey(null)} className="text-text-muted hover:text-text-primary">
-                        <X size={18} />
-                      </button>
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                      <code className="flex-1 min-w-0 rounded-lg bg-white border border-border-light px-3 py-2 text-xs font-mono break-all">
-                        {createdKey.key}
-                      </code>
-                      <button
-                        onClick={() => copyText(createdKey.key, "API key copied")}
-                        className="h-10 w-10 rounded-lg bg-brand text-white flex items-center justify-center shrink-0"
-                        title="Copy key"
-                      >
-                        <Copy size={16} />
-                      </button>
-                    </div>
-                  </section>
-                )}
-
-                <section className="mt-6 rounded-xl border border-border-light bg-white shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-border-light">
-                    <h2 className="text-sm font-bold">Setup</h2>
-                    <p className="text-xs text-text-muted mt-1">
-                      Configure your MCP client with the snippet below.
-                    </p>
-                  </div>
-                  <SetupPanel endpoint={endpoint} apiKey={keyForSnippets} onCopy={copyText} />
-                </section>
+        {deleteConfirmKey && (
+          <div className="fixed inset-0 z-50 bg-text-primary/10 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDeleteConfirmKey(null)}>
+            <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-premium-lg" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-base font-semibold text-text-primary mb-2">Delete API Key</h3>
+              <p className="text-sm text-text-secondary mb-5">
+                Delete &ldquo;{deleteConfirmKey.name}&rdquo;? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setDeleteConfirmKey(null)} className="flex-1 flex h-9 items-center justify-center rounded-md border border-border-light bg-white px-4 text-xs font-medium text-text-secondary transition-colors hover:bg-[#F0F1F3]">Cancel</button>
+                <button onClick={() => handleDelete(deleteConfirmKey)} className="flex-1 flex h-9 items-center justify-center rounded-md bg-error-text px-4 text-xs font-medium text-white transition-all hover:bg-error-text/90">Delete</button>
               </div>
             </div>
-          </main>
+          </div>
+        )}
 
-          {showCreate && (
-            <CreateKeyModal
-              scope={scope}
-              org={org}
-              canManageOrgKeys={canManageOrgKeys}
-              onClose={() => setShowCreate(false)}
-              onCreated={handleCreated}
-            />
-          )}
-        </div>
-      </SidebarProvider>
+        {showCreate && (
+          <CreateKeyModal
+            scope={scope}
+            org={org}
+            canManageOrgKeys={canManageOrgKeys}
+            onClose={() => setShowCreate(false)}
+            onCreated={handleCreated}
+          />
+        )}
+      </>
     </AuthGuard>
   );
 }
@@ -388,33 +455,29 @@ function CreateKeyModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl" onClick={(event) => event.stopPropagation()}>
-        <div className="p-5 border-b border-border-light flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold">Create MCP Key</h2>
-            <p className="text-xs text-text-muted mt-1 capitalize">{scope} scope{scope === "organization" && org ? ` for ${org.name}` : ""}</p>
-          </div>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary">
-            <X size={20} />
-          </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-primary/10 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="w-full max-w-xl rounded-lg bg-white shadow-premium-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="border-b border-border-light px-6 py-4">
+          <h2 className="text-sm font-semibold text-text-primary">Create MCP Key</h2>
+          <p className="mt-0.5 text-xs text-text-muted capitalize">{scope} scope{scope === "organization" && org ? ` for ${org.name}` : ""}</p>
         </div>
 
-        <div className="p-5 space-y-5">
-          <label className="block">
-            <span className="text-xs font-bold text-text-muted uppercase tracking-[0.16em]">Name</span>
+        <div className="space-y-4 px-6 py-5">
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-text-muted">Name</label>
             <input
               autoFocus
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Claude desktop"
-              className="mt-2 w-full h-11 rounded-lg border border-border-light px-3 text-sm outline-none focus:border-brand"
+              className="w-full rounded-lg border border-border-light bg-white px-3 py-2 text-sm outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10"
+              onKeyDown={(e) => e.key === "Enter" && submit()}
             />
-          </label>
+          </div>
 
-          <div>
-            <p className="text-xs font-bold text-text-muted uppercase tracking-[0.16em] mb-2">Permissions</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-text-muted">Permissions</label>
+            <div className="grid grid-cols-3 gap-2">
               {[
                 ["read", "Read only"],
                 ["selected", "Read/write selected"],
@@ -424,8 +487,10 @@ function CreateKeyModal({
                   key={id}
                   onClick={() => setPreset(id as PermissionPreset)}
                   className={cn(
-                    "h-10 rounded-lg border text-xs font-bold",
-                    preset === id ? "border-brand bg-brand/10 text-brand" : "border-border-light text-text-secondary"
+                    "h-9 rounded-md text-xs font-medium transition-all",
+                    preset === id
+                      ? "border-brand/20 bg-brand/10 text-brand"
+                      : "border border-border-light bg-[#F8F9FA] text-text-secondary hover:border-brand/20 hover:bg-white"
                   )}
                 >
                   {label}
@@ -435,17 +500,23 @@ function CreateKeyModal({
           </div>
 
           {preset === "selected" && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {AREAS.map((area) => (
-                <label key={area.id} className="flex items-center gap-2 rounded-lg border border-border-light px-3 py-2 text-sm font-semibold">
+                <label key={area.id} className={cn(
+                  "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all",
+                  areas.includes(area.id)
+                    ? "border-brand/20 bg-brand/5 text-brand"
+                    : "border-border-light bg-[#F8F9FA] text-text-secondary hover:border-brand/20 hover:bg-white"
+                )}>
                   <input
                     type="checkbox"
                     checked={areas.includes(area.id)}
-                    onChange={(event) => {
-                      setAreas((prev) => event.target.checked
+                    onChange={(e) => {
+                      setAreas((prev) => e.target.checked
                         ? [...prev, area.id]
                         : prev.filter((item) => item !== area.id));
                     }}
+                    className="h-3.5 w-3.5 rounded border-border-light text-brand focus:ring-brand"
                   />
                   {area.label}
                 </label>
@@ -454,12 +525,12 @@ function CreateKeyModal({
           )}
         </div>
 
-        <div className="p-5 border-t border-border-light flex justify-end gap-3">
-          <button onClick={onClose} className="h-10 px-4 text-sm font-semibold text-text-secondary">Cancel</button>
+        <div className="flex justify-end gap-2 border-t border-border-light px-6 py-4">
+          <button onClick={onClose} className="flex h-8 items-center rounded-md px-3 text-xs font-medium text-text-secondary transition-colors hover:bg-[#F0F1F3]">Cancel</button>
           <button
             onClick={submit}
             disabled={!name.trim() || saving || (preset === "selected" && areas.length === 0)}
-            className="h-10 px-4 rounded-lg bg-brand text-white text-sm font-semibold disabled:opacity-50"
+            className="flex h-8 items-center rounded-md bg-brand px-3 text-xs font-medium text-white transition-all hover:bg-brand/90 disabled:opacity-50"
           >
             {saving ? "Creating..." : "Create Key"}
           </button>
@@ -484,42 +555,71 @@ function SetupPanel({
 
   return (
     <div>
-      <div className="px-5 pt-5 pb-3 flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-border-light px-4 py-2.5 sm:px-6">
         {snippets.map((item) => (
           <button
             key={item.id}
             onClick={() => setActive(item.id)}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-bold border",
-              active === item.id ? "border-brand bg-brand/10 text-brand" : "border-border-light text-text-secondary"
+              "h-7 rounded-md px-2 text-xs font-medium transition-all",
+              active === item.id ? "bg-brand-light text-brand" : "text-text-muted hover:bg-[#F0F1F3] hover:text-text-secondary"
             )}
           >
             {item.label}
           </button>
         ))}
       </div>
-      <div className="p-5 pt-3">
-        <div className="flex items-center justify-between gap-3 mb-2">
-          <p className="text-xs font-bold text-text-muted">{snippet.path}</p>
-          <button onClick={() => onCopy(snippet.value, "Snippet copied")} className="h-8 px-3 rounded-lg border border-border-light text-xs font-bold flex items-center gap-2">
-            <Copy size={14} />
-            Copy
-          </button>
-        </div>
-        <pre className="max-h-[420px] overflow-auto rounded-lg bg-[#111827] p-4 text-xs text-white leading-relaxed">
-          <code>{snippet.value}</code>
-        </pre>
-      </div>
-    </div>
-  );
-}
 
-function EmptyState({ title, message }: { title: string; message: string }) {
-  return (
-    <div className="p-10 text-center">
-      <KeyRound size={32} className="mx-auto text-text-muted mb-3" />
-      <h3 className="text-sm font-bold">{title}</h3>
-      <p className="text-xs text-text-muted mt-1">{message}</p>
+      <div className="px-4 py-4 sm:px-6">
+        <div className="rounded-lg border border-border-light overflow-hidden">
+          <div className="flex items-center justify-between gap-3 border-b border-border-light bg-[#F8F9FA] px-3 py-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <FileCode size={12} className="shrink-0 text-text-muted" />
+              <span className="truncate text-[11px] font-medium text-text-secondary">{snippet.path}</span>
+            </div>
+            <button
+              onClick={() => onCopy(snippet.value, "Snippet copied")}
+              className="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-text-secondary transition-all hover:bg-white hover:text-brand"
+            >
+              <Copy size={11} />
+              Copy
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <pre className="bg-[#111827] p-4 text-xs leading-relaxed">
+              <code className="text-white/90 font-mono whitespace-pre">{snippet.value}</code>
+            </pre>
+          </div>
+        </div>
+        <div className="mt-2 flex items-center gap-1.5">
+          <Terminal size={11} className="text-text-muted" />
+          <p className="text-[11px] text-text-muted">
+            Paste this into your MCP client configuration file
+          </p>
+          {active === "vscode" && (
+            <a
+              href="https://code.visualstudio.com/docs/copilot/mcp-servers"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto flex items-center gap-1 text-[11px] font-medium text-brand hover:underline"
+            >
+              VS Code guide
+              <ExternalLink size={10} />
+            </a>
+          )}
+          {active === "claude" && (
+            <a
+              href="https://docs.anthropic.com/en/docs/claude-code/mcp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto flex items-center gap-1 text-[11px] font-medium text-brand hover:underline"
+            >
+              Claude guide
+              <ExternalLink size={10} />
+            </a>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

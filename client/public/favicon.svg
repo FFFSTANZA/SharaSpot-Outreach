@@ -5,7 +5,7 @@
     </clipPath>
   </defs>
 
-  <rect width="32" height="32" rx="7" fill="#00A63E"/>
+  <rect width="32" height="32" rx="7" fill="#3B82F6"/>
 
   <g clip-path="url(#clip)">
     <rect y="0" width="32" height="15" fill="white" opacity="0.1"/>
@@ -13,7 +13,7 @@
 
   <g transform="translate(16,16)">
     <path d="M-9,-8 L10,0 L-9,8 L-5.5,0 Z" fill="white" fill-opacity="0.95"/>
-    <path d="M-5.5,0 L10,0" stroke="#00A63E" stroke-opacity="0.35" stroke-width="0.8"/>
+    <path d="M-5.5,0 L10,0" stroke="#3B82F6" stroke-opacity="0.35" stroke-width="0.8"/>
     <path d="M-9,8 L-5.5,0 L10,0 Z" fill="black" fill-opacity="0.06"/>
   </g>
 </svg>

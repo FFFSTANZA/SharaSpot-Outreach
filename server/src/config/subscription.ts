@@ -1,4 +1,4 @@
-export const SUBSCRIPTION_PRICE_USD = 19.00;
+export const SUBSCRIPTION_PRICE_USD = 29.00;
 export const SUBSCRIPTION_PRICE_INR = 999.00;
 export const SUBSCRIPTION_INTERVAL = "month";
 export const SUBSCRIPTION_TRIAL_DAYS = 7;
@@ -18,12 +18,12 @@ export const DODO_PRODUCT_ID_GLOBAL = process.env.DODO_PRODUCT_ID_GLOBAL || "pdt
 export const DODO_PRODUCT_ID_INDIA = process.env.DODO_PRODUCT_ID_INDIA || "pdt_0Nessoj6QwLKHWh0YaGYG";
 
 export const getReturnUrl = (userId: string): string => {
-  const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const baseUrl = process.env.FRONTEND_URL || "https://sharaspot.in";
   return `${baseUrl}/dashboard?subscription=success&userId=${userId}`;
 };
 
 export const getCancelUrl = (userId: string): string => {
-  const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const baseUrl = process.env.FRONTEND_URL || "https://sharaspot.in";
   return `${baseUrl}/dashboard?subscription=cancelled&userId=${userId}`;
 };
 

@@ -58,6 +58,9 @@ jest.mock("../../config/prisma", () => ({
     systemAuditLog: {
       create: jest.fn(),
     },
+    trackingDomainSetting: {
+      findFirst: jest.fn(),
+    },
     $transaction: jest.fn(),
     $disconnect: jest.fn(),
   },
@@ -183,9 +186,7 @@ describe("Email Worker — Sender Rotation: Daily Limit Enforcement", () => {
   it("sends email when assigned sender is under daily limit", async () => {
     const emailJob = makeEmailJob();
 
-    (prisma.emailJob.findUnique as jest.Mock)
-      .mockResolvedValueOnce(emailJob)
-      .mockResolvedValueOnce({ status: "SENDING", sequenceSteps: [] }); // re-read after send
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(emailJob);
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (hasDailyCapacity as jest.Mock).mockResolvedValue(true);
@@ -354,9 +355,7 @@ describe("Email Worker — Sender Rotation: Daily Limit Enforcement", () => {
       },
     });
 
-    (prisma.emailJob.findUnique as jest.Mock)
-      .mockResolvedValueOnce(emailJob)
-      .mockResolvedValueOnce({ status: "SENDING", sequenceSteps: [] }); // re-read after send
+    (prisma.emailJob.findUnique as jest.Mock).mockResolvedValueOnce(emailJob);
     (prisma.emailJob.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.emailCampaign.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
 

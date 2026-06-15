@@ -13,10 +13,10 @@
      Focus: High-contrast, tactile, and professional.
   */
 
-  /* Brand Colors - Deep Emerald & Clean Slate */
-  --color-brand: #00A63E;
-  --color-brand-light: #E8F8ED;
-  --color-brand-muted: #B9E6C9;
+  /* Brand Colors - Minimal Soft Blue */
+  --color-brand: #3B82F6;
+  --color-brand-light: #EFF6FF;
+  --color-brand-muted: #BFDBFE;
 
   --color-background: #FFFFFF;
   --color-text-primary: #1A1D21;
@@ -38,7 +38,7 @@
   --shadow-premium-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   --shadow-premium-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
   --shadow-premium-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-brand-glow: 0 0 25px rgba(0, 166, 56, 0.12);
+  --shadow-brand-glow: 0 0 25px rgba(59, 130, 246, 0.12);
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
   /* Glassmorphism */
@@ -109,25 +109,6 @@
    Avoids 'animation slop' by using systemic transitions over ad-hoc keyframes.
 */
 
-/* Accessibility & Utilities */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-border-medium);
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
-}
-
 /* Structural Classes */
 .shadow-elevated {
   box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
@@ -138,7 +119,7 @@
 }
 
 .shadow-premium-glow {
-  box-shadow: 0 0 20px rgba(0, 166, 62, 0.15), 0 0 40px rgba(0, 166, 62, 0.05);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15), 0 0 40px rgba(59, 130, 246, 0.05);
 }
 
 .shadow-premium-hover:hover {
@@ -155,8 +136,17 @@
   }
 
   body {
-    @apply bg-background text-text-primary antialiased;
+    @apply bg-background text-text-primary antialiased overflow-x-hidden;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-overflow-scrolling: touch;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: "SFMono-Regular", "SF Mono", ui-monospace, "Cascadia Code", "Roboto Mono", Consolas, "Liberation Mono", Menlo, monospace;
   }
 }
 
@@ -237,6 +227,18 @@ body {
   animation-delay: 500ms;
 }
 
+/* Dashboard responsive scaling — proportionally scales all rem-based sizes on laptops */
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .dashboard-content {
+    font-size: 14px;
+  }
+}
+@media (min-width: 769px) and (max-width: 1023px) {
+  .dashboard-content {
+    font-size: 13px;
+  }
+}
+
 /* 
    TIPTAP EDITOR REFINEMENT 
 */
@@ -285,10 +287,10 @@ body {
   @apply bg-gray-100 px-1 py-0.5 rounded text-brand font-mono text-sm;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - thin and subtle */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -296,12 +298,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border-medium);
+  background: rgba(218, 220, 224, 0.4);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-strong);
+  background: rgba(154, 160, 166, 0.6);
 }
 
 /* 

@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma";
 import { emailQueue } from "../queues/emailQueue";
 import { getEarliestResumeTime, computeJitteredDelay } from "../utils/throttleEngine";
+import { logger } from "../utils/logger";
 
 /**
  * Deletes RateLimitCounter rows older than 2 hours.
@@ -13,7 +14,7 @@ export async function cleanupStaleRateLimitCounters(): Promise<void> {
     where: { hourWindow: { lt: twoHoursAgo } },
   });
   if (count > 0) {
-    console.log(`Cleaned up ${count} stale rate limit counter(s)`);
+    logger.info(`Cleaned up ${count} stale rate limit counter(s)`);
   }
 }
 
@@ -33,7 +34,7 @@ export async function cleanupExpiredRefreshTokens(): Promise<void> {
     },
   });
   if (count > 0) {
-    console.log(`Cleaned up ${count} expired/revoked refresh token(s)`);
+    logger.info(`Cleaned up ${count} expired/revoked refresh token(s)`);
   }
 }
 
@@ -68,7 +69,7 @@ export async function autoResumePausedCampaigns(): Promise<void> {
       const earliestResume = await getEarliestResumeTime(campaign.id);
 
       if (earliestResume > now) {
-        console.log(
+        logger.info(
           `Skipping campaign ${campaign.id} — earliest resume at ${earliestResume.toISOString()}`
         );
         continue;
@@ -88,13 +89,13 @@ export async function autoResumePausedCampaigns(): Promise<void> {
         );
       }
 
-      console.log(
+      logger.info(
         `Auto-resumed campaign ${campaign.id} with ${campaign.emails.length} pending jobs (jittered delays)`
       );
     } catch (err) {
       // Campaign may have been deleted between findMany and processing —
       // log and continue to avoid crashing the entire auto-resume sweep.
-      console.error(`Error processing paused campaign ${campaign.id}, skipping:`, err);
+      logger.error({ error: err }, `Error processing paused campaign ${campaign.id}, skipping:`);
     }
   }
 

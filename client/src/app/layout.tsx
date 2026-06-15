@@ -1,75 +1,79 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/context/ToastContext";
 import { BRAND_CONFIG } from "@/lib/config";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  preload: false,
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  preload: false,
-});
-
-const siteUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://sharaspot.in";
+import {
+  COMPANY_NAME,
+  SITE_NAME,
+  SITE_URL,
+  absoluteUrl,
+  buildSameAsList,
+  buildSoftwareFeatureList,
+  absoluteOgImageUrl,
+} from "@/lib/seo";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
-    default: "SharaSpot — Cold Outreach That Gets Replies",
+    default: "SharaSpot | Cold Outreach Platform for Deliverability, Replies, and Pipeline",
     template: "%s | SharaSpot",
   },
-  description: "SharaSpot helps founders reach investors, sales teams close more deals, and recruiters hire top talent — by making sure your cold emails land in the primary inbox, not spam. Set up in minutes, no technical knowledge needed.",
+  description:
+    "SharaSpot helps founders, sales teams, recruiters, and partnership teams run disciplined cold outreach with sender rotation, warmup, reply detection, analytics, and delivery controls.",
   keywords: [
-    "cold email for founders",
-    "investor outreach tool",
-    "cold email that lands in inbox",
-    "outreach for sales teams",
-    "recruiting cold email tool",
-    "cold email reply rate",
-    "email outreach for startups",
-    "how to reach investors by email",
-    "cold email not going to spam",
-    "personal outreach tool",
+    "cold outreach platform",
+    "cold email software",
+    "cold email deliverability",
+    "sales outreach platform",
+    "founder outreach tool",
+    "investor outreach software",
+    "recruiting outreach software",
+    "partner outreach CRM",
+    "email warmup tool",
+    "sender rotation software",
+    "reply detection software",
+    "inbox placement tool",
     "SharaSpot",
-    "Folonite",
-    "B2B outreach automation",
-    "email deliverability tool",
-    "SaaS outreach platform",
+    COMPANY_NAME,
   ],
-  authors: [{ name: "Folonite", url: siteUrl }],
-  creator: "Folonite",
-  publisher: "Folonite",
+  authors: [{ name: COMPANY_NAME, url: SITE_URL }],
+  creator: COMPANY_NAME,
+  publisher: COMPANY_NAME,
   formatDetection: {
     email: false,
     telephone: false,
   },
+  referrer: "strict-origin-when-cross-origin",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: siteUrl,
-    siteName: "SharaSpot",
-    title: "SharaSpot — Cold Outreach That Gets Replies",
-    description: "High-stakes cold outreach for founders and sales teams. Ensure your emails land in the primary inbox with multi-sender rotation and automated follow-ups.",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: "SharaSpot | Cold Outreach Platform for Deliverability, Replies, and Pipeline",
+    description:
+      "Cold outreach software for founders, sales teams, recruiters, and partner teams. Warm up senders, rotate volume safely, stop follow-ups on replies, and protect deliverability.",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "SharaSpot - High-Performance Outreach System",
+        alt: "SharaSpot cold outreach platform preview",
+      },
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "SharaSpot cold outreach platform preview (alt)",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SharaSpot — Cold Outreach That Gets Replies",
-    description: "Ensure your cold emails land in the primary inbox. SharaSpot uses multi-sender rotation and AI to maximize your outreach results.",
-    images: ["/og-image.jpg"],
+    title: "SharaSpot | Cold Outreach Platform for Deliverability, Replies, and Pipeline",
+    description:
+      "Run cold outreach with sender rotation, warmup, reply detection, analytics, and delivery controls.",
+    images: ["/og-image.jpg", "/og-image.png"],
   },
   robots: {
     index: true,
@@ -84,17 +88,29 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/SharaSpot%20Icon.png", type: "image/png" },
+      { url: "/sharaspot-icon.png", type: "image/png", sizes: "128x128" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
     ],
-    apple: "/SharaSpot%20Icon.png",
+    apple: "/sharaspot-icon.png",
+    shortcut: "/favicon.svg",
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",
   },
   alternates: {
-    canonical: siteUrl,
+    canonical: SITE_URL,
   },
   category: "technology",
+  other: {
+    "apple-mobile-web-app-title": SITE_NAME,
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#FFFFFF",
 };
 
 const jsonLd = {
@@ -102,59 +118,90 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": `${siteUrl}/#organization`,
-      "name": "Folonite",
-      "url": siteUrl,
-        "logo": {
-          "@type": "ImageObject",
-          "url": `${siteUrl}/SharaSpot%20Icon.png`,
-          "width": "512",
-          "height": "512"
-        }
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${siteUrl}/#website`,
-      "url": siteUrl,
-      "name": "SharaSpot",
-      "publisher": { "@id": `${siteUrl}/#organization` },
-      "inLanguage": "en-US"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "@id": `${siteUrl}/#software`,
-      "name": "SharaSpot",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "url": siteUrl,
-      "description": "Professional cold outreach platform with multi-sender rotation and automated follow-up sequences.",
-      "offers": {
-        "@type": "Offer",
-        "price": BRAND_CONFIG.pricing.global.amount.toFixed(2),
-        "priceCurrency": BRAND_CONFIG.pricing.global.currency
+      "@id": `${SITE_URL}/#organization`,
+      "name": COMPANY_NAME,
+      "url": SITE_URL,
+      "brand": {
+        "@type": "Brand",
+        "name": SITE_NAME
+      },
+      "logo": {
+        "@type": "ImageObject",
+        "url": absoluteUrl("/sharaspot-icon.png"),
+        "width": "128",
+        "height": "128"
+      },
+      "sameAs": buildSameAsList(),
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "support@folonite.in",
+        "url": BRAND_CONFIG.supportUrl
       }
     },
     {
-      "@type": "FAQPage",
-      "@id": `${siteUrl}/#faq`,
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How does the AI Follow-up Generator work?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "SharaSpot uses a proprietary 'Context Locking' engine that analyzes your original email to identify unique value anchors and crafts follow-ups that feel like a direct continuation of your first message."
-          }
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      "url": SITE_URL,
+      "name": SITE_NAME,
+      "publisher": { "@id": `${SITE_URL}/#organization` },
+      "description": BRAND_CONFIG.description,
+      "inLanguage": "en-US",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": `${SITE_URL}/faq?search={search_term_string}`
         },
-        {
-          "@type": "Question",
-          "name": "Can I use multiple email accounts?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. SharaSpot is built for scale. You can connect multiple SMTP accounts and our multi-sender rotation engine will automatically distribute your campaign volume across all of them."
-          }
-        }
-      ]
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${SITE_URL}/#software`,
+      "name": SITE_NAME,
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "Email Outreach & Deliverability",
+      "operatingSystem": "Web",
+      "url": SITE_URL,
+      "description": "Cold outreach platform with sender rotation, warmup, reply detection, analytics, partner relationship management, and delivery controls.",
+      "brand": {
+        "@type": "Brand",
+        "name": SITE_NAME
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": BRAND_CONFIG.pricing.global.amount.toFixed(2),
+        "priceCurrency": BRAND_CONFIG.pricing.global.currency,
+        "description": `${BRAND_CONFIG.pricing.trialDays}-day free trial, then ${BRAND_CONFIG.pricing.global.symbol}${BRAND_CONFIG.pricing.global.amount}/month`
+      },
+      "featureList": buildSoftwareFeatureList(),
+      "screenshot": {
+        "@type": "ImageObject",
+        "url": absoluteOgImageUrl(),
+        "width": "1200",
+        "height": "630"
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/#webpage`,
+      "url": SITE_URL,
+      "name": SITE_NAME,
+      "isPartOf": {
+        "@id": `${SITE_URL}/#website`
+      },
+      "about": {
+        "@id": `${SITE_URL}/#software`
+      },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": absoluteUrl("/og-image.jpg")
+      },
+      "speakable": {
+        "@type": "SpeakableSpecification",
+        "cssSelector": ["h1", "h2", ".speakable"]
+      }
     }
   ]
 };
@@ -171,16 +218,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="h-full">
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="antialiased h-full">
         <GoogleAnalytics gaId={GA_ID} />
         <ErrorBoundary>
           <ToastProvider>

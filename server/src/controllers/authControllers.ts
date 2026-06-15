@@ -4,15 +4,21 @@ import { prisma } from "../config/prisma";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { refreshTokenCookieOptions } from "../config/cookies";
 import { acceptOrganizationInviteForUser } from "./organizationControllers";
+import { logger } from "../utils/logger";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const googleLogin = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { idToken, inviteToken } = req.body as { idToken?: string; inviteToken?: string };
+    const { idToken, inviteToken } = (req.body || {}) as { idToken?: string; inviteToken?: string };
     if (!idToken) { res.status(400).json({ message: "idToken is required" }); return; }
 
-    const ticket = await googleClient.verifyIdToken({ idToken, audience: process.env.GOOGLE_CLIENT_ID });
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({ idToken, audience: process.env.GOOGLE_CLIENT_ID });
+    } catch {
+      res.status(401).json({ message: "Invalid Google token" }); return;
+    }
     const payload = ticket.getPayload();
     if (!payload) { res.status(401).json({ message: "Invalid Google token" }); return; }
 
@@ -59,7 +65,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     if (inviteToken) {
       const inviteResult = await acceptOrganizationInviteForUser(inviteToken, user.id, user.email);
       if (!inviteResult.accepted) {
-        console.warn(`[Auth] Invite acceptance failed for ${user.email}: ${inviteResult.reason}`);
+        logger.warn(`[Auth] Invite acceptance failed for ${user.email}: ${inviteResult.reason}`);
       }
     }
 
@@ -102,7 +108,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       },
     });
   } catch (error) {
-    console.error("[Auth] googleLogin error:", error);
+    logger.error({ error }, "[Auth] googleLogin error");
     res.status(500).json({ message: "Login failed" });
   }
 };
@@ -130,7 +136,7 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<v
     res.cookie("refreshToken", newRefreshToken, refreshTokenCookieOptions);
     res.json({ accessToken: newAccessToken });
   } catch (error) {
-    console.error("[Auth] refreshAccessToken error:", error);
+    logger.error({ error }, "[Auth] refreshAccessToken error");
     res.status(500).json({ message: "Refresh failed" });
   }
 };
@@ -142,7 +148,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     res.clearCookie("refreshToken", { path: "/" });
     res.sendStatus(204);
   } catch (error) {
-    console.error("[Auth] logout error:", error);
+    logger.error({ error }, "[Auth] logout error");
     res.status(500).json({ message: "Logout failed" });
   }
 };

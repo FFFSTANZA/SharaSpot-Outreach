@@ -22,6 +22,50 @@ import { Queue, Worker, Job } from "bullmq";
 import { redis } from "../config/redis";
 import os from "os";
 import { logger } from "../utils/logger";
+import { SubscriptionStatus } from "@prisma/client";
+import { PREMIUM_CACHE_PREFIX } from "../config/subscription";
+
+type SmtpAcceptedMarker = {
+  sentAt?: string;
+  messageId?: string;
+  inReplyTo?: string;
+  references?: string;
+};
+
+async function recoverSmtpAcceptedJob(job: { id: string; campaignId: string }): Promise<boolean> {
+  const markerKey = `emailJob:smtp_accepted:${job.id}`;
+  const rawMarker = await redis.get(markerKey);
+  if (!rawMarker) return false;
+
+  let marker: SmtpAcceptedMarker = {};
+  try {
+    marker = JSON.parse(rawMarker) as SmtpAcceptedMarker;
+  } catch (err) {
+    logger.error({ err, emailJobId: job.id }, "Invalid SMTP accepted marker");
+  }
+
+  const sentAt = marker.sentAt && !Number.isNaN(new Date(marker.sentAt).getTime())
+    ? new Date(marker.sentAt)
+    : new Date();
+
+  const result = await prisma.emailJob.updateMany({
+    where: { id: job.id, status: "SENDING" },
+    data: {
+      status: "SENT",
+      sentAt,
+      ...(marker.messageId ? { messageId: marker.messageId } : {}),
+      ...(marker.inReplyTo ? { inReplyTo: marker.inReplyTo } : {}),
+      ...(marker.references ? { references: marker.references } : {}),
+    },
+  });
+
+  if (result.count > 0) {
+    logger.warn({ emailJobId: job.id }, "Recovered SMTP-accepted SENDING job as SENT");
+    await checkAndCompleteCampaign(job.campaignId);
+  }
+
+  return true;
+}
 
 
 logger.info(`[SHARASPOT-WORKER] TRACKING_BASE_URL: ${process.env.TRACKING_BASE_URL || "NOT SET - tracking will be disabled!"}`);
@@ -41,24 +85,29 @@ logger.info(`[SHARASPOT-WORKER] NODE_ENV: ${process.env.NODE_ENV}`);
  * - The updateMany WHERE clause ensures we only reset SENDING jobs
  * - Re-enqueuing with delay 0 means they're picked up immediately
  */
-async function recoverOrphanedJobs(): Promise<void> {
+async function recoverOrphanedJobs(): Promise<Set<string>> {
   const orphanedJobs = await prisma.emailJob.findMany({
     where: { status: "SENDING" },
-    select: { id: true },
+    select: { id: true, campaignId: true },
   });
 
   if (orphanedJobs.length === 0) {
     logger.info("📋 Startup recovery: No orphaned SENDING jobs found");
-    return;
+    return new Set();
   }
 
-    logger.info(`📋 Startup recovery: Found ${orphanedJobs.length} orphaned SENDING jobs`);
+  logger.info(`📋 Startup recovery: Found ${orphanedJobs.length} orphaned SENDING jobs`);
+  const recoveredIds = new Set<string>();
 
   for (const job of orphanedJobs) {
+    if (await recoverSmtpAcceptedJob(job)) continue;
+
     await prisma.emailJob.updateMany({
       where: { id: job.id, status: "SENDING" },
       data: { status: "PENDING" },
     });
+
+    recoveredIds.add(job.id);
 
     await emailQueue.add(
       "send-email",
@@ -70,7 +119,8 @@ async function recoverOrphanedJobs(): Promise<void> {
     );
   }
 
-    logger.info(`✅ Startup recovery: Recovered ${orphanedJobs.length} orphaned jobs`);
+  logger.info(`✅ Startup recovery: Recovered ${orphanedJobs.length} orphaned jobs (${recoveredIds.size} re-enqueued)`);
+  return recoveredIds;
 }
 
 /**
@@ -79,21 +129,33 @@ async function recoverOrphanedJobs(): Promise<void> {
  * WHY: If the API process crashes immediately after creating a job in the DB
  * but before adding it to BullMQ, the job will be stuck in PENDING forever.
  * This syncs all PENDING jobs from the DB into the queue on worker startup.
+ * 
+ * WHY excludeIds: recoverOrphanedJobs() already re-enqueued these — skipping
+ * them here prevents a startup double-enqueue where a recovered job gets
+ * queued twice (once by recovery, once by the blanket PENDING sync).
  */
-async function syncPendingJobs(): Promise<void> {
+async function syncPendingJobs(excludeIds: Set<string> = new Set()): Promise<void> {
   const pendingJobs = await prisma.emailJob.findMany({
     where: { status: "PENDING" },
     select: { id: true, scheduledAt: true },
   });
 
-  if (pendingJobs.length === 0) {
-    logger.info("📋 Pending sync: No PENDING jobs to enqueue");
+  const filtered = excludeIds.size > 0
+    ? pendingJobs.filter((j) => !excludeIds.has(j.id))
+    : pendingJobs;
+
+  if (filtered.length === 0) {
+    if (pendingJobs.length > 0) {
+      logger.info(`📋 Pending sync: All ${pendingJobs.length} PENDING jobs were already recovered, skipping`);
+    } else {
+      logger.info("📋 Pending sync: No PENDING jobs to enqueue");
+    }
     return;
   }
 
-    logger.info(`📋 Pending sync: Enqueuing ${pendingJobs.length} jobs`);
+  logger.info(`📋 Pending sync: Enqueuing ${filtered.length} jobs${excludeIds.size > 0 ? ` (skipping ${pendingJobs.length - filtered.length} already recovered)` : ''}`);
 
-  for (const job of pendingJobs) {
+  for (const job of filtered) {
     const delay = Math.max(0, new Date(job.scheduledAt).getTime() - Date.now());
 
     await emailQueue.add(
@@ -106,7 +168,7 @@ async function syncPendingJobs(): Promise<void> {
     );
   }
 
-    logger.info(`✅ Pending sync: Enqueued ${pendingJobs.length} jobs`);
+  logger.info(`✅ Pending sync: Enqueued ${filtered.length} jobs`);
 }
 
 
@@ -137,7 +199,7 @@ async function sweepStaleSendingJobs(): Promise<void> {
       status: "SENDING",
       updatedAt: { lt: cutoff },
     },
-    select: { id: true },
+    select: { id: true, campaignId: true },
   });
 
   if (staleJobs.length === 0) return;
@@ -145,6 +207,8 @@ async function sweepStaleSendingJobs(): Promise<void> {
     logger.info(`🔍 Stale sweep: Found ${staleJobs.length} SENDING jobs older than ${STALE_SENDING_THRESHOLD_MS / 1000}s`);
 
   for (const job of staleJobs) {
+    if (await recoverSmtpAcceptedJob(job)) continue;
+
     await prisma.emailJob.updateMany({
       where: { id: job.id, status: "SENDING" },
       data: { status: "PENDING" },
@@ -274,6 +338,69 @@ async function sweepStuckCampaigns(): Promise<void> {
 }
 
 
+/**
+ * Subscription Expiry Sweep
+ *
+ * WHY: When a subscription's currentPeriodEnd passes, the DB row stays at
+ * ACTIVE or CANCELLED status forever. There's no webhook for silent expiry,
+ * and Dodo may not send subscription.expired reliably. This sweep transitions
+ * overdue subscriptions to EXPIRED so admin metrics, queries, and downstream
+ * logic see the correct state. It also invalidates premium caches for the
+ * affected users and their inherited org members.
+ */
+async function processExpiredSubscriptions(): Promise<void> {
+  const now = new Date();
+
+  const expiredSubs = await prisma.subscription.findMany({
+    where: {
+      status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.CANCELLED] },
+      currentPeriodEnd: { lte: now },
+    },
+    select: { id: true, userId: true, dodoSubscriptionId: true },
+  });
+
+  if (expiredSubs.length === 0) return;
+
+  logger.info(`💳 Expiry sweep: Found ${expiredSubs.length} expired subscriptions`);
+
+  const userIds = expiredSubs.map((s) => s.userId);
+
+  await prisma.subscription.updateMany({
+    where: {
+      id: { in: expiredSubs.map((s) => s.id) },
+      status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.CANCELLED] },
+      currentPeriodEnd: { lte: now },
+    },
+    data: { status: SubscriptionStatus.EXPIRED },
+  });
+
+  // Invalidate premium cache for each affected user
+  // and all members of orgs they own
+  const cacheKeys = new Set<string>();
+  for (const userId of userIds) {
+    cacheKeys.add(`${PREMIUM_CACHE_PREFIX}${userId}`);
+  }
+
+  const ownedOrgs = await prisma.organization.findMany({
+    where: { ownerId: { in: userIds } },
+    select: {
+      members: { select: { userId: true } },
+    },
+  });
+
+  for (const org of ownedOrgs) {
+    for (const member of org.members) {
+      cacheKeys.add(`${PREMIUM_CACHE_PREFIX}${member.userId}`);
+    }
+  }
+
+  await Promise.all(
+    Array.from(cacheKeys).map((key) => redis.del(key).catch(() => {})),
+  );
+
+  logger.info(`✅ Expiry sweep: Expired ${expiredSubs.length} subs, invalidated ${cacheKeys.size} caches`);
+}
+
 async function checkRedisHealth(): Promise<boolean> {
   try {
     const ping = await redis.ping();
@@ -312,9 +439,9 @@ async function performStartupSelfHealing(): Promise<void> {
     process.exit(1);
   }
 
-  await recoverOrphanedJobs();
+  const recoveredIds = await recoverOrphanedJobs();
   await recoverOrphanedPriorityJobs();
-  await syncPendingJobs();
+  await syncPendingJobs(recoveredIds);
   await sweepStuckCampaigns();
 
   try {
@@ -447,6 +574,18 @@ async function main(): Promise<void> {
   }, STUCK_CAMPAIGN_INTERVAL_MS);
 
   logger.info(`🧹 Stuck-campaign sweep started (interval: ${STUCK_CAMPAIGN_INTERVAL_MS / 1000}s)`);
+
+  // Start subscription expiry sweep (every hour)
+  const SUBSCRIPTION_EXPIRY_INTERVAL_MS = parseInt(
+    process.env.SUBSCRIPTION_EXPIRY_INTERVAL_MS || "3600000", // 1 hour default
+    10,
+  );
+  setInterval(() => {
+    processExpiredSubscriptions().catch((err) =>
+      logger.error({ err }, "❌ Subscription expiry sweep error"),
+    );
+  }, SUBSCRIPTION_EXPIRY_INTERVAL_MS);
+  logger.info(`💳 Subscription expiry sweep started (interval: ${SUBSCRIPTION_EXPIRY_INTERVAL_MS / 1000}s)`);
 
   // Start analytics aggregation (every 30 minutes)
   const analyticsInterval = parseInt(process.env.ANALYTICS_AGGREGATION_INTERVAL_MS || "1800000", 10);

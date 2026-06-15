@@ -11,7 +11,6 @@ Internet
         └── API       → localhost:8000 (Express)
               ├── PostgreSQL (local :5432) — $0
               ├── Redis (local :6379)      — $0
-              ├── Supabase Storage          — $0 (free 1 GB)
               └── Worker process            — email sending + reply detection
 ```
 
@@ -21,7 +20,6 @@ Internet
 
 - Hostinger VPS with Ubuntu 22.04 or 24.04
 - Domain name pointed to your VPS IP
-- Supabase project (free tier — **only** for Storage, not DB)
 - Google OAuth Client ID (already configured)
 
 ---
@@ -49,18 +47,7 @@ sudo bash deploy/setup-vps.sh
 
 ---
 
-## Step 2: Configure Supabase Storage
-
-1. Go to [Supabase Dashboard](https://supabase.com/dashboard) → your project
-2. Go to **Storage** → create bucket named `sharaspot-attachments`
-3. Make it **Public** (Settings → Public bucket → ON)
-4. Go to **Settings → API** → copy the `service_role` key
-
-> Supabase is used **only** for file storage. Database runs locally on your VPS.
-
----
-
-## Step 3: Configure Environment Variables
+## Step 2: Configure Environment Variables
 
 ```bash
 cp server/.env.example server/.env
@@ -74,10 +61,7 @@ REDIS_URL=redis://:<REDIS_PASSWORD>@localhost:6379
 ENCRYPTION_KEY=<from setup script>
 JWT_ACCESS_SECRET=<from setup script>
 JWT_REFRESH_SECRET=<from setup script>
-GOOGLE_CLIENT_ID=354664818470-veljl4900p28hf0i81u0r959ra11ihjt.apps.googleusercontent.com
-SUPABASE_URL=https://pbmklbvktpbzbvzpamlu.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<from Supabase API settings>
-SUPABASE_BUCKET_NAME=sharaspot-attachments
+GOOGLE_CLIENT_ID=<your-google-client-id>.apps.googleusercontent.com
 TRACKING_BASE_URL=https://yourdomain.com
 ```
 
@@ -89,12 +73,12 @@ nano client/.env
 **client/.env:**
 ```
 NEXT_PUBLIC_BACKEND_URL=https://yourdomain.com
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=354664818470-veljl4900p28hf0i81u0r959ra11ihjt.apps.googleusercontent.com
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<your-google-client-id>.apps.googleusercontent.com
 ```
 
 ---
 
-## Step 4: Unified Production Deployment
+## Step 3: Unified Production Deployment
 
 The quickest way to deploy is using the unified production script, which handles dependencies, database migrations, building, and process management via PM2.
 
@@ -117,7 +101,7 @@ pm2 monit
 
 ---
 
-## Step 5: Configure Nginx
+## Step 4: Configure Nginx
 
 ```bash
 sudo cp deploy/nginx.conf /etc/nginx/sites-available/sharaspot
@@ -131,7 +115,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ---
 
-## Step 6: Set up SSL
+## Step 5: Set up SSL
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
@@ -140,7 +124,7 @@ sudo certbot --nginx -d yourdomain.com
 
 ---
 
-## Step 7: Verify
+## Step 6: Verify
 
 ```bash
 # Check all services
@@ -179,11 +163,57 @@ docker compose up -d --build
 
 ---
 
+## Database Migrations — Rollback Strategy
+
+Always test migrations in a staging environment before applying to production.
+
+### Prisma migrate status
+```bash
+cd server && npx prisma migrate status
+```
+
+### Rollback a failed migration
+Prisma does not have a built-in `migrate rollback`. To revert:
+
+1. Identify the last migration name from `server/prisma/migrations/`
+2. Revert the database schema manually:
+   ```bash
+   # Connect to PostgreSQL and run the DOWN SQL for the migration
+   psql -U sharaspot -d sharaspot -h localhost -c "DROP TABLE IF EXISTS <migration_table> CASCADE;"
+   ```
+3. Delete the migration folder:
+   ```bash
+   rm -rf server/prisma/migrations/<bad_migration_name>
+   ```
+4. Re-apply all remaining migrations:
+   ```bash
+   cd server && npx prisma migrate deploy
+   ```
+
+For safety, always back up the database before deploying migrations:
+```bash
+pg_dump -U sharaspot -h localhost sharaspot > /tmp/sharaspot-backup-$(date +%Y%m%d).sql
+```
+
+---
+
 ## Updating
 
 ```bash
 bash deploy/update.sh
 ```
+
+---
+
+## Production Notes
+
+### Redis High Availability
+The current setup runs a single Redis instance (no Sentinel/Cluster). If Redis goes down, BullMQ queued jobs may be lost, and rate limiter state resets. For production:
+
+- **Option 1 (Recommended):** Use a managed Redis service (e.g., Upstash, Redis Cloud) — eliminates the SPOF and provides persistence, backups, and automatic failover.
+- **Option 2:** Run Redis with Sentinel for automatic failover. Configure 3 Sentinel nodes and a Redis replica.
+
+Redis AOF persistence is enabled via `appendonly yes` in the container config to minimize data loss.
 
 ---
 
@@ -238,9 +268,8 @@ curl -I https://yourdomain.com/track/open/test
 # Should return Content-Type: image/gif
 ```
 
-### Supabase upload fails
+### Tracking pruning not working
 ```bash
-# Verify bucket exists and is public
-# Verify service_role key is correct
-# Check bucket name matches SUPABASE_BUCKET_NAME in .env
+# Check TRACKING_PRUNE_AFTER_DAYS and TRACKING_PRUNE_BATCH_SIZE in .env
+# Verify the worker process is running
 ```

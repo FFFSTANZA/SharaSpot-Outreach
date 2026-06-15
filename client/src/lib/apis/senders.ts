@@ -32,6 +32,20 @@ export const getSenderById = async (senderId: string): Promise<SenderResponse & 
   return res.data;
 };
 
+export const updateSender = async (
+  senderId: string,
+  data: {
+    name?: string;
+    replyTo?: string;
+    dailyLimit?: number;
+    hourlyLimit?: number;
+    skipWarmup?: boolean;
+  },
+): Promise<SenderResponse> => {
+  const res = await api.put(`/api/senders/${senderId}`, data);
+  return res.data;
+};
+
 export const deleteSender = async (senderId: string): Promise<void> => {
   await api.delete(`/api/senders/${senderId}`);
 };

@@ -1,24 +1,109 @@
-# Session: Logo Replacement & Previous Fixes
+# Session: PRM Redesign of Compose Page
 
 ## Goal
-Replace the existing SharaSpot logo everywhere with a new cube-style icon that displays `sharaspot-icon.png` inside a small proper-sized container.
+Full PRM (clay + Notion design pattern) restyle of the compose page and all its sub-components — consistent brand tokens, raw color classes eliminated, Modal/Button components replaced with raw elements.
 
-## What was done
-1. **Created `client/public/sharaspot-icon.png`** — 128×128 PNG with green rounded-rect background + white paper-plane icon (brand colors, app-icon style).
-2. **Updated `client/src/components/Logo.tsx`** — replaced inline SVG `LogoMark` with `<img src="/sharaspot-icon.png">`; added `shadow-md` to the container for cube-like depth.
-3. **Updated `client/public/favicon.svg`** — simplified to solid `#00A63E` background (no gradient) matching the PNG design.
-4. **Rebuilt & restarted** the frontend Docker container.
-5. Verified icon is served at `/sharaspot-icon.png` (HTTP 200, 1117 bytes) and referenced on all pages.
+## Layout Architecture (Final)
+```
+┌─ dashboard-content (bg-[#F8FAFC]) ──────────────────┐
+│  Sidebar         main (flex-1, overflow-hidden)      │
+│                   ┌─ card (max-w-[1600px]) ────────┐ │
+│                   │  HEADER (sticky, outside scroll)  │
+│                   │  border-b, px-4 py-3 sm:px-6     │
+│                   │  [☰] [← Back] │ [Compose]        │
+│                   │  │  [schedule badge] [⏰] [Send]  │
+│                   ├──────────────────────────────────┤
+│                   │  SCROLL AREA (flex-1 overflow-y)  │
+│                   │  ┌─ max-w-5xl mx-auto ──────────┐ │
+│                   │  │  py-6 px-4 md:px-6             │ │
+│                   │  │  [Error banner]                │ │
+│                   │  │  grid gap-4 (12-col)           │ │
+│                   │  │  ┌─ 8 cols ──┐ ┌─ 4 cols ──┐  │ │
+│                   │  │  │ Email card│ │Settings    │  │ │
+│                   │  │  │ Sequence  │ │Templates   │  │ │
+│                   │  │  │ Builder   │ │VarPreview  │  │ │
+│                   │  │  └───────────┘ └────────────┘  │ │
+│                   │  └────────────────────────────────┘ │
+│                   └──────────────────────────────────┘ │
+└────────────────────────────────────────────────────────┘
+```
 
-## Files changed
-- `client/public/sharaspot-icon.png` (new — logo icon image)
-- `client/src/components/Logo.tsx` (replaced SVG with `<img>` to PNG)
-- `client/public/favicon.svg` (removed gradient, kept solid green)
+## Design Language Check Results
+### ✅ Color Tokens
+- All `bg-gray-*`/`text-gray-*`/`border-gray-*` → design tokens (`text-text-primary`, `border-border-light`, `bg-[#F8F9FA]`, `bg-[#F0F1F3]`)
+- All `bg-emerald-*`/`text-emerald-*` → brand tokens (`bg-brand`, `text-brand`)
+- All `bg-red-*`/`text-red-*` → error tokens (`bg-error-bg`, `text-error-text`)
+- All `bg-black/30` overlays → `bg-text-primary/10 backdrop-blur-sm`
+- Semantic status dots kept: `bg-green-500`, `bg-amber-500`, `bg-red-500`
 
-## Previous fixes (earlier in same session)
-- Font preload warnings: added `preload: false` to Geist/Geist_Mono in layout.tsx
-- TypeError in contacts tab: added `?? []` guard in page.tsx:108 and null check in ContactList.tsx:51
-- Docker compose: switched to `docker-compose.local.yml`, changed default `NEXT_PUBLIC_BACKEND_URL` to `http://localhost`
+### ✅ Layout & Spacing
+- **Shell header** (sticky, no scroll): `border-b`, `px-4 py-3 sm:px-6` — sidebar toggle + back + title on left, ComposeHeader (schedule+send) on right
+- **Scroll area** (flex-1 overflow-y): form content only
+- **Form container**: `max-w-5xl mx-auto px-4 md:px-6 py-6` — consistent with shell padding
+- **Grid**: `gap-4` (16px) between main (8 cols) and sidebar (4 cols)
+- **Email card sections**: `py-3.5` field rows, `gap-1.5` chip spacing
+- No duplicate headers, no extra action bars
 
-## Not updated (needs manual image tool)
-- `client/public/og-image.jpg` and `client/public/og-image.png` — still show old logo (social preview cards)
+### ✅ Modal Pattern (all 5 modals)
+Overlay: `fixed inset-0 z-50 flex items-center justify-center bg-text-primary/10 backdrop-blur-sm`
+Card: `rounded-lg bg-white shadow-premium-lg`
+Buttons: Primary `bg-brand hover:bg-brand/90`, Secondary `border border-border-light hover:bg-[#F0F1F3]`
+
+### ✅ Button Pattern
+- Primary: `h-7 rounded-md bg-brand px-3 text-xs font-medium text-white hover:bg-brand/90 disabled:opacity-50`
+- Icon: `h-7 w-7 rounded-md text-text-muted hover:bg-[#F0F1F3]`
+- Secondary: `rounded-md border border-border-light px-4 text-xs font-medium text-text-secondary hover:bg-[#F0F1F3]`
+
+### ✅ Input Fields
+`border-border-light outline-none transition-all focus:border-brand/30 focus:ring-2 focus:ring-brand/10 placeholder:text-text-muted`
+
+### ✅ Errors & Empty States
+- Error banners: `bg-error-bg border border-error-bg text-error-text`
+- Error messages: `text-xs text-error-text`
+- Success: `text-xs text-brand`
+- Empty state: muted icon + "No X yet" text
+
+### ✅ Editor
+- ToolbarButton: `cn()` with `bg-brand/10 text-brand` (active), `text-text-muted` (disabled), `text-text-secondary hover:bg-[#F0F1F3]` (default)
+- Prose classes use brand instead of emerald
+- Link/Table/Calendly modals use PRM modal pattern
+
+## Done
+1. **page.tsx** — PRM shell, header with sidebar toggle + back + title + ComposeHeader (schedule+send buttons) in sticky header via `forwardRef`/`useImperativeHandle`; schedule modal managed inside ComposeForm
+2. **ComposeHeader.tsx** — stripped to just schedule badge + actions (right-aligned), no duplicate back/title
+3. **ComposeSettings.tsx** — inline Toggle, all tokens, no raw classes
+4. **ComposeForm.tsx** — full token pass, removed Modal/Button imports, PRM template confirmation modal, removed outer scrolling container; refactored to `forwardRef` exposing `openSchedule` + `submit`
+5. **SenderField.tsx** — all tokens
+6. **BulkActionsDropdown.tsx** — all tokens, error-text/bg token for remove action
+7. **ScheduleModal.tsx** — Modal/Button replaced, PRM modal, all tokens
+8. **SignatureModal.tsx** — Modal/Button replaced, PRM modal, all tokens
+9. **EmailValidator.tsx** — Modal/Button replaced, PRM modal, all tokens, semantic status dots preserved
+10. **Editor.tsx (630 lines)** — ToolbarButton converted to `cn()`, Link/Table/Calendly modals PRM pattern, emerald→brand, prose classes brand, all raw classes eliminated
+11. **TemplateSelector.tsx** — all tokens, supports both `onChange`/`onSelect` props
+12. **VariablePreview.tsx** — all tokens, fixed to match ComposeForm's `recipientColumnData`/`recipients` API
+13. **SenderModal.tsx** — `rounded-xl`→`rounded-lg`
+
+## Files Changed (all in `client/src/app/dashboard/compose/`)
+- `page.tsx`
+- `ComposeHeader.tsx`
+- `ComposeSettings.tsx`
+- `ComposeForm.tsx`
+- `SenderField.tsx`
+- `BulkActionsDropdown.tsx`
+- `ScheduleModal.tsx`
+- `SignatureModal.tsx`
+- `EmailValidator.tsx`
+- `Editor.tsx`
+- `TemplateSelector.tsx`
+- `VariablePreview.tsx`
+- `SenderModal.tsx`
+
+## Remaining (needs separate pass)
+- **SequenceBuilder.tsx** (~1000 lines, ~139 raw class instances) — massive file with extensive raw gray classes, amber/red/green status colors, and complex layout. Needs dedicated session.
+
+## Previous Sessions
+- Logo replacement: `client/public/sharaspot-icon.png` (new), `Logo.tsx` (replaced SVG with `<img>`), `favicon.svg` (simplified).
+- Font preload warnings: added `preload: false` to Geist/Geist_Mono in layout.tsx.
+- TypeError in contacts tab: `?? []` guard in page.tsx:108, null check in ContactList.tsx:51.
+- Docker compose: switched to `docker-compose.local.yml`.
+- Not updated: `og-image.jpg`/`.png` (social preview cards — need manual image tool).

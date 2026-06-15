@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma";
 import { signAccessToken } from "../utils/jwt";
 import { invalidatePremiumCache } from "../utils/premiumCheck";
 import crypto from "crypto";
+import { logger } from "../utils/logger";
 
 export const getOrganizations = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -210,7 +211,7 @@ const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 const hashToken = (token: string): string => crypto.createHash("sha256").update(token).digest("hex");
 
 const buildInviteLink = (token: string): string => {
-  const clientBase = process.env.CLIENT_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const clientBase = process.env.CLIENT_URL || process.env.NEXT_PUBLIC_APP_URL || "https://sharaspot.in";
   return `${clientBase.replace(/\/+$/, "")}/login?inviteToken=${encodeURIComponent(token)}`;
 };
 
@@ -642,7 +643,7 @@ export const deleteOrganization = async (req: Request, res: Response): Promise<v
         tx.prmSegment.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
         tx.webhook.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
         tx.mcpApiKey.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
-        tx.bounceList.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
+        tx.bounceList.deleteMany({ where: { organizationId: orgId } }),
         tx.inboxEmail.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
         tx.inboxThread.updateMany({ where: { organizationId: orgId }, data: { organizationId: null } }),
       ]);
@@ -694,7 +695,7 @@ export const deleteOrganization = async (req: Request, res: Response): Promise<v
 
     res.json({ accessToken: newAccessToken, message: "Organization deleted" });
   } catch (error: any) {
-    console.error("[Org] deleteOrganization error:", error);
+    logger.error({ error }, "[Org] deleteOrganization error");
     res.status(500).json({ message: "Failed to delete organization" });
   }
 };

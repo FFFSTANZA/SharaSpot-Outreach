@@ -11,6 +11,7 @@ export const loginWithGoogle = async (idToken: string, inviteToken?: string) => 
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ idToken, ...(inviteToken ? { inviteToken } : {}) }),
     });
     if (!response.ok) {
@@ -41,5 +42,4 @@ export const updateUserName = async (name: string): Promise<import("@/types").Us
   const res = await api.patch("/api/users/name", { name });
   return res.data;
 };
-
 

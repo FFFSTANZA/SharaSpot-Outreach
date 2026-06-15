@@ -1,324 +1,877 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-    ArrowRight, CheckCircle2, Star, Mail, Search, Inbox,
-    Zap, ShieldCheck, Clock, Send, Bell, LayoutDashboard,
-    Users, Settings, BarChart3, ChevronRight, AlertCircle, TrendingUp,
-    MousePointer2, Plus
+  ArrowRight, CheckCircle2, Mail, Search,
+  ShieldCheck, Clock, Send, Bell,
+  Users, BarChart3, ChevronRight, TrendingUp,
+  MousePointer2, Plus, X, Loader2,
+  Eye, EyeOff, Star, Megaphone,
+  Pause, Inbox, PhoneCall, FileText,
+  UserPlus, ServerCog,
 } from "lucide-react";
+import { motion, AnimatePresence, useSpring } from "framer-motion";
 import { Logo } from "@/components/Logo";
 
+type Stage =
+  | "idle"
+  | "cursor-to-compose"
+  | "compose-open"
+  | "cursor-to-send"
+  | "sending"
+  | "done"
+  | "cursor-to-inbox"
+  | "inbox-focus";
+
+const spring = { stiffness: 120, damping: 18, mass: 0.5 };
+
 export default function Hero() {
-    const router = useRouter();
-    const [sending, setSending] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [stats, setStats] = useState({
-        sent: 340210,
-        replies: 32,
-        index: "Elite"
-    });
+  const router = useRouter();
+  const [stage, setStage] = useState<Stage>("idle");
+  const [progress, setProgress] = useState(0);
+  const [stats, setStats] = useState({ sent: 340210, replies: 32, delivered: 326947 });
+  const [displayStats, setDisplayStats] = useState({ sent: 340210, replies: 32, delivered: 326947 });
 
-    const startSimulation = useCallback(() => {
-        if (sending) return;
-        setSending(true);
+  const cursorX = useSpring(0, spring);
+  const cursorY = useSpring(0, spring);
+  const [cursorVisible, setCursorVisible] = useState(false);
+  const [cursorClicking, setCursorClicking] = useState(false);
+  const [clickRipple, setClickRipple] = useState<{ x: number; y: number } | null>(null);
+  const [contextBeat, setContextBeat] = useState(0);
+  const [parallax, setParallax] = useState({ x: 0, y: 0, rotateX: 0, rotateY: 0 });
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  const moveCursor = useCallback((x: number, y: number) => {
+    setCursorVisible(true);
+    cursorX.set(x);
+    cursorY.set(y);
+  }, [cursorX, cursorY]);
+
+  const click = useCallback(() => {
+    setCursorClicking(true);
+    setClickRipple({ x: cursorX.get(), y: cursorY.get() });
+    setTimeout(() => {
+      setCursorClicking(false);
+      setClickRipple(null);
+    }, 400);
+  }, [cursorX, cursorY]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      await sleep(1400);
+      if (cancelled) return;
+      while (!cancelled) {
+        setStage("idle");
         setProgress(0);
+        await sleep(1000);
+        if (cancelled) return;
 
-        const pInterval = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 100) {
-                    clearInterval(pInterval);
-                    return 100;
-                }
-                return prev + 2;
-            });
-        }, 30);
+        setStage("cursor-to-compose");
+        moveCursor(88, 138);
+        await sleep(520);
+        if (cancelled) return;
+        click();
+        await sleep(260);
+        if (cancelled) return;
 
-        setTimeout(() => {
-            setSending(false);
-            setStats(prev => ({
-                ...prev,
-                sent: prev.sent + 1,
-                replies: prev.replies + (Math.random() > 0.5 ? 1 : 0)
-            }));
-        }, 3000);
-    }, [sending]);
+        setStage("compose-open");
+        await sleep(1800);
+        if (cancelled) return;
 
-    // Auto-start once
-    useEffect(() => {
-        const timer = setTimeout(startSimulation, 2000);
-        return () => clearTimeout(timer);
-    }, []);
+        setStage("cursor-to-send");
+        moveCursor(560, 540);
+        await sleep(480);
+        if (cancelled) return;
+        click();
+        await sleep(220);
+        if (cancelled) return;
 
-    return (
-        <section className="relative pt-16 pb-20 sm:pt-24 sm:pb-28 lg:pt-36 lg:pb-48 overflow-hidden bg-[#f4f7f9]">
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-brand/10 blur-[150px] rounded-full opacity-60" />
-                <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-brand/5 blur-[150px] rounded-full opacity-60" />
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
+        setStage("sending");
+        setProgress(0);
+        for (let i = 0; i <= 100; i += 5) {
+          if (cancelled) return;
+          setProgress(i);
+          await sleep(16);
+        }
+        setStats(prev => ({
+          sent: prev.sent + 1,
+          replies: prev.replies + (Math.random() > 0.6 ? 1 : 0),
+          delivered: prev.delivered + 1,
+        }));
+        await sleep(320);
+        if (cancelled) return;
+
+        setStage("done");
+        moveCursor(100, 300);
+        await sleep(900);
+        if (cancelled) return;
+
+        // Move to inbox for monitoring context
+        setStage("cursor-to-inbox");
+        moveCursor(88, 292);
+        await sleep(460);
+        if (cancelled) return;
+        click();
+        await sleep(180);
+        if (cancelled) return;
+
+        setStage("inbox-focus");
+        await sleep(1400);
+        if (cancelled) return;
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [moveCursor, click]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setContextBeat((prev) => (prev + 1) % 3);
+    }, 1600);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const from = { ...displayStats };
+    const to = { ...stats };
+    const start = performance.now();
+    const duration = 560;
+
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplayStats({
+        sent: Math.round(from.sent + (to.sent - from.sent) * eased),
+        delivered: Math.round(from.delivered + (to.delivered - from.delivered) * eased),
+        replies: Math.round(from.replies + (to.replies - from.replies) * eased),
+      });
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stats]);
+
+  const handleParallaxMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (!frameRef.current) return;
+    const rect = frameRef.current.getBoundingClientRect();
+    const nx = (event.clientX - rect.left) / rect.width - 0.5;
+    const ny = (event.clientY - rect.top) / rect.height - 0.5;
+    setParallax({
+      x: nx * 8,
+      y: ny * 8,
+      rotateX: -ny * 2.4,
+      rotateY: nx * 2.8,
+    });
+  }, []);
+
+  const handleParallaxLeave = useCallback(() => {
+    setParallax({ x: 0, y: 0, rotateX: 0, rotateY: 0 });
+  }, []);
+
+  return (
+    <section className="relative pt-12 pb-14 sm:pt-20 sm:pb-24 lg:pt-32 lg:pb-44 overflow-hidden bg-[#f4f7f9]">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[url('/hero-clouds.jpg')] bg-cover bg-center opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-sky-100/35 via-white/15 to-blue-50/55" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-brand/10 blur-[150px] rounded-full opacity-60" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-brand/5 blur-[150px] rounded-full opacity-60" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative text-center">
+
+        {/* Headline */}
+        <div className="max-w-4xl mx-auto mb-12 sm:mb-16 lg:mb-24">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.15 }}
+            className="text-4xl sm:text-5xl lg:text-7xl font-bold text-text-primary tracking-tighter leading-[1.06] mb-6 sm:mb-8"
+          >
+            Every email that hits spam <br />
+            is a deal that never happens.
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="text-base sm:text-lg lg:text-xl text-text-secondary leading-relaxed max-w-2xl mx-auto mb-8 sm:mb-10 font-medium"
+          >
+            SharaSpot gives founders and outbound teams the controls they need to send more carefully: rotate senders, warm accounts gradually, monitor replies, and reduce the risky patterns that often hurt cold outreach.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.45 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
+          >
+            <button
+              onClick={() => router.push("/login")}
+              className="w-full sm:w-auto sm:min-w-[290px] bg-white/14 backdrop-blur-xl border border-white/45 ring-1 ring-white/35 text-brand text-[11px] font-black px-8 py-3 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2.5 group uppercase tracking-[0.2em] hover:translate-y-[-1px] active:translate-y-0 shadow-[0_16px_34px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,0.75),inset_0_-8px_20px_rgba(255,255,255,0.12)] hover:bg-white/20 hover:border-white/60"
+            >
+              Start Sending Smarter
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+            </button>
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="flex items-center gap-2 text-[11px] font-bold text-text-primary uppercase tracking-tight">
+                <ShieldCheck size={16} className="text-brand" />
+                Verified Outcomes
+              </div>
+              <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest leading-none">Inbox-first delivery controls</p>
             </div>
+          </motion.div>
+        </div>
 
-            <div className="max-w-7xl mx-auto px-6 relative text-center">
+        {/* Dashboard Demo */}
+        <div
+          className="relative mx-auto max-w-6xl group/dashboard"
+          ref={frameRef}
+          onMouseMove={handleParallaxMove}
+          onMouseLeave={handleParallaxLeave}
+        >
+          <div className="absolute -inset-16 bg-gradient-to-b from-brand/20 via-brand/10 to-transparent blur-[140px] opacity-50 -z-10 rounded-[80px]" />
 
-                {/* Headline Section */}
-                <div className="max-w-4xl mx-auto mb-20 lg:mb-28">
-                    <div className="flex justify-center mb-8">
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand/5 border border-brand/20 text-brand text-[10px] font-black tracking-widest uppercase shadow-sm">
-                            <ShieldCheck size={12} /> High-Value Outreach Active
-                        </span>
-                    </div>
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.97 }}
+            animate={{
+              opacity: 1,
+              y: parallax.y,
+              x: parallax.x,
+              scale: 1,
+              rotateX: parallax.rotateX,
+              rotateY: parallax.rotateY,
+            }}
+            transition={{ duration: 0.9, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            whileHover={{ scale: 1.005 }}
+            className="bg-slate-200/50 backdrop-blur-3xl border border-slate-300/60 rounded-[28px] sm:rounded-[48px] p-2 sm:p-4 shadow-[0_70px_150px_-55px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] ring-2 ring-white/30 overflow-hidden transition-all duration-700 group-hover/dashboard:shadow-[0_120px_260px_-60px_rgba(0,0,0,0.35)] [transform-style:preserve-3d]"
+            style={{
+              perspective: 1200,
+              transformOrigin: "top center",
+            }}
+          >
+            <div className="bg-white rounded-[20px] sm:rounded-[36px] border border-slate-200 flex h-[400px] sm:h-[560px] md:h-[700px] text-left relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] overflow-hidden">
+              <motion.div
+                aria-hidden
+                className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-brand/12 blur-3xl pointer-events-none"
+                animate={{ x: [0, 14, 0], y: [0, 10, 0], opacity: [0.3, 0.55, 0.3] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.div
+                aria-hidden
+                className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-sky-200/30 blur-3xl pointer-events-none"
+                animate={{ x: [0, -10, 0], y: [0, -8, 0], opacity: [0.25, 0.45, 0.25] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              />
 
-                    <h1 className="text-5xl lg:text-7xl font-bold text-text-primary tracking-tighter leading-[1.05] mb-8">
-                        Every email that hits <span className="text-red-500">spam</span> <br />
-                        is a deal that <span className="text-red-500 italic">never</span> happened.
-                    </h1>
+              {/* Animated Cursor */}
+              {cursorVisible && (
+                <>
+                  <motion.div
+                    className="absolute z-50 pointer-events-none"
+                    style={{ x: cursorX, y: cursorY, position: "absolute", top: 0, left: 0 }}
+                  >
+                    <MousePointer2
+                      size={20}
+                      className={cn(
+                        "text-slate-900 drop-shadow-lg transition-transform duration-100",
+                        cursorClicking ? "scale-75" : "scale-100"
+                      )}
+                      strokeWidth={2}
+                    />
+                    {/* Cursor glow */}
+                    <div className="absolute -inset-3 rounded-full bg-brand/15 blur-md -z-10" />
+                  </motion.div>
 
-                    <p className="text-lg lg:text-xl text-text-secondary leading-relaxed max-w-2xl mx-auto mb-10 font-medium font-sans" data-aeo-summary="SharaSpot is an inbox-delivery outreach platform for founders.">
-                        Don't let your best work die in a promotions tab. SharaSpot is the only solution designed for high-stakes founders who need their outreach to land exactly where it counts: the primary inbox.
-                    </p>
+                  {/* Click ripple */}
+                  <AnimatePresence>
+                    {clickRipple && (
+                      <motion.div
+                        key="ripple"
+                        className="absolute z-40 pointer-events-none"
+                        style={{ left: clickRipple.x - 12, top: clickRipple.y - 12 }}
+                        initial={{ scale: 0.5, opacity: 0.8 }}
+                        animate={{ scale: 3, opacity: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                      >
+                        <div className="w-6 h-6 rounded-full border-2 border-brand" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              )}
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <button
-                            onClick={() => router.push("/login")}
-                            className="w-full sm:w-auto bg-brand text-white text-sm font-bold px-10 py-4.5 rounded-2xl hover:bg-brand/90 transition-all hover:shadow-2xl flex items-center justify-center gap-3 group uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-brand/20"
-                        >
-                            Secure Your Placement
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                        <div className="flex flex-col items-center gap-0.5">
-                            <div className="flex items-center gap-2 text-[11px] font-bold text-text-primary uppercase tracking-tight">
-                                <ShieldCheck size={16} className="text-brand" />
-                                Verified Outcomes
-                            </div>
-                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest leading-none">96% Primary Inbox placement</p>
-                        </div>
-                    </div>
+              {/* macOS Traffic Lights */}
+              <div className="absolute top-4 left-5 z-20 flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-400 border border-red-500/30 shadow-sm hover:brightness-110 transition-all" />
+                <div className="w-3 h-3 rounded-full bg-amber-400 border border-amber-500/30 shadow-sm hover:brightness-110 transition-all" />
+                <div className="w-3 h-3 rounded-full bg-green-400 border border-green-500/30 shadow-sm hover:brightness-110 transition-all" />
+              </div>
+
+              {/* macOS Window Title */}
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+                <span className="text-[9px] font-semibold text-slate-400 bg-slate-100/80 px-3 py-1 rounded-full backdrop-blur-sm">
+                  sharaspot.app
+                </span>
+              </div>
+
+              {/* ====== SIDEBAR ====== */}
+              <div className="w-52 lg:w-56 bg-[#f8fafc] border-r border-slate-200/80 flex flex-col pt-14 pb-6 px-3 shrink-0">
+                <div className="mb-6 px-2">
+                  <Logo size="sm" />
                 </div>
 
-                {/* Highly Interactive Platform Dashboard */}
-                <div className="relative mx-auto max-w-6xl group/dashboard">
-                    <div className="absolute -inset-16 bg-gradient-to-b from-brand/20 via-brand/10 to-transparent blur-[140px] opacity-50 -z-10 rounded-[80px]" />
-
-                    {/* The "App" Frame */}
-                    <div className="bg-slate-200/50 backdrop-blur-3xl border border-slate-300/60 rounded-[48px] p-2 sm:p-4 shadow-[0_120px_240px_-40px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.08)] ring-2 ring-white/30 overflow-hidden transition-all duration-700 group-hover/dashboard:scale-[1.01] group-hover/dashboard:shadow-[0_140px_300px_-50px_rgba(0,0,0,0.35)]">
-                        <div className="bg-white rounded-[36px] border border-slate-200 flex h-[480px] sm:h-[600px] md:h-[740px] overflow-x-auto overflow-y-hidden text-left relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
-
-                            {/* Pro Sidebar */}
-                            <div className="w-60 bg-[#f8fafc] border-r border-border-light flex flex-col py-8 px-4">
-                                <div className="mb-10 px-3 shrink-0">
-                                    <Logo size="sm" />
-                                </div>
-
-                                <div className="mb-8 shrink-0 px-2">
-                                    <button
-                                        onClick={startSimulation}
-                                        className="w-full bg-brand text-white text-[11px] font-bold h-10 rounded-xl flex items-center justify-start gap-3 px-4 shadow-lg shadow-brand/20 hover:bg-brand/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                                    >
-                                        <Plus size={16} />
-                                        <span>New Campaign</span>
-                                    </button>
-                                </div>
-
-                                <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
-                                    <div>
-                                        <h3 className="px-3 mb-3 text-[9px] font-bold text-text-muted uppercase tracking-[0.2em]">Navigation</h3>
-                                        <div className="space-y-1">
-                                            {[
-                                                { icon: Inbox, label: "All Campaigns", active: true, id: "nav-all" },
-                                                { icon: Star, label: "Starred", id: "nav-starred" },
-                                                { icon: Clock, label: "Scheduled", id: "nav-scheduled" },
-                                                { icon: Send, label: "Sent", id: "nav-sent" },
-                                            ].map((item) => (
-                                                <button
-                                                    key={item.id}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${item.active ? 'bg-brand/10 text-brand' : 'text-text-secondary hover:bg-slate-200/50 hover:text-text-primary'}`}
-                                                    aria-label={item.label}
-                                                >
-                                                    <item.icon size={18} />
-                                                    <span className="text-[12px]">{item.label}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h3 className="px-3 mb-3 text-[9px] font-bold text-text-muted uppercase tracking-[0.2em]">Outreach</h3>
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-text-secondary hover:bg-slate-200/50 hover:text-text-primary cursor-pointer transition-all">
-                                                <Users size={18} />
-                                                <span className="text-[12px]">PRM</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-text-secondary hover:bg-slate-200/50 hover:text-text-primary cursor-pointer transition-all">
-                                                <BarChart3 size={18} />
-                                                <span className="text-[12px]">Analytics</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-auto px-2 pt-4 border-t border-border-light text-center">
-                                    <div className="flex items-center gap-2 mb-2 justify-center">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
-                                        <p className="text-[9px] font-bold text-text-muted uppercase">Protocol: Active</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Pro Context Area */}
-                            <div className="flex-1 bg-white flex flex-col min-w-0">
-                                {/* TopBar */}
-                                <div className="h-16 border-b border-border-light flex items-center justify-between px-8 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-                                    <div className="flex items-center gap-4 flex-1">
-                                        <div className="relative w-full max-w-sm">
-                                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted/30" />
-                                            <input type="text" placeholder="Search campaigns..." className="w-full text-[12px] bg-slate-50 border border-slate-200/60 py-2 pl-10 pr-3 rounded-lg focus:outline-none" disabled />
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-8 w-px bg-border-light mx-2" />
-                                        <div className="relative p-1">
-                                            <Bell size={18} className="text-text-muted" />
-                                            <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-                                        </div>
-                                        <div className="w-8 h-8 rounded-lg bg-indigo-600 border border-indigo-700 shadow-lg flex items-center justify-center text-white text-[10px] font-black">SA</div>
-                                    </div>
-                                </div>
-
-                                {/* Dashboard Tabs */}
-                                <div className="px-8 border-b border-border-light flex items-center gap-8 bg-white">
-                                    {[
-                                        { label: "Monitoring", active: true, id: "tab-monitoring" },
-                                        { label: "Inbox", active: false, id: "tab-inbox" },
-                                        { label: "Billing", active: false, id: "tab-billing" },
-                                        { label: "Account", active: false, id: "tab-account" },
-                                        { label: "Settings", active: false, id: "tab-settings" },
-                                    ].map((tab) => (
-                                        <div
-                                            key={tab.id}
-                                            className={`py-4 text-[11px] font-black uppercase tracking-[0.2em] cursor-pointer transition-all border-b-2 -mb-px ${tab.active
-                                                ? "border-brand text-brand"
-                                                : "border-transparent text-text-muted/60 hover:text-text-primary"
-                                                }`}
-                                            role="tab"
-                                            aria-selected={tab.active}
-                                            tabIndex={0}
-                                        >
-                                            {tab.label}
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* App Analytics */}
-                                <div className="px-8 py-6 grid grid-cols-4 gap-4 bg-[#fcfcfc] border-b border-border-light">
-                                    {[
-                                        { icon: Mail, label: "Visible Batch", val: stats.sent.toLocaleString(), sub: "Last 24h", trend: "+1.2%", id: "stat-batch" },
-                                        { icon: CheckCircle2, label: "Success Rate", val: "96%", color: "text-brand", sub: "Priority Node", trend: "Stable", id: "stat-success" },
-                                        { icon: TrendingUp, label: "Reputation", val: stats.index, sub: "Level 4 State", trend: "Peak", id: "stat-rep" },
-                                        { icon: BarChart3, label: "Engagement", val: `${stats.replies}%`, sub: "Replies Detected", trend: "+0.4%", id: "stat-engagement" },
-                                    ].map((s) => (
-                                        <div key={s.id} className="bg-white rounded-xl border border-border-light p-4 shadow-sm hover:border-brand/40 hover:shadow-md transition-all cursor-default group/card">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="p-1.5 rounded-lg bg-slate-50 group-hover/card:bg-brand/5 transition-colors">
-                                                    <s.icon size={16} className={s.color || "text-text-muted"} />
-                                                </div>
-                                                <span className="text-[9px] font-bold text-brand-muted uppercase tracking-widest">{s.trend}</span>
-                                            </div>
-                                            <div className={`text-2xl font-black tracking-tighter ${s.color || "text-text-primary"}`}>{s.val}</div>
-                                            <div className="text-[9px] font-bold text-text-muted mt-2 border-t border-border-light pt-2 uppercase tracking-widest flex justify-between">
-                                                <span>{s.label}</span>
-                                                <span className="text-text-muted/40">{s.sub}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Platform Content */}
-                                <div className="flex-1 p-8 overflow-y-auto relative custom-scrollbar bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px]">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center gap-3">
-                                            <h2 className="text-[16px] font-bold tracking-tight text-text-primary">Recent Monitoring</h2>
-                                            <span className="text-[10px] font-black px-2 py-0.5 rounded bg-brand-light text-brand uppercase border border-brand/10">96% Delivery Focus</span>
-                                        </div>
-                                        <div className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em] flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse shadow-[0_0_8px_rgba(0,166,62,0.5)]" />
-                                            Active Feed
-                                        </div>
-                                    </div>
-
-                                    {/* Actionable Table */}
-                                    <div className="space-y-3 relative">
-                                        {[
-                                            { to: "Sam Altman", initials: "SA", id: "row-sam", color: "bg-orange-100 text-orange-600", sub: "Strategic Inquiry: SharaSpot Delivery Engine", status: "SENT", time: "Just now", badge: "REPLIED", signal: 98 },
-                                            { to: "Naval Ravikant", initials: "NR", id: "row-naval", color: "bg-blue-100 text-blue-600", sub: "Outreach: Precision Scaling Infrastructure", status: "SENT", time: "4m ago", badge: "DELIVERED", signal: 99 },
-                                            { to: "Marc Andreessen", initials: "MA", id: "row-marc", color: "bg-purple-100 text-purple-600", sub: "Private Invitation: SharaSpot Protocol V2", status: sending ? "SENDING" : "SENT", time: sending ? "Syncing..." : "12m ago", badge: sending ? "ACTIVE" : "DELIVERED", signal: sending ? 45 : 97 },
-                                            { to: "Jensen Huang", initials: "JH", id: "row-jensen", color: "bg-green-100 text-green-600", sub: "NVIDIA Partnership: SharaSpot Integration", status: "SENT", time: "31m ago", badge: "DELIVERED", signal: 100 },
-                                        ].map((row) => (
-                                            <div key={row.id} className={`p-4 rounded-2xl border bg-white flex items-center justify-between transition-all group/row ${row.status === 'SENDING' ? 'border-brand shadow-[0_0_40px_rgba(0,166,62,0.12)] ring-1 ring-brand/20' : 'border-border-light hover:border-brand/40 hover:shadow-lg shadow-sm'}`}>
-                                                <div className="flex items-center gap-4 flex-1">
-                                                    <div className={`w-10 h-10 rounded-xl ${row.color} flex items-center justify-center text-[12px] font-black border border-white shadow-sm flex-shrink-0 group-hover/row:scale-105 transition-transform`}>
-                                                        {row.initials}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-0.5">
-                                                            <span className="text-[13px] font-black text-text-primary tracking-tight">{row.to}</span>
-                                                            <span className={`text-[8px] px-2 py-0.5 rounded-full font-black tracking-widest ${row.badge === 'REPLIED' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-brand/5 text-brand border border-brand/10'}`}>{row.badge}</span>
-                                                            <div className="flex items-center gap-1 ml-1 overflow-hidden">
-                                                                {[1, 2, 3, 4, 5].map((s) => (
-                                                                    <div key={s} className={`w-1 h-3 rounded-full ${s * 20 <= row.signal ? 'bg-brand' : 'bg-slate-100'}`} />
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                        <p className="text-[11px] text-text-secondary font-medium truncate max-w-[340px] group-hover/row:text-text-primary transition-colors">{row.sub}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right flex items-center gap-6">
-                                                    <div className="hidden sm:block">
-                                                        <p className={`text-[10px] font-black uppercase tracking-widest ${row.status === 'SENDING' ? 'text-brand' : 'text-text-primary'}`}>{row.status}</p>
-                                                        <p className="text-[9px] text-text-muted font-bold uppercase leading-none mt-1 tracking-tight">{row.time}</p>
-                                                    </div>
-                                                    <div className="p-2 rounded-lg bg-slate-50 border border-transparent group-hover/row:border-border-light group-hover/row:bg-white transition-all">
-                                                        <ChevronRight size={16} className="text-text-muted/30 group-hover/row:text-brand" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Mouse Animation for Button */}
-                                    {!sending && progress === 0 && (
-                                        <div className="absolute top-[180px] right-[40px] animate-pulse pointer-events-none">
-                                            <MousePointer2 size={24} className="text-brand fill-white shadow-2xl" />
-                                            <div className="absolute top-4 left-4 w-12 h-12 rounded-full bg-brand/20 animate-ping" />
-                                        </div>
-                                    )}
-
-                                    {/* Sending Progress Component */}
-                                    {sending && (
-                                        <div className="absolute bottom-10 left-10 right-10 p-6 rounded-[32px] bg-slate-900 text-white flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom duration-500 z-50">
-                                            <div className="flex items-center gap-5">
-                                                <div className="w-12 h-12 rounded-2xl bg-brand text-white flex items-center justify-center shadow-lg shadow-brand/20">
-                                                    <Send size={20} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[12px] font-black uppercase tracking-[0.15em] text-brand">Node SH-904 Active</p>
-                                                    <p className="text-sm font-bold opacity-80">Syncing jitter-mimicry sequence...</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-6">
-                                                <div className="w-48 h-2 bg-white/10 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-brand transition-all duration-300" style={{ width: `${progress}%` }} />
-                                                </div>
-                                                <span className="text-xl font-black tabular-nums">{progress}%</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                {/* New Campaign button */}
+                <div className="mb-6 px-1 relative" id="compose-btn">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full bg-brand text-white text-[11px] font-bold h-9 rounded-xl flex items-center justify-start gap-2.5 px-3.5 shadow-lg shadow-brand/20 transition-all"
+                  >
+                    <Plus size={15} />
+                    <span>New Campaign</span>
+                  </motion.button>
                 </div>
 
+                <nav className="flex-1 space-y-5 px-1 overflow-y-auto custom-scrollbar pr-1">
+                  <SidebarGroup
+                    title="Navigation"
+                    items={[
+                      { icon: Megaphone, label: "All Campaigns", active: stage !== "inbox-focus" },
+                      { icon: Clock, label: "Scheduled" },
+                      { icon: Send, label: "Sending" },
+                      { icon: Pause, label: "Paused" },
+                      { icon: CheckCircle2, label: "Completed" },
+                    ]}
+                  />
+
+                  <SidebarGroup
+                    title="Outreach"
+                    items={[
+                      { icon: Inbox, label: "Inbox", active: stage === "inbox-focus", count: 3 },
+                      { icon: Users, label: "Contacts" },
+                      { icon: PhoneCall, label: "Calls" },
+                      { icon: Mail, label: "Accounts" },
+                      { icon: FileText, label: "Templates" },
+                    ]}
+                  />
+
+                  <SidebarGroup
+                    title="Account"
+                    items={[
+                      { icon: UserPlus, label: "Team" },
+                      { icon: ServerCog, label: "MCP" },
+                      { icon: BarChart3, label: "Analytics" },
+                      { icon: Star, label: "Settings" },
+                    ]}
+                  />
+                </nav>
+
+                <div className="pt-4 border-t border-slate-200 px-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-[9px] font-bold text-slate-400 uppercase">System: Online</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ====== MAIN CONTENT ====== */}
+              <div className="flex-1 bg-white flex flex-col min-w-0">
+
+                {/* Top bar */}
+                <div className="h-14 border-b border-slate-200 flex items-center justify-between px-6 bg-white/80">
+                  <div className="relative w-full max-w-xs">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input
+                      type="text"
+                      placeholder="Search campaigns..."
+                      className="w-full text-[11px] bg-slate-50 border border-slate-200/60 py-1.5 pl-9 pr-8 rounded-lg focus:outline-none text-slate-500"
+                      disabled
+                    />
+                    <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[7px] font-bold text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded border border-slate-200/80 leading-none">
+                      ⌘K
+                    </kbd>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <motion.div whileHover={{ scale: 1.05 }} className="relative">
+                      <Bell size={16} className="text-slate-400" />
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-400 border border-white" />
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      className="relative"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-[9px] font-black shadow-sm">
+                        SA
+                      </div>
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white" />
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="px-6 border-b border-slate-200 flex items-center gap-6 bg-white">
+                  {["Monitoring", "Inbox", "Settings"].map((tab, i) => (
+                    <motion.div
+                      key={tab}
+                      whileHover={{ y: -0.5 }}
+                      className={`py-3 text-[10px] font-bold uppercase tracking-[0.15em] cursor-pointer transition-all border-b-2 -mb-px ${
+                        i === 0 ? "border-brand text-brand" : "border-transparent text-slate-400 hover:text-slate-600"
+                      }`}
+                    >
+                      {tab}
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Stats row */}
+                <div className="px-6 py-4 grid grid-cols-3 gap-3 bg-[#fcfcfc] border-b border-slate-200">
+                  <StatCard
+                    icon={Mail}
+                    label="Sent"
+                    value={displayStats.sent.toLocaleString("en-US")}
+                    trend="+1.2%"
+                    chartColor="text-brand"
+                    chartPath="M0,20 Q20,18 40,14 T80,12 T120,6 T160,4"
+                  />
+                  <StatCard
+                    icon={CheckCircle2}
+                    label="Delivered"
+                    value={displayStats.delivered.toLocaleString("en-US")}
+                    trend="Guarded"
+                    highlight
+                    chartColor="text-emerald-500"
+                    chartPath="M0,18 Q20,16 40,10 T80,8 T120,4 T160,2"
+                  />
+                  <StatCard
+                    icon={TrendingUp}
+                    label="Replies"
+                    value={`${displayStats.replies}%`}
+                    trend="+0.4%"
+                    chartColor="text-violet-500"
+                    chartPath="M0,22 Q20,20 40,18 T80,14 T120,10 T160,8"
+                  />
+                </div>
+
+                {/* Activity feed */}
+                <div className="flex-1 px-6 py-5 overflow-y-auto relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-slate-900">Recent Activity</h3>
+                    <span className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Live Feed
+                    </span>
+                  </div>
+
+                  <div className="relative space-y-2.5 pl-3">
+                    <motion.div
+                      className="absolute left-0 top-1 bottom-1 w-px bg-gradient-to-b from-brand/40 via-brand/10 to-transparent"
+                      animate={{ opacity: [0.35, 0.9, 0.35] }}
+                      transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    {rows.map((row, i) => (
+                      <motion.div
+                        key={row.id}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.8 + i * 0.08, ease: "easeOut" }}
+                      >
+                        <ActivityRow
+                          row={row}
+                          isSending={stage === "sending" && i === 0}
+                          progress={stage === "sending" ? progress : undefined}
+                          isNew={stage === "done" && i === 0}
+                          pulse={contextBeat === i % 3}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-500">Demo Context</p>
+                      <p className="text-[11px] font-semibold text-slate-800 mt-1 transition-all duration-400">
+                        {stage === "compose-open" && "Composing personalized outreach with tracking enabled"}
+                        {stage === "sending" && "Dispatching campaign across warm sender accounts"}
+                        {stage === "done" && "Campaign delivered - monitoring engagement signals"}
+                        {(stage === "cursor-to-inbox" || stage === "inbox-focus") && "Inbox triage: reviewing live replies and intent"}
+                        {(stage === "idle" || stage === "cursor-to-compose" || stage === "cursor-to-send") && "Workflow: Compose -> Send -> Monitor -> Iterate"}
+                      </p>
+                    </div>
+                    <span className="text-[9px] px-2 py-1 rounded-md bg-brand/10 text-brand font-bold uppercase tracking-wider shrink-0">
+                      {contextBeat === 0 ? "Live Loop" : contextBeat === 1 ? "In Motion" : "Realtime"}
+                    </span>
+                  </div>
+
+                  {/* Compose Modal */}
+                  <AnimatePresence>
+                    {(stage === "compose-open" || stage === "cursor-to-send" || stage === "sending") && (
+                      <ComposeModal progress={progress} sending={stage === "sending"} />
+                    )}
+                  </AnimatePresence>
+
+                  {/* Done state overlay */}
+                  <AnimatePresence>
+                    {stage === "done" && <DoneOverlay />}
+                  </AnimatePresence>
+                </div>
+              </div>
             </div>
-        </section>
-    );
+          </motion.div>
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
+/* ─── Sub-components ─── */
+
+function NavItem({ icon: Icon, label, active, count }: { icon: React.ElementType; label: string; active?: boolean; count?: number }) {
+  return (
+    <motion.div
+      whileHover={{ x: 2 }}
+      className={`relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+        active ? "bg-brand/10 text-brand" : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+      }`}
+    >
+      <AnimatePresence>
+        {active && (
+          <motion.span
+            initial={{ opacity: 0, scaleY: 0.2 }}
+            animate={{ opacity: 1, scaleY: 1 }}
+            exit={{ opacity: 0, scaleY: 0.2 }}
+            transition={{ duration: 0.2 }}
+            className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-brand"
+          />
+        )}
+      </AnimatePresence>
+      <Icon size={16} />
+      <span className="text-[11px] flex-1">{label}</span>
+      {count !== undefined && (
+        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${active ? "bg-brand text-white" : "bg-slate-200 text-slate-500"}`}>
+          {count}
+        </span>
+      )}
+    </motion.div>
+  );
+}
+
+function SidebarGroup({ title, items }: { title: string; items: Array<{ icon: React.ElementType; label: string; active?: boolean; count?: number }> }) {
+  return (
+    <div>
+      <p className="px-3 mb-2 text-[9px] font-black tracking-[0.2em] uppercase text-slate-400">{title}</p>
+      <div className="space-y-1">
+        {items.map((item) => (
+          <NavItem key={item.label} icon={item.icon} label={item.label} active={item.active} count={item.count} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ icon: Icon, label, value, trend, highlight, chartColor, chartPath }: {
+  icon: React.ElementType; label: string; value: string; trend: string;
+  highlight?: boolean; chartColor?: string; chartPath?: string;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -1, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" }}
+      className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm transition-shadow"
+    >
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="p-1.5 rounded-lg bg-slate-50">
+          <Icon size={14} className={highlight ? "text-brand" : "text-slate-400"} />
+        </div>
+        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{trend}</span>
+      </div>
+      <div className={`text-lg font-black tracking-tight ${highlight ? "text-brand" : "text-slate-900"}`}>
+        {value}
+      </div>
+      <div className="text-[8px] font-bold text-slate-400 mt-1.5 border-t border-slate-100 pt-1.5 uppercase tracking-widest">
+        {label}
+      </div>
+      {chartPath && (
+        <svg viewBox="0 0 160 24" className={`w-full h-5 mt-1 ${chartColor}`} preserveAspectRatio="none">
+          <path d={chartPath} stroke="currentColor" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={0.6} />
+          <path d={`${chartPath} V24 H0 Z`} fill="currentColor" opacity={0.06} />
+        </svg>
+      )}
+    </motion.div>
+  );
+}
+
+interface RowData {
+  id: string;
+  initials: string;
+  name: string;
+  subject: string;
+  color: string;
+  status: string;
+  time: string;
+  badge: string;
+}
+
+const rows: RowData[] = [
+  { id: "r1", initials: "SA", name: "Sam Altman", subject: "SharaSpot Delivery Engine Overview", color: "bg-orange-100 text-orange-700", status: "Delivered", time: "2m ago", badge: "REPLIED" },
+  { id: "r2", initials: "NR", name: "Naval Ravikant", subject: "Precision Scaling Infrastructure", color: "bg-blue-100 text-blue-700", status: "Delivered", time: "6m ago", badge: "DELIVERED" },
+  { id: "r3", initials: "MA", name: "Marc Andreessen", subject: "SharaSpot Protocol V2 Invitation", color: "bg-purple-100 text-purple-700", status: "Delivered", time: "15m ago", badge: "DELIVERED" },
+  { id: "r4", initials: "JH", name: "Jensen Huang", subject: "NVIDIA Partnership Integration", color: "bg-green-100 text-green-700", status: "Delivered", time: "34m ago", badge: "DELIVERED" },
+];
+
+function ActivityRow({ row, isSending, progress, isNew, pulse }: { row: RowData; isSending?: boolean; progress?: number; isNew?: boolean; pulse?: boolean }) {
+  return (
+    <motion.div
+      layout
+      className={`p-3.5 rounded-xl border bg-white flex items-center justify-between transition-all ${
+        isSending
+          ? "border-brand shadow-[0_0_30px_rgba(59,130,246,0.1)] ring-1 ring-brand/20"
+          : isNew
+          ? "border-emerald-300 bg-emerald-50/30"
+          : "border-slate-200 hover:border-slate-300"
+      }`}
+    >
+      <div className="flex items-center gap-3 flex-1 min-w-0 relative">
+        {pulse && (
+          <motion.span
+            className="absolute -left-3 w-1.5 h-1.5 rounded-full bg-brand"
+            initial={{ scale: 0.8, opacity: 0.5 }}
+            animate={{ scale: [0.8, 1.4, 0.8], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className={`w-9 h-9 rounded-xl ${row.color} flex items-center justify-center text-[10px] font-black shrink-0`}
+        >
+          {row.initials}
+        </motion.div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-xs font-bold text-slate-900">{row.name}</span>
+            <span className={`text-[7px] px-1.5 py-0.5 rounded-full font-bold tracking-widest ${
+              row.badge === "REPLIED" ? "bg-indigo-50 text-indigo-600 border border-indigo-100" : "bg-brand/5 text-brand border border-brand/10"
+            }`}>{row.badge}</span>
+          </div>
+          <p className="text-[10px] text-slate-500 truncate max-w-[280px]">{row.subject}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        {isSending && progress !== undefined ? (
+          <div className="flex items-center gap-2">
+            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-brand rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              />
+            </div>
+            <span className="text-[9px] font-bold text-brand tabular-nums">{progress}%</span>
+          </div>
+        ) : (
+          <>
+            <span className="hidden sm:block text-[9px] font-bold text-slate-500 uppercase tracking-wider">{row.status}</span>
+            <span className="text-[8px] text-slate-400">{row.time}</span>
+          </>
+        )}
+        <ChevronRight size={14} className="text-slate-300" />
+      </div>
+    </motion.div>
+  );
+}
+
+function ComposeModal({ progress, sending }: { progress: number; sending: boolean }) {
+  const [previewTick, setPreviewTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPreviewTick((prev) => (prev + 1) % 3);
+    }, 1400);
+    return () => clearInterval(timer);
+  }, []);
+
+  const contextualHint = [
+    "AI personalization active",
+    "Sender reputation optimized",
+    "Follow-up sequence attached",
+  ][previewTick];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+      animate={{ opacity: 1, backdropFilter: "blur(4px)" }}
+      exit={{ opacity: 0, backdropFilter: "blur(0px)", transition: { duration: 0.2 } }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className="absolute inset-0 z-30 flex items-center justify-center bg-black/10"
+      style={{ WebkitBackdropFilter: "blur(4px)", backdropFilter: "blur(4px)" }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: 20, transition: { duration: 0.15 } }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-[420px] max-w-[90vw] overflow-hidden"
+      >
+        {/* Compose header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200">
+          <h3 className="text-xs font-bold text-slate-900">New Campaign</h3>
+          <X size={14} className="text-slate-400" />
+        </div>
+
+        {/* Compose body */}
+        <div className="px-5 py-4 space-y-4">
+          <div>
+            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">To</label>
+            <div className="flex flex-wrap gap-1.5">
+              {["Sam Altman", "Naval Ravikant", "Marc Andreessen", "Jensen Huang"].map((name) => (
+                <span key={name} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 text-[10px] font-semibold text-slate-700">
+                  {name}
+                  <X size={10} className="text-slate-400" />
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Subject</label>
+            <div className="w-full h-8 rounded-lg border border-slate-200 bg-slate-50 px-3 flex items-center text-[11px] text-slate-600">
+              Introduction: SharaSpot Delivery Engine
+            </div>
+          </div>
+          <div>
+            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Message</label>
+            <div className="w-full h-20 rounded-lg border border-slate-200 bg-slate-50 p-3 text-[10px] text-slate-500 leading-relaxed">
+              Hi {`{{name}}`}, I noticed your work in {`{{industry}}`} and thought SharaSpot&apos;s delivery engine could be relevant...
+            </div>
+          </div>
+          <motion.div
+            key={contextualHint}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-brand/5 border border-brand/15 text-[9px] font-bold uppercase tracking-wider text-brand"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+            {contextualHint}
+          </motion.div>
+        </div>
+
+        {/* Compose footer */}
+        <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 bg-slate-50">
+          <div className="flex items-center gap-2">
+            <Eye size={13} className="text-slate-400" />
+            <EyeOff size={13} className="text-slate-300" />
+            <span className="text-[9px] text-slate-400 font-medium">Track opens & clicks</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {sending && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                className="flex items-center gap-2 overflow-hidden"
+              >
+                <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden shrink-0">
+                  <motion.div
+                    className="h-full bg-brand rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                  />
+                </div>
+                <span className="text-[9px] font-bold text-brand tabular-nums">{progress}%</span>
+              </motion.div>
+            )}
+            <motion.button
+              whileHover={sending ? {} : { scale: 1.02 }}
+              whileTap={sending ? {} : { scale: 0.97 }}
+              className={`text-[10px] font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all ${
+                sending ? "bg-brand/50 text-white cursor-wait" : "bg-brand text-white hover:bg-brand/90 shadow-lg shadow-brand/20"
+              }`}
+            >
+              {sending ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                >
+                  <Loader2 size={12} />
+                </motion.div>
+              ) : (
+                <Send size={12} />
+              )}
+              {sending ? "Sending..." : "Send Campaign"}
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function DoneOverlay() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20, transition: { duration: 0.2 } }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="absolute bottom-4 left-6 right-6 p-4 rounded-2xl bg-slate-900 text-white flex items-center justify-between shadow-2xl"
+    >
+      <div className="flex items-center gap-3">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 12 }}
+          className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center"
+        >
+          <CheckCircle2 size={20} className="text-white" />
+        </motion.div>
+        <div>
+          <p className="text-xs font-bold text-emerald-400">Campaign Sent</p>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-[11px] text-slate-400"
+          >
+            Queueing follow-up sequence...
+          </motion.p>
+        </div>
+      </div>
+      <div className="flex -space-x-2">
+        {[{ i: "SA" }, { i: "NR" }, { i: "MA" }].map((s, idx) => (
+          <motion.div
+            key={s.i}
+            initial={{ scale: 0, x: -10 }}
+            animate={{ scale: 1, x: 0 }}
+            transition={{ delay: 0.3 + idx * 0.1, type: "spring", stiffness: 200, damping: 12 }}
+            className="w-7 h-7 rounded-full bg-slate-700 border-2 border-slate-800 flex items-center justify-center text-[8px] font-bold text-slate-400"
+          >
+            {s.i}
+          </motion.div>
+        ))}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.6, type: "spring", stiffness: 200, damping: 12 }}
+          className="w-7 h-7 rounded-full bg-brand border-2 border-slate-800 flex items-center justify-center text-[8px] font-bold text-white"
+        >
+          +7
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+function cn(...classes: (string | boolean | undefined | null)[]): string {
+  return classes.filter(Boolean).join(" ");
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

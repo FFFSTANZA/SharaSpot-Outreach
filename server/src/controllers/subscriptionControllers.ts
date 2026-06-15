@@ -14,8 +14,10 @@ import {
   parseDodoDate,
   handleCheckoutCompleted as finalizeCheckout,
   activateSubscriptionFromPayment,
+  invalidatePremiumCacheForUserAndInheritedMembers,
 } from "../services/subscriptionService";
-import { getCountryFromIp, isIndia } from "../utils/geoUtils";
+import { extractClientIp, getCountryFromIp, isIndia } from "../utils/geoUtils";
+import { SubscriptionStatus } from "@prisma/client";
 import { SUBSCRIPTION_PRICE_USD, SUBSCRIPTION_PRICE_INR, SUBSCRIPTION_INTERVAL, SUBSCRIPTION_TRIAL_DAYS } from "../config/subscription";
 import { dodo } from "../config/dodo";
 
@@ -27,9 +29,15 @@ export async function getSubscription(req: Request, res: Response): Promise<void
       return;
     }
 
-    const ipAddress = (req.headers["x-forwarded-for"] as string) || req.ip || "";
-    const countryCode = await getCountryFromIp(ipAddress);
-    const region = isIndia(countryCode) ? "india" : "global";
+    // Persist region on first detection only — subsequent requests use stored value
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { region: true } });
+    let region = user?.region;
+    if (!region) {
+      const ipAddress = extractClientIp(req);
+      const countryCode = await getCountryFromIp(ipAddress);
+      region = isIndia(countryCode) ? "india" : "global";
+      await prisma.user.update({ where: { id: userId }, data: { region } }).catch(() => {});
+    }
 
     let { isPremium, subscription } = await getSubscriptionStatus(userId);
 
@@ -58,8 +66,7 @@ export async function getSubscription(req: Request, res: Response): Promise<void
           currentPeriodEnd: subscription.currentPeriodEnd,
           cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
           trialEnd: subscription.trialEnd,
-          dodoCustomerId: subscription.dodoCustomerId,
-          dodoSubscriptionId: subscription.dodoSubscriptionId,
+          hasDodoCustomerId: !!subscription.dodoCustomerId,
         }
         : null,
       pricing: {
@@ -96,7 +103,7 @@ export async function createSubscription(req: Request, res: Response): Promise<v
       return;
     }
 
-    const ipAddress = (req.headers["x-forwarded-for"] as string) || req.ip;
+    const ipAddress = extractClientIp(req);
 
     const { checkoutUrl, sessionId } = await createCheckoutSession(
       userId,
@@ -254,22 +261,22 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
       status: data.status,
     }, `[WEBHOOK] Received ${type}`);
 
-    if (!eventId) {
-      logger.warn("[WEBHOOK] Missing event ID, processing anyway");
-    } else {
-      const existing = await prisma.$transaction(async (tx) => {
-        const alreadyProcessed = await tx.processedWebhook.findUnique({
-          where: { eventId },
+    if (eventId) {
+      try {
+        await prisma.processedWebhook.create({
+          data: { eventId, eventType: type },
         });
-        if (alreadyProcessed) return alreadyProcessed;
-        return null;
-      }, { isolationLevel: "Serializable" });
-
-      if (existing) {
-        logger.info({ eventId }, "[WEBHOOK] Event already processed. Skipping.");
-        res.json({ success: true, duplicated: true });
-        return;
+      } catch (error: unknown) {
+        const maybeCode = (error as { code?: string } | null)?.code;
+        if (maybeCode === "P2002") {
+          logger.info({ eventId }, "[WEBHOOK] Event already processed. Skipping.");
+          res.json({ success: true, duplicated: true });
+          return;
+        }
+        throw error;
       }
+    } else {
+      logger.warn("[WEBHOOK] Missing event ID, processing anyway");
     }
 
     if (type === "payment.succeeded") {
@@ -320,6 +327,24 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
         errorCode: data.error_code,
         errorMessage: data.error_message,
       });
+
+      if (type !== "payment.processing" && data.subscription_id) {
+        const sub = await prisma.subscription.findFirst({
+          where: { dodoSubscriptionId: data.subscription_id },
+          select: { id: true, userId: true },
+        });
+        if (sub?.userId) {
+          const targetStatus = type === "payment.cancelled"
+            ? SubscriptionStatus.ON_HOLD
+            : SubscriptionStatus.PAST_DUE;
+          await prisma.subscription.update({
+            where: { id: sub.id },
+            data: { status: targetStatus },
+          });
+          await invalidatePremiumCacheForUserAndInheritedMembers(sub.userId);
+          logger.info({ dodoSubId: data.subscription_id, targetStatus }, "[WEBHOOK] Downgraded after failed payment");
+        }
+      }
     } else if (type === "subscription.active" || type === "subscription.updated" || type === "subscription.renewed" || type === "subscription.plan_changed") {
       if (!dodoSubId) {
         logger.warn({ type }, `[WEBHOOK] ${type} event missing subscription ID, skipping subscription update`);
@@ -404,16 +429,12 @@ export async function handleWebhook(req: Request, res: Response): Promise<void> 
           customerId,
         });
       }
-    }
-
-    if (eventId) {
-      await prisma.processedWebhook.upsert({
-        where: { eventId },
-        create: {
-          eventId,
-          eventType: type,
-        },
-        update: {},
+    } else {
+      logger.warn({ type, data }, `[WEBHOOK] Unhandled event type`);
+      await logPaymentAuditEvent("webhook.unhandled", eventId || "unknown", {
+        type,
+        subscriptionId: dodoSubId,
+        customerId,
       });
     }
 

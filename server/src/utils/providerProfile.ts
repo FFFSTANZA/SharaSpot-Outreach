@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { logger } from "./logger";
 
 const DEFAULT_LIMITS = {
   perMinute: 10,
@@ -30,7 +31,7 @@ export async function detectProvider(smtpHost: string) {
   });
 
   if (!defaultProfile) {
-    console.warn(
+    logger.warn(
       `No provider profile found for SMTP host "${smtpHost}" and no Default ("*") profile exists. ` +
         "Falling back to hardcoded defaults. Ensure the ProviderProfile seed data is present."
     );
