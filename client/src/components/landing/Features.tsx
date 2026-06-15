@@ -658,11 +658,11 @@ export default function Features() {
                     <div className="absolute top-20 right-1/4 w-[500px] h-[400px] rounded-full bg-brand/[0.06] blur-[120px]" />
                     <div className="absolute bottom-10 left-1/4 w-[400px] h-[300px] rounded-full bg-blue-50 blur-[100px]" />
                 </div>
-                <div className="max-w-6xl mx-auto px-6 relative">
-                    <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-20 items-center">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
+                    <div className="grid lg:grid-cols-[1fr_1.1fr] gap-8 sm:gap-12 lg:gap-20 items-center">
                         <div>
-                            <div className="w-14 h-14 rounded-2xl bg-brand/[0.08] border border-brand/20 flex items-center justify-center text-brand mb-8">
-                                <Phone size={26} />
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-brand/[0.08] border border-brand/20 flex items-center justify-center text-brand mb-6 sm:mb-8">
+                                <Phone size={22} />
                             </div>
                             <p className="text-[10px] font-black text-brand uppercase tracking-[0.25em] mb-4">Feature 07</p>
                             <h3 className="text-3xl lg:text-5xl font-black text-text-primary tracking-tighter leading-[1.05] mb-6">
@@ -678,9 +678,9 @@ export default function Features() {
                                     { value: "Smart", label: "Follow-up reminders", delta: "Based on outcome", accent: "text-cyan-600" },
                                     { value: "Instant", label: "Linked contacts", delta: "CRM sync", accent: "text-teal-600" },
                                 ].map((stat) => (
-                                    <div key={stat.label} className="rounded-xl bg-white border border-border-light p-4 shadow-sm hover:shadow-lg hover:border-brand/20 hover:-translate-y-0.5 transition-all group">
+                                    <div key={stat.label} className="rounded-xl bg-white border border-border-light p-3 sm:p-4 shadow-sm hover:shadow-lg hover:border-brand/20 hover:-translate-y-0.5 transition-all group">
                                         <div className="flex items-center justify-between mb-2">
-                                            <p className={`text-2xl font-black ${stat.accent}`}>{stat.value}</p>
+                                            <p className={`text-xl sm:text-2xl font-black ${stat.accent}`}>{stat.value}</p>
                                             <span className="text-[9px] font-black text-brand bg-brand/[0.08] px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">{stat.delta}</span>
                                         </div>
                                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{stat.label}</p>
@@ -689,9 +689,9 @@ export default function Features() {
                             </div>
                         </div>
 
-                        <div className="relative">
-                            <div className="rounded-[32px] bg-slate-950 border border-slate-800 overflow-hidden shadow-2xl shadow-slate-900/40">
-                                <div className="h-16 bg-gradient-to-r from-slate-900 to-slate-950 border-b border-slate-800 flex items-center justify-between px-6">
+                        <div className="relative min-w-0">
+                            <div className="rounded-[24px] sm:rounded-[32px] bg-slate-950 border border-slate-800 overflow-hidden shadow-2xl shadow-slate-900/40">
+                                <div className="h-14 sm:h-16 bg-gradient-to-r from-slate-900 to-slate-950 border-b border-slate-800 flex items-center justify-between px-4 sm:px-6">
                                     <div className="flex items-center gap-4">
                                         <span className="h-3 w-3 rounded-full bg-red-400/60" />
                                         <span className="h-3 w-3 rounded-full bg-amber-400/60" />
@@ -704,19 +704,19 @@ export default function Features() {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="p-6 lg:p-7">
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-7">
+                                <div className="p-4 sm:p-6 lg:p-7">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-7">
                                         {[
                                             { value: "24", label: "This week", trend: "8 vs last", up: true, accent: "text-brand" },
                                             { value: "54%", label: "Connected", trend: "6%", up: true, accent: "text-emerald-400" },
                                             { value: "6:50", label: "Avg duration", trend: "1:12", up: true, accent: "text-blue-400" },
                                             { value: "13", label: "Follow-ups set", trend: "5", up: true, accent: "text-cyan-400" },
                                         ].map((stat) => (
-                                            <div key={stat.label} className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-3 sm:p-3.5 hover:border-slate-700/80 transition-all">
-                                                <p className={`text-lg font-black tabular-nums ${stat.accent}`}>{stat.value}</p>
+                                            <div key={stat.label} className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-2.5 sm:p-3.5 hover:border-slate-700/80 transition-all">
+                                                <p className={`text-base sm:text-lg font-black tabular-nums ${stat.accent}`}>{stat.value}</p>
                                                 <div className="flex items-center justify-between mt-0.5">
-                                                    <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{stat.label}</p>
-                                                    <span className={`text-[9px] font-black ml-2 ${stat.up ? "text-emerald-400" : "text-red-400"}`}>
+                                                    <p className="text-[9px] sm:text-[10px] font-medium text-slate-500 uppercase tracking-wider">{stat.label}</p>
+                                                    <span className={`text-[8px] sm:text-[9px] font-black ml-1 sm:ml-2 ${stat.up ? "text-emerald-400" : "text-red-400"}`}>
                                                         {stat.up ? "▲" : "▼"} {stat.trend}
                                                     </span>
                                                 </div>
@@ -724,43 +724,43 @@ export default function Features() {
                                         ))}
                                     </div>
 
-                                    <div className="space-y-3 mb-7">
+                                    <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-7">
                                         {[
                                             { name: "Sarah Chen", role: "VP Ops, TechFlow", duration: "12:34", outcome: "Connected", notes: "Interested in enterprise plan. Follow up with pricing." },
                                             { name: "Mike Rogers", role: "Founder, DataBridge", duration: "4:12", outcome: "Voicemail", notes: "Left message about partnership opportunity." },
                                             { name: "Priya Kapoor", role: "Partner, Acme Inc", duration: "8:05", outcome: "Connected", notes: "Wants to schedule demo for her team." },
                                             { name: "James Wright", role: "CTO, Nimbus Labs", duration: "2:30", outcome: "No answer", notes: "Will try again tomorrow morning." },
                                         ].map((call, i) => (
-                                            <div key={i} className="rounded-2xl bg-slate-900/40 border border-slate-800/60 p-4 hover:border-slate-700/80 hover:bg-slate-900/60 transition-all group">
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-9 w-9 rounded-xl bg-slate-800 border border-slate-700/50 flex items-center justify-center text-[10px] font-black text-slate-400 shrink-0">
+                                            <div key={i} className="rounded-2xl bg-slate-900/40 border border-slate-800/60 p-3 sm:p-4 hover:border-slate-700/80 hover:bg-slate-900/60 transition-all group">
+                                                <div className="flex items-start justify-between mb-2 gap-2">
+                                                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                                                        <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-slate-800 border border-slate-700/50 flex items-center justify-center text-[10px] font-black text-slate-400 shrink-0">
                                                             {call.name.split(" ").map(w => w[0]).join("")}
                                                         </div>
-                                                        <div>
-                                                            <p className="text-sm font-bold text-white">{call.name}</p>
-                                                            <p className="text-[10px] text-slate-500 font-medium">{call.role}</p>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-bold text-white truncate">{call.name}</p>
+                                                            <p className="text-[10px] text-slate-500 font-medium truncate">{call.role}</p>
                                                         </div>
                                                     </div>
-                                                    <span className="text-xs font-bold text-slate-500 tabular-nums">{call.duration}</span>
+                                                    <span className="text-xs font-bold text-slate-500 tabular-nums shrink-0">{call.duration}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-2">
+                                                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 sm:px-2.5 py-0.5 rounded-full ${
                                                         call.outcome === "Connected" ? "bg-brand/10 text-brand" :
                                                         call.outcome === "Voicemail" ? "bg-blue-500/10 text-blue-400" :
                                                         "bg-slate-800 text-slate-500"
                                                     }`}>
                                                         {call.outcome}
                                                     </span>
-                                                    <span className="text-[10px] text-slate-600 font-medium truncate">{call.notes}</span>
+                                                    <span className="text-[10px] text-slate-600 font-medium truncate max-w-full">{call.notes}</span>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="rounded-2xl bg-gradient-to-r from-brand/5 to-blue-500/5 border border-slate-800/60 px-5 py-4 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <Phone size={14} className="text-brand" />
+                                    <div className="rounded-2xl bg-gradient-to-r from-brand/5 to-blue-500/5 border border-slate-800/60 px-4 sm:px-5 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <Phone size={14} className="text-brand shrink-0" />
                                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">24 calls logged this week</span>
                                         </div>
                                         <span className="flex items-center gap-1.5 text-[10px] font-black text-brand hover:text-brand/80 transition-colors cursor-pointer">
@@ -780,24 +780,24 @@ export default function Features() {
                     <div className="absolute top-10 right-1/4 w-[600px] h-[600px] rounded-full bg-brand/5 blur-[160px]" />
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:48px_48px]" />
                 </div>
-                <div className="max-w-6xl mx-auto px-6 relative">
-                    <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-20 items-center">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
+                    <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-8 sm:gap-12 lg:gap-20 items-center">
                         <div className="order-2 lg:order-1">
-                            <div className="rounded-[32px] bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 overflow-hidden shadow-2xl shadow-black/40">
-                                <div className="p-6 lg:p-8">
-                                    <div className="flex items-center justify-between mb-8">
+                            <div className="rounded-[24px] sm:rounded-[32px] bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 overflow-hidden shadow-2xl shadow-black/40">
+                                <div className="p-4 sm:p-6 lg:p-8">
+                                    <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-9 w-9 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center">
+                                            <div className="h-9 w-9 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center shrink-0">
                                                 <Cpu size={17} className="text-brand" />
                                             </div>
                                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Integration Hub</span>
                                         </div>
-                                        <span className="flex items-center gap-1.5 text-[10px] font-black text-brand bg-brand/[0.1] px-3 py-1.5 rounded-full border border-brand/20">
+                                        <span className="flex items-center gap-1.5 text-[10px] font-black text-brand bg-brand/[0.1] px-3 py-1.5 rounded-full border border-brand/20 shrink-0">
                                             <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" /> 5 connected
                                         </span>
                                     </div>
 
-                                    <div className="flex flex-wrap gap-3 mb-8">
+                                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-6 sm:mb-8">
                                         {[
                                             { name: "Claude", type: "Research & draft" },
                                             { name: "GPT", type: "Refine & optimize" },
@@ -805,13 +805,13 @@ export default function Features() {
                                             { name: "Zapier", type: "Automate triggers" },
                                             { name: "Slack", type: "Get notifications" },
                                         ].map((service, i) => (
-                                            <div key={service.name} className="group flex items-center gap-3 rounded-2xl border border-slate-700/50 bg-slate-800/30 p-3 pr-4 hover:border-brand/30 hover:bg-slate-800/60 transition-all">
-                                                <div className={`h-9 w-9 rounded-xl border flex items-center justify-center shrink-0 ${i < 3 ? "bg-brand/10 border-brand/20" : "bg-slate-700/50 border-slate-600/50"}`}>
-                                                    <Cpu size={15} className={i < 3 ? "text-brand" : "text-slate-500"} />
+                                            <div key={service.name} className="group flex items-center gap-2 sm:gap-3 rounded-2xl border border-slate-700/50 bg-slate-800/30 p-3 hover:border-brand/30 hover:bg-slate-800/60 transition-all">
+                                                <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-xl border flex items-center justify-center shrink-0 ${i < 3 ? "bg-brand/10 border-brand/20" : "bg-slate-700/50 border-slate-600/50"}`}>
+                                                    <Cpu size={13} className={i < 3 ? "text-brand" : "text-slate-500"} />
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-bold text-white">{service.name}</p>
-                                                    <p className="text-[9px] text-slate-500 font-medium">{service.type}</p>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-bold text-white truncate">{service.name}</p>
+                                                    <p className="text-[9px] text-slate-500 font-medium truncate">{service.type}</p>
                                                 </div>
                                                 {i < 3 ? (
                                                     <span className="h-2 w-2 rounded-full bg-brand shrink-0" />
@@ -820,25 +820,25 @@ export default function Features() {
                                                 )}
                                             </div>
                                         ))}
-                                        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-slate-700/30 bg-slate-800/10 p-3 pr-4 hover:border-brand/30 hover:bg-slate-800/30 transition-all cursor-pointer">
-                                            <div className="h-9 w-9 rounded-xl border border-dashed border-slate-600/40 flex items-center justify-center shrink-0">
+                                        <div className="flex items-center gap-2 sm:gap-3 rounded-2xl border border-dashed border-slate-700/30 bg-slate-800/10 p-3 hover:border-brand/30 hover:bg-slate-800/30 transition-all cursor-pointer">
+                                            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl border border-dashed border-slate-600/40 flex items-center justify-center shrink-0">
                                                 <span className="text-slate-500 text-lg font-light leading-none">+</span>
                                             </div>
-                                            <p className="text-xs text-slate-500 font-medium">Connect any tool via MCP</p>
+                                            <p className="text-xs text-slate-500 font-medium truncate">Connect any tool via MCP</p>
                                         </div>
                                     </div>
 
-                                    <div className="rounded-2xl bg-gradient-to-r from-brand/[0.04] to-brand/[0.01] border border-slate-800 p-5">
+                                    <div className="rounded-2xl bg-gradient-to-r from-brand/[0.04] to-brand/[0.01] border border-slate-800 p-4 sm:p-5">
                                         <p className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-4">How it works</p>
-                                        <div className="space-y-4">
+                                        <div className="space-y-3 sm:space-y-4">
                                             {[
                                                 { step: "1", label: "Research & draft", desc: "Your AI tool finds prospects and writes personalized outreach" },
                                                 { step: "2", label: "Route through SharaSpot", desc: "Every message passes through delivery engine for inbox placement" },
                                                 { step: "3", label: "Track & refine", desc: "Replies and signals flow back to your connected tools in real time" },
                                             ].map((item) => (
-                                                <div key={item.step} className="flex items-start gap-4 group">
+                                                <div key={item.step} className="flex items-start gap-3 sm:gap-4 group">
                                                     <div className="h-7 w-7 rounded-full bg-brand/15 text-brand flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5 group-hover:bg-brand/25 transition-all">{item.step}</div>
-                                                    <div>
+                                                    <div className="min-w-0">
                                                         <p className="text-sm font-bold text-white mb-0.5">{item.label}</p>
                                                         <p className="text-xs text-slate-500 font-medium leading-relaxed">{item.desc}</p>
                                                     </div>
@@ -851,8 +851,8 @@ export default function Features() {
                         </div>
 
                         <div className="order-1 lg:order-2">
-                            <div className="w-14 h-14 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand mb-8">
-                                <Cpu size={26} />
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand mb-6 sm:mb-8">
+                                <Cpu size={22} />
                             </div>
                             <p className="text-[10px] font-black text-brand uppercase tracking-[0.25em] mb-4">Feature 08</p>
                             <h3 className="text-3xl lg:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6">
@@ -861,7 +861,7 @@ export default function Features() {
                             <p className="text-base text-slate-400 leading-relaxed mb-8 font-medium">
                                 SharaSpot speaks MCP — the Model Context Protocol. Whether it is Claude, GPT, Cursor, or any other AI service, you can wire it directly into your outreach infrastructure. Research prospects, draft messages, analyze replies, and orchestrate campaigns — all through the tools you already use.
                             </p>
-                            <div className="space-y-4">
+                            <div className="space-y-3 sm:space-y-4">
                                 {[
                                     "Plug in any AI tool — Claude, ChatGPT, Cursor, or your own custom agent",
                                     "Research prospects, draft outreach, and refine messaging automatically",

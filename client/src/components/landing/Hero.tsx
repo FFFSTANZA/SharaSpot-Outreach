@@ -249,13 +249,13 @@ export default function Hero() {
             }}
             transition={{ duration: 0.9, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
             whileHover={{ scale: 1.005 }}
-            className="bg-slate-200/50 backdrop-blur-3xl border border-slate-300/60 rounded-[28px] sm:rounded-[48px] p-2 sm:p-4 shadow-[0_70px_150px_-55px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] ring-2 ring-white/30 overflow-hidden transition-all duration-700 group-hover/dashboard:shadow-[0_120px_260px_-60px_rgba(0,0,0,0.35)] [transform-style:preserve-3d]"
+            className="bg-slate-200/50 backdrop-blur-3xl border border-slate-300/60 rounded-[28px] sm:rounded-[48px] p-2 sm:p-4 shadow-[0_70px_150px_-55px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] ring-2 ring-white/30 overflow-visible sm:overflow-hidden transition-all duration-700 group-hover/dashboard:shadow-[0_120px_260px_-60px_rgba(0,0,0,0.35)] [transform-style:preserve-3d]"
             style={{
               perspective: 1200,
               transformOrigin: "top center",
             }}
           >
-            <div className="bg-white rounded-[20px] sm:rounded-[36px] border border-slate-200 flex h-[400px] sm:h-[560px] md:h-[700px] text-left relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div className="bg-white rounded-[20px] sm:rounded-[36px] border border-slate-200 flex flex-col h-auto sm:h-[560px] md:h-[700px] min-h-[400px] text-left relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] overflow-hidden sm:overflow-hidden">
               <motion.div
                 aria-hidden
                 className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-brand/12 blur-3xl pointer-events-none"
@@ -431,7 +431,7 @@ export default function Hero() {
                 </div>
 
                 {/* Stats row */}
-                <div className="px-6 py-4 grid grid-cols-3 gap-3 bg-[#fcfcfc] border-b border-slate-200">
+                <div className="px-3 sm:px-6 py-3 sm:py-4 grid grid-cols-3 gap-2 sm:gap-3 bg-[#fcfcfc] border-b border-slate-200">
                   <StatCard
                     icon={Mail}
                     label="Sent"
@@ -460,7 +460,7 @@ export default function Hero() {
                 </div>
 
                 {/* Activity feed */}
-                <div className="flex-1 px-6 py-5 overflow-y-auto relative">
+                <div className="flex-1 px-3 sm:px-6 py-3 sm:py-5 overflow-y-auto relative">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-bold text-slate-900">Recent Activity</h3>
                     <span className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
@@ -583,22 +583,23 @@ function StatCard({ icon: Icon, label, value, trend, highlight, chartColor, char
   return (
     <motion.div
       whileHover={{ y: -1, boxShadow: "0 8px 20px rgba(0,0,0,0.06)" }}
-      className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-sm transition-shadow"
+      className="bg-white rounded-xl border border-slate-200 p-2.5 sm:p-3.5 shadow-sm transition-shadow"
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="p-1.5 rounded-lg bg-slate-50">
-          <Icon size={14} className={highlight ? "text-brand" : "text-slate-400"} />
+      <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+        <div className="p-1 sm:p-1.5 rounded-lg bg-slate-50">
+          <Icon size={12} className={cn("sm:hidden", highlight ? "text-brand" : "text-slate-400")} />
+          <Icon size={14} className={cn("hidden sm:block", highlight ? "text-brand" : "text-slate-400")} />
         </div>
-        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{trend}</span>
+        <span className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase tracking-widest">{trend}</span>
       </div>
-      <div className={`text-lg font-black tracking-tight ${highlight ? "text-brand" : "text-slate-900"}`}>
+      <div className={`text-base sm:text-lg font-black tracking-tight truncate ${highlight ? "text-brand" : "text-slate-900"}`}>
         {value}
       </div>
-      <div className="text-[8px] font-bold text-slate-400 mt-1.5 border-t border-slate-100 pt-1.5 uppercase tracking-widest">
+      <div className="text-[7px] sm:text-[8px] font-bold text-slate-400 mt-1 sm:mt-1.5 border-t border-slate-100 pt-1 sm:pt-1.5 uppercase tracking-widest">
         {label}
       </div>
       {chartPath && (
-        <svg viewBox="0 0 160 24" className={`w-full h-5 mt-1 ${chartColor}`} preserveAspectRatio="none">
+        <svg viewBox="0 0 160 24" className={`w-full h-3 sm:h-5 mt-1 ${chartColor}`} preserveAspectRatio="none">
           <path d={chartPath} stroke="currentColor" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={0.6} />
           <path d={`${chartPath} V24 H0 Z`} fill="currentColor" opacity={0.06} />
         </svg>
@@ -717,7 +718,7 @@ function ComposeModal({ progress, sending }: { progress: number; sending: boolea
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.92, y: 20, transition: { duration: 0.15 } }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-[420px] max-w-[90vw] overflow-hidden"
+         className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-[420px] max-w-[calc(100vw-32px)] sm:max-w-[90vw] overflow-hidden"
       >
         {/* Compose header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200">
