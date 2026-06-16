@@ -51,8 +51,8 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: deploy/Dockerfile.server
+      context: ./server
+      dockerfile: ../deploy/Dockerfile.server
     container_name: sharaspot-api
     restart: unless-stopped
     env_file:
@@ -73,8 +73,8 @@ services:
 
   worker:
     build:
-      context: .
-      dockerfile: deploy/Dockerfile.server
+      context: ./server
+      dockerfile: ../deploy/Dockerfile.server
     container_name: sharaspot-worker
     restart: unless-stopped
     env_file:
@@ -94,8 +94,8 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: deploy/Dockerfile.client
+      context: ./client
+      dockerfile: ../deploy/Dockerfile.client
       args:
         NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://sharaspot.in}
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
