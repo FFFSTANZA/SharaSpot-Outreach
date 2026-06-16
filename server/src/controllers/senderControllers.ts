@@ -33,6 +33,16 @@ import {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
+// Returns a Prisma where clause that matches senders the current user can access.
+// When the user is in an org, this returns both org-scoped senders AND
+// personal senders (auto-created during signup before org membership).
+function senderReadScope(req: Request) {
+  const orgId = req.user?.activeOrganizationId ?? null;
+  const uid = req.user!.id;
+  if (orgId) return { OR: [{ organizationId: orgId }, { userId: uid, organizationId: null }] };
+  return { userId: uid };
+}
+
 export const createSender = async (
   req: Request,
   res: Response,
@@ -168,6 +178,7 @@ export const createSender = async (
               replyTo: typeof b.replyTo === "string" && b.replyTo.trim() ? b.replyTo.trim() : null,
               isVerified: true,
               providerProfileId: catchProfile?.id ?? null,
+              ...(req.user?.activeOrganizationId ? { organizationId: req.user.activeOrganizationId } : {}),
             },
           });
 
@@ -233,9 +244,8 @@ export const verifySender = async (
       return;
     }
 
-    const scope = getOrgScope(req);
     const existingSender = await prisma.sender.findFirst({
-      where: { id, ...scope },
+      where: { id, ...senderReadScope(req) },
     });
 
     if (!existingSender) {
@@ -334,9 +344,8 @@ export const getSenders = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const scope = getOrgScope(req);
     const senders = await prisma.sender.findMany({
-      where: { ...scope },
+      where: senderReadScope(req),
       select: {
         id: true,
         userId: true,
@@ -379,9 +388,8 @@ export const getSenderEmails = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const scope = getOrgScope(req);
     const senders = await prisma.sender.findMany({
-      where: { ...scope },
+      where: senderReadScope(req),
       select: { email: true },
     });
 
@@ -414,9 +422,8 @@ export const getSenderById = async (
 
     const id = req.params.id as string;
 
-    const scope = getOrgScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id, ...scope },
+      where: { id, ...senderReadScope(req) },
       select: {
         id: true,
         userId: true,
@@ -501,9 +508,8 @@ export const updateSender = async (
 
     const id = req.params.id as string;
 
-    const scope = getOrgScope(req);
     const existing = await prisma.sender.findFirst({
-      where: { id, ...scope },
+      where: { id, ...senderReadScope(req) },
     });
 
     if (!existing) {
@@ -606,15 +612,17 @@ export const deleteSender = async (
 
     const id = req.params.id as string;
 
-    const scope = getOrgScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id, ...scope }
+      where: { id, ...senderReadScope(req) }
     });
 
     if (!sender) {
       res.status(404).json({ message: "Sender not found" });
       return;
     }
+
+    // Campaign-scoped operations use the user's org scope
+    const campaignScope = getOrgScope(req);
 
     await prisma.$transaction(async (tx) => {
       await tx.emailCampaign.updateMany({
@@ -624,7 +632,7 @@ export const deleteSender = async (
             { campaignSenders: { some: { senderId: id } } },
           ],
           status: { in: ["SCHEDULED", "SENDING"] },
-          ...scope,
+          ...campaignScope,
         },
         data: {
           status: "PAUSED",
@@ -633,17 +641,17 @@ export const deleteSender = async (
       });
 
       await tx.emailCampaign.updateMany({
-        where: { senderId: id, ...scope },
+        where: { senderId: id, ...campaignScope },
         data: { senderId: null },
       });
 
       await tx.emailJob.updateMany({
-        where: { senderId: id, campaign: { ...scope } },
+        where: { senderId: id, campaign: { ...campaignScope } },
         data: { senderId: null },
       });
 
       await tx.campaignSender.deleteMany({
-        where: { senderId: id, campaign: { ...scope } },
+        where: { senderId: id, campaign: { ...campaignScope } },
       });
 
       await tx.warmupSchedule.deleteMany({ where: { senderId: id } });

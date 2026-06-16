@@ -67,6 +67,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
         where: { id: user.id },
         data: { activeOrganizationId: org.id },
       });
+      // Migrate the signup sender to the org so it's visible in org-scoped queries
+      await prisma.sender.updateMany({
+        where: { userId: user.id, organizationId: null },
+        data: { organizationId: org.id },
+      });
     }
 
     if (inviteToken) {
@@ -91,6 +96,11 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       freshUser = await prisma.user.update({
         where: { id: user.id },
         data: { activeOrganizationId: org.id },
+      });
+      // Migrate the signup sender to the org so it's visible in org-scoped queries
+      await prisma.sender.updateMany({
+        where: { userId: user.id, organizationId: null },
+        data: { organizationId: org.id },
       });
     }
 
