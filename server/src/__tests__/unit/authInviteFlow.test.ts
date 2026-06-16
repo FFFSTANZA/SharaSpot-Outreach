@@ -141,7 +141,7 @@ describe("auth invite flow simulation", () => {
     );
   });
 
-  it("creates personal workspace when invite acceptance fails and no active org remains", async () => {
+  it("does not create a personal workspace when invite acceptance fails", async () => {
     (acceptOrganizationInviteForUser as jest.Mock).mockResolvedValue({ accepted: false, reason: "invalid_or_expired" });
     (prisma.user.findUnique as jest.Mock).mockReset();
     (prisma.user.findUnique as jest.Mock)
@@ -156,22 +156,18 @@ describe("auth invite flow simulation", () => {
         email: "newuser@example.com",
         name: "New User",
         avatarUrl: "https://example.com/avatar.png",
-        activeOrganizationId: "org-personal",
+        activeOrganizationId: null,
       });
 
     const { req, res } = mockReqRes({ idToken: "id-token", inviteToken: "bad-token" });
     await googleLogin(req, res);
 
-    expect(prisma.organization.create).toHaveBeenCalledTimes(1);
-    expect(prisma.user.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "u1" },
-        data: { activeOrganizationId: "org-personal" },
-      }),
-    );
+    expect(prisma.organization.create).not.toHaveBeenCalled();
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         accessToken: expect.any(String),
+        invite: expect.objectContaining({ accepted: false, reason: "invalid_or_expired" }),
+        user: expect.objectContaining({ activeOrganizationId: null }),
       }),
     );
   });

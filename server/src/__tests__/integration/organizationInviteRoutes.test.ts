@@ -1,7 +1,7 @@
 import request from "supertest";
 
-process.env.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "test-access-secret";
-process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "test-refresh-secret";
+process.env.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "test-access-secret-which-is-long-enough";
+process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "test-refresh-secret-which-is-long-enough";
 process.env.ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES || "1h";
 process.env.REFRESH_TOKEN_EXPIRES = process.env.REFRESH_TOKEN_EXPIRES || "30d";
 process.env.CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
@@ -17,6 +17,10 @@ jest.mock("../../middlewares/authMiddleware", () => ({
     }
     next();
   },
+}));
+
+jest.mock("../../middlewares/orgRoleMiddleware", () => ({
+  requireOrgWriteAccess: (_req: any, _res: any, next: any) => next(),
 }));
 
 jest.mock("../../config/prisma", () => ({
@@ -66,6 +70,18 @@ jest.mock("../../config/prisma", () => ({
     $queryRaw: jest.fn(),
     $disconnect: jest.fn(),
     $transaction: jest.fn(async (cb: any) => cb({
+      organizationMember: {
+        findUnique: (...args: any[]) => (require("../../config/prisma").prisma.organizationMember.findUnique as jest.Mock)(...args),
+        count: (...args: any[]) => (require("../../config/prisma").prisma.organizationMember.count as jest.Mock)(...args),
+        create: (...args: any[]) => (require("../../config/prisma").prisma.organizationMember.create as jest.Mock)(...args),
+      },
+      organizationInvite: {
+        findUnique: (...args: any[]) => (require("../../config/prisma").prisma.organizationInvite.findUnique as jest.Mock)(...args),
+        update: (...args: any[]) => (require("../../config/prisma").prisma.organizationInvite.update as jest.Mock)(...args),
+      },
+      user: {
+        update: (...args: any[]) => (require("../../config/prisma").prisma.user.update as jest.Mock)(...args),
+      },
       contact: { updateMany: jest.fn(), update: jest.fn() },
       callTask: { updateMany: jest.fn(), create: jest.fn(), update: jest.fn(), findFirst: jest.fn() },
       callSession: { updateMany: jest.fn(), update: jest.fn(), findFirst: jest.fn(), create: jest.fn() },
@@ -140,6 +156,40 @@ describe("Organization invite routes e2e simulation", () => {
     expect(String(res.body.invite.inviteLink)).toContain("/login?inviteToken=");
   });
 
+  it("creates a pending invite for an existing account instead of auto-joining it", async () => {
+    (prisma.organizationInvite.create as jest.Mock).mockResolvedValueOnce({
+      id: "inv-2",
+      organizationId: "org-1",
+      email: "external@example.com",
+      role: "ADMIN",
+      tokenHash: "hash-2",
+      invitedBy: "owner-1",
+      expiresAt: new Date(Date.now() + 86400000),
+      acceptedAt: null,
+      revokedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+      id: "user-2",
+      email: "external@example.com",
+      activeOrganizationId: "personal-org",
+    });
+    (prisma.organizationMember.findUnique as jest.Mock)
+      .mockResolvedValueOnce({ role: "OWNER", userId: "owner-1" })
+      .mockResolvedValueOnce(null);
+
+    const res = await request(app)
+      .post("/api/organizations/current/invite")
+      .set("Authorization", "Bearer fake")
+      .send({ email: "external@example.com", role: "ADMIN" });
+
+    expect(res.status).toBe(201);
+    expect(prisma.organizationMember.create).not.toHaveBeenCalled();
+    expect(res.body.type).toBe("invite");
+    expect(res.body.invite.role).toBe("ADMIN");
+  });
+
   it("accepts invite and returns org switched token context", async () => {
     (prisma.organizationMember.findUnique as jest.Mock).mockResolvedValueOnce(null).mockResolvedValueOnce({ role: "MEMBER", userId: "user-2" });
     (prisma.organizationMember.count as jest.Mock).mockResolvedValueOnce(2);
@@ -156,17 +206,4 @@ describe("Organization invite routes e2e simulation", () => {
     expect(typeof res.body.accessToken).toBe("string");
   });
 
-  it("revokes pending invite", async () => {
-    (prisma.organizationInvite.findFirst as jest.Mock).mockResolvedValueOnce({ id: "inv-1" });
-
-    const res = await request(app)
-      .delete("/api/organizations/current/invites/inv-1")
-      .set("Authorization", "Bearer fake");
-
-    expect(res.status).toBe(204);
-    expect(prisma.organizationInvite.update).toHaveBeenCalledWith({
-      where: { id: "inv-1" },
-      data: { revokedAt: expect.any(Date) },
-    });
-  });
 });

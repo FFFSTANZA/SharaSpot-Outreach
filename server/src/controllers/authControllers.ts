@@ -76,8 +76,9 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       await createPersonalWorkspace(user.id, name, email);
     }
 
+    let inviteResult: Awaited<ReturnType<typeof acceptOrganizationInviteForUser>> | null = null;
     if (inviteToken) {
-      const inviteResult = await acceptOrganizationInviteForUser(inviteToken, user.id, user.email);
+      inviteResult = await acceptOrganizationInviteForUser(inviteToken, user.id, user.email);
       if (!inviteResult.accepted) {
         logger.warn(`[Auth] Invite acceptance failed for ${user.email}: ${inviteResult.reason}`);
       }
@@ -85,7 +86,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
 
     const freshUser = await prisma.user.findUnique({ where: { id: user.id } });
     // Second fallback: only for new users who had an invite that failed or no invite
-    if (isNewUser && !freshUser?.activeOrganizationId) {
+    if (isNewUser && !freshUser?.activeOrganizationId && !inviteToken) {
       await createPersonalWorkspace(user.id, name, email);
     }
 
@@ -102,6 +103,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     res.cookie("refreshToken", newRefreshToken, refreshTokenCookieOptions);
     res.json({
       accessToken: newAccessToken,
+      invite: inviteResult,
       user: {
         id: finalUser!.id,
         email: finalUser!.email,

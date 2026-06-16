@@ -231,7 +231,39 @@ describe("InboxService", () => {
       expect(prisma.inboxEmail.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            folder: "SENT",
+            AND: expect.arrayContaining([
+              expect.objectContaining({ folder: "SENT" }),
+            ]),
+          }),
+        })
+      );
+    });
+
+    it("should fetch emails for synthetic thread keys used by the inbox UI", async () => {
+      (prisma.inboxEmail.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.inboxEmail.count as jest.Mock).mockResolvedValue(0);
+
+      await getInboxEmails("sender-1", {
+        threadId: "prospect@acme.com::re: hello there",
+        page: 1,
+        limit: 20,
+      });
+
+      expect(prisma.inboxEmail.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: expect.arrayContaining([
+                  expect.objectContaining({ threadId: "prospect@acme.com::re: hello there" }),
+                  expect.objectContaining({
+                    threadId: null,
+                    fromEmail: expect.objectContaining({ equals: "prospect@acme.com" }),
+                    subject: expect.objectContaining({ equals: "re: hello there" }),
+                  }),
+                ]),
+              }),
+            ]),
           }),
         })
       );
@@ -320,13 +352,15 @@ describe("Multi-Account Inbox Sync", () => {
     ];
 
     (prisma.inboxEmail.findMany as jest.Mock).mockImplementation(({ where }) => {
-      if (where.senderId === "sender-1") return Promise.resolve(sender1Emails);
-      if (where.senderId === "sender-2") return Promise.resolve(sender2Emails);
+      const senderId = where?.AND?.find((clause: any) => clause.senderId)?.senderId;
+      if (senderId === "sender-1") return Promise.resolve(sender1Emails);
+      if (senderId === "sender-2") return Promise.resolve(sender2Emails);
       return Promise.resolve([]);
     });
     (prisma.inboxEmail.count as jest.Mock).mockImplementation(({ where }) => {
-      if (where.senderId === "sender-1") return Promise.resolve(2);
-      if (where.senderId === "sender-2") return Promise.resolve(1);
+      const senderId = where?.AND?.find((clause: any) => clause.senderId)?.senderId;
+      if (senderId === "sender-1") return Promise.resolve(2);
+      if (senderId === "sender-2") return Promise.resolve(1);
       return Promise.resolve(0);
     });
 
@@ -357,11 +391,11 @@ describe("Multi-Account Inbox Sync", () => {
 
     expect(prisma.inboxEmail.findMany).toHaveBeenNthCalledWith(
       1,
-      expect.objectContaining({ where: expect.objectContaining({ senderId: "sender-1" }) })
+      expect.objectContaining({ where: expect.objectContaining({ AND: expect.arrayContaining([expect.objectContaining({ senderId: "sender-1" })]) }) })
     );
     expect(prisma.inboxEmail.findMany).toHaveBeenNthCalledWith(
       2,
-      expect.objectContaining({ where: expect.objectContaining({ senderId: "sender-2" }) })
+      expect.objectContaining({ where: expect.objectContaining({ AND: expect.arrayContaining([expect.objectContaining({ senderId: "sender-2" })]) }) })
     );
   });
 
@@ -379,7 +413,7 @@ describe("Multi-Account Inbox Sync", () => {
     expect(prisma.inboxEmail.count).toHaveBeenCalledTimes(3);
 
     const calls = (prisma.inboxEmail.findMany as jest.Mock).mock.calls;
-    const senderIds = calls.map((call: any[]) => call[0]?.where?.senderId);
+    const senderIds = calls.map((call: any[]) => call[0]?.where?.AND?.find((clause: any) => clause.senderId)?.senderId);
     
     expect(senderIds).toContain("sender-account-1");
     expect(senderIds).toContain("sender-account-2");

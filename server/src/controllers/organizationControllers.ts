@@ -210,6 +210,29 @@ const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 const hashToken = (token: string): string => crypto.createHash("sha256").update(token).digest("hex");
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type InviteState = "pending" | "accepted" | "revoked" | "expired" | "invalid";
+
+const getInviteState = (invite: { acceptedAt: Date | null; revokedAt: Date | null; expiresAt: Date }, now: Date): InviteState => {
+  if (invite.revokedAt) return "revoked";
+  if (invite.acceptedAt) return "accepted";
+  if (invite.expiresAt < now) return "expired";
+  return "pending";
+};
+
+const getInviteMessage = (state: Exclude<InviteState, "pending">): string => {
+  switch (state) {
+    case "accepted":
+      return "This invitation has already been accepted.";
+    case "revoked":
+      return "This invitation has been cancelled.";
+    case "expired":
+      return "This invitation has expired.";
+    case "invalid":
+    default:
+      return "Invitation not found.";
+  }
+};
+
 const buildInviteLink = (token: string): string => {
   const clientBase = process.env.CLIENT_URL || process.env.NEXT_PUBLIC_APP_URL || "https://sharaspot.in";
   return `${clientBase.replace(/\/+$/, "")}/login?inviteToken=${encodeURIComponent(token)}`;
@@ -225,8 +248,18 @@ export const acceptOrganizationInviteForUser = async (token: string, userId: str
       include: { organization: true },
     });
 
-    if (!invite || invite.revokedAt || invite.acceptedAt || invite.expiresAt < now) {
-      return { accepted: false as const, reason: "invalid_or_expired" as const };
+    if (!invite) {
+      return { accepted: false as const, reason: "invalid" as const };
+    }
+
+    const inviteState = getInviteState(invite, now);
+    if (inviteState !== "pending") {
+      return {
+        accepted: false as const,
+        reason: inviteState === "accepted" ? "already_accepted" as const : inviteState,
+        organizationId: invite.organizationId,
+        organizationName: invite.organization.name,
+      };
     }
 
     if (normalizeEmail(invite.email) !== normalizeEmail(userEmail)) {
@@ -318,41 +351,6 @@ export const inviteMember = async (req: Request, res: Response): Promise<void> =
         res.status(409).json({ message: "User is already a member of this organization" });
         return;
       }
-
-      const member = await prisma.organizationMember.create({
-        data: {
-          organizationId: orgId,
-          userId: invitedUser.id,
-          role: validRole as any,
-          invitedBy: userId,
-        },
-        include: {
-          user: { select: { id: true, name: true, email: true, avatarUrl: true } },
-        },
-      });
-
-      if (!invitedUser.activeOrganizationId) {
-        await prisma.user.update({
-          where: { id: invitedUser.id },
-          data: { activeOrganizationId: orgId },
-        });
-      }
-
-      await invalidatePremiumCache(invitedUser.id);
-
-      res.status(201).json({
-        type: "member",
-        member: {
-          id: member.id,
-          userId: member.userId,
-          name: member.user.name,
-          email: member.user.email,
-          avatarUrl: member.user.avatarUrl,
-          role: member.role,
-          joinedAt: member.joinedAt,
-        },
-      });
-      return;
     }
 
     const existingInvite = await prisma.organizationInvite.findFirst({
@@ -476,12 +474,27 @@ export const getInvitePreview = async (req: Request, res: Response): Promise<voi
       where: { tokenHash },
       include: { organization: { select: { id: true, name: true } } },
     });
-    if (!invite || invite.revokedAt || invite.acceptedAt || invite.expiresAt < new Date()) {
-      res.status(404).json({ message: "Invite not found or expired" });
+    if (!invite) {
+      res.status(404).json({ state: "invalid", message: getInviteMessage("invalid") });
+      return;
+    }
+
+    const state = getInviteState(invite, new Date());
+    if (state !== "pending") {
+      res.status(state === "accepted" ? 409 : 410).json({
+        state,
+        message: getInviteMessage(state),
+        organizationId: invite.organization.id,
+        organizationName: invite.organization.name,
+        email: invite.email,
+        role: invite.role,
+        expiresAt: invite.expiresAt,
+      });
       return;
     }
 
     res.json({
+      state,
       organizationId: invite.organization.id,
       organizationName: invite.organization.name,
       email: invite.email,
@@ -513,7 +526,15 @@ export const acceptInvite = async (req: Request, res: Response): Promise<void> =
         res.status(403).json({ message: "Invite email does not match current account" });
         return;
       }
-      res.status(404).json({ message: "Invite not found or expired" });
+      if (result.reason === "already_accepted") {
+        res.status(409).json({ message: getInviteMessage("accepted"), reason: result.reason, organizationId: result.organizationId, organizationName: result.organizationName });
+        return;
+      }
+      if (result.reason === "revoked" || result.reason === "expired") {
+        res.status(410).json({ message: getInviteMessage(result.reason), reason: result.reason, organizationId: result.organizationId, organizationName: result.organizationName });
+        return;
+      }
+      res.status(404).json({ message: getInviteMessage("invalid"), reason: result.reason });
       return;
     }
 

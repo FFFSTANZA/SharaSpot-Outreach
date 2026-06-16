@@ -41,7 +41,7 @@ jest.mock("../../utils/premiumCheck", () => ({
   invalidatePremiumCache: jest.fn(),
 }));
 
-import { acceptInvite, acceptOrganizationInviteForUser, inviteMember } from "../../controllers/organizationControllers";
+import { acceptInvite, acceptOrganizationInviteForUser, inviteMember, revokeInvite } from "../../controllers/organizationControllers";
 import { prisma } from "../../config/prisma";
 
 const mockReqRes = (body: any = {}, user: any = { id: "owner-1", email: "owner@example.com", activeOrganizationId: "org-1" }) => {
@@ -108,6 +108,40 @@ describe("organization external invite simulation", () => {
     );
   });
 
+  it("creates an invite for an existing account instead of auto-adding them", async () => {
+    (prisma.organizationInvite.create as jest.Mock).mockResolvedValueOnce({
+      id: "invite-2",
+      email: "external@example.com",
+      role: "ADMIN",
+      expiresAt: new Date(Date.now() + 86400000),
+      createdAt: new Date(),
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+      id: "user-2",
+      email: "external@example.com",
+      activeOrganizationId: "personal-org",
+    });
+    (prisma.organizationMember.findUnique as jest.Mock)
+      .mockResolvedValueOnce({ role: "OWNER" })
+      .mockResolvedValueOnce(null);
+
+    const { req, res } = mockReqRes({ email: "external@example.com", role: "ADMIN" });
+    await inviteMember(req, res);
+
+    expect(prisma.organizationMember.create).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "invite",
+        invite: expect.objectContaining({
+          email: "external@example.com",
+          role: "ADMIN",
+          inviteLink: expect.stringContaining("/login?inviteToken="),
+        }),
+      }),
+    );
+  });
+
   it("accepts invite and returns org-switched access token for matching email", async () => {
     (prisma.organizationMember.findUnique as jest.Mock)
       .mockResolvedValueOnce(null)
@@ -148,5 +182,20 @@ describe("organization external invite simulation", () => {
     const result = await acceptOrganizationInviteForUser("token-abc", "user-2", "external@example.com");
     expect(result).toEqual({ accepted: false, reason: "team_full" });
     expect(prisma.organizationMember.create).not.toHaveBeenCalled();
+  });
+
+  it("revokes a pending invite for the active organization", async () => {
+    (prisma.organizationInvite.findFirst as jest.Mock).mockResolvedValueOnce({ id: "invite-1" });
+
+    const { req, res } = mockReqRes({}, { id: "owner-1", email: "owner@example.com", activeOrganizationId: "org-1" });
+    req.params = { inviteId: "invite-1" };
+
+    await revokeInvite(req, res);
+
+    expect(prisma.organizationInvite.update).toHaveBeenCalledWith({
+      where: { id: "invite-1" },
+      data: { revokedAt: expect.any(Date) },
+    });
+    expect(res.sendStatus).toHaveBeenCalledWith(204);
   });
 });

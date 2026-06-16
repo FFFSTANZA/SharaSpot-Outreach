@@ -46,6 +46,37 @@ export interface ParsedInboxEmail {
   folder: string;
 }
 
+function normalizeThreadSubject(subject: string | null | undefined): string {
+  return (subject || "").trim().toLowerCase();
+}
+
+function normalizeThreadEmail(email: string | null | undefined): string {
+  return (email || "").trim().toLowerCase();
+}
+
+function buildThreadGroupingKey(email: { threadId?: string | null; fromEmail?: string | null; subject?: string | null; id?: string }): string {
+  if (email.threadId) return email.threadId;
+
+  const fromEmail = normalizeThreadEmail(email.fromEmail);
+  const subject = normalizeThreadSubject(email.subject);
+  if (fromEmail || subject) return `${fromEmail}::${subject}`;
+
+  return email.id || "";
+}
+
+function buildThreadFilter(threadKey: string): Record<string, unknown>[] {
+  const filters: Record<string, unknown>[] = [{ threadId: threadKey }];
+  if (threadKey.includes("::")) {
+    const [fromEmail, ...subjectParts] = threadKey.split("::");
+    filters.push({
+      threadId: null,
+      fromEmail: { equals: fromEmail, mode: "insensitive" },
+      subject: { equals: subjectParts.join("::"), mode: "insensitive" },
+    });
+  }
+  return filters;
+}
+
 export async function syncInboxForSender(senderId: string): Promise<{ synced: number; errors: string[] }> {
   logger.info({ extra: senderId }, "[InboxSync] Starting for senderId:");
   const sender = await prisma.sender.findUnique({
@@ -359,39 +390,37 @@ export async function getInboxEmails(
     limit = 20,
   } = options;
 
-  const where: any = {
-    senderId,
-    isDeleted: false,
-  };
+  const whereClauses: any[] = [
+    { senderId },
+    { isDeleted: false },
+    archivedOnly ? { isArchived: true } : { isArchived: false },
+  ];
 
   if (threadId) {
-    where.threadId = threadId;
+    whereClauses.push({ OR: buildThreadFilter(threadId) });
   } else if (!archivedOnly) {
-    where.folder = folder;
+    whereClauses.push({ folder });
   }
 
   if (unreadOnly) {
-    where.isRead = false;
+    whereClauses.push({ isRead: false });
   }
   if (starredOnly) {
-    where.isStarred = true;
-  }
-  if (archivedOnly) {
-    where.isArchived = true;
-  } else {
-    where.isArchived = false;
+    whereClauses.push({ isStarred: true });
   }
   if (search && search.trim().length > 0) {
     const q = search.trim();
-    where.OR = [
+    whereClauses.push({ OR: [
       { subject: { contains: q, mode: "insensitive" } },
       { fromName: { contains: q, mode: "insensitive" } },
       { fromEmail: { contains: q, mode: "insensitive" } },
       { toEmail: { contains: q, mode: "insensitive" } },
       { snippet: { contains: q, mode: "insensitive" } },
       { bodyText: { contains: q, mode: "insensitive" } },
-    ];
+    ] });
   }
+
+  const where = whereClauses.length === 1 ? whereClauses[0] : { AND: whereClauses };
 
   const [emails, total] = await Promise.all([
     prisma.inboxEmail.findMany({
@@ -457,7 +486,7 @@ export async function getInboxThreads(
 
   const grouped = new Map<string, any[]>();
   for (const email of emails) {
-    const key = email.threadId || `${email.fromEmail.toLowerCase()}::${(email.subject || "").trim().toLowerCase()}` || email.id;
+    const key = buildThreadGroupingKey(email);
     const bucket = grouped.get(key) || [];
     bucket.push(email);
     grouped.set(key, bucket);

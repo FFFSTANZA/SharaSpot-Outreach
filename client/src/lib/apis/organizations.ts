@@ -44,7 +44,7 @@ export const revokeInvite = async (inviteId: string): Promise<void> => {
   await api.delete(`/api/organizations/current/invites/${inviteId}`);
 };
 
-export const getInvitePreview = async (token: string): Promise<{ organizationId: string; organizationName: string; email: string; role: OrgMemberRole; expiresAt: string }> => {
+export const getInvitePreview = async (token: string): Promise<{ state: string; organizationId: string; organizationName: string; email: string; role: OrgMemberRole; expiresAt: string }> => {
   const res = await api.get(`/api/organizations/invites/${encodeURIComponent(token)}`);
   return res.data;
 };

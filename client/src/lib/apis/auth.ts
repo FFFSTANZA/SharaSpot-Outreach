@@ -18,7 +18,17 @@ export const loginWithGoogle = async (idToken: string, inviteToken?: string) => 
       const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
       throw new Error(errorData.message || `Server responded with ${response.status}`);
     }
-    return await response.json();
+    return await response.json() as {
+      accessToken: string;
+      invite?: {
+        accepted: boolean;
+        reason?: string;
+        organizationId?: string;
+        organizationName?: string;
+        role?: string;
+      } | null;
+      user: import("@/types").User;
+    };
   } catch (err) {
     throw err;
   }
@@ -42,4 +52,3 @@ export const updateUserName = async (name: string): Promise<import("@/types").Us
   const res = await api.patch("/api/users/name", { name });
   return res.data;
 };
-

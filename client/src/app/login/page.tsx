@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Script from "next/script";
 import { acceptInvite, loginWithGoogle } from "../../lib/apis";
+import { getInvitePreview } from "@/lib/apis/organizations";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Zap, Send, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -48,13 +49,73 @@ const LoginComponent = () => {
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
+  const [invitePreview, setInvitePreview] = useState<null | { state: string; organizationName?: string; email?: string; role?: string; message?: string }>(null);
   const [region, setRegion] = useState<"india" | "global">(
     getCachedRegionSync() || "global"
   );
 
+  const getApiErrorMessage = (err: unknown, fallback: string) => {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "response" in err &&
+      typeof (err as { response?: unknown }).response === "object" &&
+      (err as { response?: { data?: unknown } }).response?.data &&
+      typeof (err as { response?: { data?: { message?: unknown } } }).response?.data?.message === "string"
+    ) {
+      return (err as { response?: { data?: { message: string } } }).response!.data!.message;
+    }
+    return fallback;
+  };
+
+  const getInviteFailureMessage = (reason?: string) => {
+    switch (reason) {
+      case "already_accepted":
+        return "This invitation has already been accepted.";
+      case "revoked":
+        return "This invitation has been cancelled.";
+      case "expired":
+        return "This invitation has expired.";
+      case "email_mismatch":
+        return "Invite email does not match this account.";
+      default:
+        return "This invitation is no longer valid.";
+    }
+  };
+
   useEffect(() => {
     detectRegion().then(setRegion);
   }, []);
+
+  useEffect(() => {
+    if (!inviteToken) {
+      setInvitePreview(null);
+      return;
+    }
+
+    let isActive = true;
+    getInvitePreview(inviteToken)
+      .then((preview) => {
+        if (!isActive) return;
+        setInvitePreview(preview);
+      })
+      .catch((err: unknown) => {
+        if (!isActive) return;
+        const responseData = typeof err === "object" && err !== null && "response" in err
+          ? (err as { response?: { data?: { state?: string; organizationName?: string; message?: string } } }).response?.data
+          : undefined;
+
+        setInvitePreview({
+          state: responseData?.state || "invalid",
+          organizationName: responseData?.organizationName,
+          message: responseData?.message || "This invitation is no longer valid.",
+        });
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [inviteToken]);
 
   useEffect(() => {
     const isCancelled = searchParams?.get("cancelled") === "true";
@@ -78,8 +139,8 @@ const LoginComponent = () => {
         localStorage.setItem("accessToken", result.accessToken);
         await refreshUser();
         addToast("success", `Joined ${result.organizationName}`);
-      } catch {
-        addToast("error", "Failed to accept invitation. It may be expired or invalid.");
+      } catch (err: unknown) {
+        addToast("error", getApiErrorMessage(err, "Failed to accept invitation."));
       } finally {
         router.replace("/dashboard");
       }
@@ -105,7 +166,14 @@ const LoginComponent = () => {
             }
 
             const updatedUser = await refreshUser();
-            const hasOrg = !!(inviteToken || updatedUser?.activeOrganizationId);
+            const inviteRejected = !!inviteToken && !!data.invite && !data.invite.accepted;
+            const hasOrg = !!updatedUser?.activeOrganizationId;
+
+            if (inviteRejected) {
+              addToast("error", getInviteFailureMessage(data.invite?.reason));
+              router.push("/dashboard/team");
+              return;
+            }
 
             if (updatedUser && !updatedUser.isPremium && !hasOrg) {
               if (isSubscriptionSuccess) {
@@ -258,6 +326,13 @@ const LoginComponent = () => {
             <p className="text-sm text-gray-400 mt-2.5 font-medium">
               Sign in to continue to your workspace
             </p>
+            {invitePreview && (
+              <div className={`mt-4 rounded-lg border px-4 py-3 text-left text-xs ${invitePreview.state === "pending" ? "border-brand/20 bg-brand/5 text-brand" : "border-red-200 bg-red-50 text-red-700"}`}>
+                {invitePreview.state === "pending"
+                  ? `Invitation to join ${invitePreview.organizationName || "this workspace"}${invitePreview.role ? ` as ${String(invitePreview.role).toLowerCase()}` : ""}.`
+                  : invitePreview.message}
+              </div>
+            )}
             <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand/5 border border-brand/20 px-4 py-2.5">
               <Zap className="h-4 w-4 text-brand" />
               <span className="text-xs font-bold text-brand tracking-wide">7-Day Free Trial &middot; {BRAND_CONFIG.pricing[region].symbol}{BRAND_CONFIG.pricing[region].amount}/mo</span>
