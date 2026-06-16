@@ -46,8 +46,7 @@ export default function EmailPreview({
 }: EmailPreviewProps) {
   const [expanded, setExpanded] = useState(true);
 
-  const firstEmail = recipients[0]?.toLowerCase() || "";
-  const csvRow = recipientColumnData[firstEmail] || {};
+  const csvRow = recipients[0] ? (recipientColumnData[recipients[0].toLowerCase()] || {}) : {};
 
   const sampleRow = useMemo(() => {
     if (Object.keys(csvRow).length > 0) return csvRow;
@@ -88,15 +87,7 @@ export default function EmailPreview({
       {expanded && (
         <div className="px-4 md:px-5 pb-5 animate-in fade-in duration-200">
           <div className="border border-border-light rounded-lg overflow-hidden mt-1">
-            <div className="bg-[#F8F9FA] px-4 py-3 border-b border-border-light space-y-1.5">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-text-muted font-medium w-12 shrink-0">From:</span>
-                <span className="text-text-primary font-medium truncate">Your Sender</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-text-muted font-medium w-12 shrink-0">To:</span>
-                <span className="text-text-primary truncate">{firstEmail || "recipient@example.com"}</span>
-              </div>
+            <div className="bg-[#F8F9FA] px-4 py-3 border-b border-border-light">
               <div className="flex items-start gap-2 text-xs">
                 <span className="text-text-muted font-medium w-12 shrink-0 mt-0.5">Subject:</span>
                 <span className="text-text-primary font-semibold">
