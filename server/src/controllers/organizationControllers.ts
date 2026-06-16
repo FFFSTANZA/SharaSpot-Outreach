@@ -205,10 +205,10 @@ export const switchOrganization = async (req: Request, res: Response): Promise<v
 
 const MAX_TEAM_MEMBERS = 5;
 const INVITE_TTL_DAYS = 7;
-const prismaAny = prisma as any;
 
 const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 const hashToken = (token: string): string => crypto.createHash("sha256").update(token).digest("hex");
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const buildInviteLink = (token: string): string => {
   const clientBase = process.env.CLIENT_URL || process.env.NEXT_PUBLIC_APP_URL || "https://sharaspot.in";
@@ -218,59 +218,66 @@ const buildInviteLink = (token: string): string => {
 export const acceptOrganizationInviteForUser = async (token: string, userId: string, userEmail: string) => {
   const tokenHash = hashToken(token);
   const now = new Date();
-  const invite = await prismaAny.organizationInvite.findUnique({
-    where: { tokenHash },
-    include: { organization: true },
-  });
 
-  if (!invite || invite.revokedAt || invite.acceptedAt || invite.expiresAt < now) {
-    return { accepted: false as const, reason: "invalid_or_expired" as const };
-  }
-
-  if (normalizeEmail(invite.email) !== normalizeEmail(userEmail)) {
-    return { accepted: false as const, reason: "email_mismatch" as const };
-  }
-
-  const alreadyMember = await prisma.organizationMember.findUnique({
-    where: { organizationId_userId: { organizationId: invite.organizationId, userId } },
-  });
-
-  if (!alreadyMember) {
-    const memberCount = await prisma.organizationMember.count({
-      where: { organizationId: invite.organizationId },
+  const result = await prisma.$transaction(async (tx) => {
+    const invite = await tx.organizationInvite.findUnique({
+      where: { tokenHash },
+      include: { organization: true },
     });
-    if (memberCount >= MAX_TEAM_MEMBERS) {
-      return { accepted: false as const, reason: "team_full" as const };
+
+    if (!invite || invite.revokedAt || invite.acceptedAt || invite.expiresAt < now) {
+      return { accepted: false as const, reason: "invalid_or_expired" as const };
     }
 
-    await prisma.organizationMember.create({
-      data: {
-        organizationId: invite.organizationId,
-        userId,
-        role: invite.role as any,
-        invitedBy: invite.invitedBy,
-      },
+    if (normalizeEmail(invite.email) !== normalizeEmail(userEmail)) {
+      return { accepted: false as const, reason: "email_mismatch" as const };
+    }
+
+    const alreadyMember = await tx.organizationMember.findUnique({
+      where: { organizationId_userId: { organizationId: invite.organizationId, userId } },
     });
+
+    if (!alreadyMember) {
+      const memberCount = await tx.organizationMember.count({
+        where: { organizationId: invite.organizationId },
+      });
+      if (memberCount >= MAX_TEAM_MEMBERS) {
+        return { accepted: false as const, reason: "team_full" as const };
+      }
+
+      await tx.organizationMember.create({
+        data: {
+          organizationId: invite.organizationId,
+          userId,
+          role: invite.role,
+          invitedBy: invite.invitedBy,
+        },
+      });
+    }
+
+    await tx.organizationInvite.update({
+      where: { id: invite.id },
+      data: { acceptedAt: now },
+    });
+
+    await tx.user.update({
+      where: { id: userId },
+      data: { activeOrganizationId: invite.organizationId },
+    });
+
+    return {
+      accepted: true as const,
+      organizationId: invite.organizationId,
+      organizationName: invite.organization.name,
+      role: invite.role,
+    };
+  });
+
+  if (result.accepted) {
+    await invalidatePremiumCache(userId);
   }
 
-  await prismaAny.organizationInvite.update({
-    where: { id: invite.id },
-    data: { acceptedAt: now },
-  });
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { activeOrganizationId: invite.organizationId },
-  });
-
-  await invalidatePremiumCache(userId);
-
-  return {
-    accepted: true as const,
-    organizationId: invite.organizationId,
-    organizationName: invite.organization.name,
-    role: invite.role,
-  };
+  return result;
 };
 
 export const inviteMember = async (req: Request, res: Response): Promise<void> => {
@@ -282,6 +289,7 @@ export const inviteMember = async (req: Request, res: Response): Promise<void> =
 
     if (!orgId) { res.status(400).json({ message: "No active organization" }); return; }
     if (!normalizedEmail) { res.status(400).json({ message: "Email is required" }); return; }
+    if (!EMAIL_REGEX.test(normalizedEmail)) { res.status(400).json({ message: "Invalid email format" }); return; }
 
     const membership = await prisma.organizationMember.findUnique({
       where: { organizationId_userId: { organizationId: orgId, userId } },
@@ -347,7 +355,7 @@ export const inviteMember = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const existingInvite = await prismaAny.organizationInvite.findFirst({
+    const existingInvite = await prisma.organizationInvite.findFirst({
       where: {
         organizationId: orgId,
         email: normalizedEmail,
@@ -364,7 +372,7 @@ export const inviteMember = async (req: Request, res: Response): Promise<void> =
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = hashToken(rawToken);
     const expiresAt = new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000);
-    const invite = await prismaAny.organizationInvite.create({
+    const invite = await prisma.organizationInvite.create({
       data: {
         organizationId: orgId,
         email: normalizedEmail,
@@ -405,7 +413,7 @@ export const listPendingInvites = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const invites = await prismaAny.organizationInvite.findMany({
+    const invites = await prisma.organizationInvite.findMany({
       where: {
         organizationId: orgId,
         acceptedAt: null,
@@ -436,7 +444,7 @@ export const revokeInvite = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const invite = await prismaAny.organizationInvite.findFirst({
+    const invite = await prisma.organizationInvite.findFirst({
       where: { id: inviteId, organizationId: orgId, acceptedAt: null, revokedAt: null },
       select: { id: true },
     });
@@ -445,7 +453,7 @@ export const revokeInvite = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    await prismaAny.organizationInvite.update({
+    await prisma.organizationInvite.update({
       where: { id: invite.id },
       data: { revokedAt: new Date() },
     });
@@ -464,7 +472,7 @@ export const getInvitePreview = async (req: Request, res: Response): Promise<voi
     }
 
     const tokenHash = hashToken(token);
-    const invite = await prismaAny.organizationInvite.findUnique({
+    const invite = await prisma.organizationInvite.findUnique({
       where: { tokenHash },
       include: { organization: { select: { id: true, name: true } } },
     });

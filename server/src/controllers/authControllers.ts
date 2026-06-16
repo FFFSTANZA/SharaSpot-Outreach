@@ -51,27 +51,29 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       },
     });
 
-    // Only auto-create personal workspace for brand new users (first-ever login),
-    // not for existing users who happen to have no active org (e.g. left a workspace).
-    if (isNewUser && !user.activeOrganizationId && !inviteToken) {
+    const createPersonalWorkspace = async (uid: string, uname: string, uemail: string) => {
       const org = await prisma.organization.create({
         data: {
-          name: `${name || email}'s Workspace`,
-          ownerId: user.id,
-          members: {
-            create: { userId: user.id, role: "OWNER" },
-          },
+          name: `${uname || uemail}'s Workspace`,
+          ownerId: uid,
+          members: { create: { userId: uid, role: "OWNER" } },
         },
       });
       await prisma.user.update({
-        where: { id: user.id },
+        where: { id: uid },
         data: { activeOrganizationId: org.id },
       });
-      // Migrate the signup sender to the org so it's visible in org-scoped queries
       await prisma.sender.updateMany({
-        where: { userId: user.id, organizationId: null },
+        where: { userId: uid, organizationId: null },
         data: { organizationId: org.id },
       });
+      return org;
+    };
+
+    // Only auto-create personal workspace for brand new users (first-ever login),
+    // not for existing users who happen to have no active org (e.g. left a workspace).
+    if (isNewUser && !user.activeOrganizationId && !inviteToken) {
+      await createPersonalWorkspace(user.id, name, email);
     }
 
     if (inviteToken) {
@@ -81,47 +83,31 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       }
     }
 
-    let freshUser = await prisma.user.findUnique({ where: { id: user.id } });
+    const freshUser = await prisma.user.findUnique({ where: { id: user.id } });
     // Second fallback: only for new users who had an invite that failed or no invite
     if (isNewUser && !freshUser?.activeOrganizationId) {
-      const org = await prisma.organization.create({
-        data: {
-          name: `${name || email}'s Workspace`,
-          ownerId: user.id,
-          members: {
-            create: { userId: user.id, role: "OWNER" },
-          },
-        },
-      });
-      freshUser = await prisma.user.update({
-        where: { id: user.id },
-        data: { activeOrganizationId: org.id },
-      });
-      // Migrate the signup sender to the org so it's visible in org-scoped queries
-      await prisma.sender.updateMany({
-        where: { userId: user.id, organizationId: null },
-        data: { organizationId: org.id },
-      });
+      await createPersonalWorkspace(user.id, name, email);
     }
 
+    const finalUser = await prisma.user.findUnique({ where: { id: user.id } });
     const newAccessToken = signAccessToken({
-      id: user.id,
-      email: user.email,
-      activeOrganizationId: freshUser?.activeOrganizationId || null,
+      id: finalUser!.id,
+      email: finalUser!.email,
+      activeOrganizationId: finalUser!.activeOrganizationId || null,
     });
-    const newRefreshToken = signRefreshToken({ id: user.id });
+    const newRefreshToken = signRefreshToken({ id: finalUser!.id });
     await prisma.refreshToken.create({
-      data: { token: newRefreshToken, userId: user.id, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+      data: { token: newRefreshToken, userId: finalUser!.id, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
     });
     res.cookie("refreshToken", newRefreshToken, refreshTokenCookieOptions);
     res.json({
       accessToken: newAccessToken,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatarUrl: user.avatarUrl,
-        activeOrganizationId: freshUser?.activeOrganizationId || null,
+        id: finalUser!.id,
+        email: finalUser!.email,
+        name: finalUser!.name,
+        avatarUrl: finalUser!.avatarUrl,
+        activeOrganizationId: finalUser!.activeOrganizationId || null,
       },
     });
   } catch (error) {

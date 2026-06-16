@@ -54,6 +54,10 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
         return () => clearTimeout(timer);
       }
 
+      // Org members (invited users) bypass individual checkout.
+      // The org owner handles billing; server-side gates enforce feature access.
+      if (user.activeOrganizationId) return;
+
       if (checkoutAttemptedRef.current) return;
       checkoutAttemptedRef.current = true;
 
@@ -83,9 +87,9 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
     return <PageLoader message="Synchronizing Pro Access..." />;
   }
 
-  if (!user || (requirePremium && !user.isPremium)) {
-    return null;
-  }
+  // Org members inherit workspace access — don't block them from premium pages
+  if (!user) return null;
+  if (requirePremium && !user.isPremium && !user.activeOrganizationId) return null;
 
   return <>{children}</>;
 }

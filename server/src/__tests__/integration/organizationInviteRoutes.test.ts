@@ -90,7 +90,7 @@ jest.mock("../../config/redis", () => ({
 import { prisma } from "../../config/prisma";
 import { app } from "../../index";
 
-describe.skip("Organization invite routes e2e simulation", () => {
+describe("Organization invite routes e2e simulation", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (prisma.organizationMember.findUnique as jest.Mock).mockResolvedValue({ role: "OWNER", userId: "owner-1" });

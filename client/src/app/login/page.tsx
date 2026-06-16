@@ -79,6 +79,7 @@ const LoginComponent = () => {
         await refreshUser();
         addToast("success", `Joined ${result.organizationName}`);
       } catch {
+        addToast("error", "Failed to accept invitation. It may be expired or invalid.");
       } finally {
         router.replace("/dashboard");
       }
@@ -98,11 +99,16 @@ const LoginComponent = () => {
             const data = await loginWithGoogle(response.credential, inviteToken);
             localStorage.setItem("accessToken", data.accessToken);
 
-            const updatedUser = await refreshUser();
+            // Strip inviteToken from URL after processing to prevent re-processing on refresh
+            if (inviteToken) {
+              router.replace(window.location.pathname, { scroll: false });
+            }
 
-            if (updatedUser && !updatedUser.isPremium) {
+            const updatedUser = await refreshUser();
+            const hasOrg = !!(inviteToken || updatedUser?.activeOrganizationId);
+
+            if (updatedUser && !updatedUser.isPremium && !hasOrg) {
               if (isSubscriptionSuccess) {
-                // Subscription success flag detected — bypassing checkout redirect to allow sync
                 router.push("/dashboard?subscription=success");
                 return;
               }

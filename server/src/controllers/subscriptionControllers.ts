@@ -90,14 +90,27 @@ export async function createSubscription(req: Request, res: Response): Promise<v
       return;
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true, region: true, activeOrganizationId: true },
+    });
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
     }
 
+    // Org members should not create their own subscription — the org owner handles billing
+    if (user.activeOrganizationId) {
+      const membership = await prisma.organizationMember.findUnique({
+        where: { organizationId_userId: { organizationId: user.activeOrganizationId, userId } },
+      });
+      if (membership && membership.role !== "OWNER") {
+        res.status(403).json({ message: "Your workspace owner manages the subscription. Contact them to upgrade." });
+        return;
+      }
+    }
+
     const existing = await getSubscriptionStatus(userId);
-    // Only block if they are actually PREMIUM (Active/Trial and not expired)
     if (existing.isPremium) {
       res.status(400).json({ message: "You already have an active premium subscription." });
       return;

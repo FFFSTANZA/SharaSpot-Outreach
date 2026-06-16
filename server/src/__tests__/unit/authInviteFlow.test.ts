@@ -25,6 +25,9 @@ jest.mock("../../config/prisma", () => ({
     organization: {
       create: jest.fn(),
     },
+    sender: {
+      updateMany: jest.fn(),
+    },
     refreshToken: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -85,10 +88,17 @@ describe("auth invite flow simulation", () => {
       activeOrganizationId: "org-personal",
     });
     (prisma.user.findUnique as jest.Mock)
-      .mockResolvedValueOnce(null)  // First call: no existing user → isNewUser = true
-      .mockResolvedValue({
+      .mockResolvedValueOnce(null)  // 1st: existing user check → isNewUser = true
+      .mockResolvedValueOnce({      // 2nd: freshUser (after upsert)
         id: "u1",
         email: "newuser@example.com",
+        activeOrganizationId: "org-personal",
+      })
+      .mockResolvedValue({          // 3rd: finalUser
+        id: "u1",
+        email: "newuser@example.com",
+        name: "New User",
+        avatarUrl: "https://example.com/avatar.png",
         activeOrganizationId: "org-personal",
       });
     (prisma.organizationMember.findFirst as jest.Mock).mockResolvedValue(null);
@@ -103,10 +113,17 @@ describe("auth invite flow simulation", () => {
   it("accepts invite during google login and sets active organization from invite", async () => {
     (prisma.user.findUnique as jest.Mock).mockReset();
     (prisma.user.findUnique as jest.Mock)
-      .mockResolvedValueOnce(null)  // First call: no existing user
-      .mockResolvedValue({
+      .mockResolvedValueOnce(null)  // 1st: existing user check → isNewUser = true
+      .mockResolvedValueOnce({      // 2nd: freshUser (after invite accepted)
         id: "u1",
         email: "newuser@example.com",
+        activeOrganizationId: "org-invite",
+      })
+      .mockResolvedValue({          // 3rd: finalUser
+        id: "u1",
+        email: "newuser@example.com",
+        name: "New User",
+        avatarUrl: "https://example.com/avatar.png",
         activeOrganizationId: "org-invite",
       });
 
@@ -128,11 +145,18 @@ describe("auth invite flow simulation", () => {
     (acceptOrganizationInviteForUser as jest.Mock).mockResolvedValue({ accepted: false, reason: "invalid_or_expired" });
     (prisma.user.findUnique as jest.Mock).mockReset();
     (prisma.user.findUnique as jest.Mock)
-      .mockResolvedValueOnce(null)  // First call: no existing user → isNewUser = true
-      .mockResolvedValue({
+      .mockResolvedValueOnce(null)  // 1st: existing user check → isNewUser = true
+      .mockResolvedValueOnce({      // 2nd: freshUser (invite failed)
         id: "u1",
         email: "newuser@example.com",
         activeOrganizationId: null,
+      })
+      .mockResolvedValue({          // 3rd: finalUser (after fallback workspace created)
+        id: "u1",
+        email: "newuser@example.com",
+        name: "New User",
+        avatarUrl: "https://example.com/avatar.png",
+        activeOrganizationId: "org-personal",
       });
 
     const { req, res } = mockReqRes({ idToken: "id-token", inviteToken: "bad-token" });

@@ -4,25 +4,38 @@ process.env.ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES || "1h";
 process.env.REFRESH_TOKEN_EXPIRES = process.env.REFRESH_TOKEN_EXPIRES || "30d";
 process.env.CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
-jest.mock("../../config/prisma", () => ({
-  prisma: {
-    organizationMember: {
-      findUnique: jest.fn(),
-      count: jest.fn(),
-      create: jest.fn(),
+jest.mock("../../config/prisma", () => {
+  const orgMember = { findUnique: jest.fn(), count: jest.fn(), create: jest.fn() };
+  const user = { findUnique: jest.fn(), update: jest.fn() };
+  const orgInvite = { findFirst: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn() };
+
+  const mockTransaction = jest.fn(async (cb: any) => {
+    const tx = {
+      organizationMember: {
+        findUnique: (...args: any[]) => orgMember.findUnique(...args),
+        count: (...args: any[]) => orgMember.count(...args),
+        create: (...args: any[]) => orgMember.create(...args),
+      },
+      user: {
+        update: (...args: any[]) => user.update(...args),
+      },
+      organizationInvite: {
+        findUnique: (...args: any[]) => orgInvite.findUnique(...args),
+        update: (...args: any[]) => orgInvite.update(...args),
+      },
+    };
+    return cb(tx);
+  });
+
+  return {
+    prisma: {
+      organizationMember: orgMember,
+      user,
+      organizationInvite: orgInvite,
+      $transaction: mockTransaction,
     },
-    user: {
-      findUnique: jest.fn(),
-      update: jest.fn(),
-    },
-    organizationInvite: {
-      findFirst: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-  },
-}));
+  };
+});
 
 jest.mock("../../utils/premiumCheck", () => ({
   invalidatePremiumCache: jest.fn(),
