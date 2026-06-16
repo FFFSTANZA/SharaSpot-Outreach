@@ -142,6 +142,60 @@ export const createSender = async (
     res.status(201).json(senderResponse);
   } catch (error: any) {
     if (error?.code === "P2002") {
+      // A sender with this email already exists. If it's unverified
+      // (auto-created during signup or incomplete setup), upgrade it
+      // with the new SMTP credentials instead of returning an error.
+      const existing = await prisma.sender.findFirst({
+        where: { userId: req.user!.id, email: normalizeEmail(req.body.email || "") },
+      });
+
+      if (existing && !existing.isVerified) {
+        const b = req.body;
+        const catchEmail = b.email || existing.email;
+        const catchProviderKey = isSenderProviderKey(b.providerKey) ? b.providerKey : undefined;
+        const { smtpHost: catchHost, smtpPort: catchPort } = resolveProviderSmtp(catchProviderKey, b.smtpHost, b.smtpPort);
+        const catchProfile = await detectProvider(catchHost);
+        const catchEncrypted = encrypt(b.appPassword);
+
+        const updated = await prisma.$transaction(async (tx) => {
+          const s = await tx.sender.update({
+            where: { id: existing.id },
+            data: {
+              name: String(b.name || existing.name || "").trim(),
+              appPassword: catchEncrypted,
+              smtpHost: catchHost,
+              smtpPort: catchPort,
+              replyTo: typeof b.replyTo === "string" && b.replyTo.trim() ? b.replyTo.trim() : null,
+              isVerified: true,
+              providerProfileId: catchProfile?.id ?? null,
+            },
+          });
+
+          const existingWarmup = await tx.warmupSchedule.findUnique({
+            where: { senderId: existing.id },
+          });
+
+          if (!existingWarmup) {
+            await tx.warmupSchedule.create({
+              data: {
+                senderId: existing.id,
+                startDate: new Date(),
+                durationDays: 14,
+                dailyLimits: DEFAULT_WARMUP_DAILY_LIMITS,
+                isActive: true,
+                optedOut: req.body.skipWarmup === true,
+              },
+            });
+          }
+
+          return s;
+        });
+
+        const { appPassword: _, ...resp } = updated;
+        res.status(200).json(resp);
+        return;
+      }
+
       res.status(409).json({
         message: "A sender with this email already exists for your account",
       });
