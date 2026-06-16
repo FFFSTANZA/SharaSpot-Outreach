@@ -31,6 +31,15 @@ export function formatRelativeTime(iso: string): string {
   return "now";
 }
 
+/** Strip repeated protocol prefixes from URLs (safety for corrupted data) */
+export function sanitizeUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  return url.replace(/^(https?:\/\/)+/i, (match) => {
+    const parts = match.match(/(https?:\/\/)/gi);
+    return parts ? parts[parts.length - 1] : match;
+  });
+}
+
 /** Strip HTML tags and decode entities for plain-text previews */
 export function stripHtml(html: string): string {
   return html

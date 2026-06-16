@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma";
-import { getOrgScope } from "../utils/orgScope";
+import { senderReadScope } from "../utils/orgScope";
 import {
   syncInboxForSender as syncService,
   getInboxEmails as getEmailsService,
@@ -33,13 +33,13 @@ function extractPositiveInt(val: any, fallback: number): number {
 
 export const getInboxThreads = async (req: Request, res: Response): Promise<void> => {
   try {
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const query = req.query as any;
     let senderId = extractString(query.senderId);
 
     if (!senderId) {
       const senders = await prisma.sender.findMany({
-        where: { ...scope },
+        where: { ...senderScope },
         select: { id: true },
         take: 1,
       });
@@ -52,7 +52,7 @@ export const getInboxThreads = async (req: Request, res: Response): Promise<void
     }
 
     const sender = await prisma.sender.findFirst({
-      where: { id: senderId, ...scope },
+      where: { id: senderId, ...senderScope },
       select: { userId: true },
     });
 
@@ -84,13 +84,13 @@ export const getInboxThreads = async (req: Request, res: Response): Promise<void
 
 export const getInboxEmails = async (req: Request, res: Response): Promise<void> => {
   try {
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const query = req.query as any;
     let senderId = extractString(query.senderId);
 
     if (!senderId) {
       const senders = await prisma.sender.findMany({
-        where: { ...scope },
+        where: { ...senderScope },
         select: { id: true },
         take: 1,
       });
@@ -103,7 +103,7 @@ export const getInboxEmails = async (req: Request, res: Response): Promise<void>
     }
 
     const sender = await prisma.sender.findFirst({
-      where: { id: senderId, ...scope },
+      where: { id: senderId, ...senderScope },
       select: { userId: true },
     });
 
@@ -147,9 +147,9 @@ export const syncInboxForSender = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: senderId, ...scope },
+      where: { id: senderId, ...senderScope },
       select: { email: true, appPassword: true, connectionType: true, smtpHost: true },
     });
 
@@ -182,9 +182,9 @@ export const sendInboxReply = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: senderId, ...scope },
+      where: { id: senderId, ...senderScope },
       select: { userId: true },
     });
 
@@ -218,9 +218,9 @@ export const markInboxEmailRead = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: email.senderId, ...scope },
+      where: { id: email.senderId, ...senderScope },
     });
 
     if (!sender) {
@@ -249,9 +249,9 @@ export const toggleInboxEmailStar = async (req: Request, res: Response): Promise
       return;
     }
 
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: email.senderId, ...scope },
+      where: { id: email.senderId, ...senderScope },
     });
 
     if (!sender) {
@@ -280,9 +280,9 @@ export const archiveInboxEmail = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: email.senderId, ...scope },
+      where: { id: email.senderId, ...senderScope },
     });
 
     if (!sender) {
@@ -311,9 +311,9 @@ export const deleteInboxEmail = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const sender = await prisma.sender.findFirst({
-      where: { id: email.senderId, ...scope },
+      where: { id: email.senderId, ...senderScope },
     });
 
     if (!sender) {
@@ -331,13 +331,13 @@ export const deleteInboxEmail = async (req: Request, res: Response): Promise<voi
 
 export const getUnreadCount = async (req: Request, res: Response): Promise<void> => {
   try {
-    const scope = getOrgScope(req);
+    const senderScope = senderReadScope(req);
     const query = req.query as any;
     let senderId = extractString(query.senderId);
 
     if (!senderId) {
       const senders = await prisma.sender.findMany({
-        where: { ...scope },
+        where: { ...senderScope },
         select: { id: true },
         take: 1,
       });
@@ -350,7 +350,7 @@ export const getUnreadCount = async (req: Request, res: Response): Promise<void>
     }
 
     const sender = await prisma.sender.findFirst({
-      where: { id: senderId, ...scope },
+      where: { id: senderId, ...senderScope },
       select: { userId: true },
     });
 

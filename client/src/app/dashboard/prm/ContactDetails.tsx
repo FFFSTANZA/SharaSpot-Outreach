@@ -20,7 +20,7 @@ import {
   AlertCircle,
   Folder
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, sanitizeUrl } from "@/lib/utils";
 import { format } from "date-fns";
 import Button from "@/components/Button";
 import { useToast } from "@/context/ToastContext";
@@ -186,10 +186,10 @@ export function ContactDetails({ contactId, onClose, onEdit }: ContactDetailsPro
                     <Mail size={14} />
                     <span className="min-w-0 truncate text-sm">{contact.email}</span>
                   </div>
-                  {contact.website && (
+                  {(sanitizeUrl(contact.website)) && (
                     <div className="mt-1 flex items-center gap-2 text-text-muted">
                       <Globe size={14} />
-                      <span className="min-w-0 truncate text-sm">{contact.website}</span>
+                      <span className="min-w-0 truncate text-sm">{sanitizeUrl(contact.website)}</span>
                     </div>
                   )}
                   <div className="mt-3 grid gap-x-3 gap-y-2 sm:grid-cols-2">

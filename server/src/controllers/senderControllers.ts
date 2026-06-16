@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import nodemailer from "nodemailer";
 import { prisma } from "../config/prisma";
-import { getOrgScope, orgCreateData } from "../utils/orgScope";
+import { getOrgScope, orgCreateData, senderReadScope } from "../utils/orgScope";
 import { encrypt } from "../utils/encryption";
 import { detectProvider } from "../utils/providerProfile";
 import { DEFAULT_WARMUP_DAILY_LIMITS, isInWarmup } from "../utils/warmupEvaluator";
@@ -32,16 +32,6 @@ import {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const normalizeEmail = (value: string) => value.trim().toLowerCase();
-
-// Returns a Prisma where clause that matches senders the current user can access.
-// When the user is in an org, this returns both org-scoped senders AND
-// personal senders (auto-created during signup before org membership).
-function senderReadScope(req: Request) {
-  const orgId = req.user?.activeOrganizationId ?? null;
-  const uid = req.user!.id;
-  if (orgId) return { OR: [{ organizationId: orgId }, { userId: uid, organizationId: null }] };
-  return { userId: uid };
-}
 
 export const createSender = async (
   req: Request,

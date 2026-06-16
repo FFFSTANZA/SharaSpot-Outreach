@@ -12,6 +12,13 @@ export function getOrgScope(req: Pick<Request, 'user'>): OrgScope {
   return { userId };
 }
 
+export function senderReadScope(req: Pick<Request, 'user'>): { userId: string } | { OR: ({ organizationId: string } | { userId: string; organizationId: null })[] } {
+  const orgId = req.user?.activeOrganizationId ?? null;
+  const uid = req.user!.id;
+  if (orgId) return { OR: [{ organizationId: orgId }, { userId: uid, organizationId: null }] };
+  return { userId: uid };
+}
+
 export function getOrgId(req: Pick<Request, 'user'>): string | null {
   return req.user?.activeOrganizationId ?? null;
 }

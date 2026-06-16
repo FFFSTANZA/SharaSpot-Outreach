@@ -17,7 +17,7 @@ import {
   UserCheck,
   ChevronDown
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, sanitizeUrl } from "@/lib/utils";
 import { NEXT_ACTIONS, RELATIONSHIP_STAGES } from "./prmFields";
 
 type ContactPayload = {
@@ -69,7 +69,7 @@ export function ContactModal({ isOpen, onClose, contact, tags, members = [], onS
         firstName: contact.firstName || "",
         lastName: contact.lastName || "",
         company: contact.company || "",
-        website: contact.website || "",
+        website: sanitizeUrl(contact.website) || "",
         jobTitle: contact.jobTitle || "",
         phone: contact.phone || "",
         stage: contact.stage || "NEW",

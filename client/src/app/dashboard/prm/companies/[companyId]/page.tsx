@@ -23,7 +23,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, sanitizeUrl } from "@/lib/utils";
 
 const formatDate = (ts?: string | null) => ts ? new Date(ts).toLocaleDateString() : null;
 
@@ -133,7 +133,7 @@ function CompanyProfileView() {
               </div>
 
               <div className="grid gap-px bg-border-light sm:grid-cols-2 lg:grid-cols-4">
-                <DetailCell icon={<Globe size={13} />} label="Website" value={company.website || company.fallbackWebsite || "Not available"} href={company.website || company.fallbackWebsite || undefined} />
+                <DetailCell icon={<Globe size={13} />} label="Website" value={sanitizeUrl(company.website) || company.fallbackWebsite || "Not available"} href={sanitizeUrl(company.website) || company.fallbackWebsite || undefined} />
                 <DetailCell icon={<Mail size={13} />} label="Company email" value={company.primaryEmail || "Not found"} href={company.primaryEmail ? `mailto:${company.primaryEmail}` : undefined} />
                 <DetailCell icon={<Phone size={13} />} label="Phone" value={company.phone || "Not found"} href={company.phone ? `tel:${company.phone}` : undefined} />
                 <DetailCell icon={<CalendarDays size={13} />} label="Last refresh" value={formatDate(company.lastEnrichedAt) || "Never"} />

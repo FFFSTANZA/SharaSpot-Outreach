@@ -52,8 +52,12 @@ export function normalizeEmailAddress(value: unknown): string | null {
 
 export function normalizeWebsite(value: unknown): string | null {
   if (typeof value !== "string") return null;
-  const trimmed = value.trim();
+  let trimmed = value.trim();
   if (!trimmed) return null;
+  // Strip repeated protocol prefixes (safety for corrupted data)
+  while (/^https?:\/\/https?:\/\//i.test(trimmed)) {
+    trimmed = trimmed.replace(/^https?:\/\//i, "");
+  }
   const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
   try {
     const url = new URL(candidate);
