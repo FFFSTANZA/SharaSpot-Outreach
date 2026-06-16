@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import { ComposeFormProps, SenderResponse } from "@/types";
-import { getSenders } from "@/lib/apis";
+import { getSenders, getTemplates } from "@/lib/apis";
 import { SenderModal } from "./SenderModal";
 import { Editor } from "./Editor";
 import { X, AlertCircle, FileText, Trash2 } from "lucide-react";
 import TemplateSelector from "./TemplateSelector";
 import type { EmailTemplate } from "@/types";
-import VariablePreview from "./VariablePreview";
+import EmailPreview from "./EmailPreview";
 import SequenceBuilder from "./SequenceBuilder";
 import { getFollowUpTemplateById } from "@/lib/followUpTemplates";
 import type { FollowUpTemplate } from "@/types";
@@ -83,6 +83,8 @@ export const ComposeForm = forwardRef<ComposeFormHandle, ComposeFormProps & {
   const setFrequencyCaps = useComposeStore((s) => s.setFrequencyCaps);
   const resetStore = useComposeStore((s) => s.reset);
 
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [isTemplatesLoading, setIsTemplatesLoading] = useState(true);
   const [senders, setSenders] = useState<SenderResponse[]>([]);
   const [isSenderLoading, setIsSenderLoading] = useState(true);
   const [isSenderModalOpen, setIsSenderModalOpen] = useState(false);
@@ -183,6 +185,13 @@ export const ComposeForm = forwardRef<ComposeFormHandle, ComposeFormProps & {
       } catch { } finally { setIsSenderLoading(false); }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    getTemplates()
+      .then(setTemplates)
+      .catch(() => {})
+      .finally(() => setIsTemplatesLoading(false));
   }, []);
 
   const toggleSender = (senderId: string) => {
@@ -781,11 +790,11 @@ export const ComposeForm = forwardRef<ComposeFormHandle, ComposeFormProps & {
                     <span className="text-[10px] text-text-muted font-bold">Select to Apply</span>
                   </div>
                   <div className="p-4">
-                    <TemplateSelector onSelect={handleTemplateSelect} />
+                    <TemplateSelector templates={templates} isLoading={isTemplatesLoading} onSelect={handleTemplateSelect} />
                   </div>
                 </div>
 
-                <VariablePreview
+                <EmailPreview
                   subject={data.subject}
                   body={data.body}
                   recipientColumnData={recipientColumnData}

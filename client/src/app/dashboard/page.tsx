@@ -119,6 +119,23 @@ function DashboardPage() {
     return () => clearInterval(pollInterval);
   }, []);
 
+  const STATUS_TABS = [
+    { label: "All Campaigns", value: "" },
+    { label: "Scheduled", value: "SCHEDULED" },
+    { label: "Sending", value: "SENDING" },
+    { label: "Paused", value: "PAUSED" },
+    { label: "Completed", value: "COMPLETED" },
+  ];
+
+  const handleTabClick = (value: string) => {
+    if (value === filters.status) return;
+    if (value === "") {
+      clearFilter("status");
+    } else {
+      setFilter("status", value);
+    }
+  };
+
   const campaignItems = useMemo(() => results.map((r: Campaign) => ({
     campaign: r,
     searchQuery: filters.q,
@@ -313,11 +330,24 @@ function DashboardPage() {
 
                       {/* Campaign list */}
                       <div>
-                        <div className="flex items-center justify-between border-b border-border-light px-4 py-3 sm:px-6">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <h2 className="truncate text-sm font-semibold text-text-primary">{currentLabel}</h2>
-                            <span className="shrink-0 rounded-md bg-brand-light px-2 py-0.5 text-[11px] font-bold text-brand">{total}</span>
-                          </div>
+                        <div className="flex items-center gap-1 border-b border-border-light px-4 pt-2 sm:px-6 overflow-x-auto">
+                          {STATUS_TABS.map(tab => (
+                            <button
+                              key={tab.value}
+                              onClick={() => handleTabClick(tab.value)}
+                              className={cn(
+                                "relative shrink-0 px-3 py-2.5 text-xs font-semibold transition-colors border-b-2 -mb-[1px] whitespace-nowrap",
+                                tab.value === (filters.status || "")
+                                  ? "border-brand text-brand"
+                                  : "border-transparent text-text-muted hover:text-text-secondary hover:border-border-light"
+                              )}
+                            >
+                              {tab.label}
+                              {tab.value === (filters.status || "") && (
+                                <span className="ml-1.5 rounded-md bg-brand-light px-1.5 py-0.5 text-[10px] font-bold text-brand">{total}</span>
+                              )}
+                            </button>
+                          ))}
                         </div>
 
                         <CampaignList campaigns={campaignItems} hasActiveFilters={activeFilterCount > 0} onClearFilters={clearAllFilters} />
