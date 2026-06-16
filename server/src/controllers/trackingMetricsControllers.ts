@@ -35,12 +35,12 @@ export const getCampaignTrackingMetrics = async (req: Request, res: Response): P
 
     const uniqueOpens = await prisma.trackingEvent.groupBy({
       by: ["emailJobId"],
-      where: { emailJob: { campaignId: campaign.id }, eventType: "OPEN" },
+      where: { emailJob: { campaignId: campaign.id }, eventType: "OPEN", isBot: false },
     });
 
     const uniqueClicks = await prisma.trackingEvent.groupBy({
       by: ["emailJobId"],
-      where: { emailJob: { campaignId: campaign.id }, eventType: "CLICK" },
+      where: { emailJob: { campaignId: campaign.id }, eventType: "CLICK", isBot: false },
     });
 
     const openRate = totalSent > 0
@@ -86,7 +86,8 @@ export const getCampaignTrackingEmails = async (req: Request, res: Response): Pr
         id: true,
         toEmail: true,
         trackingEvents: {
-          select: { eventType: true, createdAt: true },
+          select: { eventType: true, createdAt: true, isBot: true },
+          where: { isBot: false },
           orderBy: { createdAt: "desc" },
         },
       },

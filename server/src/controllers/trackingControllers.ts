@@ -28,7 +28,7 @@ function parseUserAgent(userAgent: string | null): PlatformInfo {
   let isBot = false;
   let browser = "unknown";
 
-  if (/bot|spider|crawler|slurp|duckduckbot|baiduspider|facebookexternalhit|twitterbot/.test(ua)) {
+  if (/bot|spider|crawler|slurp|duckduckbot|baiduspider|facebookexternalhit|twitterbot|googleimageproxy|googleproxyservice|google.*proxy|outlook.*image|imageproxy|windows.*mail/i.test(ua)) {
     isBot = true;
     platform = "bot";
   } else if (/iphone|ipad|ipod|android|mobile|windows phone|blackberry|playbook/.test(ua)) {
@@ -131,6 +131,13 @@ export const handleOpen = async (req: Request, res: Response): Promise<void> => 
 
   logger.info({ emailJobId, ipAddress, platform: platformInfo.platform, browser: platformInfo.browser }, "[Tracking] HIT: Open event");
 
+  // Skip bot and email proxy prefetches — they inflate open rates with false positives
+  if (platformInfo.isBot) {
+    logger.info({ emailJobId, userAgent }, "[Tracking] SKIP: Bot/proxy open event discarded");
+    sendTrackingPixel(res, trackingToken);
+    return;
+  }
+
   try {
     const { prisma } = await import("../config/prisma");
     const existingEvent = await prisma.trackingEvent.findFirst({
@@ -217,25 +224,29 @@ export const handleClick = async (req: Request, res: Response): Promise<void> =>
 
   logger.info({ emailJobId, url: finalUrl, ipAddress, platform: platformInfo.platform, browser: platformInfo.browser }, "[Tracking] HIT: Click event");
 
-  try {
-    trackingBuffer.buffer({
-      emailJobId,
-      eventType: "CLICK",
-      url: finalUrl,
-      ipAddress,
-      userAgent,
-      timestamp: Date.now(),
-      platform: platformInfo.platform,
-      isMobile: platformInfo.isMobile,
-      isDesktop: platformInfo.isDesktop,
-      isBot: platformInfo.isBot,
-      browser: platformInfo.browser,
-      trackingToken,
-    });
-
-    res.redirect(302, finalUrl);
-  } catch (err) {
-    logger.error({ err }, "[Tracking] Click handler error");
-    res.redirect(302, finalUrl || "/");
+  // Skip bot/proxy clicks — they inflate metrics with false positives
+  if (!platformInfo.isBot) {
+    try {
+      trackingBuffer.buffer({
+        emailJobId,
+        eventType: "CLICK",
+        url: finalUrl,
+        ipAddress,
+        userAgent,
+        timestamp: Date.now(),
+        platform: platformInfo.platform,
+        isMobile: platformInfo.isMobile,
+        isDesktop: platformInfo.isDesktop,
+        isBot: platformInfo.isBot,
+        browser: platformInfo.browser,
+        trackingToken,
+      });
+    } catch (err) {
+      logger.error({ err }, "[Tracking] Click handler error");
+    }
+  } else {
+    logger.info({ emailJobId, userAgent }, "[Tracking] SKIP: Bot/proxy click event discarded");
   }
+
+  res.redirect(302, finalUrl);
 };

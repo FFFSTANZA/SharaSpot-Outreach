@@ -120,21 +120,23 @@ function ComposeContent() {
           />
         </div>
       </div>
-      <ErrorBoundary>
-        <ComposeForm
-          ref={formRef}
-          scheduledAt={scheduledAt}
-          setScheduledAt={setScheduledAt}
-          uploadedAttachments={uploadedAttachments}
-          onFilesSelected={handleFilesSelected}
-          onRemoveAttachment={handleRemoveAttachment}
-          isUploading={isUploading}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          initialEmails={initialEmails}
-          followUpTemplateId={followUpTemplateId}
-        />
-      </ErrorBoundary>
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <ErrorBoundary>
+          <ComposeForm
+            ref={formRef}
+            scheduledAt={scheduledAt}
+            setScheduledAt={setScheduledAt}
+            uploadedAttachments={uploadedAttachments}
+            onFilesSelected={handleFilesSelected}
+            onRemoveAttachment={handleRemoveAttachment}
+            isUploading={isUploading}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            initialEmails={initialEmails}
+            followUpTemplateId={followUpTemplateId}
+          />
+        </ErrorBoundary>
+      </div>
     </div>
   );
 }
