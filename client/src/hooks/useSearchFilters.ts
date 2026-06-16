@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import api from "@/lib/axios";
 
 export interface SearchFilters {
@@ -18,41 +19,45 @@ const DEFAULT_FILTERS: SearchFilters = {
   q: "", status: "", senderId: "", dateFrom: "", dateTo: "", dateField: "createdAt", starred: "",
 };
 
+function parseFiltersFromParams(searchParamsString: string, endpoint: "emails" | "campaigns", defaultDateField: string): SearchFilters {
+  const params = new URLSearchParams(searchParamsString);
+  const rawStatus = params.get("status") || "";
+  const rawStarred = params.get("starred") || "";
+
+  let status = rawStatus;
+  let starred = rawStarred;
+
+  if (endpoint === "campaigns") {
+    starred = "";
+    const validCampaignStatuses = ["SCHEDULED", "SENDING", "PAUSED", "CANCELLED", "COMPLETED"];
+    if (status && !validCampaignStatuses.includes(status)) status = "";
+  } else {
+    const validEmailStatuses = ["PENDING", "SENDING", "SENT", "FAILED", "CANCELLED"];
+    if (status && !validEmailStatuses.includes(status)) status = "";
+  }
+
+  return {
+    q: params.get("q") || "",
+    status,
+    senderId: params.get("senderId") || "",
+    dateFrom: params.get("dateFrom") || "",
+    dateTo: params.get("dateTo") || "",
+    dateField: params.get("dateField") || defaultDateField,
+    starred,
+  };
+}
+
 interface UseSearchFiltersOptions {
   endpoint: "emails" | "campaigns";
   defaultDateField?: string;
 }
 
 export function useSearchFilters({ endpoint, defaultDateField = "createdAt" }: UseSearchFiltersOptions) {
-  const [filters, setFilters] = useState<SearchFilters>(() => {
-    if (typeof window === "undefined") return { ...DEFAULT_FILTERS, dateField: defaultDateField };
-    const params = new URLSearchParams(window.location.search);
+  const searchParams = useSearchParams();
 
-    const rawStatus = params.get("status") || "";
-    const rawStarred = params.get("starred") || "";
-
-    // Endpoint-specific validation
-    let status = rawStatus;
-    let starred = rawStarred;
-
-    if (endpoint === "campaigns") {
-      starred = ""; // Campaigns don't support starred
-      const validCampaignStatuses = ["SCHEDULED", "SENDING", "PAUSED", "CANCELLED", "COMPLETED"];
-      if (status && !validCampaignStatuses.includes(status)) status = "";
-    } else {
-      const validEmailStatuses = ["PENDING", "SENDING", "SENT", "FAILED", "CANCELLED"];
-      if (status && !validEmailStatuses.includes(status)) status = "";
-    }
-
-    return {
-      q: params.get("q") || "",
-      status,
-      senderId: params.get("senderId") || "",
-      dateFrom: params.get("dateFrom") || "",
-      dateTo: params.get("dateTo") || "",
-      dateField: params.get("dateField") || defaultDateField,
-      starred,
-    };
+  const [filters, setFilters] = useState<SearchFilters>({
+    ...DEFAULT_FILTERS,
+    dateField: defaultDateField,
   });
 
   const [results, setResults] = useState<any[]>([]);
@@ -61,6 +66,7 @@ export function useSearchFilters({ endpoint, defaultDateField = "createdAt" }: U
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const isFirstRender = useRef(true);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -118,14 +124,15 @@ export function useSearchFilters({ endpoint, defaultDateField = "createdAt" }: U
     }
   }, [endpoint]);
 
-  // Initial fetch and URL sync (only on mount)
-  // Filter changes are handled directly by setFilter/setQuery/setMultipleFilters
+  // Sync filters from URL params whenever they change (handles sidebar navigation)
   useEffect(() => {
-    syncUrl(filters);
-    fetchResults(filters);
-    return () => abortRef.current?.abort();
+    const newFilters = parseFiltersFromParams(searchParams?.toString() || "", endpoint, defaultDateField);
+    setFilters(newFilters);
+    syncUrl(newFilters);
+    fetchResults(newFilters);
+    isFirstRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams?.toString()]);
 
   const setQuery = useCallback((q: string) => {
     if (filters.q === q) return;
