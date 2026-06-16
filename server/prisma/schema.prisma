@@ -577,6 +577,7 @@ model Contact {
   callSessions        CallSession[]
 
   @@unique([userId, email])
+  @@unique([organizationId, email])
   @@index([userId])
   @@index([organizationId])
   @@index([email])

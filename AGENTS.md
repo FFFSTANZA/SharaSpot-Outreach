@@ -101,6 +101,33 @@ Buttons: Primary `bg-brand hover:bg-brand/90`, Secondary `border border-border-l
 ## Remaining (needs separate pass)
 - **SequenceBuilder.tsx** (~1000 lines, ~139 raw class instances) — massive file with extensive raw gray classes, amber/red/green status colors, and complex layout. Needs dedicated session.
 
+## Session: Workspace Sharing & Data Visibility Fix
+
+### Problem
+`getOrgScope()` returned `{ organizationId, userId }` — an AND condition that prevented team members from seeing each other's data in a shared workspace:
+- Contacts created by User A were invisible to User B in the same org
+- Call tasks, campaigns, tags, lists, segments — same issue
+
+### Root Cause
+`getOrgScope()` at `server/src/utils/orgScope.ts:8` included `userId` in the scope filter when an org was active. All 87+ usages across controllers inherited this broken behavior.
+
+### Fixes Applied
+1. **`server/src/utils/orgScope.ts`** — `getOrgScope()` now returns `{ organizationId }` only when an org is active (no `userId`). Personal scope (`{ userId }`) is used when no org is active. `OrgScope.userId` made optional.
+2. **`server/src/utils/contactService.ts`** — `upsertContact()` uses `(organizationId, email)` lookup via `findFirst` when org is provided, instead of `(userId, email)` via `findUnique`. Prevents duplicate workspace contacts.
+3. **`server/src/utils/contactService.ts`** — `logContactActivityByEmail()` and `updateContactStageByEmail()` now try personal-scoped lookup first, then fall back to org-scoped lookup via the user's active organization.
+4. **`server/prisma/schema.prisma`** — Added `@@unique([organizationId, email])` to Contact model for data integrity.
+
+### Payment / Premium Inheritance (already correct)
+- `getSubscriptionStatus()` already inherits org owner's premium to members
+- `createSubscription()` blocks non-OWNER members from subscribing
+- `removeMember()` / `leaveOrganization()` properly invalidate premium cache and reassign active org
+
+### Design Decisions
+- When an org is active, ALL members see ALL workspace data (no per-user isolation)
+- VIEWER role can read all, write blocked by `requireOrgWriteAccess` middleware
+- Assignment (`assignedToId`) is for responsibility tracking, not visibility gating
+- Records tagged with `userId` (creator) + `organizationId` (workspace) — scoping is by org only
+
 ## Previous Sessions
 - Logo replacement: `client/public/sharaspot-icon.png` (new), `Logo.tsx` (replaced SVG with `<img>`), `favicon.svg` (simplified).
 - Font preload warnings: added `preload: false` to Geist/Geist_Mono in layout.tsx.

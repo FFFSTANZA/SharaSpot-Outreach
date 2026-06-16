@@ -33,7 +33,11 @@ export const upsertContact = async (
   db: DbClient = prisma
 ) => {
   const { tags, stage, organizationId, enrichmentSources, ...rest } = data;
-  const existing = await db.contact.findUnique({ where: { userId_email: { userId, email } } });
+  // When organizationId is set, look up by (organizationId, email) for workspace-level uniqueness.
+  // Otherwise, look up by (userId, email) for personal-scope uniqueness.
+  const existing = organizationId
+    ? await db.contact.findFirst({ where: { organizationId, email } })
+    : await db.contact.findUnique({ where: { userId_email: { userId, email } } });
 
   const mergedRest = existing ? {
     ...rest,
@@ -83,6 +87,27 @@ export const logContactActivity = async (
   });
 };
 
+const findContactByEmailAcrossScope = async (
+  userId: string,
+  email: string,
+  db: DbClient = prisma
+) => {
+  // Try personal-scoped lookup first
+  let contact = await db.contact.findUnique({ where: { userId_email: { userId, email } } });
+  if (contact) return contact;
+  // Fallback: look up via user's active organization (workspace-shared contact)
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { activeOrganizationId: true },
+  });
+  if (user?.activeOrganizationId) {
+    contact = await db.contact.findFirst({
+      where: { organizationId: user.activeOrganizationId, email },
+    });
+  }
+  return contact;
+};
+
 export const logContactActivityByEmail = async (
   userId: string,
   email: string,
@@ -90,7 +115,7 @@ export const logContactActivityByEmail = async (
   metadata?: Record<string, unknown>,
   db: DbClient = prisma
 ) => {
-  const contact = await db.contact.findUnique({ where: { userId_email: { userId, email } } });
+  const contact = await findContactByEmailAcrossScope(userId, email, db);
   if (contact) return logContactActivity(contact.id, type, metadata, db);
   return null;
 };
@@ -107,7 +132,7 @@ export const updateContactStageByEmail = async (
   stage: string,
   db: DbClient = prisma
 ) => {
-  const contact = await db.contact.findUnique({ where: { userId_email: { userId, email } } });
+  const contact = await findContactByEmailAcrossScope(userId, email, db);
   if (contact) return updateContactStage(contact.id, stage, db);
   return null;
 };

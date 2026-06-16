@@ -210,7 +210,7 @@ const applyDisposition = async (input: DispositionInput, scope?: OrgScope) => {
     let finalSessionId: string | null = null;
     if (sessionId) {
       const existingSession = await tx.callSession.findFirst({
-        where: { id: sessionId, ...scope },
+        where: { id: sessionId, userId },
         select: { id: true, contactId: true, taskId: true, startedAt: true, metadata: true, durationSeconds: true, endedAt: true },
       });
       if (!existingSession) {
@@ -256,7 +256,6 @@ const applyDisposition = async (input: DispositionInput, scope?: OrgScope) => {
           taskId: taskId || null,
           mode: "MANUAL",
           direction: "OUTBOUND",
-          ...(scope?.organizationId ? { organizationId: scope.organizationId } : {}),
           outcome: normalizedOutcome,
           note: note?.trim() || null,
           endedAt,
@@ -275,7 +274,6 @@ const applyDisposition = async (input: DispositionInput, scope?: OrgScope) => {
       data: {
         contactId,
         type: "CALL_LOGGED",
-        ...(scope?.organizationId ? { organizationId: scope.organizationId } : {}),
         metadata: {
           outcome: normalizedOutcome,
           note: note?.trim() || null,

@@ -67,6 +67,7 @@ async function createCampaign(
         startTime: startTime.toISOString(),
         delaySeconds: Math.max(Number(args.delaySeconds) || 0, 0),
         hourlyLimit: Math.max(Number(args.hourlyLimit) || sender.hourlyLimit || 50, 1),
+        organizationId: context.organizationId ?? null,
         emails,
         steps: Array.isArray(args.steps) ? args.steps as any : undefined,
         sequenceGraph: (typeof args.sequenceGraph === "object" && args.sequenceGraph !== null) ? args.sequenceGraph as any : undefined,

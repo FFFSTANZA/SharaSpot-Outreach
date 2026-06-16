@@ -2,13 +2,15 @@ import { Request, Response, NextFunction } from "express";
 
 export interface OrgScope {
   organizationId?: string;
-  userId: string;
+  userId?: string;
 }
 
 export function getOrgScope(req: Pick<Request, 'user'>): OrgScope {
   const orgId = req.user?.activeOrganizationId ?? null;
   const userId = req.user!.id;
-  if (orgId) return { organizationId: orgId, userId };
+  // When an organization is active, scope by organizationId only
+  // so all workspace members see shared workspace data.
+  if (orgId) return { organizationId: orgId };
   return { userId };
 }
 
