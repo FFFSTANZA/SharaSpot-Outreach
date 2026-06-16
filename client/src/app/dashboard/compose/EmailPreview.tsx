@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Eye, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EmailPreviewProps {
@@ -22,18 +22,17 @@ export default function EmailPreview({
   recipients,
 }: EmailPreviewProps) {
   const [expanded, setExpanded] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const email = recipients[currentIndex]?.toLowerCase() || "";
-  const currentRow = recipientColumnData[email] || {};
 
-  const resolvedSubject = Object.keys(currentRow).reduce(
-    (acc, v) => resolveVariable(acc, v, currentRow[v] || `{{${v}}}`), subject
-  );
-  const resolvedBody = Object.keys(currentRow).reduce(
-    (acc, v) => resolveVariable(acc, v, currentRow[v] || `{{${v}}}`), body
-  );
+  const firstEmail = recipients[0]?.toLowerCase() || "";
+  const sampleRow = recipientColumnData[firstEmail] || {};
 
-  const toEmail = email || (recipients[currentIndex] || "");
+  const resolvedSubject = Object.keys(sampleRow).length > 0
+    ? Object.keys(sampleRow).reduce((acc, v) => resolveVariable(acc, v, sampleRow[v]), subject)
+    : subject;
+
+  const resolvedBody = Object.keys(sampleRow).length > 0
+    ? Object.keys(sampleRow).reduce((acc, v) => resolveVariable(acc, v, sampleRow[v]), body)
+    : body;
 
   return (
     <div className="rounded-lg bg-white border border-border-light shadow-sm overflow-hidden">
@@ -47,11 +46,6 @@ export default function EmailPreview({
           <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider">
             Email Preview
           </span>
-          {recipients.length > 0 && (
-            <span className="text-[10px] text-text-muted">
-              ({currentIndex + 1} of {recipients.length})
-            </span>
-          )}
         </div>
         <ChevronDown className={cn(
           "h-4 w-4 text-text-muted transition-transform duration-200",
@@ -60,37 +54,13 @@ export default function EmailPreview({
       </button>
 
       {expanded && (
-        <div className="px-4 md:px-5 pb-5 space-y-4 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between bg-[#F8F9FA] rounded-lg px-3 py-2">
-            <button
-              type="button"
-              onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-              disabled={currentIndex === 0}
-              className="text-xs text-text-muted hover:text-text-secondary disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-xs font-medium text-text-secondary">
-              Row {currentIndex + 1} of {recipients.length}
-            </span>
-            <button
-              type="button"
-              onClick={() => setCurrentIndex(Math.min(recipients.length - 1, currentIndex + 1))}
-              disabled={currentIndex === recipients.length - 1}
-              className="text-xs text-text-muted hover:text-text-secondary disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {recipients.length === 0 && (
-            <p className="text-[10px] text-text-muted italic">
+        <div className="px-4 md:px-5 pb-5 animate-in fade-in duration-200">
+          {recipients.length === 0 ? (
+            <p className="text-[10px] text-text-muted italic pt-1">
               Import a CSV or add recipients to see the email preview
             </p>
-          )}
-
-          {recipients.length > 0 && (
-            <div className="border border-border-light rounded-lg overflow-hidden">
+          ) : (
+            <div className="border border-border-light rounded-lg overflow-hidden mt-1">
               <div className="bg-[#F8F9FA] px-4 py-3 border-b border-border-light space-y-1.5">
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-text-muted font-medium w-12 shrink-0">From:</span>
@@ -98,7 +68,7 @@ export default function EmailPreview({
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-text-muted font-medium w-12 shrink-0">To:</span>
-                  <span className="text-text-primary truncate">{toEmail || "recipient@example.com"}</span>
+                  <span className="text-text-primary truncate">{firstEmail}</span>
                 </div>
                 <div className="flex items-start gap-2 text-xs">
                   <span className="text-text-muted font-medium w-12 shrink-0 mt-0.5">Subject:</span>

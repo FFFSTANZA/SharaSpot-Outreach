@@ -1,7 +1,7 @@
 "use client";
 
 import { CampaignList } from "./CampaignList";
-import { useEffect, useState, useCallback, useMemo, Suspense } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getSenders, getDashboardStats, DashboardStats } from "@/lib/apis";
@@ -119,23 +119,6 @@ function DashboardPage() {
     return () => clearInterval(pollInterval);
   }, []);
 
-  const STATUS_TABS = [
-    { label: "All Campaigns", value: "" },
-    { label: "Scheduled", value: "SCHEDULED" },
-    { label: "Sending", value: "SENDING" },
-    { label: "Paused", value: "PAUSED" },
-    { label: "Completed", value: "COMPLETED" },
-  ];
-
-  const handleTabClick = (value: string) => {
-    if (value === filters.status) return;
-    if (value === "") {
-      clearFilter("status");
-    } else {
-      setFilter("status", value);
-    }
-  };
-
   const campaignItems = useMemo(() => results.map((r: Campaign) => ({
     campaign: r,
     searchQuery: filters.q,
@@ -171,7 +154,12 @@ function DashboardPage() {
                         >
                           <Menu size={14} />
                         </button>
-                        <h1 className="text-base font-semibold text-text-primary">Campaigns</h1>
+                        <h1 className="text-base font-semibold text-text-primary">
+                          Campaigns
+                          <span className="ml-2 text-xs font-medium text-text-muted">
+                            {currentLabel}{total > 0 ? ` · ${total}` : ""}
+                          </span>
+                        </h1>
                       </div>
                       <div className="flex items-center gap-1">
                         <Link
@@ -330,26 +318,6 @@ function DashboardPage() {
 
                       {/* Campaign list */}
                       <div>
-                        <div className="flex items-center gap-1 border-b border-border-light px-4 pt-2 sm:px-6 overflow-x-auto">
-                          {STATUS_TABS.map(tab => (
-                            <button
-                              key={tab.value}
-                              onClick={() => handleTabClick(tab.value)}
-                              className={cn(
-                                "relative shrink-0 px-3 py-2.5 text-xs font-semibold transition-colors border-b-2 -mb-[1px] whitespace-nowrap",
-                                tab.value === (filters.status || "")
-                                  ? "border-brand text-brand"
-                                  : "border-transparent text-text-muted hover:text-text-secondary hover:border-border-light"
-                              )}
-                            >
-                              {tab.label}
-                              {tab.value === (filters.status || "") && (
-                                <span className="ml-1.5 rounded-md bg-brand-light px-1.5 py-0.5 text-[10px] font-bold text-brand">{total}</span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-
                         <CampaignList campaigns={campaignItems} hasActiveFilters={activeFilterCount > 0} onClearFilters={clearAllFilters} />
                       </div>
                     </>
