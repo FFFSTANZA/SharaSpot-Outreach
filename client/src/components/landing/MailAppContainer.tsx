@@ -11,6 +11,8 @@ import { useAuth } from "@/hooks/useAuth";
 export default function MailAppContainer({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const { user, logout } = useAuth();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showNav, setShowNav] = useState(false);
 
@@ -59,7 +61,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                     </div>
 
                     <div className="hidden md:flex items-center gap-5">
-                        {user ? (
+                        {mounted && user ? (
                             <>
                                 <button
                                     onClick={() => router.push("/dashboard")}
@@ -116,7 +118,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                                     {link.label}
                                 </Link>
                             ))}
-                            {user ? (
+                            {mounted && user ? (
                                 <>
                                     <button
                                         onClick={() => { setMobileMenuOpen(false); router.push("/dashboard"); }}
