@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import { BRAND_CONFIG } from "@/lib/config";
 import { Logo } from "@/components/Logo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function MailAppContainer({ children }: { children: React.ReactNode }) {
     const router = useRouter();
+    const { user, logout } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showNav, setShowNav] = useState(false);
 
@@ -57,18 +59,39 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                     </div>
 
                     <div className="hidden md:flex items-center gap-5">
-                        <button
-                            onClick={() => router.push("/login")}
-                            className="text-sm text-text-secondary hover:text-text-primary transition-colors"
-                        >
-                            Sign in
-                        </button>
-                        <button
-                            onClick={() => router.push("/login")}
-                            className="bg-brand text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand/90 transition-colors"
-                        >
-                            Get Started
-                        </button>
+                        {user ? (
+                            <>
+                                <button
+                                    onClick={() => router.push("/dashboard")}
+                                    className="text-sm text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1.5"
+                                >
+                                    <LayoutDashboard size={14} />
+                                    Dashboard
+                                </button>
+                                <button
+                                    onClick={async () => { await logout(); router.push("/"); }}
+                                    className="text-sm text-text-muted hover:text-error-text transition-colors flex items-center gap-1.5"
+                                >
+                                    <LogOut size={14} />
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => router.push("/login")}
+                                    className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                                >
+                                    Sign in
+                                </button>
+                                <button
+                                    onClick={() => router.push("/login")}
+                                    className="bg-brand text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand/90 transition-colors"
+                                >
+                                    Get Started
+                                </button>
+                            </>
+                        )}
                     </div>
 
                     <button
@@ -93,12 +116,31 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                                     {link.label}
                                 </Link>
                             ))}
-                            <button
-                                onClick={() => router.push("/login")}
-                                className="w-full bg-brand text-white font-semibold py-3.5 rounded-lg text-sm mt-1"
-                            >
-                                Get Started
-                            </button>
+                            {user ? (
+                                <>
+                                    <button
+                                        onClick={() => { setMobileMenuOpen(false); router.push("/dashboard"); }}
+                                        className="w-full bg-brand text-white font-semibold py-3.5 rounded-lg text-sm mt-1 flex items-center justify-center gap-2"
+                                    >
+                                        <LayoutDashboard size={16} />
+                                        Dashboard
+                                    </button>
+                                    <button
+                                        onClick={async () => { setMobileMenuOpen(false); await logout(); router.push("/"); }}
+                                        className="w-full border border-error-bg text-error-text font-semibold py-3.5 rounded-lg text-sm flex items-center justify-center gap-2"
+                                    >
+                                        <LogOut size={16} />
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={() => router.push("/login")}
+                                    className="w-full bg-brand text-white font-semibold py-3.5 rounded-lg text-sm mt-1"
+                                >
+                                    Get Started
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

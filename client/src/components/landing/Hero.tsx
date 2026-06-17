@@ -9,10 +9,11 @@ import {
   MousePointer2, Plus, X, Loader2,
   Eye, EyeOff, Star, Megaphone,
   Pause, Inbox, PhoneCall, FileText,
-  UserPlus, ServerCog,
+  UserPlus, ServerCog, LayoutDashboard,
 } from "lucide-react";
 import { motion, AnimatePresence, useSpring } from "framer-motion";
 import { Logo } from "@/components/Logo";
+import { useAuth } from "@/hooks/useAuth";
 
 type Stage =
   | "idle"
@@ -28,6 +29,7 @@ const spring = { stiffness: 120, damping: 18, mass: 0.5 };
 
 export default function Hero() {
   const router = useRouter();
+  const { user } = useAuth();
   const [stage, setStage] = useState<Stage>("idle");
   const [progress, setProgress] = useState(0);
   const [stats, setStats] = useState({ sent: 340210, replies: 32, delivered: 326947 });
@@ -212,11 +214,14 @@ export default function Hero() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
           >
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => router.push(user ? "/dashboard" : "/login")}
               className="w-full sm:w-auto sm:min-w-[290px] bg-white/14 backdrop-blur-xl border border-white/45 ring-1 ring-white/35 text-brand text-[11px] font-black px-8 py-3 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2.5 group uppercase tracking-[0.2em] hover:translate-y-[-1px] active:translate-y-0 shadow-[0_16px_34px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,0.75),inset_0_-8px_20px_rgba(255,255,255,0.12)] hover:bg-white/20 hover:border-white/60"
             >
-              Start Sending Smarter
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+              {user ? (
+                <><LayoutDashboard className="w-4 h-4" /> Go to Dashboard</>
+              ) : (
+                <>Start Sending Smarter <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" /></>
+              )}
             </button>
             <div className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-2 text-[11px] font-bold text-text-primary uppercase tracking-tight">
