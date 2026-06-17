@@ -533,7 +533,7 @@ function TeamContent() {
 
 export default function TeamPage() {
   return (
-    <AuthGuard requirePremium={true}>
+    <AuthGuard>
       <ErrorBoundary>
         <TeamContent />
       </ErrorBoundary>

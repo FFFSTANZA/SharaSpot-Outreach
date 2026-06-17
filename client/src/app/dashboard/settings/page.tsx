@@ -359,7 +359,7 @@ function SubscriptionSection() {
 
 export default function SettingsPage() {
     return (
-        <AuthGuard requirePremium={true}>
+        <AuthGuard>
             <ErrorBoundary>
                     <SettingsContent />
             </ErrorBoundary>
