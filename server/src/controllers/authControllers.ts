@@ -6,6 +6,7 @@ import { refreshTokenCookieOptions } from "../config/cookies";
 import { acceptOrganizationInviteForUser } from "./organizationControllers";
 import { extractClientIp, getCountryFromIp, isIndia } from "../utils/geoUtils";
 import { logger } from "../utils/logger";
+import { ensureUserOnboardingDefaults } from "../utils/userOnboarding";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -26,13 +27,13 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
     const { email, name, picture } = payload;
     if (!email || !name) { res.status(400).json({ message: "Incomplete profile" }); return; }
 
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    const isNewUser = !existingUser;
-
     // Detect region from IP on signup so pricing is geo-aware from the start
     const ipAddress = extractClientIp(req);
     const countryCode = ipAddress ? await getCountryFromIp(ipAddress) : null;
     const detectedRegion = isIndia(countryCode) ? "india" : "global";
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const isNewUser = !existingUser;
 
     const user = await prisma.user.upsert({
       where: { email },
@@ -40,54 +41,17 @@ export const googleLogin = async (req: Request, res: Response): Promise<void> =>
       create: {
         email, name, avatarUrl: picture,
         region: detectedRegion,
-        senders: { create: { email, name, appPassword: "" } },
-        tags: {
-          create: [
-            { name: "Investor", color: "#ef4444" },
-            { name: "Founder", color: "#f59e0b" },
-            { name: "Recruiter", color: "#10b981" },
-          ],
-        },
       },
     });
-
-    const createPersonalWorkspace = async (uid: string, uname: string, uemail: string) => {
-      const org = await prisma.organization.create({
-        data: {
-          name: `${uname || uemail}'s Workspace`,
-          ownerId: uid,
-          members: { create: { userId: uid, role: "OWNER" } },
-        },
-      });
-      await prisma.user.update({
-        where: { id: uid },
-        data: { activeOrganizationId: org.id },
-      });
-      await prisma.sender.updateMany({
-        where: { userId: uid, organizationId: null },
-        data: { organizationId: org.id },
-      });
-      return org;
-    };
-
-    // Only auto-create personal workspace for brand new users (first-ever login),
-    // not for existing users who happen to have no active org (e.g. left a workspace).
-    if (isNewUser && !user.activeOrganizationId && !inviteToken) {
-      await createPersonalWorkspace(user.id, name, email);
-    }
 
     let inviteResult: Awaited<ReturnType<typeof acceptOrganizationInviteForUser>> | null = null;
     if (inviteToken) {
       inviteResult = await acceptOrganizationInviteForUser(inviteToken, user.id, user.email);
       if (!inviteResult.accepted) {
         logger.warn(`[Auth] Invite acceptance failed for ${user.email}: ${inviteResult.reason}`);
+      } else if (isNewUser) {
+        await ensureUserOnboardingDefaults(user.id, name, email);
       }
-    }
-
-    const freshUser = await prisma.user.findUnique({ where: { id: user.id } });
-    // Second fallback: only for new users who had an invite that failed or no invite
-    if (isNewUser && !freshUser?.activeOrganizationId && !inviteToken) {
-      await createPersonalWorkspace(user.id, name, email);
     }
 
     const finalUser = await prisma.user.findUnique({ where: { id: user.id } });

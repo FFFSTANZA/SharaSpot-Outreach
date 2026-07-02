@@ -11,6 +11,7 @@ export interface User {
   isPremium: boolean;
   callingEnabled?: boolean;
   activeOrganizationId?: string | null;
+  activeOrganizationRole?: OrgMemberRole | null;
   createdAt: string;
 }
 

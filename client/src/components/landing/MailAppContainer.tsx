@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
 import { Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import { BRAND_CONFIG } from "@/lib/config";
 import { Logo } from "@/components/Logo";
@@ -11,8 +11,11 @@ import { useAuth } from "@/hooks/useAuth";
 export default function MailAppContainer({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const { user, logout } = useAuth();
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => { setMounted(true); }, []);
+    const isClient = useSyncExternalStore(
+        () => () => { },
+        () => true,
+        () => false,
+    );
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showNav, setShowNav] = useState(false);
 
@@ -27,6 +30,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
         { label: "Priority", href: "/priority" },
         { label: "How It Works", href: "/#how-it-works" },
         { label: "Pricing", href: "/#pricing" },
+        { label: "Leads", href: "https://tally.so/r/eqpgje", external: true },
         { label: "Guide", href: "/guide" },
         { label: "FAQ", href: "/faq" },
         { label: "Support", href: BRAND_CONFIG.supportUrl, external: true },
@@ -42,37 +46,38 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                         : "bg-transparent border-b border-transparent shadow-none"
                 }`}
             >
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+                <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:gap-6">
                     <Link href="/" className="flex items-center gap-2">
                         <Logo size="md" />
                     </Link>
 
-                    <div className="hidden md:flex items-center gap-8">
+                    <div className="hidden lg:flex min-w-0 flex-1 items-center justify-center gap-5 xl:gap-7">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.label}
                                 href={link.href}
                                 target={link.external ? "_blank" : undefined}
-                                className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                                rel={link.external ? "noreferrer" : undefined}
+                                className="whitespace-nowrap text-sm text-text-secondary transition-colors hover:text-text-primary"
                             >
                                 {link.label}
                             </Link>
                         ))}
                     </div>
 
-                    <div className="hidden md:flex items-center gap-5">
-                        {mounted && user ? (
+                    <div className="hidden lg:flex shrink-0 items-center gap-4 xl:gap-5">
+                        {isClient && user ? (
                             <>
                                 <button
                                     onClick={() => router.push("/dashboard")}
-                                    className="text-sm text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1.5"
+                                    className="flex items-center gap-1.5 whitespace-nowrap text-sm text-text-secondary transition-colors hover:text-text-primary"
                                 >
                                     <LayoutDashboard size={14} />
                                     Dashboard
                                 </button>
                                 <button
                                     onClick={async () => { await logout(); router.push("/"); }}
-                                    className="text-sm text-text-muted hover:text-error-text transition-colors flex items-center gap-1.5"
+                                    className="flex items-center gap-1.5 whitespace-nowrap text-sm text-text-muted transition-colors hover:text-error-text"
                                 >
                                     <LogOut size={14} />
                                     Logout
@@ -82,13 +87,13 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                             <>
                                 <button
                                     onClick={() => router.push("/login")}
-                                    className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                                    className="whitespace-nowrap text-sm text-text-secondary transition-colors hover:text-text-primary"
                                 >
                                     Sign in
                                 </button>
                                 <button
                                     onClick={() => router.push("/login")}
-                                    className="bg-brand text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-brand/90 transition-colors"
+                                    className="whitespace-nowrap rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand/90"
                                 >
                                     Get Started
                                 </button>
@@ -97,7 +102,7 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                     </div>
 
                     <button
-                        className="md:hidden p-2.5 text-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center"
+                        className="flex min-h-[44px] min-w-[44px] items-center justify-center p-2.5 text-text-primary lg:hidden"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     >
                         {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -105,20 +110,21 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                 </div>
 
                 {mobileMenuOpen && (
-                    <div className="md:hidden bg-white border-t border-border-light px-4 sm:px-6 py-6">
+                    <div className="border-t border-border-light bg-white px-4 py-6 sm:px-6 lg:hidden">
                         <div className="flex flex-col gap-4">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.label}
                                     href={link.href}
                                     target={link.external ? "_blank" : undefined}
+                                    rel={link.external ? "noreferrer" : undefined}
                                     className="text-base font-medium text-text-primary min-h-[44px] flex items-center"
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
                                     {link.label}
                                 </Link>
                             ))}
-                            {mounted && user ? (
+                            {isClient && user ? (
                                 <>
                                     <button
                                         onClick={() => { setMobileMenuOpen(false); router.push("/dashboard"); }}
@@ -136,12 +142,20 @@ export default function MailAppContainer({ children }: { children: React.ReactNo
                                     </button>
                                 </>
                             ) : (
-                                <button
-                                    onClick={() => router.push("/login")}
-                                    className="w-full bg-brand text-white font-semibold py-3.5 rounded-lg text-sm mt-1"
-                                >
-                                    Get Started
-                                </button>
+                                <>
+                                    <button
+                                        onClick={() => { setMobileMenuOpen(false); router.push("/login"); }}
+                                        className="flex min-h-[44px] items-center text-base font-medium text-text-primary"
+                                    >
+                                        Sign in
+                                    </button>
+                                    <button
+                                        onClick={() => { setMobileMenuOpen(false); router.push("/login"); }}
+                                        className="mt-1 w-full rounded-lg bg-brand py-3.5 text-sm font-semibold text-white"
+                                    >
+                                        Get Started
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>

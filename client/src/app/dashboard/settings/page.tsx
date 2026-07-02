@@ -125,6 +125,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function SubscriptionSection() {
+    const { user } = useAuth();
     const [subscription, setSubscription] = useState<SubscriptionResponse["subscription"]>(null);
     const [isPremium, setIsPremium] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -224,6 +225,7 @@ function SubscriptionSection() {
     const isTrialing = trialEnd && trialEnd > now;
     const isCanceled = subscription?.cancelAtPeriodEnd;
     const needsBillingAction = subscription?.status === "ON_HOLD" || subscription?.status === "PAST_DUE";
+    const isWorkspaceManaged = !!user?.activeOrganizationId && user.activeOrganizationRole !== "OWNER" && !subscription;
 
     const pricing = PRICING[region] || PRICING.global;
 
@@ -247,7 +249,15 @@ function SubscriptionSection() {
                         <span className="text-sm font-medium text-text-primary">{pricing.symbol}{pricing.price}/mo</span>
                     </div>
 
-                    {!isPremium && !needsBillingAction ? (
+                    {isWorkspaceManaged ? (
+                        <div>
+                            <p className="text-sm text-text-muted mb-4">
+                                {isPremium
+                                    ? "Your workspace owner manages billing for this shared workspace."
+                                    : "Your workspace owner manages billing. Contact them to upgrade or restore premium access."}
+                            </p>
+                        </div>
+                    ) : !isPremium && !needsBillingAction ? (
                         <div>
                             <p className="text-sm text-text-muted mb-4">
                                 Subscribe to access all premium features. {pricing.symbol}{pricing.price}/mo, 7-day trial included.
@@ -285,17 +295,18 @@ function SubscriptionSection() {
                         </div>
                     ) : (
                         <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-text-muted">Next billing</span>
-                                <span className="text-text-primary">
-                                    {periodEnd?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) || "N/A"}
-                                </span>
-                            </div>
-                            {isTrialing && trialEnd && (
+                            {isTrialing && trialEnd ? (
                                 <div className="flex justify-between">
                                     <span className="text-text-muted">Trial ends</span>
                                     <span className="text-text-primary">
                                         {trialEnd.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="flex justify-between">
+                                    <span className="text-text-muted">Next billing</span>
+                                    <span className="text-text-primary">
+                                        {periodEnd?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) || "N/A"}
                                     </span>
                                 </div>
                             )}
@@ -334,7 +345,7 @@ function SubscriptionSection() {
                     <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-premium-lg" onClick={e => e.stopPropagation()}>
                         <h3 className="text-base font-semibold text-text-primary mb-2">Cancel Subscription?</h3>
                         <p className="text-sm text-text-secondary mb-5">
-                            Your subscription remains active until <strong className="text-text-primary">{periodEnd?.toLocaleDateString()}</strong>.
+                            Your subscription remains active until <strong className="text-text-primary">{periodEnd?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</strong>.
                             After that you&apos;ll lose premium access.
                         </p>
                         <div className="flex gap-3">

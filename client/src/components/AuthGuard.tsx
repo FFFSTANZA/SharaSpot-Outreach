@@ -41,7 +41,9 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
     if (isCancelledRedirect) return;
 
     if (!isLoading && !user) {
-      if (hasToken) return;
+      if (hasToken) {
+        localStorage.removeItem("accessToken");
+      }
       router.replace("/login");
       return;
     }
@@ -55,8 +57,9 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
       }
 
       // Shared-workspace members should not start their own checkout flow.
-      // If the owner's workspace is not premium, keep them out of premium pages.
-      if (user.activeOrganizationId) {
+      // Org owners (personal workspace) should go through Dodo checkout.
+      // Legacy fallback: if role is absent, treat as member (stay safe).
+      if (user.activeOrganizationId && user.activeOrganizationRole !== "OWNER") {
         router.replace("/dashboard/team");
         return;
       }
@@ -81,8 +84,7 @@ export function AuthGuard({ children, requirePremium = false }: AuthGuardProps) 
     }
   }, [user, isLoading, router, requirePremium, isSuccessRedirect, refreshUser]);
 
-  const hasToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-  if (isLoading || (!user && hasToken)) {
+  if (isLoading) {
     return <PageLoader message="Verifying session..." />;
   }
 

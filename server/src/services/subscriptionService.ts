@@ -12,6 +12,7 @@ import { SubscriptionStatus, LogLevel } from "@prisma/client";
 import { isIndia, getCountryFromIp } from "../utils/geoUtils";
 import { redis } from "../config/redis";
 import { PREMIUM_CACHE_PREFIX } from "../config/subscription";
+import { ensurePersonalWorkspace } from "../utils/personalWorkspace";
 
 export async function invalidatePremiumCacheForUserAndInheritedMembers(userId: string): Promise<void> {
   const cacheKeys = new Set<string>([`${PREMIUM_CACHE_PREFIX}${userId}`]);
@@ -472,6 +473,8 @@ export async function handleCheckoutCompleted(
     });
   });
 
+  await ensurePersonalWorkspace(user.id, user.name, user.email);
+
   await invalidatePremiumCacheForUserAndInheritedMembers(userId);
 
   await logPaymentAuditEvent("subscription.created", userId, {
@@ -494,6 +497,11 @@ export async function activateSubscriptionFromPayment(
 
   if (!userId) {
     throw new Error("User ID is required");
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new Error(`User ${userId} not found`);
   }
 
   let dodoSubData: any = null;
@@ -535,6 +543,8 @@ export async function activateSubscriptionFromPayment(
       logger.info({ userId }, "[SUBSCRIPTION-ACTIVATE] Created subscription");
     }
   });
+
+  await ensurePersonalWorkspace(user.id, user.name, user.email);
 
   await invalidatePremiumCacheForUserAndInheritedMembers(userId);
 

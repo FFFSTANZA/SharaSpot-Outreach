@@ -10,6 +10,22 @@ import {
   resolveTrackingCname,
 } from "../utils/trackingDomain";
 
+async function getActiveOrganizationRole(userId: string, organizationId: string | null): Promise<string | null> {
+  if (!organizationId) return null;
+
+  const membership = await prisma.organizationMember.findUnique({
+    where: {
+      organizationId_userId: {
+        organizationId,
+        userId,
+      },
+    },
+    select: { role: true },
+  });
+
+  return membership?.role ?? null;
+}
+
 export const getUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -24,10 +40,13 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
 
     const { isPremium } = await checkPremiumStatus(userId);
 
+    const activeOrganizationRole = await getActiveOrganizationRole(user.id, user.activeOrganizationId);
+
     res.json({
       ...user,
       isPremium,
       activeOrganizationId: user.activeOrganizationId,
+      activeOrganizationRole,
     });
   } catch (error: any) {
     res.status(500).json({ message: "An error occurred while retrieving user" });
@@ -92,7 +111,8 @@ export const updateUserSettings = async (req: Request, res: Response): Promise<v
     });
 
     const { isPremium } = await checkPremiumStatus(userId);
-    res.json({ ...user, isPremium, activeOrganizationId: user.activeOrganizationId });
+    const activeOrganizationRole = await getActiveOrganizationRole(user.id, user.activeOrganizationId);
+    res.json({ ...user, isPremium, activeOrganizationId: user.activeOrganizationId, activeOrganizationRole });
   } catch (error: any) {
     res.status(500).json({ message: "An error occurred while updating user settings" });
   }
@@ -116,7 +136,8 @@ export const updateUserName = async (req: Request, res: Response): Promise<void>
     });
 
     const { isPremium } = await checkPremiumStatus(userId);
-    res.json({ ...user, isPremium, activeOrganizationId: user.activeOrganizationId });
+    const activeOrganizationRole = await getActiveOrganizationRole(user.id, user.activeOrganizationId);
+    res.json({ ...user, isPremium, activeOrganizationId: user.activeOrganizationId, activeOrganizationRole });
   } catch (error: any) {
     res.status(500).json({ message: "An error occurred while updating name" });
   }

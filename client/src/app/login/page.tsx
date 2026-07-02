@@ -128,21 +128,68 @@ const LoginComponent = () => {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-    if (!inviteToken) {
-      router.replace("/dashboard");
-      return;
-    }
 
     (async () => {
+      let shouldRouteDashboard = true;
+      setIsLoading(true);
       try {
+        if (!inviteToken) {
+          const updatedUser = await refreshUser();
+          if (!updatedUser) {
+            localStorage.removeItem("accessToken");
+            shouldRouteDashboard = false;
+            return;
+          }
+
+          if (!updatedUser.isPremium) {
+            const isOrgOwner = updatedUser.activeOrganizationRole === "OWNER";
+            if (!updatedUser.activeOrganizationId || isOrgOwner) {
+              try {
+                const { createSubscription } = await import("@/lib/apis");
+                const checkout = await createSubscription();
+                if (checkout.checkoutUrl) {
+                  shouldRouteDashboard = false;
+                  window.location.href = checkout.checkoutUrl;
+                  return;
+                }
+                shouldRouteDashboard = false;
+                addToast("error", "Failed to start checkout. Please try again.");
+                return;
+              } catch (subErr: unknown) {
+                console.error("[Login] Existing session checkout redirect failed:", subErr);
+                shouldRouteDashboard = false;
+                addToast("error", getApiErrorMessage(subErr, "Failed to start checkout."));
+                return;
+              }
+            } else {
+              shouldRouteDashboard = false;
+              router.replace("/dashboard/team");
+              return;
+            }
+          }
+
+          router.replace("/dashboard");
+          shouldRouteDashboard = false;
+          return;
+        }
+
         const result = await acceptInvite(inviteToken);
         localStorage.setItem("accessToken", result.accessToken);
-        await refreshUser();
+        const updatedUser = await refreshUser();
         addToast("success", `Joined ${result.organizationName}`);
+
+        if (updatedUser && !updatedUser.isPremium && updatedUser.activeOrganizationRole !== "OWNER") {
+          shouldRouteDashboard = false;
+          router.replace("/dashboard/team");
+          return;
+        }
       } catch (err: unknown) {
         addToast("error", getApiErrorMessage(err, "Failed to accept invitation."));
       } finally {
-        router.replace("/dashboard");
+        setIsLoading(false);
+        if (shouldRouteDashboard) {
+          router.replace("/dashboard");
+        }
       }
     })();
   }, [router, inviteToken, addToast, refreshUser]);
@@ -168,6 +215,7 @@ const LoginComponent = () => {
             const updatedUser = await refreshUser();
             const inviteRejected = !!inviteToken && !!data.invite && !data.invite.accepted;
             const hasOrg = !!updatedUser?.activeOrganizationId;
+            const isOrgOwner = updatedUser?.activeOrganizationRole === "OWNER";
 
             if (inviteRejected) {
               addToast("error", getInviteFailureMessage(data.invite?.reason));
@@ -175,7 +223,7 @@ const LoginComponent = () => {
               return;
             }
 
-            if (updatedUser && !updatedUser.isPremium && !hasOrg) {
+            if (updatedUser && !updatedUser.isPremium && (!hasOrg || isOrgOwner)) {
               if (isSubscriptionSuccess) {
                 router.push("/dashboard?subscription=success");
                 return;
@@ -188,8 +236,12 @@ const LoginComponent = () => {
                   window.location.href = checkout.checkoutUrl;
                   return;
                 }
+                addToast("error", "Failed to start checkout. Please try again.");
+                return;
               } catch (subErr: unknown) {
                 console.error("[Login] Checkout redirect failed:", subErr);
+                addToast("error", getApiErrorMessage(subErr, "Failed to start checkout."));
+                return;
               }
             }
 
